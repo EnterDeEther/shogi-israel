@@ -87,11 +87,12 @@ const components = { Board, Term, Note, Task, Notation };
   .prose { padding-top: 26px; }
   .prose :global(h1) { font-size: clamp(32px, 7vw, 46px); margin-bottom: 18px; }
   .prose :global(h2) { font-size: clamp(25px, 5vw, 32px); margin: 8px 0 14px; scroll-margin-top: 16px; }
-  .prose :global(p), .prose :global(li) { font-size: 17px; line-height: 1.75; color: var(--ink-2); }
-  .prose :global(p) { margin: 0 0 14px; }
+  /* Direct children only, so component labels (Task, Note, Board) keep their own colours. */
+  .prose > :global(p), .prose > :global(ul > li), .prose > :global(ol > li) { font-size: 17px; line-height: 1.75; color: var(--ink-2); }
+  .prose > :global(p) { margin: 0 0 14px; }
   .prose :global(strong) { color: var(--ink); }
-  .prose :global(ul), .prose :global(ol) { padding-inline-start: 22px; margin: 0 0 16px; }
-  .prose :global(li) { margin-bottom: 6px; }
+  .prose > :global(ul), .prose > :global(ol) { padding-inline-start: 22px; margin: 0 0 16px; }
+  .prose > :global(ul > li), .prose > :global(ol > li) { margin-bottom: 6px; }
   .prose :global(hr) {
     border: 0; height: 1px; background: var(--rule); margin: 44px 0 32px; position: relative; overflow: visible;
   }

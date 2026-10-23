@@ -10,7 +10,7 @@
     "preview": "astro preview"
   },
   "engines": {
-    "node": ">=22"
+    "node": "24.x"
   },
   "dependencies": {
     "@astrojs/mdx": "^8.1.1",
