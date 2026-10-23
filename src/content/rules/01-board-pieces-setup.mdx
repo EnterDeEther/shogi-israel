@@ -1,0 +1,161 @@
+---
+title: "שיעור 1: הלוח, הכלים והעמדה הפותחת"
+description: "81 משבצות, 40 כלים בצבע אחד, ושאלה אחת: מי מתחיל? כל מה שצריך לדעת לפני המסע הראשון."
+course: rules
+lesson: 1
+slug: rules/01-board-pieces-setup
+next: rules/02-how-pieces-move
+status: draft-v1          # 2026-10-24 · Content (written in the Content research chat)
+glossary: v0-locked       # rows 1-103, locked 2026-10-23
+facts: research/rules-course.md (Lesson 1) · research/pieces-notation.md
+reading_time_min: 5
+og_image_sfen: "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1"
+---
+
+{/*
+EDITOR NOTES (not rendered)
+- Components (Website + Shogi tech chats implement):
+  <Term id="…" first>…</Term>  renders the glossary first-use string (column H) and wraps the
+      brackets in <bdi>. The child text is the expected string; the build fails if it drifts from the sheet.
+  <Board sfen="…" highlight="…" zones caption="…" />  static SVG board, letters by default,
+      kanji toggle, never mirrored, auto text alternative ("תיאור הלוח") from the SFEN.
+  <Task>…</Task>  one action under the board; `answer` = square(s) the learner must tap.
+  <Note>…</Note>  side box (culture / chess contrast).
+  <Notation>76</Notation>  LTR-isolated digits / moves (<bdi dir="ltr">).
+- Address form: plural imperative (לחצו, מצאו) as a gender-neutral default. Confirm against the
+  Localization Guide before publishing.
+- Every fact below is in research/rules-course.md §Lesson 1 with two sources.
+- One step = one board + one short paragraph + one action (research/website-design.md §2).
+*/}
+
+# שיעור 1: הלוח, הכלים והעמדה הפותחת
+
+בשוגי, הכלי של היריב היום יכול להיות הכלי שלכם מחר. אבל לפני שמגיעים לזה, צריך לדעת איפה כל דבר עומד.
+
+בשיעור הזה אין עדיין מסעים. נכיר את הלוח, את שמונת סוגי הכלים, איך מסדרים אותם ומי מתחיל. חמש דקות, ואתם מוכנים לשיעור 2.
+
+---
+
+## 1.1 על מה משחקים?
+
+<Board sfen="9/9/9/9/9/9/9/9/9 b - 1" highlight="76" caption="משבצת 76: טור 7, שורה 6" />
+
+לוח השוגי הוא 9 על 9: **81 משבצות**, כולן באותו צבע. לכל משבצת יש שם של **שתי ספרות**: קודם הטור, אחר כך השורה.
+
+- **הטורים** ממוספרים 1 עד 9 **מימין לשמאל**, כפי שהשחקן הראשון רואה את הלוח. טור 1 בצד ימין, בדיוק כמו שקוראים עברית.
+- **השורות** ממוספרות 1 עד 9 **מלמעלה למטה**.
+
+המשבצת המסומנת היא <Notation>76</Notation>: טור 7, שורה 6.
+
+<Note title="למי שבא משחמט">בשחמט כותבים אות ומספר, כמו e4. בשוגי שתי ספרות וזהו.</Note>
+
+<Task answer="55">לחצו על משבצת <Notation>55</Notation>, מרכז הלוח.</Task>
+
+---
+
+## 1.2 מה יש בקופסה?
+
+לכל שחקן **20 כלים** משמונה סוגים. ביחד: 40 כלים על הלוח.
+
+| כלי | כמה | על הלוח באתר | בסט אמיתי |
+|---|---|---|---|
+| <Term id="piece.king" first>מלך (王 ō, King)</Term> | 1 | K | 王 / 玉 |
+| <Term id="piece.rook" first>צריח (飛 hi, Rook)</Term> | 1 | R | 飛 |
+| <Term id="piece.bishop" first>רץ (角 kaku, Bishop)</Term> | 1 | B | 角 |
+| <Term id="piece.gold" first>גנרל זהב (金 kin, Gold)</Term> | 2 | G | 金 |
+| <Term id="piece.silver" first>גנרל כסף (銀 gin, Silver)</Term> | 2 | S | 銀 |
+| <Term id="piece.knight" first>פרש (桂 kei, Knight)</Term> | 2 | N | 桂 |
+| <Term id="piece.lance" first>רומח (香 kyō, Lance)</Term> | 2 | L | 香 |
+| <Term id="piece.pawn" first>רגלי (歩 fu, Pawn)</Term> | 9 | P | 歩 |
+
+על הלוחות באתר מופיעות אותיות באנגלית, כמו בשמות האנגליים. רוצים לראות את הכלים כמו בסט אמיתי? לחצו על **קאנג׳י** מעל כל לוח, ובחזרה על **אותיות**.
+
+הצריח, הרץ, המלך, הפרש והרגלי מוכרים משחמט, אבל לא כולם זזים אותו דבר. גנרל הזהב, גנרל הכסף והרומח חדשים לגמרי. איך כל אחד זז? שיעור 2.
+
+<Task>בחרו את סוג הכלים שנוח לכם: **אותיות** או **קאנג׳י**. אפשר להחליף בכל רגע.</Task>
+
+---
+
+## 1.3 של מי הכלי הזה?
+
+<Board sfen="9/9/4s4/9/4S4/9/9/9/9 b - 1" highlight="53,55" caption="שני גנרלי כסף: אחד שלכם, אחד של היריב" />
+
+בשחמט מזהים צד לפי הצבע. בשוגי **כל 40 הכלים באותו צבע**. את הצד קובע **הכיוון**: החוד של כל כלי מצביע אל היריב.
+
+גנרל הכסף ב־<Notation>55</Notation> מצביע למעלה, הוא שלכם. זה שב־<Notation>53</Notation> הפוך, הוא של היריב.
+
+למה לא שני צבעים? כי בשוגי כלי שלוקחים מהיריב **עובר לצד שלכם**. מסובבים אותו, והוא משרת אתכם. צבע היה מקשה על זה. (על זה בשיעור 4.)
+
+<Task answer="53">לחצו על הכלי של היריב.</Task>
+
+---
+
+## 1.4 איך מסדרים?
+
+<Board sfen="lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1" highlight="59,88,28" caption="העמדה הפותחת. מסומנים: המלך, הרץ והצריח שלכם" />
+
+כל צד ממלא את **שלוש השורות הקרובות אליו**:
+
+1. **השורה הראשונה** (הקרובה אליכם): המלך באמצע, ב־<Notation>59</Notation>. משני צדדיו, באותו סדר כמו מראה: גנרל זהב, גנרל כסף, פרש, ובפינות רומח.
+2. **השורה השנייה**: רק שני כלים. הרץ משמאלכם ב־<Notation>88</Notation>, והצריח מימינכם ב־<Notation>28</Notation>.
+3. **השורה השלישית**: תשעה רגלים לכל הרוחב.
+
+היריב מסודר בדיוק אותו דבר מהצד שלו, ולכן הצריח שלו עומד מול הרץ שלכם.
+
+<Note title="כלל אצבע">מלך באמצע, שני גנרלים מכל צד, פרשים ורומחים בקצוות. רץ משמאל, צריח מימין. ורגלים מקדימה.</Note>
+
+<Task answer="28">מצאו את הצריח שלכם ולחצו עליו. באיזו משבצת הוא עומד?</Task>
+
+---
+
+## 1.5 מי מתחיל?
+
+השחקן שמשחק ראשון נקרא **פותח** (先手 sente), והשני **משיב** (後手 gote).
+
+שימו לב: באתרים באנגלית, כמו Lishogi, הפותח נקרא "Black". כלומר בשוגי **השחור מתחיל**, הפוך משחמט. אצלנו פשוט "פותח" ו"משיב".
+
+איך מחליטים מי פותח? במשחק עם חברים, איך שרוצים. בטורנירים מטילים רגלים (振り駒 furigoma):
+
+- אחד השחקנים מנער בידיים **חמישה רגלים** שלו ומפיל אותם.
+- רוב הרגלים נחתו על הצד הרגיל (歩)? **המטיל פותח**.
+- רובם נחתו על הצד ההפוך, הטוֹקִין (と)? **היריב פותח**.
+- רגלי שנעמד על הצד או נח על רגלי אחר לא נספר. אין רוב? מטילים שוב.
+
+<Note title="שני מלכים">בסט אמיתי יש שני מלכים שונים: 王 ו־玉. הם זזים בדיוק אותו דבר. לפי המנהג, השחקן החזק או המבוגר לוקח את 王, והוא גם זה שמטיל את הרגלים. לא בטוחים? קחו את 玉. אף אחד לא נעלב מזה.</Note>
+
+<Task answer="sente">מי עושה את המסע הראשון: הפותח או המשיב?</Task>
+
+---
+
+## 1.6 מה עוד כדאי לדעת מראש?
+
+<Board sfen="lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1" zones caption="אזורי ההכתרה: שלוש השורות הרחוקות מכל שחקן" />
+
+שני דברים שיופיעו בכל משחק:
+
+- **אזור ההכתרה** (敵陣 tekijin, "מחנה האויב"): שלוש השורות **הרחוקות מכם**, שורות 1 עד 3. כלי שמגיע לשם יכול להתהפך ולהתחזק. בלוח אמיתי, ארבע נקודות קטנות מסמנות את גבולות האזורים. על הכתרה בשיעור 3.
+- **הכלים ביד** (持ち駒 mochigoma): כלי שלקחתם מהיריב לא יוצא מהמשחק. הוא עובר אליכם, "ליד", ומשם אפשר להחזיר אותו ללוח. בסט אמיתי מניחים אותו מימין ללוח או על מעמד כלים קטן (駒台 komadai), כך ששני השחקנים רואים אותו. זה הכלל שהופך שוגי לשוגי, ושיעור 4 כולו עליו.
+
+<Task answer="rank:1-3">לחצו על אחת המשבצות באזור ההכתרה שלכם.</Task>
+
+---
+
+## לסיכום
+
+- הלוח: 9 על 9. כל משבצת היא טור ואז שורה, למשל <Notation>76</Notation>. טור 1 מימין.
+- 20 כלים לכל צד, 8 סוגים, צבע אחד. הכיוון קובע של מי הכלי.
+- מלך באמצע השורה הראשונה, רץ משמאל וצריח מימין בשורה השנייה, רגלים בשלישית.
+- הפותח מתחיל. אזור ההכתרה הוא שלוש השורות הרחוקות.
+
+**לתרגל:** מאמן הקואורדינטות של Lishogi מראה משבצת, ואתם לוחצים עליה. דקה ביום והלוח נכנס לראש: [lishogi.org/training/coordinate](https://lishogi.org/training/coordinate)
+
+**הבא:** [שיעור 2: איך כל כלי זז ←](/rules/02-how-pieces-move)
+
+{/*
+OPEN (before publishing)
+1. VERIFY: Lishogi coordinate trainer shows squares as two digits (76) with the "western" setting. The page
+   says only "pick Japanese or western". If it shows letters, drop the link or add a one-line note.
+2. Address form (plural imperative) → Localization Guide.
+3. Task 1.5 is a two-button question, not a board tap. Website chat: support <Task type="choice">.
+4. Ōhashi/Itō set-up order: moved to the end of the course (Lishogi benchmark §4.5), not here.
+*/}

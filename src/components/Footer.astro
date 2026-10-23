@@ -1,0 +1,23 @@
+---
+const year = new Date().getFullYear();
+---
+<footer class="site-footer">
+  <div class="wrap inner">
+    <nav aria-label="קישורים משפטיים ומידע" class="legal">
+      <a href="/accessibility/">הצהרת נגישות</a>
+      <a href="/privacy/">מדיניות פרטיות</a>
+      <a href="/about/#credits">קרדיטים</a>
+      <a href="/about/#contact">צור קשר</a>
+    </nav>
+    <p class="small muted">אתר קהילתי, ללא מטרות רווח. החוקים לפי איגוד השוגי היפני (JSA) והפדרציה האירופית (FESA).</p>
+    <p class="small muted">שוגי ישראל · <bdi dir="ltr">shogi.co.il</bdi> · {year}</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer { margin-top: 72px; border-top: 1px solid var(--rule); padding: 32px 0 40px; }
+  .inner { display: flex; flex-direction: column; gap: 10px; }
+  .legal { display: flex; flex-wrap: wrap; gap: 4px 20px; }
+  .legal a { color: var(--ink-2); min-height: 32px; display: inline-flex; align-items: center; }
+  p { margin: 0; line-height: 1.6; }
+</style>

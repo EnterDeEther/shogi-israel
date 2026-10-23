@@ -1,0 +1,13 @@
+---
+// Glossary first-use string: "גנרל כסף (銀 gin, Silver)".
+// The bracket part is isolated in <bdi> so the parentheses can't flip in RTL, and the kanji gets lang="ja".
+// `id` is the glossary key (Glossary v0, column H). TODO(Localization): validate the child text against the sheet at build.
+interface Props { id?: string; first?: boolean }
+const raw = (await Astro.slots.render('default')).replace(/<[^>]+>/g, '').trim();
+const m = raw.match(/^(.*?)\s*\((\S+)\s+([^)]*)\)\s*$/);
+---
+{m ? (
+  <span class="term"><strong>{m[1]}</strong> <bdi>(<span lang="ja">{m[2]}</span> {m[3]})</bdi></span>
+) : (
+  <span class="term"><strong>{raw}</strong></span>
+)}

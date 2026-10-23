@@ -1,0 +1,139 @@
+/* שוגי ישראל — Direction A "נייר ודיו" (washi, sumi ink, seal red).
+   RTL page; the board is always LTR and never mirrors. */
+
+:root {
+  --washi: #F6F1E7;
+  --washi-2: #EFE7D7;
+  --ink: #1C1B19;
+  --ink-2: #3A352E;
+  --muted: #6B6256;
+  --rule: #D9CFBD;
+  --seal: #B8361F;
+  --seal-hover: #8E2814;
+  --on-seal: #FFFFFF;
+  --kaya: #E9CD95;
+  --kaya-zone: #E2C285;
+  --grid: #5C4630;
+  --piece-line: #7A5C3A;
+  --piece: #F7E7C4;
+  --piece-gote: #DCC08A;
+  --piece-ink: #1C1B19;
+  --focus: #B8361F;
+
+  --f-display: 'Frank Ruhl Libre Variable', 'Frank Ruhl Libre', 'Noto Serif Hebrew', serif;
+  --f-body: 'Heebo Variable', 'Heebo', 'Assistant', system-ui, sans-serif;
+  --f-kanji: 'Shippori Mincho', 'Noto Serif JP', serif;
+
+  --page: 1120px;
+  --text: 680px;
+  --gutter: 20px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --washi: #17150F;
+    --washi-2: #221F18;
+    --ink: #EFE7D7;
+    --ink-2: #D6CCB8;
+    --muted: #B0A48E;
+    --rule: #3B352A;
+    --seal: #E8694C;
+    --seal-hover: #F28A70;
+    --on-seal: #17150F;
+    --focus: #F28A70;
+    color-scheme: dark;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--washi);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 17px;
+  line-height: 1.7;
+  text-rendering: optimizeLegibility;
+}
+
+a { color: var(--seal); text-underline-offset: 3px; }
+a:hover { color: var(--seal-hover); }
+
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 2px; }
+
+h1, h2, h3 { font-family: var(--f-display); line-height: 1.15; margin: 0; font-weight: 800; }
+h1 { font-size: clamp(34px, 7vw, 54px); font-weight: 900; }
+h2 { font-size: clamp(26px, 4.5vw, 34px); font-weight: 700; }
+h3 { font-size: 20px; font-family: var(--f-body); font-weight: 700; line-height: 1.35; }
+
+img, svg { max-width: 100%; }
+
+[lang="ja"] { font-family: var(--f-kanji); font-weight: 800; }
+
+.wrap { max-width: var(--page); margin-inline: auto; padding-inline: var(--gutter); }
+.measure { max-width: var(--text); }
+
+.skip {
+  position: absolute; inset-inline-start: 12px; top: -60px; z-index: 50;
+  background: var(--ink); color: var(--washi); padding: 10px 16px; border-radius: 6px;
+}
+.skip:focus { top: 12px; }
+
+.eyebrow { margin: 0; font-size: 14px; font-weight: 500; color: var(--seal); letter-spacing: 0.3px; }
+.muted { color: var(--muted); }
+.small { font-size: 14px; }
+
+.seal {
+  width: 34px; height: 34px; flex-shrink: 0;
+  background: var(--seal); color: var(--on-seal); border-radius: 4px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--f-kanji); font-weight: 800; font-size: 21px; line-height: 1;
+}
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: space-between; gap: 16px;
+  min-height: 56px; padding: 0 22px;
+  background: var(--ink); color: var(--washi);
+  border: 0; border-radius: 6px; text-decoration: none;
+  font: 700 18px/1.2 var(--f-body); cursor: pointer;
+}
+.btn:hover { color: var(--washi); background: #000; }
+@media (prefers-color-scheme: dark) { .btn:hover { background: #fff; color: #17150F; } }
+.btn svg { flex-shrink: 0; }
+.btn-ghost {
+  background: transparent; color: var(--ink); border: 1.5px solid var(--ink);
+}
+.btn-ghost:hover { background: var(--washi-2); color: var(--ink); }
+
+bdi.nt, .nt { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* Lists of rows with hairlines (lesson list, link list) */
+.rows { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.rows > li { border-bottom: 1px solid var(--rule); }
+.rows a, .rows .row {
+  display: flex; align-items: center; gap: 14px; min-height: 54px;
+  color: var(--ink); text-decoration: none;
+}
+.rows a:hover .row-title { text-decoration: underline; }
+.row-num { font-family: var(--f-display); font-weight: 700; color: var(--muted); width: 28px; flex-shrink: 0; }
+.row-title { flex: 1; }
+.row-tag { font-size: 14px; font-weight: 700; color: var(--seal); }
+.row-tag.soon { color: var(--muted); font-weight: 500; }
+
+/* Segmented control: letters / kanji */
+.seg { display: inline-flex; border: 1.5px solid var(--ink); border-radius: 999px; overflow: hidden; }
+.seg button {
+  appearance: none; border: 0; background: transparent; color: var(--ink);
+  min-width: 64px; min-height: 40px; padding: 0 14px; cursor: pointer;
+  font: 700 15px/1 var(--f-body);
+}
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--washi); }
+.seg button:focus-visible { outline-offset: -4px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}

@@ -1,0 +1,19 @@
+---
+import Base from '../layouts/Base.astro';
+import Board from '../components/Board.astro';
+---
+<Base title="העמוד לא נמצא" description="העמוד שחיפשתם לא קיים." noindex>
+  <div class="wrap nf">
+    <p class="eyebrow">404</p>
+    <h1>המשבצת הזאת ריקה.</h1>
+    <p class="lead">העמוד שחיפשתם לא קיים, או שעבר למקום אחר.</p>
+    <p><a class="btn" href="/">חזרה לדף הבית</a></p>
+    <Board sfen="9/9/9/9/4k4/9/9/9/9 b - 1" toggle={false} size="compact" caption="רק מלך אחד, באמצע הלוח." />
+  </div>
+</Base>
+
+<style>
+  .nf { padding-top: 48px; }
+  h1 { margin: 6px 0 10px; }
+  .lead { font-size: 18px; color: var(--ink-2); margin: 0 0 20px; }
+</style>

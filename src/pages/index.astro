@@ -1,0 +1,137 @@
+---
+import Base from '../layouts/Base.astro';
+import Board from '../components/Board.astro';
+import { getCollection } from 'astro:content';
+import { RULES_COURSE, pad } from '../lib/course';
+
+const live = new Set((await getCollection('rules')).map((e) => e.id));
+const START = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1';
+const first = `/rules/${RULES_COURSE[0].slug}/`;
+---
+<Base
+  title="שוגי ישראל"
+  description="השחמט היפני, בעברית ומאפס. קורס חוקים קצר ואינטראקטיבי, בחינם ובלי הרשמה, וקהילה ישראלית של שחקני שוגי."
+>
+  <section class="hero wrap">
+    <div class="hero-text">
+      <p class="eyebrow">השחמט היפני · בעברית, מאפס</p>
+      <h1>שוגי. המשחק שבו אף כלי לא באמת יוצא מהמשחק.</h1>
+      <p class="lead">כלי שאכלתם עובר לצד שלכם, ואפשר להצניח אותו בחזרה על הלוח. כאן לומדים את החוקים בעברית, צעד אחר צעד, בחינם.</p>
+      <div class="cta">
+        <a class="btn" href={first}>
+          <span>התחילו את קורס החוקים</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
+        </a>
+        <p class="small muted">8 שיעורים קצרים · בלי הרשמה · ההתקדמות נשמרת רק במכשיר שלכם</p>
+      </div>
+    </div>
+    <div class="hero-board">
+      <Board sfen={START} caption="מערך הפתיחה. הלוח לא מתהפך לעברית: טור 9 משמאל, טור 1 מימין, בדיוק כמו על לוח אמיתי." />
+    </div>
+  </section>
+
+  <section class="wrap block" aria-labelledby="three">
+    <h2 id="three">שלושה דברים שעושים את השוגי לשוגי</h2>
+    <ol class="three">
+      <li>
+        <span class="num" lang="ja" aria-hidden="true">一</span>
+        <div><h3>לוח 9×9, עשרים כלים לכל צד</h3><p>מוכר מספיק כדי להתחיל, שונה מספיק כדי להפתיע.</p></div>
+      </li>
+      <li>
+        <span class="num" lang="ja" aria-hidden="true">二</span>
+        <div><h3>הצנחה</h3><p>כלי שנאכל עובר לידיים שלכם. בתורכם אפשר להניח אותו כמעט בכל משבצת פנויה.</p></div>
+      </li>
+      <li>
+        <span class="num" lang="ja" aria-hidden="true">三</span>
+        <div><h3>הכתרה</h3><p>רוב הכלים מתחזקים כשהם נכנסים לשלוש השורות האחרונות של היריב.</p></div>
+      </li>
+    </ol>
+  </section>
+
+  <section class="wrap block" aria-labelledby="course">
+    <div class="head-row">
+      <h2 id="course">קורס החוקים</h2>
+      <a class="small" href="/rules/">לכל הקורס</a>
+    </div>
+    <ol class="rows course">
+      {RULES_COURSE.map((l, i) => (
+        <li>
+          {live.has(l.slug) ? (
+            <a href={`/rules/${l.slug}/`} data-progress={l.slug}>
+              <span class="row-num">{pad(l.n)}</span>
+              <span class="row-title">{l.title}</span>
+              <span class="row-tag" data-tag>{i === 0 ? 'התחילו כאן' : ''}</span>
+            </a>
+          ) : (
+            <span class="row">
+              <span class="row-num">{pad(l.n)}</span>
+              <span class="row-title muted">{l.title}</span>
+              <span class="row-tag soon">בקרוב</span>
+            </span>
+          )}
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section id="community" class="wrap block" aria-labelledby="community-h">
+    <div class="community">
+      <h2 id="community-h">משחקים עם ישראלים</h2>
+      <p>אנחנו קהילה קטנה ומתחילה. בואו להיות מהראשונים.</p>
+      <ul class="rows links">
+        <li><a href="https://lishogi.org/team/---shogi-israel" rel="noopener"><span class="row-title"><strong>הקבוצה שלנו בליש׳וגי</strong></span><span class="small muted">משחקים אונליין, בחינם</span></a></li>
+        <li><a href="https://www.instagram.com/shogi.israel/" rel="noopener"><span class="row-title"><strong>אינסטגרם</strong></span><bdi dir="ltr" class="small muted">@shogi.israel</bdi></a></li>
+        <li><span class="row"><span class="row-title"><strong>קבוצת וואטסאפ</strong></span><span class="small muted">בקרוב</span></span></li>
+        <li><span class="row"><span class="row-title"><strong>מפגשי היכרות בתל אביב</strong></span><span class="small muted">בקרוב</span></span></li>
+      </ul>
+    </div>
+  </section>
+</Base>
+
+<script>
+  // "Done" marks from this device's progress (no account, nothing sent anywhere).
+  document.querySelectorAll<HTMLElement>('[data-progress]').forEach((a) => {
+    let done = false;
+    try { done = localStorage.getItem(`done:${a.dataset.progress}`) === '1'; } catch {}
+    const tag = a.querySelector<HTMLElement>('[data-tag]');
+    if (done && tag) tag.textContent = 'הושלם ✓';
+  });
+</script>
+
+<style>
+  .hero { display: grid; gap: 32px; padding-top: 36px; }
+  .hero-text { display: flex; flex-direction: column; gap: 16px; }
+  .hero h1 { font-size: clamp(36px, 8.5vw, 60px); line-height: 1.1; }
+  .lead { margin: 0; font-size: 18px; line-height: 1.7; color: var(--ink-2); max-width: 34em; }
+  .cta { display: flex; flex-direction: column; gap: 10px; padding-top: 8px; }
+  .cta .btn { align-self: stretch; }
+  .cta p { margin: 0; text-align: center; }
+  .hero-board :global(.board-fig) { margin: 0; }
+  @media (min-width: 900px) {
+    .hero { grid-template-columns: 1.1fr 1fr; align-items: center; gap: 64px; padding-top: 72px; }
+    .cta .btn { align-self: flex-start; min-width: 340px; }
+    .cta p { text-align: start; }
+    .hero-board :global(.board-fig) { margin-inline-start: auto; }
+  }
+
+  .block { margin-top: 64px; }
+  .block > h2, .head-row { margin-bottom: 18px; }
+  .head-row { display: flex; align-items: baseline; justify-content: space-between; }
+
+  .three { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); display: grid; }
+  .three li { display: flex; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--rule); }
+  .three .num { font-size: 26px; color: var(--seal); width: 34px; flex-shrink: 0; line-height: 1.3; }
+  .three h3 { margin-bottom: 4px; }
+  .three p { margin: 0; color: var(--ink-2); line-height: 1.6; }
+  @media (min-width: 900px) {
+    .three { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; border-top: 0; }
+    .three li { flex-direction: column; border-top: 2px solid var(--ink); border-bottom: 0; }
+  }
+
+  .course { max-width: 720px; }
+  .community { background: var(--washi-2); border-radius: 8px; padding: 28px 22px; max-width: 720px; }
+  .community h2 { margin-bottom: 8px; }
+  .community > p { margin: 0 0 16px; color: var(--ink-2); }
+  .links { border-top-color: var(--rule); }
+  .links a, .links .row { justify-content: space-between; min-height: 52px; }
+</style>

@@ -1,0 +1,60 @@
+---
+const path = Astro.url.pathname;
+const links = [
+  { href: '/rules/', label: 'קורס החוקים' },
+  { href: '/#community', label: 'קהילה' },
+  { href: '/about/', label: 'אודות' },
+];
+const isCurrent = (href: string) => href !== '/#community' && path.startsWith(href);
+---
+<header class="site-header">
+  <div class="wrap bar">
+    <a class="brand" href="/" aria-label="שוגי ישראל, לדף הבית">
+      <span class="seal" aria-hidden="true">将</span>
+      <span class="brand-name">שוגי ישראל</span>
+    </a>
+    <nav class="nav-wide" aria-label="ראשי">
+      {links.map((l) => <a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a>)}
+    </nav>
+    <details class="nav-narrow">
+      <summary aria-label="תפריט">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"></path></svg>
+      </summary>
+      <nav aria-label="ראשי (נייד)">
+        <a href="/">בית</a>
+        {links.map((l) => <a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a>)}
+      </nav>
+    </details>
+  </div>
+</header>
+
+<style>
+  .site-header { border-bottom: 1px solid var(--rule); background: var(--washi); position: relative; z-index: 20; }
+  .bar { display: flex; align-items: center; justify-content: space-between; min-height: 64px; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+  .brand-name { font-family: var(--f-display); font-weight: 900; font-size: 22px; letter-spacing: -0.2px; }
+  .nav-wide { display: none; gap: 28px; }
+  .nav-wide a { color: var(--ink); text-decoration: none; font-weight: 500; padding: 8px 0; border-bottom: 2px solid transparent; }
+  .nav-wide a:hover, .nav-wide a[aria-current="page"] { border-bottom-color: var(--seal); color: var(--ink); }
+  .nav-narrow summary {
+    list-style: none; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--ink); border-radius: 6px;
+  }
+  .nav-narrow summary::-webkit-details-marker { display: none; }
+  .nav-narrow[open] summary { background: var(--washi-2); }
+  .nav-narrow nav {
+    position: absolute; inset-inline: 0; top: 100%; background: var(--washi);
+    border-bottom: 1px solid var(--rule); padding: 8px var(--gutter) 16px; display: flex; flex-direction: column;
+    box-shadow: 0 12px 20px -16px rgba(0, 0, 0, 0.4);
+  }
+  .nav-narrow nav a {
+    min-height: 52px; display: flex; align-items: center; color: var(--ink); text-decoration: none;
+    font-size: 18px; font-weight: 500; border-bottom: 1px solid var(--rule);
+  }
+  .nav-narrow nav a:last-child { border-bottom: 0; }
+  .nav-narrow nav a[aria-current="page"] { color: var(--seal); font-weight: 700; }
+  @media (min-width: 768px) {
+    .nav-wide { display: flex; }
+    .nav-narrow { display: none; }
+  }
+</style>
