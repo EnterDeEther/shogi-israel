@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-import { accountsEnabled, googleEnabled } from '../lib/account-config';
+import { accountsEnabled } from '../lib/account-config';
 import { stages } from '../learn/categories';
 
 // Levels per Learn stage, for the stats (so the page doesn't ship the whole lesson engine).
@@ -20,37 +20,54 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
         <p class="muted" data-view="loading">טוען…</p>
 
         <section data-view="signin" hidden>
-          <h1>כניסה לחשבון</h1>
+          <h1 data-signin-title>כניסה לחשבון</h1>
           <p class="lead">עם חשבון, ההתקדמות בשיעורים נשמרת ועוברת איתכם לכל מכשיר. בהמשך: כינוי בטבלאות הדירוג, סטטיסטיקה אישית ומשחקים מול חברים.</p>
-          <p class="muted">אין סיסמה. שולחים לכם קוד חד־פעמי למייל. מה שכבר עשיתם בדפדפן הזה יישמר בחשבון.</p>
-          {googleEnabled && (
-            <>
-              <button type="button" class="btn btn-ghost wide" data-google>
-                <span>המשך עם Google</span>
-                <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>
-              </button>
-              <p class="or muted small">או</p>
-            </>
-          )}
-          <form class="form" data-email-form novalidate>
+          <div class="seg tabs" role="group" aria-label="כניסה או הרשמה">
+            <button type="button" data-mode="signin" aria-pressed="true">כניסה</button>
+            <button type="button" data-mode="signup" aria-pressed="false">הרשמה</button>
+          </div>
+          <form class="form" data-auth-form novalidate>
             <label for="acc-email">כתובת מייל</label>
             <input id="acc-email" name="email" type="email" dir="ltr" autocomplete="email" inputmode="email" required />
-            <button type="submit" class="btn wide"><span>שלחו לי קוד</span></button>
+            <label for="acc-pass">סיסמה</label>
+            <input id="acc-pass" name="password" type="password" dir="ltr" autocomplete="current-password" minlength="8" required aria-describedby="acc-pass-help" />
+            <p id="acc-pass-help" class="small muted" data-signup-only hidden>לפחות 8 תווים. עדיף משפט קצר שקל לכם לזכור.</p>
+            <button type="submit" class="btn wide"><span data-submit-label>כניסה</span></button>
             <p class="err" role="alert" data-err></p>
           </form>
-          <p class="small muted">בהרשמה אתם מסכימים ל<a href="/privacy/">מדיניות הפרטיות</a>. אנחנו שומרים רק את המייל, הכינוי וההתקדמות שלכם.</p>
+          <p class="small" data-signin-only><button type="button" class="link" data-forgot>שכחתם סיסמה?</button></p>
+          <p class="small muted">מה שכבר עשיתם בדפדפן הזה יישמר בחשבון. בהרשמה אתם מסכימים ל<a href="/privacy/">מדיניות הפרטיות</a>. אנחנו שומרים רק את המייל, הכינוי וההתקדמות שלכם.</p>
         </section>
 
-        <section data-view="code" hidden>
-          <h1>בדקו את המייל</h1>
-          <p class="lead">שלחנו קוד ל־<bdi dir="ltr" data-email></bdi>. הקלידו אותו כאן, או לחצו על הקישור שבמייל.</p>
-          <form class="form" data-code-form novalidate>
-            <label for="acc-code">הקוד מהמייל</label>
-            <input id="acc-code" name="code" dir="ltr" autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" maxlength="10" required />
-            <button type="submit" class="btn wide"><span>כניסה</span></button>
+        <section data-view="forgot" hidden>
+          <h1>איפוס סיסמה</h1>
+          <p class="lead">הכניסו את המייל של החשבון, ונשלח לכם קישור לבחירת סיסמה חדשה.</p>
+          <form class="form" data-forgot-form novalidate>
+            <label for="acc-forgot-email">כתובת מייל</label>
+            <input id="acc-forgot-email" name="email" type="email" dir="ltr" autocomplete="email" inputmode="email" required />
+            <button type="submit" class="btn wide"><span>שלחו לי קישור</span></button>
             <p class="err" role="alert" data-err></p>
           </form>
-          <p class="small"><button type="button" class="link" data-back>טעיתם בכתובת? חזרה</button></p>
+          <p class="small"><button type="button" class="link" data-back>חזרה לכניסה</button></p>
+        </section>
+
+        <section data-view="sent" hidden>
+          <h1>בדקו את המייל</h1>
+          <p class="lead" data-sent-text></p>
+          <p class="muted small">לא הגיע? בדקו בתיקיית הספאם, או חכו כמה דקות ונסו שוב.</p>
+          <p class="small"><button type="button" class="link" data-back>חזרה לכניסה</button></p>
+        </section>
+
+        <section data-view="newpass" hidden>
+          <h1>סיסמה חדשה</h1>
+          <form class="form" data-newpass-form novalidate>
+            <label for="acc-newpass">הסיסמה החדשה</label>
+            <input id="acc-newpass" name="password" type="password" dir="ltr" autocomplete="new-password" minlength="8" required aria-describedby="acc-newpass-help" />
+            <p id="acc-newpass-help" class="small muted">לפחות 8 תווים.</p>
+            <button type="submit" class="btn wide"><span>שמירה</span></button>
+            <p class="err" role="alert" data-err></p>
+          </form>
+          <p class="small" data-newpass-cancel hidden><button type="button" class="link">ביטול</button></p>
         </section>
 
         <section data-view="nickname" hidden>
@@ -92,6 +109,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
           <h2>הגדרות</h2>
           <div class="actions">
             <button type="button" class="btn btn-ghost" data-rename><span>שינוי כינוי</span></button>
+            <button type="button" class="btn btn-ghost" data-changepass><span>שינוי סיסמה</span></button>
             <button type="button" class="btn btn-ghost" data-signout><span>יציאה</span></button>
           </div>
           <p class="small muted">ביציאה, ההתקדמות נמחקת מהדפדפן הזה ונשארת שמורה בחשבון.</p>
@@ -126,16 +144,19 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
     };
     const fail = (view: string, msg: string) => { $(`[data-view="${view}"] [data-err]`).textContent = msg; };
     const busy = (form: HTMLElement, on: boolean) => form.querySelector<HTMLButtonElement>('button[type=submit], [data-delete]')!.disabled = on;
-    let email = '';
     let profile: Awaited<ReturnType<typeof acc.getProfile>> = null;
 
-    // Arriving from the email link or Google: let the client finish the sign-in first.
+    // Arriving from a confirmation or reset link: let the client finish the sign-in first.
+    let recovering = false;
     const { data: { subscription } } = acc.supabase().auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_IN') void route();
+      // the callback must not await Supabase calls itself: defer the work
+      if (event === 'PASSWORD_RECOVERY') { recovering = true; setTimeout(() => askNewPassword(true)); }
+      else if (event === 'SIGNED_IN' && !recovering) setTimeout(() => void route());
     });
     window.addEventListener('pagehide', () => subscription.unsubscribe());
 
     async function route() {
+      recovering = false;
       const session = await acc.getSession();
       if (!session) return show('signin');
       root.querySelectorAll('[data-email]').forEach((e) => { e.textContent = session.user.email ?? ''; });
@@ -166,42 +187,100 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       show('nickname');
     }
 
-    // ---------- email code ----------
-    const emailForm = $<HTMLFormElement>('[data-email-form]');
-    emailForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      email = $<HTMLInputElement>('#acc-email').value.trim();
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('signin', 'הכתובת לא נראית תקינה. בדקו אותה ונסו שוב.');
-      busy(emailForm, true);
-      const { error } = await acc.sendEmailCode(email);
-      busy(emailForm, false);
-      if (error) {
-        return fail('signin', error.status === 429
-          ? 'נשלחו יותר מדי מיילים. חכו כמה דקות ונסו שוב.'
-          : 'לא הצלחנו לשלוח את המייל. נסו שוב בעוד רגע.');
-      }
+    // ---------- sign in / sign up ----------
+    let mode: 'signin' | 'signup' = 'signin';
+    const setMode = (m: typeof mode) => {
+      mode = m;
+      root.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
+      $('[data-signin-title]').textContent = m === 'signin' ? 'כניסה לחשבון' : 'פתיחת חשבון';
+      $('[data-submit-label]').textContent = m === 'signin' ? 'כניסה' : 'פתיחת חשבון';
+      $('[data-signup-only]').hidden = m === 'signin';
+      $('[data-signin-only]').hidden = m === 'signup';
+      $<HTMLInputElement>('#acc-pass').autocomplete = m === 'signin' ? 'current-password' : 'new-password';
       fail('signin', '');
-      root.querySelectorAll('[data-email]').forEach((el) => { el.textContent = email; });
-      show('code');
-    });
+    };
+    root.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach((b) =>
+      b.addEventListener('click', () => setMode(b.dataset.mode as typeof mode)));
 
-    const codeForm = $<HTMLFormElement>('[data-code-form]');
-    codeForm.addEventListener('submit', async (e) => {
+    const validEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+    const authForm = $<HTMLFormElement>('[data-auth-form]');
+    authForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const token = $<HTMLInputElement>('#acc-code').value.replace(/\D/g, '');
-      if (token.length < 6) return fail('code', 'הקוד צריך להיות באורך 6 ספרות לפחות.');
-      busy(codeForm, true);
-      const { error } = await acc.verifyEmailCode(email, token);
-      busy(codeForm, false);
-      if (error) return fail('code', 'הקוד לא נכון או שפג תוקפו. נסו שוב, או חזרו ובקשו קוד חדש.');
-      // onAuthStateChange routes on SIGNED_IN
+      const email = $<HTMLInputElement>('#acc-email').value.trim();
+      const password = $<HTMLInputElement>('#acc-pass').value;
+      if (!validEmail(email)) return fail('signin', 'הכתובת לא נראית תקינה. בדקו אותה ונסו שוב.');
+      if (password.length < 8) return fail('signin', 'הסיסמה צריכה לפחות 8 תווים.');
+      busy(authForm, true);
+      if (mode === 'signin') {
+        const { error } = await acc.signIn(email, password);
+        busy(authForm, false);
+        if (!error) return; // onAuthStateChange routes on SIGNED_IN
+        if (error.code === 'email_not_confirmed') return fail('signin', 'עוד לא אישרתם את המייל. חפשו אצלכם מייל מאיתנו ולחצו על הקישור שבו.');
+        if (error.status === 429) return fail('signin', 'יותר מדי ניסיונות. חכו כמה דקות ונסו שוב.');
+        return fail('signin', 'המייל או הסיסמה לא נכונים.');
+      }
+      const { data, error } = await acc.signUp(email, password);
+      busy(authForm, false);
+      if (error) {
+        if (error.code === 'weak_password') return fail('signin', 'הסיסמה חלשה מדי. נסו סיסמה ארוכה יותר.');
+        if (error.code === 'user_already_exists' || error.code === 'email_exists') return fail('signin', 'כבר יש חשבון עם המייל הזה. עברו ל"כניסה", או אפסו את הסיסמה.');
+        if (error.status === 429) return fail('signin', 'נשלחו יותר מדי מיילים. חכו כמה דקות ונסו שוב.');
+        return fail('signin', 'ההרשמה לא הצליחה. נסו שוב בעוד רגע.');
+      }
+      if (data.session) return; // email confirmation off: already signed in
+      // Supabase hides whether an email is registered: an existing address comes back with no identities.
+      if (data.user && data.user.identities?.length === 0) return fail('signin', 'כבר יש חשבון עם המייל הזה. עברו ל"כניסה", או אפסו את הסיסמה.');
+      sent(`שלחנו מייל ל־${email}. לחצו על הקישור שבו כדי לאשר את הכתובת, ותגיעו ישר לבחירת כינוי.`);
     });
-    $('[data-back]').addEventListener('click', () => show('signin'));
 
-    root.querySelector('[data-google]')?.addEventListener('click', async () => {
-      const { error } = await acc.signInWithGoogle();
-      if (error) fail('signin', 'הכניסה עם Google לא הצליחה. נסו שוב, או היכנסו עם קוד במייל.');
+    const sent = (text: string) => {
+      const p = $('[data-sent-text]');
+      p.textContent = text;
+      show('sent');
+    };
+
+    // ---------- forgot / new password ----------
+    $('[data-forgot]').addEventListener('click', () => {
+      $<HTMLInputElement>('#acc-forgot-email').value = $<HTMLInputElement>('#acc-email').value;
+      fail('forgot', '');
+      show('forgot');
     });
+    const forgotForm = $<HTMLFormElement>('[data-forgot-form]');
+    forgotForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = $<HTMLInputElement>('#acc-forgot-email').value.trim();
+      if (!validEmail(email)) return fail('forgot', 'הכתובת לא נראית תקינה. בדקו אותה ונסו שוב.');
+      busy(forgotForm, true);
+      const { error } = await acc.sendPasswordReset(email);
+      busy(forgotForm, false);
+      if (error) return fail('forgot', error.status === 429 ? 'נשלחו יותר מדי מיילים. חכו כמה דקות ונסו שוב.' : 'השליחה לא הצליחה. נסו שוב בעוד רגע.');
+      sent(`אם יש חשבון עם ${email}, שלחנו אליו קישור לבחירת סיסמה חדשה.`);
+    });
+    root.querySelectorAll('[data-back]').forEach((b) => b.addEventListener('click', () => { setMode('signin'); show('signin'); }));
+
+    const askNewPassword = (fromRecovery: boolean) => {
+      $<HTMLInputElement>('#acc-newpass').value = '';
+      $('[data-newpass-cancel]').hidden = fromRecovery;
+      fail('newpass', '');
+      show('newpass');
+    };
+    const newpassForm = $<HTMLFormElement>('[data-newpass-form]');
+    newpassForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const password = $<HTMLInputElement>('#acc-newpass').value;
+      if (password.length < 8) return fail('newpass', 'הסיסמה צריכה לפחות 8 תווים.');
+      busy(newpassForm, true);
+      const { error } = await acc.setPassword(password);
+      busy(newpassForm, false);
+      if (error) {
+        if (error.code === 'same_password') return fail('newpass', 'זו הסיסמה הנוכחית. בחרו סיסמה אחרת.');
+        if (error.code === 'weak_password') return fail('newpass', 'הסיסמה חלשה מדי. נסו סיסמה ארוכה יותר.');
+        return fail('newpass', 'השמירה לא הצליחה. נסו שוב, או בקשו קישור איפוס חדש.');
+      }
+      void route();
+    });
+    $('[data-newpass-cancel] button').addEventListener('click', () => show('home'));
+    $('[data-changepass]').addEventListener('click', () => askNewPassword(false));
 
     // ---------- nickname ----------
     const nickForm = $<HTMLFormElement>('[data-nick-form]');
@@ -259,7 +338,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
   .form input:focus-visible { outline-offset: 0; }
   .form p { margin: 0; }
   .wide { justify-content: center; width: 100%; margin-top: 6px; }
-  .or { text-align: center; margin: 0; }
+  .tabs { align-self: flex-start; }
   .err { color: var(--seal); font-weight: 500; min-height: 1.5em; }
   .err:empty { min-height: 0; }
   .link { appearance: none; background: none; border: 0; padding: 0; font: inherit; color: var(--seal); text-decoration: underline; cursor: pointer; }

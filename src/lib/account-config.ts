@@ -6,8 +6,6 @@ export const SUPABASE_URL: string = env.PUBLIC_SUPABASE_URL || env.NEXT_PUBLIC_S
 export const SUPABASE_KEY: string =
   env.PUBLIC_SUPABASE_ANON_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY || env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '';
 export const accountsEnabled = Boolean(SUPABASE_URL && SUPABASE_KEY);
-/** Show "continue with Google" only once the Google provider is switched on in Supabase. */
-export const googleEnabled = env.PUBLIC_AUTH_GOOGLE === '1';
 
 export const AUTH_STORAGE_KEY = 'shogi-il.auth';
 export function hasStoredSession(): boolean {

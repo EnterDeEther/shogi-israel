@@ -1,4 +1,4 @@
-// Accounts (Supabase): sign-in by one-time email code or Google, a public nickname,
+// Accounts (Supabase): sign-in by email and password (Dean, 2026-10-24: no Google/SSO), a public nickname,
 // and progress that follows the account across devices. Without an account nothing changes:
 // progress stays in this browser only.
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js';
@@ -18,17 +18,21 @@ export async function getSession(): Promise<Session | null> {
   return data.session;
 }
 
-// ---------- sign in / out ----------
+// ---------- sign in / out (email + password) ----------
 const redirectTo = () => `${window.location.origin}/account/`;
 
-export async function sendEmailCode(email: string) {
-  return supabase().auth.signInWithOtp({ email, options: { shouldCreateUser: true, emailRedirectTo: redirectTo() } });
+export async function signUp(email: string, password: string) {
+  return supabase().auth.signUp({ email, password, options: { emailRedirectTo: redirectTo() } });
 }
-export async function verifyEmailCode(email: string, token: string) {
-  return supabase().auth.verifyOtp({ email, token, type: 'email' });
+export async function signIn(email: string, password: string) {
+  return supabase().auth.signInWithPassword({ email, password });
 }
-export async function signInWithGoogle() {
-  return supabase().auth.signInWithOAuth({ provider: 'google', options: { redirectTo: redirectTo() } });
+/** Emails a link back to /account/, which opens the "new password" form (PASSWORD_RECOVERY). */
+export async function sendPasswordReset(email: string) {
+  return supabase().auth.resetPasswordForEmail(email, { redirectTo: redirectTo() });
+}
+export async function setPassword(password: string) {
+  return supabase().auth.updateUser({ password });
 }
 /** Signing out also clears this device's progress, so the next person on a shared device starts fresh. */
 export async function signOut() {
