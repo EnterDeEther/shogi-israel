@@ -123,6 +123,9 @@ export function bootLearn(root: HTMLElement): LearnCtrl {
     ctrl.redraw();
   });
 
+  // Signed in on another device: the account sync merged more progress into storage.
+  document.addEventListener('progress-synced', () => { ctrl.progress.reload(); ctrl.redraw(); });
+
   render(ctrl, root, openSettings);
   // Overlays take focus so keyboard users can start the stage.
   root.querySelector<HTMLElement>('.learn__overlay:not([hidden]) [data-autofocus]')?.focus({ preventScroll: true });

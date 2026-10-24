@@ -1,5 +1,5 @@
 // Lesson tasks: makes the board above a <Task answer="..."> tappable and keyboard-operable,
-// checks the answer, and records lesson completion on this device only.
+// checks the answer, and records lesson completion on this device (and the account, if signed in).
 
 const lessonId = document.querySelector<HTMLElement>('[data-lesson]')?.dataset.lesson ?? '';
 
@@ -30,6 +30,7 @@ function markDone() {
   const tasks = [...document.querySelectorAll<HTMLElement>('[data-task][data-answer]')];
   if (tasks.length && tasks.every((t) => t.classList.contains('done'))) {
     try { localStorage.setItem(`done:${lessonId}`, '1'); } catch {}
+    document.dispatchEvent(new CustomEvent('progress-changed'));
     document.querySelector<HTMLElement>('[data-lesson-complete]')?.removeAttribute('hidden');
   }
 }

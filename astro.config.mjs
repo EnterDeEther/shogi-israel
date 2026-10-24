@@ -11,7 +11,9 @@ export default defineConfig({
     // Lessons still being written render an "on its way" page; keep them out of the sitemap.
     // When a lesson's MDX lands in src/content/rules/, remove its number from this list.
     // /learn/ stays out until the tech chat removes noindex from those pages.
-    sitemap({ filter: (page) => !/\/rules\/0[3-8]-/.test(page) && !/\/learn\//.test(page) }),
+    sitemap({ filter: (page) => !/\/rules\/0[3-8]-/.test(page) && !/\/learn\//.test(page) && !/\/account\//.test(page) }),
   ],
   build: { format: 'directory' },
+  // The Vercel ↔ Supabase integration names its public keys NEXT_PUBLIC_*; expose those to the browser too.
+  vite: { envPrefix: ['PUBLIC_', 'NEXT_PUBLIC_'] },
 });

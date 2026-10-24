@@ -2,7 +2,7 @@
 // Source: https://github.com/WandererXII/lila/blob/89aea5f6f24c5e941c7cac8434a6e9e1acc15e94/ui/learn/src/progress.ts
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
-// Modified by Shogi Israel (shogi.co.il), 2026-10-24: window.lishogi.storage replaced by a localStorage shim; server sync (xhr) removed, no accounts.
+// Modified by Shogi Israel (shogi.co.il), 2026-10-24: window.lishogi.storage replaced by a localStorage shim; server sync (xhr) replaced by DOM events that src/lib/account.ts syncs to the signed-in account.
 
 import type { LearnOpts, LearnProgress, Score } from './interfaces';
 import { storage } from './storage';
@@ -36,6 +36,7 @@ export class ProgressStorage {
   reset(): void {
     storage.remove(key);
     this.progress.stages = {};
+    document.dispatchEvent(new CustomEvent('progress-reset'));
   }
 
   saveScore(stageKey: string, levelId: number, score: Score): void {
@@ -45,5 +46,12 @@ export class ProgressStorage {
     this.progress.stages[stageKey].scores[levelId - 1] = score;
 
     storage.set(key, JSON.stringify(this.progress));
+    document.dispatchEvent(new CustomEvent('progress-changed'));
+  }
+
+  /** Re-read storage after the account sync merged in progress from another device. */
+  reload(): void {
+    const stored = storage.get(key);
+    if (stored) this.progress = JSON.parse(stored);
   }
 }

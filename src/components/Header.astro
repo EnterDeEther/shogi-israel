@@ -1,4 +1,5 @@
 ---
+import { accountsEnabled } from '../lib/account-config';
 const path = Astro.url.pathname;
 // Everything that teaches the game sits under one heading (Dean, 2026-10-24).
 const learn = {
@@ -29,6 +30,7 @@ const inLearn = learn.links.some((l) => isCurrent(l.href));
         </div>
       </details>
       {links.map((l) => <a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a>)}
+      {accountsEnabled && <a class="account-link" href="/account/" data-account-link aria-current={isCurrent('/account/') ? 'page' : undefined}>כניסה</a>}
     </nav>
     <details class="nav-narrow">
       <summary aria-label="תפריט">
@@ -39,6 +41,7 @@ const inLearn = learn.links.some((l) => isCurrent(l.href));
         <span class="nav-heading">{learn.label}</span>
         {learn.links.map((l) => <a class="sub" href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a>)}
         {links.map((l) => <a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a>)}
+        {accountsEnabled && <a href="/account/" data-account-link aria-current={isCurrent('/account/') ? 'page' : undefined}>כניסה</a>}
       </nav>
     </details>
   </div>
@@ -87,6 +90,8 @@ const inLearn = learn.links.some((l) => isCurrent(l.href));
   .nav-wide .nav-menu a:hover, .nav-wide .nav-menu a[aria-current="page"] { background: var(--washi-2); }
   .nav-heading { min-height: 40px; display: flex; align-items: flex-end; font-size: 14px; font-weight: 700; color: var(--muted); }
   .nav-narrow nav a.sub { padding-inline-start: 14px; }
+  .nav-wide a.account-link { border: 1.5px solid var(--ink); border-radius: 6px; padding: 6px 14px; }
+  .nav-wide a.account-link:hover, .nav-wide a.account-link[aria-current="page"] { border-color: var(--seal); color: var(--seal); }
   @media (min-width: 768px) {
     .nav-wide { display: flex; align-items: center; }
     .nav-narrow { display: none; }
@@ -94,6 +99,10 @@ const inLearn = learn.links.some((l) => isCurrent(l.href));
 </style>
 
 <script>
+  // Signed in: the header link reads "החשבון שלי" (the nickname itself lives on the account page).
+  import { hasStoredSession } from '../lib/account-config';
+  if (hasStoredSession()) document.querySelectorAll('[data-account-link]').forEach((a) => { a.textContent = 'החשבון שלי'; });
+
   // "למד לשחק" menu: close on Escape (focus back on the heading) and on a click elsewhere.
   document.querySelectorAll<HTMLDetailsElement>('[data-nav-group]').forEach((d) => {
     d.addEventListener('keydown', (e) => {
