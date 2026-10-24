@@ -5,6 +5,8 @@ import Term from '../../components/mdx/Term.astro';
 import Note from '../../components/mdx/Note.astro';
 import Task from '../../components/mdx/Task.astro';
 import Notation from '../../components/mdx/Notation.astro';
+import Step from '../../components/mdx/Step.astro';
+import Piece from '../../components/Piece.astro';
 import { getCollection, render } from 'astro:content';
 import { RULES_COURSE } from '../../lib/course';
 
@@ -27,7 +29,7 @@ const total = RULES_COURSE.length;
 const isLive = (slug?: string) => !!slug && live.includes(slug);
 const rendered = entry ? await render(entry) : null;
 const Content = rendered?.Content;
-const components = { Board, Term, Note, Task, Notation };
+const components = { Board, Term, Note, Task, Notation, Step, Piece };
 ---
 <Base
   title={entry ? entry.data.title : `שיעור ${stub.n}: ${stub.title}`}
@@ -78,7 +80,9 @@ const components = { Board, Term, Note, Task, Notation };
 </script>
 
 <style>
-  .lesson { max-width: 760px; padding-top: 18px; }
+  .lesson { max-width: 1080px; padding-top: 18px; }
+  /* Steps with a board use the full width; running text keeps a readable line length. */
+  .prose > :global(*:not(.step)), .meta, .complete, .pager { max-width: 720px; }
   .meta { display: flex; flex-direction: column; gap: 8px; }
   .meta a { color: var(--muted); }
   .bar { height: 4px; background: var(--rule); border-radius: 2px; overflow: hidden; }

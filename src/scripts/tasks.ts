@@ -4,6 +4,8 @@
 const lessonId = document.querySelector<HTMLElement>('[data-lesson]')?.dataset.lesson ?? '';
 
 function boardBefore(task: HTMLElement): HTMLElement | null {
+  const inStep = task.closest('.step')?.querySelector<HTMLElement>('[data-board]');
+  if (inStep) return inStep;
   let el = task.previousElementSibling as HTMLElement | null;
   while (el) {
     if (el.matches('[data-board]')) return el;
@@ -35,9 +37,18 @@ function markDone() {
 function setupBoardTask(task: HTMLElement, answer: string) {
   const fig = boardBefore(task);
   const grid = fig?.querySelector<HTMLElement>('[data-grid]');
-  const fb = task.querySelector<HTMLElement>('.task-fb');
-  if (!grid || !fb) return;
+  const fbs = [fig?.querySelector<HTMLElement>('[data-board-fb]'), task.querySelector<HTMLElement>('.task-fb')]
+    .filter((x): x is HTMLElement => !!x);
+  if (!fig || !grid || !fbs.length) return;
+  // Same message in both places; CSS shows the one next to the board for the current layout.
+  const say = (cls: 'is-ok' | 'is-no', text: string) => fbs.forEach((f) => {
+    f.classList.remove('is-ok', 'is-no');
+    f.classList.add(cls);
+    f.textContent = text;
+  });
   const squares = [...grid.querySelectorAll<HTMLElement>('[data-sq]')];
+  const hint = task.dataset.hint;
+  let misses = 0;
   grid.classList.add('live');
   grid.removeAttribute('aria-hidden');
   grid.setAttribute('role', 'group');
@@ -48,18 +59,37 @@ function setupBoardTask(task: HTMLElement, answer: string) {
     s.tabIndex = i === 40 ? 0 : -1; // start on 55, the centre
   });
 
+  const mark = (s: HTMLElement, cls: 'ok' | 'no', sign: string) => {
+    s.classList.add(cls);
+    const mk = document.createElement('span');
+    mk.className = 'mk';
+    mk.setAttribute('aria-hidden', 'true');
+    mk.textContent = sign;
+    s.append(mk);
+  };
+  const clearMisses = () =>
+    squares.forEach((x) => {
+      x.classList.remove('no');
+      if (!x.classList.contains('ok')) x.querySelector('.mk')?.remove();
+    });
+
   const choose = (s: HTMLElement) => {
     if (task.classList.contains('done')) return;
     const sq = s.dataset.sq ?? '';
-    squares.forEach((x) => x.classList.remove('no'));
+    const what = (s.dataset.label ?? `משבצת ${sq}`).replace(/^משבצת \d\d, /, '');
+    clearMisses();
     if (matches(answer, sq)) {
-      s.classList.add('ok');
-      fb.textContent = `נכון! משבצת ${sq}.`;
+      mark(s, 'ok', '✓');
+      say('is-ok', `נכון! משבצת ${sq}.`);
       task.classList.add('done');
+      fig.classList.add('revealed');
+      const label = task.querySelector('.task-label');
+      if (label) label.textContent = 'נפתר ✓';
       markDone();
     } else {
-      s.classList.add('no');
-      fb.textContent = `זו משבצת ${sq}. נסו שוב.`;
+      misses++;
+      mark(s, 'no', '✗');
+      say('is-no', `לא. זו משבצת ${sq} (${what}). נסו שוב.` + (hint && misses >= 2 ? ` רמז: ${hint}` : ''));
     }
   };
 
@@ -94,7 +124,7 @@ function setupChoiceTask(task: HTMLElement, answer: string) {
       b.setAttribute('aria-pressed', 'true');
       if (!fb) return;
       if (b.dataset.choice === answer) {
-        fb.textContent = 'נכון! הפותח עושה את המסע הראשון.';
+        fb.textContent = 'נכון! הפותח עושה את המהלך הראשון.';
         task.classList.add('done');
         markDone();
       } else {

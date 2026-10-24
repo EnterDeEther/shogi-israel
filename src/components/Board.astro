@@ -11,9 +11,10 @@ interface Props {
   caption?: string;
   toggle?: boolean; // show the letters/kanji switch above the board (default true)
   size?: 'full' | 'compact';
+  reveal?: boolean; // keep highlight/zones hidden until the Task under this board is answered correctly
 }
 
-const { sfen, highlight = '', zones = false, caption, toggle = true, size = 'full' } = Astro.props;
+const { sfen, highlight = '', zones = false, caption, toggle = true, size = 'full', reveal = false } = Astro.props;
 const pos = parseSfen(sfen);
 const hl = new Set(highlight.split(',').map((s) => s.trim()).filter(Boolean));
 const files = [9, 8, 7, 6, 5, 4, 3, 2, 1];
@@ -26,7 +27,7 @@ const handOf = (side: 'sente' | 'gote') =>
 const goteHand = handOf('gote');
 const senteHand = handOf('sente');
 ---
-<figure class:list={['board-fig', size]} data-board>
+<figure class:list={['board-fig', size, { reveal }]} data-board>
   {toggle && (
     <div class="board-head">
       <span class="small muted">סימון הכלים</span>
@@ -59,6 +60,7 @@ const senteHand = handOf('sente');
       {ranksDigit.map((r, i) => <span><span class="rd">{r}</span><span class="rk" lang="ja">{ranksKanji[i]}</span></span>)}
     </div>
   </div>
+  <p class="board-fb" data-board-fb role="status" aria-live="polite"></p>
   {senteHand.length > 0 && (
     <p class="hand sente small" aria-hidden="true">ביד של הפותח: <bdi dir="ltr">{senteHand.map((h) => `${h.t}×${h.n}`).join(' ')}</bdi></p>
   )}
@@ -120,11 +122,34 @@ const senteHand = handOf('sente');
   :global(html[data-pieces="kanji"]) .pk { display: inline; }
 
   /* Interactive states, switched on by the Task script */
-  .bd:global(.live) .sq { cursor: pointer; }
+  .bd:global(.live) .sq { cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .bd:global(.live) .sq:hover { background: #F1DDB0; }
   .bd:global(.live) .sq:focus-visible { outline: 3px solid var(--ink); outline-offset: -3px; z-index: 3; }
   .sq:global(.ok) { background: #CFE3B8 !important; box-shadow: inset 0 0 0 3px #2F6B2A; }
-  .sq:global(.no) { box-shadow: inset 0 0 0 3px var(--ink); }
+  .sq:global(.no) { background: #F2D3C8 !important; box-shadow: inset 0 0 0 3px var(--seal); animation: nudge 0.25s; }
+  .sq :global(.mk) {
+    position: absolute; top: 2px; inset-inline-end: 3px; z-index: 4;
+    font: 800 clamp(11px, 3vw, 15px)/1 var(--f-body); color: var(--seal);
+  }
+  .sq:global(.ok) :global(.mk) { color: #2F6B2A; }
+  @keyframes nudge { 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
+  @media (prefers-reduced-motion: reduce) { .sq:global(.no) { animation: none; } }
+
+  /* reveal: the hint (highlight, zones) appears only once the task is solved */
+  .reveal:not(:global(.revealed)) .sq.hl { box-shadow: none; background: var(--kaya); }
+  .reveal:not(:global(.revealed)) .sq.hl::before { display: none; }
+  .reveal:not(:global(.revealed)) .sq.zone { background: var(--kaya); }
+
+  /* Answer feedback, right under the board */
+  .board-fb { margin: 8px 0 0; padding: 10px 12px; border-radius: 6px; font-weight: 700; font-size: 16px; line-height: 1.5; }
+  .board-fb:empty { display: none; }
+  .board-fb:global(.is-ok) { background: #E3EFD6; color: #1F4A1C; }
+  .board-fb:global(.is-no) { background: #F6E1D9; color: #6E1F0E; }
+  @media (prefers-color-scheme: dark) {
+    .board-fb:global(.is-ok) { background: #1F3320; color: #CFE8C6; }
+    .board-fb:global(.is-no) { background: #3A1F18; color: #F2CFC4; }
+    .sq:global(.no) { background: #E9C2B4 !important; }
+  }
 
   .hand { margin: 6px 0; color: var(--muted); }
   .cap { margin-top: 10px; font-size: 15px; color: var(--muted); line-height: 1.6; }

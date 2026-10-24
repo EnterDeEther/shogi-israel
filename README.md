@@ -9,7 +9,7 @@ Astro static site, deployed by Vercel on every push to `main`.
 2. Remove its number from the sitemap filter in `astro.config.mjs`.
 3. Push. Vercel builds and publishes.
 
-MDX components available in lessons: `<Board sfen highlight zones caption />`, `<Task answer>`, `<Note title>`, `<Term id first>`, `<Notation>`.
+MDX components available in lessons: `<Step>` (board beside its text), `<Board sfen highlight zones reveal caption />`, `<Task answer hint>`, `<Note title>`, `<Term id first>`, `<Notation>`, `<Piece>` (a kanji or letter inside a piece shape; use it wherever a piece label sits next to its name).
 
 ## Design rules (Direction A, "נייר ודיו")
 - Page is `dir="rtl"`; **the board is always `dir="ltr"` and never mirrors** (file 9 left, file 1 right, rank 1 top).

@@ -1,0 +1,48 @@
+---
+// One lesson step laid out as a board with a side panel: the step's text, notes and task sit beside the board
+// (on the right, read first in RTL), and the answer feedback shows in that panel. Narrow screens stack the board on top.
+// Usage in MDX: wrap everything under a step's heading in <Step>…</Step>; the first <Board> inside becomes the board column.
+const html = await Astro.slots.render('default');
+const m = html.match(/<figure[^>]*data-board[\s\S]*?<\/figure>/);
+const board = m ? m[0] : '';
+const rest = m ? html.replace(m[0], '') : html;
+// On phones the board is sticky and kept short, so its caption and text description move into the panel.
+const extras = (board.match(/<figcaption[\s\S]*?<\/figcaption>/)?.[0] ?? '') + (board.match(/<details[\s\S]*?<\/details>/)?.[0] ?? '');
+---
+<div class:list={['step', { 'has-board': !!board }]}>
+  {board && <div class="step-board" set:html={board} />}
+  <div class="step-text">
+    {extras && <div class="step-extras" set:html={extras} />}
+    <Fragment set:html={rest} />
+  </div>
+</div>
+
+<style>
+  .step-board :global(.board-fig) { margin: 0; }
+  .step-extras { display: none; }
+  @media (min-width: 900px) {
+    .step.has-board { display: flex; flex-direction: row-reverse; gap: 40px; align-items: flex-start; }
+    .step-board { flex: 0 0 min(500px, 55%); position: sticky; top: 16px; }
+    .step-text { flex: 1 1 auto; min-width: 0; }
+    /* Desktop: feedback lives in the side panel, next to the task. */
+    .step.has-board :global(.board-fb) { display: none; }
+  }
+  @media (max-width: 899.98px) {
+    /* Phones: the board sticks to the top of the screen while you read its step, and the feedback bar is
+       attached to the board, so the board and the answer feedback are always on screen together. */
+    .step-board {
+      position: sticky; top: 0; z-index: 5; margin: 0 calc(-1 * var(--gutter)) 16px;
+      padding: 8px var(--gutter) 6px; background: var(--washi); border-bottom: 1px solid var(--rule);
+    }
+    .step-board :global(.board-head) { margin-bottom: 4px; }
+    .step-board :global(.cap), .step-board :global(.alt) { display: none; }
+    .step-extras { display: block; margin-bottom: 14px; }
+    .step-extras :global(.cap) { margin-top: 0; }
+    .step :global(.task[data-kind="board"] .task-fb) { display: none; }
+  }
+  .step-text > :global(p), .step-text > :global(ul > li), .step-text > :global(ol > li) { font-size: 17px; line-height: 1.75; color: var(--ink-2); }
+  .step-text > :global(p) { margin: 0 0 14px; }
+  .step-text > :global(ul), .step-text > :global(ol) { padding-inline-start: 22px; margin: 0 0 16px; }
+  .step-text > :global(ul > li), .step-text > :global(ol > li) { margin-bottom: 6px; }
+  .step-text > :global(:first-child) { margin-top: 0; }
+</style>
