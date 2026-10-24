@@ -233,14 +233,29 @@ function renderHome(ctrl: LearnCtrl, _root: HTMLElement, q: Q, go: Go, stageLink
       el('h2', { id: 'cat-next' }, i18n('whatNext')),
       el('p', {}, i18n('youKnowHowToPlayShogi')),
       el('div', { class: 'categ_stages' },
-        whatNext('/rules/', '書', i18n('il_rulesCourse'), i18n('il_rulesCourseSub')),
-        whatNext('https://lishogi.org/signup', '登', i18n('register'), i18n('getAFreeLishogiAccount')),
-        whatNext('https://lishogi.org/training', '練', i18n('practice'), i18n('exerciseYourTacticalSkills')),
-        whatNext('https://lishogi.org/', '対', i18n('playPeople'), i18n('opponentsFromAroundTheWorld')),
-        whatNext('https://lishogi.org/#ai', '機', i18n('playMachine'), i18n('testYourSkillsWithTheComputer')),
+        ...whatNextLinks(_root.dataset).map(([href, seal, title, sub]) => whatNext(href, seal, i18n(title), i18n(sub))),
       ),
     ),
   );
+}
+
+/**
+ * Shogi Israel: lila points every "what next" card at lishogi.org. Ours point to playing here first
+ * (/play/, /account/) and keep Lishogi for public games and tournaments (Dean, 2026-10-24).
+ * The island's data-has-* flags say which of our pages exist in this build; until one does, its Lishogi card stays.
+ */
+function whatNextLinks(has: DOMStringMap): [href: string, seal: string, title: string, subtitle: string][] {
+  const on = (k: string) => has[k] !== undefined;
+  return [
+    ['/rules/', '書', 'il_rulesCourse', 'il_rulesCourseSub'],
+    on('hasPlay')
+      ? ['/play/', '機', 'playMachine', 'il_playMachineHere']
+      : ['https://lishogi.org/#ai', '機', 'playMachine', 'testYourSkillsWithTheComputer'],
+    on('hasAccount')
+      ? ['/account/', '登', 'register', 'il_getAShogiIsraelAccount']
+      : ['https://lishogi.org/signup', '登', 'register', 'getAFreeLishogiAccount'],
+    [on('hasLishogiGuide') ? '/lishogi/' : 'https://lishogi.org/team/---shogi-israel', '対', 'playPeople', 'il_opponentsOnLishogi'],
+  ];
 }
 
 // ---------- lesson: lila views/lesson.ts + side.ts + overlays ----------
