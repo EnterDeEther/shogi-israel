@@ -6,7 +6,7 @@ export const RULES_COURSE: LessonStub[] = [
   { n: 1, slug: '01-board-pieces-setup', title: 'הלוח, הכלים והעמדה הפותחת' },
   { n: 2, slug: '02-how-pieces-move', title: 'איך כל כלי זז' },
   { n: 3, slug: '03-promotion', title: 'הכתרה' },
-  { n: 4, slug: '04-drops', title: 'לקיחה והצנחה' },
+  { n: 4, slug: '04-drops', title: 'לכידה והצנחה' },
   { n: 5, slug: '05-check-mate', title: 'שח ומט' },
   { n: 6, slug: '06-illegal-moves-endings', title: 'מסעים לא חוקיים ואיך משחק נגמר' },
   { n: 7, slug: '07-reading-pieces', title: 'לקרוא את הכלים' },
