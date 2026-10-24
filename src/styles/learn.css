@@ -142,11 +142,12 @@ html[data-pieces="kanji"] .learn piece::after { content: var(--k); font-family: 
 .learn sg-promotion sg-promotion-choices piece:hover { background: var(--washi-2); }
 
 /* hands (inlined by shogiground above and below the board); hidden when empty */
-.learn .sg-hand-wrap { position: absolute; left: 0; right: 0; height: 0; z-index: 2; }
-.learn .sg-hand-wrap.hand-top { top: -20px; transform: translateY(-100%); }
-.learn .sg-hand-wrap.hand-bottom { bottom: -2px; transform: translateY(100%); }
+.learn .sg-hand-wrap { position: absolute; left: 0; right: 0; z-index: 2; }
+/* hands sit outside the squares: the opponent's above the file numbers, yours under the board */
+.learn .sg-hand-wrap.hand-top { top: auto; bottom: calc(100% + 18px); }
+.learn .sg-hand-wrap.hand-bottom { bottom: auto; top: calc(100% + 4px); }
 .learn sg-hand { display: flex; gap: 2px; height: 40px; }
-.learn sg-hand sg-hp-wrap { position: relative; width: 40px; height: 40px; }
+.learn sg-hand sg-hp-wrap { position: relative; flex: 0 1 40px; min-width: 0; height: 40px; }
 .learn sg-hand sg-hp-wrap[data-nb='0'] { display: none; }
 .learn sg-hand piece { position: relative; display: block; width: 100%; height: 100%; }
 .learn sg-hand sg-hp-wrap::after { content: attr(data-nb); position: absolute; top: 0; right: 0; font: 700 11px/1 var(--f-body); background: var(--ink); color: var(--washi); border-radius: 3px; padding: 2px 4px; }

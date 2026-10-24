@@ -94,7 +94,7 @@ function setupChoiceTask(task: HTMLElement, answer: string) {
       b.setAttribute('aria-pressed', 'true');
       if (!fb) return;
       if (b.dataset.choice === answer) {
-        fb.textContent = 'נכון! הפותח עושה את המסע הראשון.';
+        fb.textContent = 'נכון! הפותח עושה את המהלך הראשון.';
         task.classList.add('done');
         markDone();
       } else {

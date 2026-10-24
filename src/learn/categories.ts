@@ -2,7 +2,7 @@
 // Source: https://github.com/WandererXII/lila/blob/89aea5f6f24c5e941c7cac8434a6e9e1acc15e94/ui/learn/src/categories.ts
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
-// Modified by Shogi Israel (shogi.co.il), 2026-10-24: i18n import points to our Hebrew shim; all 18 stages, same order as lila.
+// Modified by Shogi Israel (shogi.co.il), 2026-10-24: i18n import points to our Hebrew shim; lila's stages in lila's order, without setup and repetition (Intermediate), which Dean removed on 2026-10-24.
 
 import { i18n } from './i18n';
 import type { Category, IncompleteStage, Stage } from './interfaces';
@@ -19,9 +19,7 @@ import lance from './stages/lance';
 import outOfCheck from './stages/out-of-check';
 import pawn from './stages/pawn';
 import protection from './stages/protection';
-import repetition from './stages/repetition';
 import rook from './stages/rook';
-import setup from './stages/setup';
 import silver from './stages/silver';
 import value from './stages/value';
 
@@ -50,11 +48,6 @@ export const categories: Category[] = [
     key: 'fundamentals',
     name: i18n('learn:fundamentals'),
     stages: [capture, drop, protection, check1, outOfCheck, checkmate1].map(createStage),
-  },
-  {
-    key: 'intermediate',
-    name: i18n('learn:intermediate'),
-    stages: [setup, repetition].map(createStage),
   },
   {
     key: 'advanced',

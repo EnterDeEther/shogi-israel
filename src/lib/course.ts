@@ -7,7 +7,7 @@ export const RULES_COURSE: LessonStub[] = [
   { n: 3, slug: '03-promotion', title: 'הכתרה' },
   { n: 4, slug: '04-capture-drops', title: 'לכידה והצנחה' },
   { n: 5, slug: '05-check-mate', title: 'שח ומט' },
-  { n: 6, slug: '06-illegal-moves-endings', title: 'מסעים לא חוקיים ואיך משחק נגמר' },
+  { n: 6, slug: '06-illegal-moves-endings', title: 'מהלכים לא חוקיים ואיך משחק נגמר' },
   { n: 7, slug: '07-reading-pieces', title: 'לקרוא את הכלים' },
   { n: 8, slug: '08-reading-notation', title: 'לקרוא רישום משחק' },
 ];
@@ -38,11 +38,11 @@ export const PRACTICE: Record<string, { stage: string; title: string }[]> = {
   '05-check-mate': [
     { stage: 'check1', title: 'שח' },
     { stage: 'outOfCheck', title: 'יציאה משח' },
-    { stage: 'checkmate1', title: 'מט במסע אחד' },
+    { stage: 'checkmate1', title: 'מט במהלך אחד' },
   ],
   '06-illegal-moves-endings': [
     { stage: 'repetition', title: 'חזרה על עמדה' },
-    { stage: 'il_illegal', title: 'מצאו את המסע הלא חוקי' },
+    { stage: 'il_illegal', title: 'מצאו את המהלך הלא חוקי' },
     { stage: 'il_impasse', title: 'הכרזת 27 נקודות' },
   ],
   '07-reading-pieces': [{ stage: 'il_kanji', title: 'זיהוי כלים בקאנג׳י' }],

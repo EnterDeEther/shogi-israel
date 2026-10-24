@@ -118,9 +118,9 @@ describe('every level is solvable with 3 stars', () => {
       );
 });
 
-test('18 stages, 121 levels', () => {
-  expect(stages.length).toBe(18);
-  expect(stages.reduce((a, s) => a + s.levels.length, 0)).toBe(121);
+test('16 stages, 109 levels', () => {
+  expect(stages.length).toBe(16);
+  expect(stages.reduce((a, s) => a + s.levels.length, 0)).toBe(109);
 });
 
 test('no string falls back to its key', () => {
