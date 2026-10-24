@@ -197,7 +197,7 @@ function status(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void): HTM
         el('button', { type: 'button', class: `btn${next ? '' : ' primary'}`, 'data-fid': 'again', onclick: go(() => ctrl.newGame(ctrl.settings)) }, 'משחק נוסף'),
         el('button', { type: 'button', class: 'link', onclick: go(() => ctrl.openSetup()) }, 'הגדרות משחק'),
       ),
-      el('div', { 'data-hook': 'export' }), // KIF export goes here (its own work item)
+      el('div', { 'data-hook': 'export' }), // slot for the KIF export buttons
     );
   }
   if (ctrl.engineError) {
@@ -266,7 +266,7 @@ function unsupported(reason: 'isolation' | 'wasm'): HTMLElement {
   );
 }
 
-/** Where the full explanation of timed games lives (its own page, written by another work item). */
+/** Where the full explanation of timed games lives (its own page). */
 export const CLOCK_INFO_URL = '/clock/';
 let clockHelpOpen = false;
 

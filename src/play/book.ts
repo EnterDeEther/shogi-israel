@@ -1,7 +1,7 @@
 // Shogi Israel: a small opening book, so the computer does not open the same way every game.
 // Lishogi plays from an opening book up to level 8 (lila modules/shoginet/src/main/Player.scala); theirs is not
 // free to copy, so ours is built from the opening lines of our own lessons (src/learn/stages/openings-he.ts,
-// every line checked in knowledge/content/learn/openings-research.md). Only the first plies are used: later in
+// every line replayed by the tests). Only the first plies are used: later in
 // those lines the opponent sometimes plays a lesson's deliberate mistake.
 // AGPL-3.0-or-later, like the rest of this site.
 import * as lines from '../learn/stages/openings-he';
