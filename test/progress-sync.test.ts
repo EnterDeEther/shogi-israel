@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { merge, normalize, NICKNAME_RE, stats } from '../src/lib/progress-sync';
+import { merge, normalize, NICKNAME_RE, RESERVED_RE, stats } from '../src/lib/progress-sync';
 
 describe('progress sync', () => {
   test('merge keeps the best score per level and every finished lesson', () => {
@@ -24,5 +24,7 @@ describe('progress sync', () => {
   test('nicknames', () => {
     for (const ok of ['דין', 'Dean_77', 'שוגי-מאסטר', 'abc']) expect(NICKNAME_RE.test(ok)).toBe(true);
     for (const bad of ['ab', 'a b', 'x'.repeat(17), 'דין!', '']) expect(NICKNAME_RE.test(bad)).toBe(false);
+    for (const r of ['Admin', 'ShogiIsrael', 'shogi_israel', 'מנהל_האתר', 'שוגי-ישראל']) expect(RESERVED_RE.test(r)).toBe(true);
+    expect(RESERVED_RE.test('דין_שוגי')).toBe(false);
   });
 });

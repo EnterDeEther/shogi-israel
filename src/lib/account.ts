@@ -53,13 +53,14 @@ export async function getProfile(userId: string): Promise<Profile | null> {
   return data;
 }
 /** Returns 'taken' when someone already has the nickname (unique, case-insensitive). */
-export async function saveNickname(userId: string, nickname: string, isNew: boolean): Promise<'ok' | 'taken' | 'error'> {
+export async function saveNickname(userId: string, nickname: string, isNew: boolean): Promise<'ok' | 'taken' | 'reserved' | 'error'> {
   const q = isNew
     ? supabase().from('profiles').insert({ id: userId, nickname })
     : supabase().from('profiles').update({ nickname }).eq('id', userId);
   const { error } = await q;
   if (!error) return 'ok';
-  return error.code === '23505' ? 'taken' : 'error';
+  if (error.code === '23505') return 'taken';
+  return error.code === '23514' ? 'reserved' : 'error';
 }
 
 // ---------- games (written by play vs AI) ----------

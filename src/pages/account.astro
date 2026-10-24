@@ -287,14 +287,16 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
     nickForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const nickname = $<HTMLInputElement>('#acc-nick').value.trim();
-      const { NICKNAME_RE } = await import('../lib/progress-sync');
+      const { NICKNAME_RE, RESERVED_RE } = await import('../lib/progress-sync');
       if (!NICKNAME_RE.test(nickname)) return fail('nickname', 'הכינוי צריך 3 עד 16 תווים: אותיות, ספרות, _ או -, בלי רווחים.');
+      if (RESERVED_RE.test(nickname)) return fail('nickname', 'הכינוי הזה שמור (נראה כמו שם של צוות האתר). בחרו כינוי אחר.');
       const session = await acc.getSession();
       if (!session) return show('signin');
       busy(nickForm, true);
       const res = await acc.saveNickname(session.user.id, nickname, !profile);
       busy(nickForm, false);
       if (res === 'taken') return fail('nickname', 'הכינוי הזה כבר תפוס. נסו אחר.');
+      if (res === 'reserved') return fail('nickname', 'הכינוי הזה שמור (נראה כמו שם של צוות האתר). בחרו כינוי אחר.');
       if (res === 'error') return fail('nickname', 'השמירה לא הצליחה. נסו שוב בעוד רגע.');
       void route();
     });

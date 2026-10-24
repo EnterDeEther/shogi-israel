@@ -12,6 +12,11 @@ create table public.profiles (
   created_at timestamptz not null default now()
 );
 create unique index profiles_nickname_key on public.profiles (lower(nickname));
+-- names that could pass for staff or the site itself
+alter table public.profiles add constraint profiles_nickname_reserved check (
+  lower(nickname) !~ '(admin|moderator|support|shogi.?israel|shogiisrael|official|staff|system|root)'
+  and nickname !~ '(מנהל|הנהלה|שוגי.?ישראל|רשמי|צוות|תמיכה)'
+);
 
 alter table public.profiles enable row level security;
 create policy "nicknames are public" on public.profiles for select using (true);
@@ -57,6 +62,15 @@ alter table public.games enable row level security;
 create policy "read own games" on public.games for select to authenticated using ((select auth.uid()) = user_id);
 create policy "log own games" on public.games for insert to authenticated with check ((select auth.uid()) = user_id);
 create policy "delete own games" on public.games for delete to authenticated using ((select auth.uid()) = user_id);
+
+-- ---------- lock down defaults ----------
+-- Supabase grants table rights to anon/authenticated by default; RLS already blocks other people's rows,
+-- this also keeps signed-out visitors out of private tables entirely, and nobody may truncate or alter.
+revoke all on public.progress, public.games from anon;
+revoke truncate, references, trigger on public.profiles, public.progress, public.games from anon, authenticated;
+revoke update on public.progress from authenticated;
+grant update (data, updated_at) on public.progress to authenticated;
+revoke update on public.games from anon, authenticated;
 
 -- ---------- delete my account (the "מחיקת החשבון" button) ----------
 -- Removes the auth user; profiles, progress and games go with it (on delete cascade).
