@@ -5,13 +5,13 @@
 // Modified by Shogi Israel (shogi.co.il), 2026-10-24: i18n import points to our Hebrew shim; lila's stages in lila's order, without setup and repetition (Intermediate), which Dean removed on 2026-10-24; our own openings, castles and strategy categories added after lila's.
 
 import { i18n } from './i18n';
+import { castleStage, openingStage } from './opening';
+import * as op from './stages/openings-he';
 import type { Category, IncompleteStage, Stage } from './interfaces';
 import bishop from './stages/bishop';
 import capture from './stages/capture';
-import castles from './stages/castles';
 import check1 from './stages/check1';
 import checkmate1 from './stages/checkmate1';
-import climbingSilver from './stages/climbing-silver';
 import drop from './stages/drop';
 import gold from './stages/gold';
 import intro from './stages/intro';
@@ -62,17 +62,27 @@ export const categories: Category[] = [
   {
     key: 'openings',
     name: i18n('learn:il_openings'),
-    stages: [staticRook, rangingRook].map(createStage),
+    stages: [
+      staticRook,
+      rangingRook,
+      ...[
+        op.fourthFileRook, op.centralRook, op.thirdFileRook, op.yagura, op.bishopExchange,
+        op.ishida, op.quickIshida, op.opposingRook, op.doubleRangingRook, op.sidePawn, op.twistingRook,
+      ].map(openingStage),
+    ].map(createStage),
   },
   {
     key: 'castles',
     name: i18n('learn:il_castlesCategory'),
-    stages: [castles].map(createStage),
+    stages: [op.rangingCastles, op.staticCastles].map(castleStage).map(createStage),
   },
   {
     key: 'strategy',
     name: i18n('learn:il_strategy'),
-    stages: [climbingSilver].map(createStage),
+    stages: [
+      op.primitiveClimbingSilver, op.climbingSilverVsRanging, op.sittingSilver, op.chainedSilver,
+      op.climbingSilverBE, op.rapidSilver, op.sittingSilverBE, op.spearingSparrow,
+    ].map(openingStage).map(createStage),
   },
 ];
 

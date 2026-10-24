@@ -36,7 +36,7 @@ export function el(tag: string, attrs: Attrs = {}, ...children: Child[]): HTMLEl
 /** Our strings use **bold** for a new term, and moves like P-76 must stay left-to-right. */
 export function rich(text: string): DocumentFragment {
   const f = document.createDocumentFragment();
-  text.split(/(\*\*[^*]+\*\*|\+?[KRBGSNLP][-x*]\d\d\+?)/).forEach((part, i) => {
+  text.split(/(\*\*[^*]+\*\*|\+?[KRBGSNLP](?:\d\d)?[-x*]\d\d\+?)/).forEach((part, i) => {
     if (!part) return;
     if (i % 2 === 0) f.append(part);
     else if (part.startsWith('**')) f.append(el('strong', {}, part.slice(2, -2)));
@@ -64,7 +64,11 @@ const pieceStages: Record<string, string> = {
 const sealStages: Record<string, string> = {
   introduction: '始', capture: '取', drop: '打', protection: '守', check1: '手',
   outOfCheck: '逃', checkmate1: '詰', value: '価',
-  staticRook: '居', rangingRook: '振', castles: '囲', climbingSilver: '棒',
+  staticRook: '居', rangingRook: '振',
+  fourthFileRook: '四', centralRook: '中', thirdFileRook: '三', yagura: '矢', bishopExchange: '角', ishida: '石',
+  quickIshida: '罠', opposingRook: '向', doubleRangingRook: '相', sidePawn: '横', twistingRook: '捻',
+  rangingCastles: '美', staticCastles: '舟', primitiveClimbingSilver: '棒', climbingSilverVsRanging: '急', sittingSilver: '腰',
+  chainedSilver: '鎌', climbingSilverBE: '登', rapidSilver: '早', sittingSilverBE: '掛', spearingSparrow: '雀',
 };
 export function stageImg(key: string): HTMLElement {
   const role = pieceStages[key];

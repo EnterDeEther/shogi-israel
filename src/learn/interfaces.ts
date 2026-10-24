@@ -43,6 +43,7 @@ export interface Level {
   squareHighlights?: VmEvaluation<SquareHighlight[]>;
 
   text?: string; // helping text displayed on the board
+  line?: Usi[]; // Shogi Israel: the textbook order for castle exercises, which accept any order (used by the tests)
   why?: string[]; // Shogi Israel: why each of the user's moves is played, shown one by one as they are made
   nextButton?: boolean; // wait for user to click next - allows user to review the solution
   offerIllegalDests?: boolean;

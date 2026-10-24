@@ -91,11 +91,6 @@ function enemyLeft(level: Level, l: UsiWithColor[]): number {
 const knownLines: Record<string, string[]> = {
   // value #4: take rook, bishop, gold, silver, knight, lance, pawn in that order, dragon only
   'value#4': ['6f7g', '7g5g', '5g5d', '5d5h', '5h7h', '7h7f', '7f4f', '4f4d', '4d6d', '6d6g', '6g4g'],
-  // castles: the opponent waits, so any move order works; these are the textbook ones
-  'castles#1': ['5i4h', '4h3h', '3h2h', '3i3h', '6i5h'],
-  'castles#2': ['5i6h', '6h7h', '4i5h'],
-  'castles#3': ['7i6h', '6h7g', '6i7h', '4i5h', '5h6g'],
-  'castles#4': ['8h7i', '7i6h', '5i6i', '6i7i', '7i8h'],
 };
 
 function playsOut(level: Level, line: string[]): boolean {
@@ -115,7 +110,7 @@ describe('every level is solvable with 3 stars', () => {
       test(
         `${stage.key} #${level.id}`,
         () => {
-          const known = knownLines[`${stage.key}#${level.id}`];
+          const known = knownLines[`${stage.key}#${level.id}`] ?? level.line;
           if (known) expect(playsOut(level, known)).toBe(true);
           else expect(solve(level), `${stage.key} #${level.id}: ${level.goal}`).toBeDefined();
         },
@@ -123,9 +118,9 @@ describe('every level is solvable with 3 stars', () => {
       );
 });
 
-test('20 stages, 120 levels', () => {
-  expect(stages.length).toBe(20);
-  expect(stages.reduce((a, s) => a + s.levels.length, 0)).toBe(120);
+test('39 stages, 180 levels', () => {
+  expect(stages.length).toBe(39);
+  expect(stages.reduce((a, s) => a + s.levels.length, 0)).toBe(180);
 });
 
 test('no string falls back to its key', () => {
