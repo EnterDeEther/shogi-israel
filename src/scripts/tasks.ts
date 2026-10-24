@@ -4,6 +4,8 @@
 const lessonId = document.querySelector<HTMLElement>('[data-lesson]')?.dataset.lesson ?? '';
 
 function boardBefore(task: HTMLElement): HTMLElement | null {
+  const inStep = task.closest('.step')?.querySelector<HTMLElement>('[data-board]');
+  if (inStep) return inStep;
   let el = task.previousElementSibling as HTMLElement | null;
   while (el) {
     if (el.matches('[data-board]')) return el;
@@ -35,8 +37,15 @@ function markDone() {
 function setupBoardTask(task: HTMLElement, answer: string) {
   const fig = boardBefore(task);
   const grid = fig?.querySelector<HTMLElement>('[data-grid]');
-  const fb = fig?.querySelector<HTMLElement>('[data-board-fb]');
-  if (!fig || !grid || !fb) return;
+  const fbs = [fig?.querySelector<HTMLElement>('[data-board-fb]'), task.querySelector<HTMLElement>('.task-fb')]
+    .filter((x): x is HTMLElement => !!x);
+  if (!fig || !grid || !fbs.length) return;
+  // Same message in both places; CSS shows the one next to the board for the current layout.
+  const say = (cls: 'is-ok' | 'is-no', text: string) => fbs.forEach((f) => {
+    f.classList.remove('is-ok', 'is-no');
+    f.classList.add(cls);
+    f.textContent = text;
+  });
   const squares = [...grid.querySelectorAll<HTMLElement>('[data-sq]')];
   const hint = task.dataset.hint;
   let misses = 0;
@@ -64,17 +73,14 @@ function setupBoardTask(task: HTMLElement, answer: string) {
       if (!x.classList.contains('ok')) x.querySelector('.mk')?.remove();
     });
 
-  // Feedback goes under the board, where the player is looking, not in the task box below.
   const choose = (s: HTMLElement) => {
     if (task.classList.contains('done')) return;
     const sq = s.dataset.sq ?? '';
     const what = (s.dataset.label ?? `משבצת ${sq}`).replace(/^משבצת \d\d, /, '');
     clearMisses();
-    fb.classList.remove('is-ok', 'is-no');
     if (matches(answer, sq)) {
       mark(s, 'ok', '✓');
-      fb.classList.add('is-ok');
-      fb.textContent = `נכון! משבצת ${sq}.`;
+      say('is-ok', `נכון! משבצת ${sq}.`);
       task.classList.add('done');
       fig.classList.add('revealed');
       const label = task.querySelector('.task-label');
@@ -83,8 +89,7 @@ function setupBoardTask(task: HTMLElement, answer: string) {
     } else {
       misses++;
       mark(s, 'no', '✗');
-      fb.classList.add('is-no');
-      fb.textContent = `לא. זו משבצת ${sq} (${what}). נסו שוב.` + (hint && misses >= 2 ? ` רמז: ${hint}` : '');
+      say('is-no', `לא. זו משבצת ${sq} (${what}). נסו שוב.` + (hint && misses >= 2 ? ` רמז: ${hint}` : ''));
     }
   };
 

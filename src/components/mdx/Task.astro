@@ -5,7 +5,7 @@
 //   "sente" | "gote"  → a two-button question (פותח / משיב)
 //   (none)            → an instruction only, nothing to check
 // `hint`: shown under the board after a second wrong tap.
-// Board tasks give their feedback under the board itself (see Board.astro), not in this box.
+// Board tasks write their feedback here and under the board; Step.astro shows whichever sits next to the board.
 interface Props { answer?: string; hint?: string }
 const { answer, hint } = Astro.props;
 const choice = answer === 'sente' || answer === 'gote';
@@ -19,7 +19,7 @@ const choice = answer === 'sente' || answer === 'gote';
       <button type="button" class="btn btn-ghost" data-choice="gote">המשיב</button>
     </div>
   )}
-  {choice && <p class="task-fb" role="status" aria-live="polite"></p>}
+  {answer && <p class="task-fb" role="status" aria-live="polite"></p>}
 </div>
 
 <style>
@@ -31,6 +31,9 @@ const choice = answer === 'sente' || answer === 'gote';
   .choices .btn { min-height: 48px; justify-content: center; min-width: 120px; }
   .choices .btn[aria-pressed="true"] { background: var(--ink); color: var(--washi); }
   .task-fb { margin: 10px 0 0; min-height: 1.6em; font-weight: 700; }
+  .task-fb:global(.is-ok) { color: #2F6B2A; }
+  .task-fb:global(.is-no) { color: #8A2A12; }
+  @media (prefers-color-scheme: dark) { .task-fb:global(.is-ok) { color: #8FCB85; } .task-fb:global(.is-no) { color: #F2A48F; } }
   .task-fb:empty { margin: 0; min-height: 0; }
   :global(.task.done) { border-color: #2F6B2A; }
   :global(.task.done) .task-label { color: #2F6B2A; }
