@@ -31,7 +31,8 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
             <input id="acc-email" name="email" type="email" dir="ltr" autocomplete="email" inputmode="email" required />
             <label for="acc-pass">סיסמה</label>
             <input id="acc-pass" name="password" type="password" dir="ltr" autocomplete="current-password" minlength="8" required aria-describedby="acc-pass-help" />
-            <p id="acc-pass-help" class="small muted" data-signup-only hidden>לפחות 8 תווים. עדיף משפט קצר שקל לכם לזכור.</p>
+            <p id="acc-pass-help" class="small muted" data-signup-only hidden>לפחות 8 תווים, אותיות וספרות. עדיף משפט קצר שקל לכם לזכור.</p>
+            <div class="captcha" data-captcha></div>
             <button type="submit" class="btn wide"><span data-submit-label>כניסה</span></button>
             <p class="err" role="alert" data-err></p>
           </form>
@@ -45,6 +46,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
           <form class="form" data-forgot-form novalidate>
             <label for="acc-forgot-email">כתובת מייל</label>
             <input id="acc-forgot-email" name="email" type="email" dir="ltr" autocomplete="email" inputmode="email" required />
+            <div class="captcha" data-captcha></div>
             <button type="submit" class="btn wide"><span>שלחו לי קישור</span></button>
             <p class="err" role="alert" data-err></p>
           </form>
@@ -134,6 +136,11 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
 
   async function start() {
     const acc = await import('../lib/account');
+    const { mountCaptcha, captchaEnabled } = await import('../lib/captcha');
+    const noCaptcha = { token: () => undefined, reset: () => {} };
+    const [authCaptcha, forgotCaptcha] = await Promise.all(
+      [...root.querySelectorAll<HTMLElement>('[data-captcha]')].map((el) => mountCaptcha(el).catch(() => noCaptcha)));
+    const needCaptcha = (c: typeof authCaptcha) => captchaEnabled && !c.token();
     const levelCounts = JSON.parse(root.dataset.levelCounts || '{}');
     const $ = <T extends HTMLElement>(sel: string, scope: ParentNode = root) => scope.querySelector<T>(sel)!;
     const views = [...root.querySelectorAll<HTMLElement>('[data-view]')];
@@ -210,18 +217,25 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       const password = $<HTMLInputElement>('#acc-pass').value;
       if (!validEmail(email)) return fail('signin', 'הכתובת לא נראית תקינה. בדקו אותה ונסו שוב.');
       if (password.length < 8) return fail('signin', 'הסיסמה צריכה לפחות 8 תווים.');
+      if (mode === 'signup' && !(/[A-Za-z\u05D0-\u05EA]/.test(password) && /\d/.test(password))) return fail('signin', 'הסיסמה צריכה לכלול גם אותיות וגם ספרות.');
+      if (needCaptcha(authCaptcha)) return fail('signin', 'רגע, עוד לא סיימנו לבדוק שאתם לא רובוט. נסו שוב בעוד שנייה.');
+      const captchaToken = authCaptcha.token();
       busy(authForm, true);
       if (mode === 'signin') {
-        const { error } = await acc.signIn(email, password);
+        const { error } = await acc.signIn(email, password, captchaToken);
+        authCaptcha.reset();
         busy(authForm, false);
         if (!error) return; // onAuthStateChange routes on SIGNED_IN
+        if (error.code === 'captcha_failed') return fail('signin', 'בדיקת הרובוט נכשלה. רעננו את העמוד ונסו שוב.');
         if (error.code === 'email_not_confirmed') return fail('signin', 'עוד לא אישרתם את המייל. חפשו אצלכם מייל מאיתנו ולחצו על הקישור שבו.');
         if (error.status === 429) return fail('signin', 'יותר מדי ניסיונות. חכו כמה דקות ונסו שוב.');
         return fail('signin', 'המייל או הסיסמה לא נכונים.');
       }
-      const { data, error } = await acc.signUp(email, password);
+      const { data, error } = await acc.signUp(email, password, captchaToken);
+      authCaptcha.reset();
       busy(authForm, false);
       if (error) {
+        if (error.code === 'captcha_failed') return fail('signin', 'בדיקת הרובוט נכשלה. רעננו את העמוד ונסו שוב.');
         if (error.code === 'weak_password') return fail('signin', 'הסיסמה חלשה מדי. נסו סיסמה ארוכה יותר.');
         if (error.code === 'user_already_exists' || error.code === 'email_exists') return fail('signin', 'כבר יש חשבון עם המייל הזה. עברו ל"כניסה", או אפסו את הסיסמה.');
         if (error.status === 429) return fail('signin', 'נשלחו יותר מדי מיילים. חכו כמה דקות ונסו שוב.');
@@ -250,8 +264,10 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       e.preventDefault();
       const email = $<HTMLInputElement>('#acc-forgot-email').value.trim();
       if (!validEmail(email)) return fail('forgot', 'הכתובת לא נראית תקינה. בדקו אותה ונסו שוב.');
+      if (needCaptcha(forgotCaptcha)) return fail('forgot', 'רגע, עוד לא סיימנו לבדוק שאתם לא רובוט. נסו שוב בעוד שנייה.');
       busy(forgotForm, true);
-      const { error } = await acc.sendPasswordReset(email);
+      const { error } = await acc.sendPasswordReset(email, forgotCaptcha.token());
+      forgotCaptcha.reset();
       busy(forgotForm, false);
       if (error) return fail('forgot', error.status === 429 ? 'נשלחו יותר מדי מיילים. חכו כמה דקות ונסו שוב.' : 'השליחה לא הצליחה. נסו שוב בעוד רגע.');
       sent(`אם יש חשבון עם ${email}, שלחנו אליו קישור לבחירת סיסמה חדשה.`);
@@ -341,6 +357,8 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
   .form p { margin: 0; }
   .wide { justify-content: center; width: 100%; margin-top: 6px; }
   .tabs { align-self: flex-start; }
+  .captcha:empty { display: none; }
+  .captcha { margin-top: 4px; }
   .err { color: var(--seal); font-weight: 500; min-height: 1.5em; }
   .err:empty { min-height: 0; }
   .link { appearance: none; background: none; border: 0; padding: 0; font: inherit; color: var(--seal); text-decoration: underline; cursor: pointer; }

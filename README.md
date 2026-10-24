@@ -43,4 +43,5 @@ Optional accounts on Supabase: email + password (confirmed by email; no Google/S
 ## Security
 - Every page carries a Content-Security-Policy `<meta>` (Astro `security.csp` in `astro.config.mjs`): scripts only from this site (inline ones pinned by hash), network only to this site and Supabase, no plugins, no foreign forms. `vercel.json` adds HSTS, no framing (clickjacking), nosniff, a strict referrer and a closed Permissions-Policy.
 - Accounts: row-level security on every table; people read and change only their own rows, and only the columns they should (rating is server-only). `supabase/tests/rls.sql` checks this against the real database (run as postgres; it rolls back). Run it after every migration.
-- Secrets: only the public Supabase URL and anon key reach the browser. The service-role key and database URL stay in Vercel env and are never imported by site code.
+- Bots: Cloudflare Turnstile on sign-up, sign-in and password reset when `PUBLIC_TURNSTILE_SITE_KEY` is set (the secret key lives only in Supabase → Attack Protection).
+- Secrets: only the public Supabase URL and anon key (and the public Turnstile site key) reach the browser. The service-role key and database URL stay in Vercel env and are never imported by site code.

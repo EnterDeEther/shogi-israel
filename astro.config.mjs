@@ -27,6 +27,8 @@ export default defineConfig({
         "img-src 'self' data: blob:",
         "font-src 'self' data:",
         "media-src 'self'",
+        // Cloudflare Turnstile: the bot check on the account forms
+        "frame-src https://challenges.cloudflare.com",
         "object-src 'none'",
         "base-uri 'self'",
         "form-action 'self'",
@@ -34,6 +36,7 @@ export default defineConfig({
       ],
       // Boards and the lesson player set style="" attributes; styles can't run code, so allow them.
       styleDirective: { resources: ["'self'", "'unsafe-inline'"] },
+      scriptDirective: { resources: ["'self'", 'https://challenges.cloudflare.com'] },
     },
   },
 });

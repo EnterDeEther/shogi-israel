@@ -6,6 +6,8 @@ export const SUPABASE_URL: string = env.PUBLIC_SUPABASE_URL || env.NEXT_PUBLIC_S
 export const SUPABASE_KEY: string =
   env.PUBLIC_SUPABASE_ANON_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY || env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '';
 export const accountsEnabled = Boolean(SUPABASE_URL && SUPABASE_KEY);
+/** Cloudflare Turnstile site key (public). When set, sign-up, sign-in and password reset need the bot check. */
+export const TURNSTILE_SITE_KEY: string = env.PUBLIC_TURNSTILE_SITE_KEY || '';
 
 export const AUTH_STORAGE_KEY = 'shogi-il.auth';
 export function hasStoredSession(): boolean {

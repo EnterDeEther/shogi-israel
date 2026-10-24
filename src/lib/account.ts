@@ -21,15 +21,15 @@ export async function getSession(): Promise<Session | null> {
 // ---------- sign in / out (email + password) ----------
 const redirectTo = () => `${window.location.origin}/account/`;
 
-export async function signUp(email: string, password: string) {
-  return supabase().auth.signUp({ email, password, options: { emailRedirectTo: redirectTo() } });
+export async function signUp(email: string, password: string, captchaToken?: string) {
+  return supabase().auth.signUp({ email, password, options: { emailRedirectTo: redirectTo(), captchaToken } });
 }
-export async function signIn(email: string, password: string) {
-  return supabase().auth.signInWithPassword({ email, password });
+export async function signIn(email: string, password: string, captchaToken?: string) {
+  return supabase().auth.signInWithPassword({ email, password, options: { captchaToken } });
 }
 /** Emails a link back to /account/, which opens the "new password" form (PASSWORD_RECOVERY). */
-export async function sendPasswordReset(email: string) {
-  return supabase().auth.resetPasswordForEmail(email, { redirectTo: redirectTo() });
+export async function sendPasswordReset(email: string, captchaToken?: string) {
+  return supabase().auth.resetPasswordForEmail(email, { redirectTo: redirectTo(), captchaToken });
 }
 export async function setPassword(password: string) {
   return supabase().auth.updateUser({ password });
