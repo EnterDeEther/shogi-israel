@@ -43,6 +43,7 @@ export interface Level {
   squareHighlights?: VmEvaluation<SquareHighlight[]>;
 
   text?: string; // helping text displayed on the board
+  why?: string[]; // Shogi Israel: why each of the user's moves is played, shown one by one as they are made
   nextButton?: boolean; // wait for user to click next - allows user to review the solution
   offerIllegalDests?: boolean;
   showFailureMove?: 'random' | 'capture' | 'unprotected' | VmEvaluation<Usi | undefined>; // played after failure

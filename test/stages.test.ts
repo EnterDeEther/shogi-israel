@@ -131,7 +131,13 @@ test('20 stages, 120 levels', () => {
 test('no string falls back to its key', () => {
   const strings = he as Record<string, string>;
   for (const s of stages) {
-    for (const t of [s.title, s.subtitle, s.intro, s.complete, ...s.levels.flatMap((l) => [l.goal, l.text ?? ''])])
+    for (const t of [s.title, s.subtitle, s.intro, s.complete, ...s.levels.flatMap((l) => [l.goal, l.text ?? '', ...(l.why ?? [])])])
       expect(Object.keys(strings).includes(t), `untranslated: ${t}`).toBe(false);
   }
+});
+
+test('every "why" list has one reason per user move', () => {
+  for (const s of stages)
+    for (const l of s.levels)
+      if (l.why) expect(l.why.length, `${s.key} #${l.id}`).toBe(l.scenario?.filter((u) => u.color === l.color).length ?? l.nbMoves);
 });

@@ -16,6 +16,7 @@ const levels: IncompleteLevel[] = [
     success: scenarioSuccess,
     failure: scenarioFailure,
     scenario: createScenario(['2g2f', '8c8d', '2f2e', '8d8e', '6i7h', '4a3b'], 'sente', true),
+    why: [i18n('learn:il_whySR1_1'), i18n('learn:il_whySR1_2'), i18n('learn:il_whySR1_3')],
   },
   {
     goal: i18n('learn:il_staticRookExchange'),
@@ -24,6 +25,7 @@ const levels: IncompleteLevel[] = [
     success: scenarioSuccess,
     failure: scenarioFailure,
     scenario: createScenario(['2e2d', '2c2d', '2h2d', 'P*2c', '2d2h'], 'sente', true),
+    why: [i18n('learn:il_whySR2_1'), i18n('learn:il_whySR2_2'), i18n('learn:il_whySR2_3')],
   },
 ];
 

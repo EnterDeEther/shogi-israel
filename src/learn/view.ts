@@ -322,6 +322,15 @@ function renderLesson(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go, stageLin
     info.replaceChildren(el('button', { type: 'button', class: 'learn__info', 'data-fid': 'info', onclick: go(() => ctrl.completeLevel()) }, rich(level.text)));
   else info.replaceChildren();
 
+  // Shogi Israel: the reason behind each move made so far (level.why), newest last
+  const made = vm.usiCList.filter((u) => u.color === level.color).length;
+  const whys = (level.why ?? []).slice(0, made);
+  const whyList = whys.length
+    ? el('div', { class: 'why' },
+        el('p', { class: 'eyebrow' }, i18n('il_whyTitle')),
+        el('ol', {}, ...whys.map((w, i) => el('li', { class: i === whys.length - 1 ? 'latest' : '' }, rich(w)))))
+    : null;
+
   // table: title, goal / result, level progress, tools (lila lesson.ts)
   let status: HTMLElement;
   if (vm.levelState === 'fail') {
@@ -335,6 +344,7 @@ function renderLesson(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go, stageLin
       level.nextButton || vm.stageState === 'end'
         ? el('button', { type: 'button', class: 'btn primary', 'data-fid': 'next', onclick: go(() => ctrl.nextLesson()) }, i18n('next'))
         : stars(vm.score ?? 0),
+      whyList,
     );
   } else {
     // USI destination is always characters 2-4 ("5f5e", "4d4c+", "S*5e"), same test as ground.ts createDrawable.
@@ -349,6 +359,7 @@ function renderLesson(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go, stageLin
             ' · ',
             left === 1 ? i18n('il_starsLeftOne') : i18nFormat('il_starsLeft', left))
         : null,
+      whyList,
     );
   }
 

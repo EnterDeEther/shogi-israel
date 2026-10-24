@@ -335,3 +335,11 @@ html[data-pieces="kanji"] .learn piece::after { content: var(--k); font-family: 
 .learn .btn.primary { background: var(--seal); border-color: var(--seal); color: var(--on-seal); }
 .learn .btn.primary:hover { background: var(--seal-hover); border-color: var(--seal-hover); }
 .learn .link { min-height: 44px; border: 0; background: none; color: var(--seal); font: 600 15px var(--f-body); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; padding: 0; }
+
+/* Shogi Israel: reasons behind the moves made so far (level.why) */
+.learn__table .why { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line, rgba(0,0,0,.12)); text-align: start; color: inherit; }
+.learn__table .why .eyebrow { margin: 0 0 6px; font-size: .8rem; opacity: .75; }
+.learn__table .why ol { margin: 0; padding-inline-start: 1.3em; font-size: .92rem; line-height: 1.5; }
+.learn__table .why li { opacity: .7; margin-bottom: 4px; }
+.learn__table .why li.latest { opacity: 1; font-weight: 600; }
+.learn bdi[dir="ltr"] { white-space: nowrap; }

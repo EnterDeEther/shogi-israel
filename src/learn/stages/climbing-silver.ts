@@ -17,6 +17,7 @@ const levels: IncompleteLevel[] = [
     success: scenarioSuccess,
     failure: scenarioFailure,
     scenario: createScenario(['3i3h', '7a6b', '3h2g', '5a4a', '2g2f', '6a5b', '2f3e', '5c5d'], 'sente', true),
+    why: [i18n('learn:il_whyCS1_1'), i18n('learn:il_whyCS1_2'), i18n('learn:il_whyCS1_3'), i18n('learn:il_whyCS1_4')],
   },
   {
     goal: i18n('learn:il_climbingSilverBreak'),
@@ -25,6 +26,7 @@ const levels: IncompleteLevel[] = [
     success: scenarioSuccess,
     failure: scenarioFailure,
     scenario: createScenario(['P*2d', '2c2d', '3e2d', '3c3d', '2d2c', '2b4d', '2c3d+'], 'sente', true),
+    why: [i18n('learn:il_whyCS2_1'), i18n('learn:il_whyCS2_2'), i18n('learn:il_whyCS2_3'), i18n('learn:il_whyCS2_4')],
     nextButton: true,
   },
 ];
