@@ -1,0 +1,19 @@
+---
+// One page per interactive stage: /learn/<slug>/ (all 18 Lishogi stages). The island is the same on
+// every page and switches stages without reloading; the page only sets where it starts.
+import Base from '../../layouts/Base.astro';
+import LearnStage from '../../components/LearnStage.astro';
+import { stages } from '../../learn/categories';
+import { stageSlug } from '../../learn/urls';
+
+export function getStaticPaths() {
+  return stages.map((s) => ({ params: { stage: stageSlug(s.key) }, props: { title: s.title, subtitle: s.subtitle } }));
+}
+const { stage } = Astro.params;
+const { title, subtitle } = Astro.props;
+---
+<Base title={`${title} · שיעור אינטראקטיבי`} description={`תרגול אינטראקטיבי בשוגי: ${title}. ${subtitle}`.replace(/\*\*/g, '')} noindex>
+  <div class="wrap wrap--learn">
+    <LearnStage stage={stage} />
+  </div>
+</Base>
