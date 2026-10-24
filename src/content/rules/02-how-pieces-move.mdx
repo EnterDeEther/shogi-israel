@@ -1,0 +1,211 @@
+---
+title: "שיעור 2: איך כל כלי זז"
+description: "שמונה כלים, שמונה צורות תנועה: ארבעה זזים משבצת אחת, אחד קופץ, ושלושה נוסעים רחוק."
+course: rules
+lesson: 2
+slug: rules/02-how-pieces-move
+next: rules/03-promotion
+status: draft-v1          # 2026-10-24 · Content (written in the "Write rules lesson 2" thread)
+glossary: v0-locked       # rows 1-103, locked 2026-10-23
+facts: research/rules-course.md (Lesson 2) · content/learn/lesson-stage-map.md (Lesson 2)
+reading_time_min: 7
+og_image_sfen: "9/9/9/9/4S4/9/9/9/9 b - 1"
+---
+
+{/*
+EDITOR NOTES (not rendered)
+- Same components and rules as Lesson 1 (see the notes at the top of 01-board-pieces-setup.mdx).
+- Piece order = Lishogi's engine stages (king, gold, silver, knight, lance, bishop, rook, pawn),
+  so the practice block at the end runs in the same order as the text (lesson-stage-map.md).
+- Unpromoted moves only. Promoted moves are Lesson 3; each piece gets at most one pointer to it.
+- First-use strings (<Term first>) all sit in 2.1, the first place the pieces are named. Hebrew only after that.
+- Every move rule: research/rules-course.md §Lesson 2 (JSA §4 + FESA 3.3-3.10).
+  Own piece / capture rule: FESA 3.1 + JSA §5.2. Chess traps: BGA + nullprogram + Wikipedia (same §).
+- Shogi Shack has no rules pages (it sends readers to Wikipedia). What we take from it is the formula
+  (content-map §3): one question per step, board first, contrast pairs (gold vs silver), a rule of thumb per piece.
+- Board geometry: forward for sente = lower rank number; file 1 is on the right. From 55: forward 54,
+  forward diagonals 64 (left) and 44 (right), sideways 65 / 45, back 56, back diagonals 66 / 46.
+*/}
+
+# שיעור 2: איך כל כלי זז
+
+בשחמט יש מלכה שחוצה את כל הלוח. בשוגי אין מלכה, ורוב הכלים זזים משבצת אחת בכל פעם. כלי לבד הוא חלש, ולכן בשוגי משחקים בצוות: הכלים שומרים זה על זה ותוקפים יחד.
+
+בשיעור הזה נכיר את שמונת הכלים, אחד אחד. את רובם אפשר גם להכתיר, ואז הם זזים אחרת, אבל את זה נשמור לשיעור 3. כאן לומדים רק את הצד הרגיל.
+
+---
+
+## 2.1 מי זז כמה?
+
+<Board sfen="lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1" highlight="99,19,88,28" caption="העמדה הפותחת. מסומנים: הכלים שלכם שנוסעים רחוק" />
+
+את שמונת הכלים אפשר לחלק לשלוש קבוצות:
+
+- **צעד אחד:** <Term id="piece.king" first>מלך (王 ō, King)</Term>, <Term id="piece.gold" first>גנרל זהב (金 kin, Gold)</Term>, <Term id="piece.silver" first>גנרל כסף (銀 gin, Silver)</Term> ו<Term id="piece.pawn" first>רגלי (歩 fu, Pawn)</Term>. משבצת אחת בכל מסע.
+- **קפיצה:** <Term id="piece.knight" first>פרש (桂 kei, Knight)</Term>. הכלי היחיד שמדלג מעל כלים אחרים.
+- **נסיעה:** <Term id="piece.lance" first>רומח (香 kyō, Lance)</Term>, <Term id="piece.bishop" first>רץ (角 kaku, Bishop)</Term> ו<Term id="piece.rook" first>צריח (飛 hi, Rook)</Term>. כמה משבצות שרוצים בקו ישר, עד שמשהו עוצר אותם.
+
+לכל צד יש רק ארבעה כלים שנוסעים רחוק: שני רומחים, רץ וצריח. כל השאר עובדים מקרוב.
+
+<Task answer="99,19,88,28">לחצו על אחד הכלים שלכם שנוסעים רחוק.</Task>
+
+---
+
+## 2.2 המלך
+
+<Board sfen="9/9/9/9/4K4/9/9/9/9 b - 1" highlight="44,54,64,45,65,46,56,66" caption="המלך ב־55 וכל המשבצות שהוא יכול להגיע אליהן" />
+
+המלך זז **משבצת אחת לכל כיוון**: קדימה, אחורה, הצידה ובאלכסון. שמונה משבצות סביבו, ולא יותר.
+
+עליו נלחמים: מלך שנלכד, המשחק נגמר. לכן יש לו כלל משלו: אסור לו לעבור למשבצת שהיריב מאיים עליה. על זה בשיעור 5.
+
+<Task answer="44,54,64">המלך ב־<Notation>55</Notation> רוצה להגיע ל־<Notation>53</Notation>, וזה ייקח לו שני מסעים. לאן הוא זז במסע הראשון? יש יותר מתשובה נכונה אחת.</Task>
+
+---
+
+## 2.3 ומה אם משהו עומד בדרך?
+
+<Board sfen="9/9/9/3PPp3/4K4/4p4/9/9/9 b - 1" caption="המלך ב־55. רגלים שלכם ב־64 וב־54, רגלים של היריב ב־44 וב־56" />
+
+שני כללים שחלים על כל הכלים, לא רק על המלך:
+
+- **לכלי שלכם אי אפשר לעבור.** המשבצות <Notation>64</Notation> ו־<Notation>54</Notation> סגורות בפני המלך.
+- **לכלי של היריב אפשר לעבור, ואז לוקחים אותו.** הכלי של היריב יורד מהלוח, והכלי שלכם נעמד במקומו.
+
+בשחמט כלי שנלקח הולך לקופסה. בשוגי הוא עובר אליכם, ליד, ומשם אפשר להחזיר אותו ללוח. זה כל שיעור 4. בינתיים מספיק לדעת: לקחתם, הרווחתם כלי.
+
+<Task answer="44,56">לחצו על כלי של היריב שהמלך יכול לקחת.</Task>
+
+---
+
+## 2.4 גנרל הזהב
+
+<Board sfen="9/9/9/9/4G4/9/9/9/9 b - 1" highlight="44,54,64,45,65,56" caption="גנרל הזהב ב־55: שש משבצות" />
+
+גנרל הזהב זז משבצת אחת לשישה כיוונים: קדימה, שני האלכסונים קדימה, הצידה לשני הצדדים, וישר אחורה. רק **שני האלכסונים לאחור** חסומים בפניו.
+
+דרך לזכור: כמו מלך, בלי שתי הפינות האחוריות.
+
+שווה ללמוד את הצורה הזו היטב. ארבעה כלים זזים בדיוק כמו גנרל זהב אחרי שהם מוכתרים (שיעור 3). לגנרל הזהב עצמו אין הכתרה.
+
+<Task answer="46,66">לחצו על משבצת צמודה לגנרל הזהב שאליה הוא **לא** יכול לזוז.</Task>
+
+---
+
+## 2.5 גנרל הכסף
+
+<Board sfen="9/9/9/9/4S4/9/9/9/9 b - 1" highlight="44,54,64,46,66" caption="גנרל הכסף ב־55: חמש משבצות" />
+
+גנרל הכסף זז משבצת אחת לחמישה כיוונים: קדימה ולארבעת האלכסונים. הוא **לא זז הצידה ולא ישר אחורה**.
+
+השוו לגנרל הזהב. קדימה הם זהים: שלוש משבצות. מאחור הם הפוכים: לזהב יש ישר אחורה, לכסף שני האלכסונים לאחור. והצידה זז רק הזהב.
+
+<Note title="כלל אצבע">הכסף מתקדם מהר ויודע לסגת באלכסון, ולכן הוא כלי של התקפה. הזהב צמוד ויציב, ולכן הוא נשאר לרוב ליד המלך ושומר עליו.</Note>
+
+<Task answer="45,65,56">לחצו על משבצת צמודה לגנרל הכסף שאליה הוא **לא** יכול לזוז.</Task>
+
+---
+
+## 2.6 הפרש
+
+<Board sfen="9/9/9/3PPP3/4N4/9/9/9/9 b - 1" caption="פרש ב־55, ושלושה רגלים שלכם ממש מולו" />
+
+הפרש **קופץ**: שתי משבצות קדימה ואחת ימינה או שמאלה. יש לו בדיוק **שתי משבצות יעד**, ושתיהן קדימה.
+
+הוא הכלי היחיד שמדלג מעל כלים. שלושת הרגלים שמולו לא מפריעים לו בכלל.
+
+ואחורה? אף פעם. גם לא הצידה. פרש שהתקדם לא חוזר.
+
+<Note title="למי שבא משחמט">לפרש בשחמט יש עד שמונה יעדים, לכל הכיוונים. לפרש בשוגי יש שניים, רק קדימה. אותה צורה של קפיצה, חצי ממנה בלבד.</Note>
+
+<Task answer="43,63">לחצו על משבצת שהפרש יכול לקפוץ אליה.</Task>
+
+---
+
+## 2.7 הרומח
+
+<Board sfen="9/9/4p4/9/9/9/4L4/9/9 b - 1" caption="רומח ב־57, ורגלי של היריב ב־53" />
+
+הרומח נוסע **ישר קדימה**, כמה משבצות שרוצים. כמו צריח שמכיר רק כיוון אחד.
+
+הוא לא מדלג: הכלי הראשון בדרך עוצר אותו. אם זה כלי של היריב, אפשר לקחת אותו. אם זה כלי שלכם, עוצרים משבצת לפניו.
+
+ואין דרך חזרה. רומח שיצא לדרך נשאר שם, אז חשבו לפני שאתם שולחים אותו.
+
+<Task answer="53">מה המשבצת הרחוקה ביותר שהרומח יכול להגיע אליה במסע אחד? לחצו עליה.</Task>
+
+---
+
+## 2.8 הרץ
+
+<Board sfen="9/9/6P2/9/4B4/9/2p6/9/9 b - 1" caption="רץ ב־55. רגלי שלכם ב־33, רגלי של היריב ב־77" />
+
+הרץ נוסע **באלכסון**, לכל אחד מארבעת הכיוונים, כמה משבצות שרוצים. בדיוק כמו בשחמט.
+
+גם הוא לא מדלג. בדרך למעלה וימינה, הרגלי שלכם ב־<Notation>33</Notation> עוצר אותו, והוא מגיע רק עד <Notation>44</Notation>. בדרך למטה ושמאלה הוא יכול לקחת את הרגלי של היריב ב־<Notation>77</Notation>, אבל לא להמשיך מעבר לו.
+
+<Task answer="44,64,73,82,91,46,37,28,19,66,77">לחצו על משבצת כלשהי שהרץ יכול להגיע אליה במסע אחד.</Task>
+
+---
+
+## 2.9 הצריח
+
+<Board sfen="9/9/4P4/9/1pP1R2p1/9/9/9/9 b - 1" caption="צריח ב־55. רגלים שלכם ב־53 וב־75, רגלים של היריב ב־85 וב־25" />
+
+הצריח נוסע **ישר**: קדימה, אחורה, ימינה או שמאלה, כמה משבצות שרוצים. בדיוק כמו בשחמט.
+
+זה הכלי החזק ביותר בעמדה הפותחת. על לוח ריק הוא מגיע תמיד ל־16 משבצות, לא משנה איפה הוא עומד: 8 בטור ו־8 בשורה.
+
+וגם הוא לא מדלג. כאן הרגלי שלכם ב־<Notation>75</Notation> מסתיר ממנו את הרגלי של היריב ב־<Notation>85</Notation>.
+
+<Task answer="25">לחצו על הכלי של היריב שהצריח יכול לקחת.</Task>
+
+---
+
+## 2.10 הרגלי
+
+<Board sfen="9/9/9/4pp3/4P4/9/9/9/9 b - 1" caption="רגלי שלכם ב־55. רגלים של היריב ב־54 וב־44" />
+
+הרגלי זז **משבצת אחת ישר קדימה**. וזה גם הכיוון שבו הוא לוקח: ישר קדימה, לא באלכסון.
+
+הרגלי שלכם ב־<Notation>55</Notation> והרגלי של היריב ב־<Notation>54</Notation> מאיימים זה על זה. מי שתורו, לוקח ראשון.
+
+<Note title="למי שבא משחמט">אין צעד כפול בפתיחה, אין אן פסאן, והרגלי לא לוקח באלכסון. הרגלי בשוגי פשוט יותר. מה שהופך אותו למסוכן הם ההכתרה (שיעור 3) וההצנחה (שיעור 4).</Note>
+
+<Task answer="54">לחצו על הכלי שהרגלי שלכם יכול לקחת.</Task>
+
+---
+
+## לסיכום
+
+| כלי | איך זז | באתר | בסט |
+|---|---|---|---|
+| מלך | משבצת אחת לכל כיוון | K | 王 / 玉 |
+| גנרל זהב | משבצת אחת, חוץ משני האלכסונים לאחור | G | 金 |
+| גנרל כסף | משבצת אחת קדימה או באלכסון | S | 銀 |
+| פרש | קפיצה: שתיים קדימה ואחת הצידה | N | 桂 |
+| רומח | ישר קדימה, כמה שרוצים | L | 香 |
+| רץ | באלכסון, כמה שרוצים | B | 角 |
+| צריח | ישר לכל כיוון, כמה שרוצים | R | 飛 |
+| רגלי | משבצת אחת קדימה, ולוקח קדימה | P | 歩 |
+
+- לכלי שלכם אי אפשר לעבור. לכלי של היריב עוברים, ולוקחים אותו.
+- רק הפרש מדלג. כל השאר נעצרים בכלי הראשון בדרך.
+- אין מלכה, אין הצרחה, ואין צעד כפול לרגלי.
+
+{/*
+PRACTICE (not rendered yet): the eight engine stages (king, gold, silver, knight, lance, bishop, rook, pawn)
+render here once they ship, per lesson-stage-map.md. Until then there is no practice link on purpose:
+Lishogi's own Learn course is the one we chose not to send people to.
+*/}
+
+**הבא:** [שיעור 3: הכתרה ←](/rules/03-promotion)
+
+{/*
+OPEN (before publishing)
+1. Practice block: wire in the engine stages when the silver spike is merged and the other seven are built.
+2. Address form (plural imperative) → Localization Guide (same as Lesson 1).
+3. 2.5 rule of thumb (silver attacks, gold defends) is our wording of a standard idea that Shogi Shack also
+   teaches (03 Strategies, attack and defence units). No numbers in it, so no source needed on the page.
+4. 2.9 "16 squares on an empty board" is plain geometry (8 along the file + 8 along the rank on a 9×9 board).
+*/}

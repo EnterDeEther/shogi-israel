@@ -153,8 +153,9 @@ EDITOR NOTES (not rendered)
 
 {/*
 OPEN (before publishing)
-1. VERIFY: Lishogi coordinate trainer shows squares as two digits (76) with the "western" setting. The page
-   says only "pick Japanese or western". If it shows letters, drop the link or add a one-line note.
+1. VERIFIED 2026-10-24 (Lishogi source, ui/misc/src/build/coordinate.ts + modules/pref Notation.scala): the trainer
+   shows squares as two digits (76) under the default "Western" notation, and also under Kawasaki. Users who
+   switched their notation preference see 7六 (Japanese) or 7f (Western engine / KIF / USI). The link can stay.
 2. Address form (plural imperative) → Localization Guide.
 3. Task 1.5 is a two-button question, not a board tap. Website chat: support <Task type="choice">.
 4. Ōhashi/Itō set-up order: moved to the end of the course (Lishogi benchmark §4.5), not here.

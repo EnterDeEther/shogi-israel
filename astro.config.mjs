@@ -10,7 +10,7 @@ export default defineConfig({
     mdx(),
     // Lessons still being written render an "on its way" page; keep them out of the sitemap.
     // When a lesson's MDX lands in src/content/rules/, remove its number from this list.
-    sitemap({ filter: (page) => !/\/rules\/0[2-8]-/.test(page) }),
+    sitemap({ filter: (page) => !/\/rules\/0[3-8]-/.test(page) }),
   ],
   build: { format: 'directory' },
 });
