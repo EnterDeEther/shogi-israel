@@ -58,7 +58,7 @@ export const categories: Category[] = [
     name: i18n('learn:advanced'),
     stages: [value].map(createStage),
   },
-  // Shogi Israel's own stages (Dean, 2026-10-24: openings, castles and strategy)
+  // Shogi Israel's own stages: openings, castles and strategy
   {
     key: 'openings',
     name: i18n('learn:il_openings'),

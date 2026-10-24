@@ -5,27 +5,22 @@ course: rules
 lesson: 1
 slug: rules/01-board-pieces-setup
 next: rules/02-how-pieces-move
-status: draft-v1          # 2026-10-24 · Content (written in the Content research chat)
-glossary: v0-locked       # rows 1-103, locked 2026-10-23
-facts: research/rules-course.md (Lesson 1) · research/pieces-notation.md
+status: draft-v1
 reading_time_min: 5
 og_image_sfen: "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1"
 ---
 
 {/*
-EDITOR NOTES (not rendered)
-- Components (Website + Shogi tech chats implement):
-  <Term id="…" first>…</Term>  renders the glossary first-use string (column H) and wraps the
-      brackets in <bdi>. The child text is the expected string; the build fails if it drifts from the sheet.
-  <Board sfen="…" highlight="…" zones caption="…" />  static SVG board, letters by default,
-      kanji toggle, never mirrored, auto text alternative ("תיאור הלוח") from the SFEN.
+Authoring notes (not rendered)
+- Components:
+  <Term id="…" first>…</Term>  glossary first-use string, with the brackets wrapped in <bdi>.
+  <Board sfen="…" highlight="…" zones caption="…" />  static board, letters by default, kanji toggle,
+      never mirrored, text alternative generated from the SFEN.
   <Task>…</Task>  one action under the board; `answer` = square(s) the learner must tap.
   <Note>…</Note>  side box (culture / chess contrast).
   <Notation>76</Notation>  LTR-isolated digits / moves (<bdi dir="ltr">).
-- Address form: plural imperative (לחצו, מצאו) as a gender-neutral default. Confirm against the
-  Localization Guide before publishing.
-- Every fact below is in research/rules-course.md §Lesson 1 with two sources.
-- One step = one board + one short paragraph + one action (research/website-design.md §2).
+- Address form: plural imperative (לחצו, מצאו) as a gender-neutral default.
+- One step = one board + one short paragraph + one action.
 */}
 
 # שיעור 1: הלוח, הכלים והעמדה הפותחת
@@ -166,13 +161,3 @@ EDITOR NOTES (not rendered)
 **לתרגל:** מאמן הקואורדינטות של Lishogi מראה משבצת, ואתם לוחצים עליה. דקה ביום והלוח נכנס לראש: [lishogi.org/training/coordinate](https://lishogi.org/training/coordinate)
 
 **הבא:** [שיעור 2: איך כל כלי זז ←](/rules/02-how-pieces-move)
-
-{/*
-OPEN (before publishing)
-1. VERIFIED 2026-10-24 (Lishogi source, ui/misc/src/build/coordinate.ts + modules/pref Notation.scala): the trainer
-   shows squares as two digits (76) under the default "Western" notation, and also under Kawasaki. Users who
-   switched their notation preference see 7六 (Japanese) or 7f (Western engine / KIF / USI). The link can stay.
-2. Address form (plural imperative) → Localization Guide.
-3. Task 1.5 is a two-button question, not a board tap. Website chat: support <Task type="choice">.
-4. Ōhashi/Itō set-up order: moved to the end of the course (Lishogi benchmark §4.5), not here.
-*/}

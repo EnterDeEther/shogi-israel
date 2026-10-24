@@ -1,6 +1,6 @@
 // Shogi Israel (shogi.co.il), 2026-10-24: builds opening, strategy and castle stages from a full move line,
 // so each lesson is written as data (src/learn/stages/openings-he.ts) instead of hand-computed positions.
-// Lines come from the openings research (knowledge/content/learn/openings-research.md), checked move by move.
+// Every line is checked move by move by test/stages.test.ts.
 // AGPL-3.0-or-later, like the rest of src/learn/.
 
 import { makeSfen, parseSfen } from 'shogiops/sfen';
