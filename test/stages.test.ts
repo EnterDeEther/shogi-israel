@@ -118,15 +118,15 @@ describe('every level is solvable with 3 stars', () => {
       );
 });
 
-test('39 stages, 180 levels', () => {
-  expect(stages.length).toBe(39);
-  expect(stages.reduce((a, s) => a + s.levels.length, 0)).toBe(180);
+test('40 stages, 183 levels', () => {
+  expect(stages.length).toBe(40);
+  expect(stages.reduce((a, s) => a + s.levels.length, 0)).toBe(183);
 });
 
 test('no string falls back to its key', () => {
   const strings = he as Record<string, string>;
   for (const s of stages) {
-    for (const t of [s.title, s.subtitle, s.intro, s.complete, ...s.levels.flatMap((l) => [l.goal, l.text ?? '', ...(l.why ?? [])])])
+    for (const t of [s.title, s.subtitle, s.intro, s.complete, ...s.levels.flatMap((l) => [l.goal, l.text ?? '', ...(l.why ?? []), ...(l.replies ?? [])])])
       expect(Object.keys(strings).includes(t), `untranslated: ${t}`).toBe(false);
   }
 });
@@ -135,4 +135,28 @@ test('every "why" list has one reason per user move', () => {
   for (const s of stages)
     for (const l of s.levels)
       if (l.why) expect(l.why.length, `${s.key} #${l.id}`).toBe(l.scenario?.filter((u) => u.color === l.color).length ?? l.nbMoves);
+});
+
+test('every "replies" list has one note per opponent reply', () => {
+  for (const s of stages)
+    for (const l of s.levels)
+      if (l.replies) {
+        expect(l.replies.length, `${s.key} #${l.id}`).toBe(l.scenario!.filter((u) => u.color !== l.color).length);
+        expect(l.replyNames!.length, `${s.key} #${l.id}`).toBe(l.replies.length);
+      }
+});
+
+test('each "what if" punishment wins material', () => {
+  const value: Record<string, number> = { pawn: 1, lance: 3, knight: 4, silver: 5, gold: 6, bishop: 8, rook: 10, tokin: 6, promotedlance: 6, promotedknight: 6, promotedsilver: 6, horse: 10, dragon: 12, king: 0 };
+  const material = (pos: ReturnType<typeof currentPosition>) => {
+    let m = 0;
+    for (const sq of pos.board.occupied) { const p = pos.board.get(sq)!; m += (p.color === 'sente' ? 1 : -1) * value[p.role]; }
+    for (const c of ['sente', 'gote'] as const) for (const [r, n] of pos.hands.color(c)) m += (c === 'sente' ? 1 : -1) * value[r] * n;
+    return m;
+  };
+  const stage = stages.find((s) => s.key === 'whatIf')!;
+  for (const l of stage.levels) {
+    const gain = material(currentPosition(l, l.scenario)) - material(currentPosition(l, []));
+    expect(gain, `whatIf #${l.id}`).toBeGreaterThanOrEqual(4);
+  }
 });

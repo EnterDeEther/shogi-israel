@@ -5,7 +5,7 @@ The Hebrew home of shogi in Israel: a free rules course and the community hub.
 Astro static site, deployed by Vercel on every push to `main`.
 
 ## Adding a lesson
-1. Drop the Content chat's MDX file into `src/content/rules/` (file name = slug, e.g. `02-how-pieces-move.mdx`).
+1. Drop the lesson's MDX file into `src/content/rules/` (file name = slug, e.g. `02-how-pieces-move.mdx`).
 2. Push. Vercel builds and publishes. The lesson joins the sitemap by itself (`astro.config.mjs` keeps out only lessons whose MDX is missing).
 
 MDX components available in lessons: `<Step>` (board beside its text), `<Board sfen highlight zones reveal caption />`, `<Task answer hint>`, `<Note title>`, `<Term id first>`, `<Notation>`, `<Piece>` (a kanji or letter inside a piece shape; use it wherever a piece label sits next to its name).

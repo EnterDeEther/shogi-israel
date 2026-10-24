@@ -3,7 +3,7 @@
 // Adding a page: add a link to the right section below. An internal link only shows once its page
 // exists in src/pages/ (see isLive), so a slot for a page that is still being built can sit here
 // already and appears by itself when the page lands. Links with a #hash are always shown.
-// Everything that teaches the game goes under "למד לשחק" (Dean, 2026-10-24).
+// Everything that teaches the game goes under "למד לשחק".
 
 export interface NavLink {
   href: string;
