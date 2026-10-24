@@ -2,14 +2,28 @@
 // Source: https://github.com/WandererXII/lila/blob/89aea5f6f24c5e941c7cac8434a6e9e1acc15e94/ui/learn/src/categories.ts
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
-// Modified by Shogi Israel (shogi.co.il), 2026-10-24: spike: only the silver stage is registered.
+// Modified by Shogi Israel (shogi.co.il), 2026-10-24: i18n import points to our Hebrew shim; all 18 stages, same order as lila.
 
 import { i18n } from './i18n';
 import type { Category, IncompleteStage, Stage } from './interfaces';
-// Spike: only silver is ported so far. Upstream imports, for when the other stages land:
-// bishop, capture, check1, checkmate1, drop, gold, intro, king, knight, lance,
-// out-of-check, pawn, protection, repetition, rook, setup, value.
+import bishop from './stages/bishop';
+import capture from './stages/capture';
+import check1 from './stages/check1';
+import checkmate1 from './stages/checkmate1';
+import drop from './stages/drop';
+import gold from './stages/gold';
+import intro from './stages/intro';
+import king from './stages/king';
+import knight from './stages/knight';
+import lance from './stages/lance';
+import outOfCheck from './stages/out-of-check';
+import pawn from './stages/pawn';
+import protection from './stages/protection';
+import repetition from './stages/repetition';
+import rook from './stages/rook';
+import setup from './stages/setup';
 import silver from './stages/silver';
+import value from './stages/value';
 
 function addStageId(): (iStage: IncompleteStage) => Stage {
   let cnt = 0;
@@ -23,9 +37,29 @@ const createStage = addStageId();
 
 export const categories: Category[] = [
   {
+    key: 'theIntroduction',
+    name: i18n('learn:theIntroduction'),
+    stages: [intro].map(createStage),
+  },
+  {
     key: 'shogiPieces',
     name: i18n('learn:shogiPieces'),
-    stages: [silver].map(createStage),
+    stages: [king, gold, silver, knight, lance, bishop, rook, pawn].map(createStage),
+  },
+  {
+    key: 'fundamentals',
+    name: i18n('learn:fundamentals'),
+    stages: [capture, drop, protection, check1, outOfCheck, checkmate1].map(createStage),
+  },
+  {
+    key: 'intermediate',
+    name: i18n('learn:intermediate'),
+    stages: [setup, repetition].map(createStage),
+  },
+  {
+    key: 'advanced',
+    name: i18n('learn:advanced'),
+    stages: [value].map(createStage),
   },
 ];
 

@@ -7,11 +7,11 @@ import Task from '../../components/mdx/Task.astro';
 import Notation from '../../components/mdx/Notation.astro';
 import { getCollection, render } from 'astro:content';
 import { RULES_COURSE, PRACTICE } from '../../lib/course';
+import { stages } from '../../learn/categories';
+import { stageUrl } from '../../learn/urls';
 
-// Practice stages that already have a page under src/pages/learn/ (e.g. "silver").
-const learnPages = new Set(
-  Object.keys(import.meta.glob('../learn/*.astro')).map((p) => p.split('/').pop()!.replace('.astro', '')),
-);
+// Practice stages that exist in the lesson engine (src/learn/categories.ts); il_* stages appear once they are built.
+const learnPages = new Set(stages.map((s) => s.key));
 
 export async function getStaticPaths() {
   const entries = await getCollection('rules');
@@ -70,7 +70,7 @@ const practice = (PRACTICE[stub.slug] ?? []).filter((p) => learnPages.has(p.stag
         <p>תרגילים קצרים ואינטראקטיביים לשיעור הזה. משחקים עם הכלים עד שזה יושב בידיים.</p>
         <ul>
           {practice.map((p) => (
-            <li><a href={`/learn/${p.stage}/`}><span>{p.title}</span><span aria-hidden="true">←</span></a></li>
+            <li><a href={stageUrl(p.stage)}><span>{p.title}</span><span aria-hidden="true">←</span></a></li>
           ))}
         </ul>
       </section>

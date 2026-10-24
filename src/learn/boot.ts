@@ -1,10 +1,18 @@
 // Shogi Israel: entry point for a Learn island. Replaces lila's build/main.ts + views/view.ts glue.
+// Adds: lesson settings (prefs.ts) in a dialog, keyboard play (keyboard.ts), browser back/forward between stages.
 // AGPL-3.0-or-later, like the rest of src/learn/.
 import LearnCtrl from './ctrl';
-import { mount, render } from './view';
+import { i18n } from './i18n';
+import { attachKeyboard } from './keyboard';
+import { type LearnPrefs, loadPrefs, savePrefs } from './prefs';
+import { setSoundEnabled } from './sound';
+import { stageSlug } from './urls';
+import { el, icon, mount, pieceSetSwitch, render } from './view';
+
+const slugFromPath = (): string | undefined => window.location.pathname.match(/^\/learn\/([^/]+)\/?$/)?.[1];
 
 export function bootLearn(root: HTMLElement): LearnCtrl {
-  const stageKey = root.dataset.stage;
+  const prefs = loadPrefs();
   const { board } = mount(root);
   let ctrl: LearnCtrl;
   let queued = false;
@@ -13,15 +21,110 @@ export function bootLearn(root: HTMLElement): LearnCtrl {
     queued = true;
     requestAnimationFrame(() => {
       queued = false;
-      render(ctrl, root);
+      render(ctrl, root, openSettings);
+      document.dispatchEvent(new CustomEvent('learn-level'));
     });
   };
-  ctrl = new LearnCtrl({ pref: {} }, redraw, stageKey);
+
+  // ---------- settings (the cog wheel) ----------
+  const apply = (p: LearnPrefs) => {
+    root.classList.toggle('no-coords', !p.coords);
+    setSoundEnabled(p.sound);
+    ctrl?.shogiground.set({
+      movable: { showDests: p.dests },
+      droppable: { showDests: p.dests },
+      animation: { enabled: p.animation },
+    });
+  };
+  const toggle = (key: keyof LearnPrefs, label: string) =>
+    el('label', { class: 'pref' },
+      el('input', {
+        type: 'checkbox', ...(prefs[key] ? { checked: true } : {}),
+        onchange: (e: Event) => {
+          prefs[key] = (e.target as HTMLInputElement).checked;
+          savePrefs(prefs);
+          apply(prefs);
+        },
+      }),
+      el('span', {}, label));
+  const dialog = el('dialog', { class: 'learn__settings', 'aria-labelledby': 'learn-settings-title' },
+    el('form', { method: 'dialog' },
+      el('div', { class: 'head' },
+        el('h2', { id: 'learn-settings-title' }, i18n('il_settings')),
+        el('button', { type: 'submit', class: 'close', 'aria-label': i18n('il_close') }, icon('close')),
+      ),
+      el('fieldset', {},
+        el('legend', {}, i18n('il_pieceSet')),
+        pieceSetSwitch(),
+      ),
+      el('fieldset', {},
+        el('legend', {}, i18n('il_board')),
+        toggle('coords', i18n('il_prefCoords')),
+        toggle('dests', i18n('il_prefDests')),
+        toggle('animation', i18n('il_prefAnimation')),
+        toggle('sound', i18n('il_prefSound')),
+      ),
+      el('details', { class: 'kbd' },
+        el('summary', {}, i18n('il_kbdTitle')),
+        el('ul', {}, ...i18n('il_kbdKeys').split('|').map((line) => {
+          const [k, v] = line.split('=');
+          return el('li', {}, el('kbd', { dir: 'ltr' }, k.trim()), ' ', v.trim());
+        })),
+      ),
+      el('div', { class: 'foot' },
+        el('button', { type: 'button', class: 'link', onclick: () => {
+          if (confirm(i18n('youWillLoseAllYourProgress'))) {
+            ctrl.reset();
+            ctrl.setHome();
+            dialog.close();
+            ctrl.redraw();
+          }
+        } }, i18n('resetMyProgress')),
+        el('button', { type: 'submit', class: 'btn primary' }, i18n('il_close')),
+      ),
+    ),
+  );
+  root.append(dialog);
+  const openSettings = () => {
+    try {
+      dialog.showModal();
+    } catch {
+      dialog.setAttribute('open', '');
+    }
+  };
+  // the dialog's own letters/kanji switch is static: keep its pressed state in sync
+  document.addEventListener('pieces-changed', () => {
+    const kanji = document.documentElement.dataset.pieces === 'kanji';
+    dialog.querySelectorAll<HTMLButtonElement>('[data-pieces-set]').forEach((b) =>
+      b.setAttribute('aria-pressed', String((b.dataset.piecesSet === 'kanji') === kanji)));
+  });
+
+  ctrl = new LearnCtrl({ pref: prefs }, redraw, root.dataset.stage || slugFromPath());
   ctrl.shogiground.attach({ board });
   // lila redraws only when a level ends; we also redraw on each board change for the live star counter.
   ctrl.shogiground.set({ events: { change: redraw } });
-  render(ctrl, root);
-  // Overlays steal focus from the board so keyboard users can start the stage.
-  root.querySelector<HTMLElement>('[data-autofocus]')?.focus({ preventScroll: true });
+  apply(prefs);
+
+  attachKeyboard(
+    ctrl,
+    root.querySelector<HTMLElement>('[data-board]')!,
+    root.querySelector<HTMLElement>('[data-cursor]')!,
+    root.querySelector<HTMLElement>('[data-live]')!,
+  );
+
+  // Browser back / forward: every stage and the menu are history entries (ctrl.setUrl).
+  window.addEventListener('popstate', () => {
+    const slug = slugFromPath();
+    const stage = slug && ctrl.stages.find((s) => stageSlug(s.key) === slug);
+    if (stage) {
+      const lvl = Number.parseInt(window.location.hash.replace('#', ''));
+      ctrl.setLesson(stage.id, Number.isFinite(lvl) ? lvl : 1);
+    } else ctrl.setHome();
+    ctrl.redraw();
+  });
+
+  render(ctrl, root, openSettings);
+  // Overlays take focus so keyboard users can start the stage.
+  root.querySelector<HTMLElement>('.learn__overlay:not([hidden]) [data-autofocus]')?.focus({ preventScroll: true });
   return ctrl;
 }

@@ -2,7 +2,7 @@
 // Source: https://github.com/WandererXII/lila/blob/89aea5f6f24c5e941c7cac8434a6e9e1acc15e94/ui/learn/src/ground.ts
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
-// Modified by Shogi Israel (shogi.co.il), 2026-10-24: lila prefs/notation/resize helpers replaced with fixed settings and numeric coordinates (never mirrored).
+// Modified by Shogi Israel (shogi.co.il), 2026-10-24: lila prefs/notation/resize helpers replaced with our lesson settings (prefs.ts: move dots, animation) and numeric coordinates (never mirrored).
 
 import type { Config } from 'shogiground/config';
 import type { Drawable, SquareHighlight } from 'shogiground/draw';
@@ -19,12 +19,14 @@ export function initConfig(ctrl: LearnCtrl): Config {
   return {
     movable: {
       free: false,
+      showDests: ctrl.pref.dests,
       events: {
         after: ctrl.onUserMove.bind(ctrl),
       },
     },
     droppable: {
       free: false,
+      showDests: ctrl.pref.dests,
       events: {
         after: ctrl.onUserDrop.bind(ctrl),
       },
@@ -56,6 +58,9 @@ export function initConfig(ctrl: LearnCtrl): Config {
     },
     premovable: {
       enabled: false,
+    },
+    animation: {
+      enabled: ctrl.pref.animation,
     },
     // Shogi Israel: numbers only (squares are two digits, e.g. 76), regardless of user prefs.
     coordinates: {

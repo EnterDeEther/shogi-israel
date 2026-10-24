@@ -15,10 +15,10 @@ export const RULES_COURSE: LessonStub[] = [
 export const pad = (n: number) => String(n).padStart(2, '0');
 
 // Interactive practice (/learn/<stage>/) that matches each Rules lesson.
-// Stage keys are Lishogi Learn stage names. A link only shows once its page exists in src/pages/learn/.
+// Stage keys are Lishogi Learn stage keys (src/learn/stages/*.ts). A link only shows once the stage is in the engine.
 export const PRACTICE: Record<string, { stage: string; title: string }[]> = {
   // Final map from content/learn/lesson-stage-map.md (content chat, 2026-10-24 15:55).
-  '01-board-pieces-setup': [{ stage: 'intro', title: 'הכרת הלוח' }],
+  '01-board-pieces-setup': [{ stage: 'introduction', title: 'הכרת הלוח' }],
   '02-how-pieces-move': [
     { stage: 'king', title: 'מלך' },
     { stage: 'gold', title: 'גנרל זהב' },

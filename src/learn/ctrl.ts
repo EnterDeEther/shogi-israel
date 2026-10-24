@@ -2,7 +2,7 @@
 // Source: https://github.com/WandererXII/lila/blob/89aea5f6f24c5e941c7cac8434a6e9e1acc15e94/ui/learn/src/ctrl.ts
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
-// Modified by Shogi Israel (shogi.co.il), 2026-10-24: window.lishogi sounds removed (sound sets are not free to reuse); URLs are /learn/<stage>/ with #level; only stages present in categories.ts.
+// Modified by Shogi Israel (shogi.co.il), 2026-10-24: window.lishogi sounds replaced by our own synthesized sounds (Lishogi's sound sets are not free to reuse); URLs are /learn/<stage>/ with #level, and changing stage or going to the menu pushes a history entry so the browser back button works; scroll only when the board is off screen.
 
 import type { Api } from 'shogiground/api';
 import { Shogiground } from 'shogiground/shogiground';
@@ -24,6 +24,8 @@ import {
   illegalShogigroundMoveDests,
   inCheck,
 } from './shogi';
+import { play as playSound } from './sound';
+import { stageSlug, stageUrl } from './urls';
 import { currentPosition } from './util';
 
 export default class LearnCtrl {
@@ -41,7 +43,7 @@ export default class LearnCtrl {
   constructor(
     private opts: LearnOpts,
     readonly redraw: Redraw,
-    startStageKey?: string, // Shogi Israel: each stage has its own page, /learn/<key>/
+    startStageKey?: string, // Shogi Israel: each stage has its own page, /learn/<slug>/ (urls.ts)
   ) {
     this.pref = opts.pref;
 
@@ -53,7 +55,7 @@ export default class LearnCtrl {
     this.shogiground = Shogiground(ground.initConfig(this));
 
     // Shogi Israel: /learn/<stage>/#<level> instead of /learn#/<stageId>/<levelId>
-    const startStage = this.stages.find(s => s.key === startStageKey);
+    const startStage = this.stages.find(s => stageSlug(s.key) === startStageKey);
     if (startStage) {
       const lvl = Number.parseInt(window.location.hash.replace('#', ''));
       this.setLesson(startStage.id, Number.isFinite(lvl) ? lvl : 1);
@@ -63,7 +65,14 @@ export default class LearnCtrl {
   setHome(): void {
     this.clearTimetouts();
     this.vm = undefined;
-    window.history.replaceState('', '', '/learn/');
+    this.setUrl('/learn/');
+  }
+
+  // Shogi Israel: a new stage (or the menu) is a new history entry; a new level in the same stage is not.
+  private setUrl(url: string): void {
+    const path = url.split('#')[0];
+    if (window.location.pathname === path) window.history.replaceState('', '', url);
+    else window.history.pushState('', '', url);
   }
 
   setLesson(stageId: number, levelId = 1): void {
@@ -91,7 +100,9 @@ export default class LearnCtrl {
       this.applyOpponentMoveOrDrop();
       this.shogiground.set(ground.destsAndCheck(level, this.vm.usiCList));
 
-      window.history.replaceState('', '', `/learn/${stage.key}/#${level.id}`);
+      this.setUrl(`${stageUrl(stage.key)}#${level.id}`);
+      if (prevStage?.id !== stage.id) window.scrollTo(0, 0);
+      if (this.vm.stageState === 'init') playSound('start');
     } else this.setHome();
   }
 
@@ -116,7 +127,8 @@ export default class LearnCtrl {
     if (this.vm) {
       if (this.vm.level.id === this.vm.stage.levels.length) {
         this.vm.stageState = 'completed';
-      }
+        playSound('end');
+      } else playSound('success');
       this.vm.levelState = 'completed';
       this.vm.score = calcScore(this.vm.level, this.vm.usiCList);
       this.progress.saveScore(this.vm.stage.key, this.vm.level.id, this.vm.score);
@@ -136,6 +148,7 @@ export default class LearnCtrl {
   failLevel(): void {
     if (this.vm) {
       this.vm.levelState = 'fail';
+      playSound('fail');
       this.redraw();
     }
   }
@@ -245,6 +258,8 @@ export default class LearnCtrl {
   }
 
   onMove(_orig: Key, _dest: Key, _promotion: boolean, capturedPiece: Piece | undefined): void {
+    playSound(capturedPiece ? 'capture' : 'move');
+
     if (capturedPiece) {
       this.shogiground.addToHand({
         role: capturedPiece.role,
@@ -253,5 +268,7 @@ export default class LearnCtrl {
     }
   }
 
-  onDrop(_piece: Piece, _key: Key): void {}
+  onDrop(_piece: Piece, _key: Key): void {
+    playSound('move');
+  }
 }

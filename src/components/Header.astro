@@ -1,11 +1,19 @@
 ---
 const path = Astro.url.pathname;
+// Everything that teaches the game sits under one heading (Dean, 2026-10-24).
+const learn = {
+  label: 'למד לשחק',
+  links: [
+    { href: '/rules/', label: 'קורס החוקים' },
+    { href: '/learn/', label: 'שיעורים אינטראקטיביים' },
+  ],
+};
 const links = [
-  { href: '/rules/', label: 'קורס החוקים' },
   { href: '/#community', label: 'קהילה' },
   { href: '/about/', label: 'אודות' },
 ];
 const isCurrent = (href: string) => href !== '/#community' && path.startsWith(href);
+const inLearn = learn.links.some((l) => isCurrent(l.href));
 ---
 <header class="site-header">
   <div class="wrap bar">
@@ -14,6 +22,12 @@ const isCurrent = (href: string) => href !== '/#community' && path.startsWith(hr
       <span class="brand-name">שוגי ישראל</span>
     </a>
     <nav class="nav-wide" aria-label="ראשי">
+      <details class="nav-group" data-nav-group>
+        <summary class={inLearn ? 'current' : undefined}>{learn.label}<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg></summary>
+        <div class="nav-menu">
+          {learn.links.map((l) => <a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a>)}
+        </div>
+      </details>
       {links.map((l) => <a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a>)}
     </nav>
     <details class="nav-narrow">
@@ -22,6 +36,8 @@ const isCurrent = (href: string) => href !== '/#community' && path.startsWith(hr
       </summary>
       <nav aria-label="ראשי (נייד)">
         <a href="/">בית</a>
+        <span class="nav-heading">{learn.label}</span>
+        {learn.links.map((l) => <a class="sub" href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a>)}
         {links.map((l) => <a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a>)}
       </nav>
     </details>
@@ -53,8 +69,35 @@ const isCurrent = (href: string) => href !== '/#community' && path.startsWith(hr
   }
   .nav-narrow nav a:last-child { border-bottom: 0; }
   .nav-narrow nav a[aria-current="page"] { color: var(--seal); font-weight: 700; }
+  .nav-group { position: relative; }
+  .nav-group summary {
+    list-style: none; display: flex; align-items: center; gap: 6px; cursor: pointer;
+    color: var(--ink); font-weight: 500; padding: 8px 0; border-bottom: 2px solid transparent;
+  }
+  .nav-group summary::-webkit-details-marker { display: none; }
+  .nav-group summary:hover, .nav-group summary.current { border-bottom-color: var(--seal); }
+  .nav-group[open] summary svg { transform: rotate(180deg); }
+  .nav-menu {
+    position: absolute; top: calc(100% + 8px); inset-inline-start: -14px; min-width: 220px; z-index: 30;
+    display: flex; flex-direction: column; padding: 6px; background: var(--washi);
+    border: 1.5px solid var(--ink); border-radius: 8px; box-shadow: 0 12px 24px -16px rgba(0, 0, 0, 0.5);
+  }
+  .nav-wide .nav-menu a { padding: 10px 12px; border-radius: 4px; border-bottom: 0; }
+  .nav-wide .nav-menu a:hover, .nav-wide .nav-menu a[aria-current="page"] { background: var(--washi-2); }
+  .nav-heading { min-height: 40px; display: flex; align-items: flex-end; font-size: 14px; font-weight: 700; color: var(--muted); }
+  .nav-narrow nav a.sub { padding-inline-start: 14px; }
   @media (min-width: 768px) {
-    .nav-wide { display: flex; }
+    .nav-wide { display: flex; align-items: center; }
     .nav-narrow { display: none; }
   }
 </style>
+
+<script>
+  // "למד לשחק" menu: close on Escape (focus back on the heading) and on a click elsewhere.
+  document.querySelectorAll<HTMLDetailsElement>('[data-nav-group]').forEach((d) => {
+    d.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && d.open) { d.open = false; d.querySelector('summary')?.focus(); }
+    });
+    document.addEventListener('click', (e) => { if (d.open && !d.contains(e.target as Node)) d.open = false; });
+  });
+</script>
