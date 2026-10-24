@@ -6,6 +6,7 @@ import Note from '../../components/mdx/Note.astro';
 import Task from '../../components/mdx/Task.astro';
 import Notation from '../../components/mdx/Notation.astro';
 import Step from '../../components/mdx/Step.astro';
+import Piece from '../../components/Piece.astro';
 import { getCollection, render } from 'astro:content';
 import { RULES_COURSE } from '../../lib/course';
 
@@ -28,7 +29,7 @@ const total = RULES_COURSE.length;
 const isLive = (slug?: string) => !!slug && live.includes(slug);
 const rendered = entry ? await render(entry) : null;
 const Content = rendered?.Content;
-const components = { Board, Term, Note, Task, Notation, Step };
+const components = { Board, Term, Note, Task, Notation, Step, Piece };
 ---
 <Base
   title={entry ? entry.data.title : `שיעור ${stub.n}: ${stub.title}`}
