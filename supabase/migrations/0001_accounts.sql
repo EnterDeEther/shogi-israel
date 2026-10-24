@@ -41,6 +41,7 @@ create policy "save own progress" on public.progress for update to authenticated
 create table public.games (
   id bigint generated always as identity primary key,
   user_id uuid not null references auth.users on delete cascade,
+  client_id text check (length(client_id) <= 64),     -- the game's id on the device, so a re-sync never logs it twice
   opponent text not null check (opponent in ('ai')),  -- 'friend' arrives with invite-only PvP
   level smallint check (level between 1 and 20),
   color text check (color in ('sente', 'gote')),
@@ -50,6 +51,7 @@ create table public.games (
   played_at timestamptz not null default now()
 );
 create index games_user_idx on public.games (user_id, played_at desc);
+create unique index games_client_idx on public.games (user_id, client_id);
 
 alter table public.games enable row level security;
 create policy "read own games" on public.games for select to authenticated using ((select auth.uid()) = user_id);
