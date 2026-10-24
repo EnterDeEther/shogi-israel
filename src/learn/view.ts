@@ -427,6 +427,61 @@ function loadMinimized(): boolean {
 function saveMinimized(v: boolean) {
   try { localStorage.setItem('learn-coach-min', v ? '1' : '0'); } catch { /* private mode: keep it for this visit only */ }
 }
+// Has the learner used the bubble yet? Until then it pulses, and the first tip explains how it works.
+let knowsBubble = (() => { try { return localStorage.getItem('learn-coach-known') === '1'; } catch { return false; } })();
+function learnedBubble() {
+  knowsBubble = true;
+  try { localStorage.setItem('learn-coach-known', '1'); } catch { /* fine */ }
+}
+
+/** The bubble can be dragged anywhere (finger or mouse); its place is kept as a share of the screen. */
+function makeDraggable(bubble: HTMLElement) {
+  if (bubble.dataset.drag) return;
+  bubble.dataset.drag = '1';
+  const place = (x: number, y: number) => {
+    const w = bubble.offsetWidth, h = bubble.offsetHeight;
+    const left = Math.min(Math.max(8, x), window.innerWidth - w - 8);
+    const top = Math.min(Math.max(8, y), window.innerHeight - h - 8);
+    Object.assign(bubble.style, { left: `${left}px`, top: `${top}px`, right: 'auto', bottom: 'auto' });
+    return { left, top };
+  };
+  const restore = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('learn-coach-pos') ?? 'null');
+      if (saved) place(saved.x * window.innerWidth, saved.y * window.innerHeight);
+    } catch { /* default corner */ }
+  };
+  requestAnimationFrame(restore);
+  window.addEventListener('resize', restore);
+  let start: { x: number; y: number; left: number; top: number } | null = null;
+  bubble.addEventListener('pointerdown', (e) => {
+    const r = bubble.getBoundingClientRect();
+    start = { x: e.clientX, y: e.clientY, left: r.left, top: r.top };
+    bubble.dataset.dragged = '';
+    bubble.setPointerCapture(e.pointerId);
+  });
+  bubble.addEventListener('pointermove', (e) => {
+    if (!start) return;
+    const dx = e.clientX - start.x, dy = e.clientY - start.y;
+    if (!bubble.dataset.dragged && Math.hypot(dx, dy) < 8) return;
+    if (!bubble.dataset.dragged) { bubble.dataset.dragged = '1'; bubble.classList.add('dragging'); }
+    place(start.left + dx, start.top + dy);
+  });
+  const end = () => {
+    if (!start) return;
+    start = null;
+    bubble.classList.remove('dragging');
+    if (bubble.dataset.dragged) {
+      const r = bubble.getBoundingClientRect();
+      try { localStorage.setItem('learn-coach-pos', JSON.stringify({ x: r.left / window.innerWidth, y: r.top / window.innerHeight })); } catch { /* fine */ }
+      learnedBubble();
+    }
+  };
+  bubble.addEventListener('pointerup', end);
+  bubble.addEventListener('pointercancel', end);
+  // a drag is not a tap
+  bubble.addEventListener('click', (e) => { if (bubble.dataset.dragged) { e.stopImmediatePropagation(); e.preventDefault(); bubble.dataset.dragged = ''; } }, true);
+}
 
 function levelTips(ctrl: LearnCtrl): Tip[] {
   const vm = ctrl.vm!;
@@ -473,18 +528,19 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
   const setOpen = (open: boolean, minimize = false) => {
     coach.open = open;
     if (open) { coach.unread = false; coach.minimized = false; coach.view = null; saveMinimized(false); }
-    if (minimize) { coach.minimized = true; saveMinimized(true); }
+    if (minimize) { coach.minimized = true; saveMinimized(true); learnedBubble(); }
     ctrl.coachMinimized = coach.minimized;
     if (!open && vm.waiting) ctrl.continueAfterMove();
   };
 
-  // the floating bubble
-  bubble.hidden = coach.open;
-  bubble.className = `learn__bubble${coach.unread ? ' unread' : ''}`;
+  // the floating bubble: always there; a tap opens or minimizes the tips, a drag moves it
+  makeDraggable(bubble);
+  bubble.hidden = false;
+  bubble.className = `learn__bubble${coach.unread ? ' unread' : ''}${coach.open ? ' open' : ''}${knowsBubble ? '' : ' new'}`;
   bubble.setAttribute('aria-expanded', String(coach.open));
-  bubble.setAttribute('aria-label', i18n('il_coachBubble'));
-  bubble.onclick = go(() => setOpen(true));
-  bubble.replaceChildren(icon('tip'), el('span', { class: 'dot', 'aria-hidden': 'true' }));
+  bubble.setAttribute('aria-label', coach.open ? i18n('il_coachMinimize') : i18n('il_coachBubble'));
+  bubble.onclick = go(() => { learnedBubble(); setOpen(!coach.open, coach.open); });
+  bubble.replaceChildren(icon('bulb'), el('span', { class: 'label' }, i18n('il_tips')), el('span', { class: 'dot', 'aria-hidden': 'true' }));
 
   root.classList.toggle('has-coach', coach.open);
   if (!coach.open) {
@@ -505,6 +561,7 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
       el('h2', {}, i18n('il_coachIntroTitle')),
       el('p', { class: 'lead' }, rich(level.goal)),
       total ? el('p', { class: 'hint' }, i18n('il_coachIntroWhy')) : null,
+      !knowsBubble && el('div', { class: 'how' }, icon('bulb'), el('p', {}, rich(i18n('il_coachHow')))),
       isCurrent && el('div', { class: 'buttons' }, btn(i18n('il_start'), () => setOpen(false))),
     ];
   } else if (tip.kind === 'move') {
@@ -603,7 +660,7 @@ const icons: Record<string, string> = {
   cog: '<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>',
   close: '<path d="M6 6l12 12M18 6L6 18"/>',
   minimize: '<path d="M6 12h12"/>',
-  tip: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4h0A1.5 1.5 0 0 1 4 14.5z"/><path d="M8 8.5h8M8 12h5"/>',
+  bulb: '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/>',
 };
 export function icon(name: string): HTMLElement {
   const s = el('span', { class: 'icon', 'aria-hidden': 'true' });
