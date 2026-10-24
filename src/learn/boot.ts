@@ -11,6 +11,13 @@ import { el, icon, mount, pieceSetSwitch, render } from './view';
 
 const slugFromPath = (): string | undefined => window.location.pathname.match(/^\/learn\/([^/]+)\/?$/)?.[1];
 
+// The site menu links straight to a category of the stage map (/learn/#cat-openings). The map is drawn
+// here, after the page loaded, so the browser cannot scroll to it by itself.
+const scrollToCategory = (): void => {
+  const id = window.location.hash.slice(1);
+  if (id.startsWith('cat-')) document.getElementById(id)?.scrollIntoView();
+};
+
 export function bootLearn(root: HTMLElement): LearnCtrl {
   const prefs = loadPrefs();
   const { board } = mount(root);
@@ -119,11 +126,18 @@ export function bootLearn(root: HTMLElement): LearnCtrl {
     if (stage) {
       const lvl = Number.parseInt(window.location.hash.replace('#', ''));
       ctrl.setLesson(stage.id, Number.isFinite(lvl) ? lvl : 1);
-    } else ctrl.setHome();
+    } else {
+      const hash = window.location.hash;
+      ctrl.setHome();
+      // setHome rewrites the address to /learn/; keep a category hash so a second menu click still works
+      if (hash.startsWith('#cat-')) window.history.replaceState('', '', `/learn/${hash}`);
+    }
     ctrl.redraw();
+    requestAnimationFrame(() => requestAnimationFrame(scrollToCategory));
   });
 
   render(ctrl, root, openSettings);
+  if (!slugFromPath()) scrollToCategory();
   // Overlays take focus so keyboard users can start the stage.
   root.querySelector<HTMLElement>('.learn__overlay:not([hidden]) [data-autofocus]')?.focus({ preventScroll: true });
   return ctrl;
