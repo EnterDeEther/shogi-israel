@@ -14,3 +14,37 @@ export const RULES_COURSE: LessonStub[] = [
 ];
 
 export const pad = (n: number) => String(n).padStart(2, '0');
+
+// Interactive practice (/learn/<stage>/) that matches each Rules lesson.
+// Stage keys are Lishogi Learn stage keys (src/learn/stages/*.ts). A link only shows once the stage is in the engine.
+export const PRACTICE: Record<string, { stage: string; title: string }[]> = {
+  // Final map from content/learn/lesson-stage-map.md (content chat, 2026-10-24 15:55).
+  '01-board-pieces-setup': [{ stage: 'introduction', title: 'הכרת הלוח' }],
+  '02-how-pieces-move': [
+    { stage: 'king', title: 'מלך' },
+    { stage: 'gold', title: 'גנרל זהב' },
+    { stage: 'silver', title: 'גנרל כסף' },
+    { stage: 'knight', title: 'פרש' },
+    { stage: 'lance', title: 'רומח' },
+    { stage: 'bishop', title: 'רץ' },
+    { stage: 'rook', title: 'צריח' },
+    { stage: 'pawn', title: 'רגלי' },
+  ],
+  '03-promotion': [{ stage: 'il_promotion', title: 'הכתרה' }],
+  '04-drops': [
+    { stage: 'capture', title: 'לכידה' },
+    { stage: 'drop', title: 'הצנחה' },
+    { stage: 'protection', title: 'הגנה על כלים' },
+  ],
+  '05-check-mate': [
+    { stage: 'check1', title: 'שח' },
+    { stage: 'outOfCheck', title: 'יציאה משח' },
+    { stage: 'checkmate1', title: 'מט במהלך אחד' },
+  ],
+  '06-illegal-moves-endings': [
+    { stage: 'il_illegal', title: 'מצאו את המהלך הלא חוקי' },
+    { stage: 'il_impasse', title: 'הכרזת 27 נקודות' },
+  ],
+  '07-reading-pieces': [{ stage: 'il_kanji', title: 'זיהוי כלים בקאנג׳י' }],
+  '08-reading-notation': [{ stage: 'il_notation', title: 'קריאת רישום' }],
+};

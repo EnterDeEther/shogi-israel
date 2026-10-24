@@ -1,0 +1,27 @@
+---
+// Interactive lesson island: Lishogi's Learn engine (ported, AGPL-3.0) on our board.
+// One island per page. data-stage = the stage slug (e.g. "silver", "out-of-check"); empty = the stage map.
+import '../styles/shogiground.css';
+import '../styles/learn.css';
+
+interface Props {
+  stage?: string;
+}
+const { stage = '' } = Astro.props;
+---
+<section class="learn-island" data-learn data-stage={stage} aria-label="שיעור אינטראקטיבי">
+  <noscript><p>השיעור האינטראקטיבי צריך JavaScript. אפשר ללמוד את אותו חומר בעמודי <a href="/rules/">קורס החוקים</a>.</p></noscript>
+</section>
+<p class="small muted learn-credit">
+  מערכת השיעורים מבוססת על הקוד ועל מבנה הלימוד של <a href="https://lishogi.org/learn" rel="noopener">Lishogi</a> (רישיון AGPL-3.0). הטקסט בעברית שלנו.{' '}
+  <a href="https://github.com/EnterDeEther/shogi-israel/tree/main/src/learn" rel="noopener">קוד המקור</a>
+</p>
+
+<script>
+  import { bootLearn } from '../learn/boot';
+  document.querySelectorAll<HTMLElement>('[data-learn]').forEach((el) => bootLearn(el));
+</script>
+
+<style>
+  .learn-credit { margin: 4px 0 0; max-width: 680px; line-height: 1.6; }
+</style>
