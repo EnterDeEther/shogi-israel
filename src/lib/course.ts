@@ -8,7 +8,7 @@ export const RULES_COURSE: LessonStub[] = [
   { n: 3, slug: '03-promotion', title: 'הכתרה' },
   { n: 4, slug: '04-drops', title: 'לכידה והצנחה' },
   { n: 5, slug: '05-check-mate', title: 'שח ומט' },
-  { n: 6, slug: '06-illegal-moves-endings', title: 'מסעים לא חוקיים ואיך משחק נגמר' },
+  { n: 6, slug: '06-illegal-moves-endings', title: 'מהלכים לא חוקיים ואיך משחק נגמר' },
   { n: 7, slug: '07-reading-pieces', title: 'לקרוא את הכלים' },
   { n: 8, slug: '08-reading-notation', title: 'לקרוא רישום משחק' },
 ];
