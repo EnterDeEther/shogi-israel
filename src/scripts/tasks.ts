@@ -35,9 +35,11 @@ function markDone() {
 function setupBoardTask(task: HTMLElement, answer: string) {
   const fig = boardBefore(task);
   const grid = fig?.querySelector<HTMLElement>('[data-grid]');
-  const fb = task.querySelector<HTMLElement>('.task-fb');
-  if (!grid || !fb) return;
+  const fb = fig?.querySelector<HTMLElement>('[data-board-fb]');
+  if (!fig || !grid || !fb) return;
   const squares = [...grid.querySelectorAll<HTMLElement>('[data-sq]')];
+  const hint = task.dataset.hint;
+  let misses = 0;
   grid.classList.add('live');
   grid.removeAttribute('aria-hidden');
   grid.setAttribute('role', 'group');
@@ -48,18 +50,41 @@ function setupBoardTask(task: HTMLElement, answer: string) {
     s.tabIndex = i === 40 ? 0 : -1; // start on 55, the centre
   });
 
+  const mark = (s: HTMLElement, cls: 'ok' | 'no', sign: string) => {
+    s.classList.add(cls);
+    const mk = document.createElement('span');
+    mk.className = 'mk';
+    mk.setAttribute('aria-hidden', 'true');
+    mk.textContent = sign;
+    s.append(mk);
+  };
+  const clearMisses = () =>
+    squares.forEach((x) => {
+      x.classList.remove('no');
+      if (!x.classList.contains('ok')) x.querySelector('.mk')?.remove();
+    });
+
+  // Feedback goes under the board, where the player is looking, not in the task box below.
   const choose = (s: HTMLElement) => {
     if (task.classList.contains('done')) return;
     const sq = s.dataset.sq ?? '';
-    squares.forEach((x) => x.classList.remove('no'));
+    const what = (s.dataset.label ?? `משבצת ${sq}`).replace(/^משבצת \d\d, /, '');
+    clearMisses();
+    fb.classList.remove('is-ok', 'is-no');
     if (matches(answer, sq)) {
-      s.classList.add('ok');
+      mark(s, 'ok', '✓');
+      fb.classList.add('is-ok');
       fb.textContent = `נכון! משבצת ${sq}.`;
       task.classList.add('done');
+      fig.classList.add('revealed');
+      const label = task.querySelector('.task-label');
+      if (label) label.textContent = 'נפתר ✓';
       markDone();
     } else {
-      s.classList.add('no');
-      fb.textContent = `זו משבצת ${sq}. נסו שוב.`;
+      misses++;
+      mark(s, 'no', '✗');
+      fb.classList.add('is-no');
+      fb.textContent = `לא. זו משבצת ${sq} (${what}). נסו שוב.` + (hint && misses >= 2 ? ` רמז: ${hint}` : '');
     }
   };
 
