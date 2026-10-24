@@ -145,3 +145,9 @@
   .play .table-box > .ruser:last-child { order: 5; border-top: 1px solid var(--rule); }
   .play .tools + .ruser { border-top: 0; }
 }
+
+/* "how does a timed game work?" under the clock choice */
+.clock-help { margin: -4px 0 12px; text-align: start; font-size: 14.5px; line-height: 1.6; }
+.clock-help summary { cursor: pointer; text-align: center; color: var(--seal); font-weight: 700; min-height: 32px; text-decoration: underline; text-underline-offset: 3px; }
+.clock-help p { margin: 6px 0 6px; padding: 10px 12px; border-radius: 6px; background: var(--washi-2); color: var(--ink); }
+.clock-help a { display: block; text-align: center; font-weight: 600; }

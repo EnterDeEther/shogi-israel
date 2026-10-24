@@ -247,6 +247,7 @@ function setupScreen(ctrl: PlayCtrl, draft: PlaySettings, go: (fn: () => void) =
       { label: 'משיב', value: 'gote', sub: 'המחשב מתחיל' },
     ], draft.color, (v) => (draft.color = v)),
     seg('שעון', CLOCKS.map((c) => ({ label: c.label, value: c.value })), draft.clock, (v) => (draft.clock = v), 'clocks'),
+    clockHelp(),
     el('div', { class: 'buttons' },
       el('button', { type: 'button', class: 'btn primary big', 'data-autofocus': true, 'data-fid': 'start', onclick: go(() => ctrl.newGame({ ...draft })) }, 'מתחילים'),
       ctrl.record ? el('button', { type: 'button', class: 'link', onclick: go(() => ctrl.closeSetup()) }, ctrl.playing ? 'חזרה למשחק' : 'סגירה') : null,
@@ -263,6 +264,24 @@ function unsupported(reason: 'isolation' | 'wasm'): HTMLElement {
       : 'הדף נפתח בתוך אפליקציה שחוסמת את מה שהמחשב צריך. פתחו את הקישור בדפדפן הרגיל (Chrome או Safari).'),
     el('p', {}, 'בינתיים אפשר לשחק נגד המחשב ב־', el('a', { href: 'https://lishogi.org', rel: 'noopener' }, 'Lishogi'), '.'),
   );
+}
+
+/** Where the full explanation of timed games lives (its own page, written by another work item). */
+export const CLOCK_INFO_URL = '/clock/';
+let clockHelpOpen = false;
+
+/** "How does a timed game work?" next to the clock choice: a short answer here, the full one on its page. */
+function clockHelp(): HTMLElement {
+  const d = el('details', { class: 'clock-help', ...(clockHelpOpen ? { open: true } : {}) },
+    el('summary', {}, 'איך משחק על זמן עובד?'),
+    el('p', {},
+      'לכל צד יש זמן ראשי. כשהוא נגמר מתחילה ', el('strong', {}, 'ספירת שניות'),
+      ': כל מהלך צריך להיעשות בתוך מספר השניות שבחרתם, והספירה מתחילה מחדש אחרי כל מהלך. מי שהספירה שלו מגיעה לאפס מפסיד (הפסד בזמן). ',
+      'השעון של כל צד רץ רק בתורו. למשל ', el('bdi', {}, '10 דק׳ + 30 שנ׳'), ': עשר דקות לכל המשחק, ואחריהן 30 שניות לכל מהלך.'),
+    el('a', { href: CLOCK_INFO_URL }, 'ההסבר המלא על משחק על זמן'),
+  );
+  d.addEventListener('toggle', () => (clockHelpOpen = d.open));
+  return d;
 }
 
 let draft: PlaySettings | undefined;
