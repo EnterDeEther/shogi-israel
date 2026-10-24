@@ -89,6 +89,7 @@ export function openingStage(d: OpeningStage): IncompleteStage {
       failure: scenarioFailure,
       scenario: createScenario(slice, 'sente', true),
       why: l.why,
+      moveNames: western,
     };
   });
   return {

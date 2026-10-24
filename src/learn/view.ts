@@ -17,6 +17,8 @@ const congratsKeys = [
   'wayToGo', 'yesYesYes', 'youreGoodAtThis', 'nailedIt', 'rightOn',
 ];
 const congrats = () => i18n(congratsKeys[Math.floor(Math.random() * congratsKeys.length)]);
+// Shogi Israel: the coach redraws often, so its word stays the same for a given level
+const congratsFor = (seed: string) => i18n(congratsKeys[[...seed].reduce((a, c) => a + c.charCodeAt(0), 0) % congratsKeys.length]);
 
 type Child = Node | string | null | undefined | false;
 type Attrs = Record<string, string | boolean | undefined | ((e: Event) => void)>;
@@ -124,6 +126,8 @@ export function mount(root: HTMLElement): { board: HTMLElement } {
       el('div', { 'data-info': true }),
     ),
     el('div', { class: 'learn__table', 'data-table': true }),
+    el('div', { class: 'learn__coach', 'data-coach': true, hidden: true }),
+    el('button', { type: 'button', class: 'learn__bubble', 'data-bubble': true, hidden: true }),
     el('div', { class: 'learn__map', 'data-map': true }),
   );
   return { board: root.querySelector<HTMLElement>('[data-sg]')! };
@@ -170,6 +174,9 @@ function renderHome(ctrl: LearnCtrl, _root: HTMLElement, q: Q, go: Go, stageLink
   q('[data-info]').replaceChildren();
   q('[data-back-narrow]').replaceChildren();
   q('[data-table]').replaceChildren();
+  q('[data-coach]').hidden = true;
+  q('[data-bubble]').hidden = true;
+  _root.classList.remove('has-coach');
   q('[data-side]').replaceChildren(
     el('div', { class: `learn__side-home${pct === 100 ? ' done' : ''}` },
       el('div', { class: 'fat', 'aria-hidden': 'true', lang: 'ja' }, '将'),
@@ -340,14 +347,13 @@ function renderLesson(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go, stageLin
   if (vm.levelState === 'fail') {
     status = el('div', { class: 'result failed' },
       el('strong', {}, i18n('puzzleFailed')),
-      el('button', { type: 'button', class: 'btn', 'data-fid': 'retry', onclick: go(() => ctrl.restartLevel()) }, i18n('retry')),
+      el('button', { type: 'button', class: 'btn', 'data-fid': 'retry', onclick: go(() => ctrl.retryMove()) }, i18n('retry')),
     );
   } else if (vm.levelState === 'completed') {
     status = el('div', { class: 'result completed' },
       el('strong', {}, congrats()),
-      level.nextButton || vm.stageState === 'end'
-        ? el('button', { type: 'button', class: 'btn primary', 'data-fid': 'next', onclick: go(() => ctrl.nextLesson()) }, i18n('next'))
-        : stars(vm.score ?? 0),
+      stars(vm.score ?? 0),
+      el('button', { type: 'button', class: 'btn primary', 'data-fid': 'next', onclick: go(() => ctrl.nextLesson()) }, i18n('next')),
       whyList,
     );
   } else {
@@ -366,6 +372,8 @@ function renderLesson(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go, stageLin
       whyList,
     );
   }
+
+  renderCoach(ctrl, root, q, go);
 
   const prog = ctrl.progress.get(stage.key);
   q('[data-table]').replaceChildren(
@@ -403,6 +411,184 @@ function renderLesson(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go, stageLin
   );
 }
 
+// ---------- Shogi Israel: the coach (tips bubble + popup) ----------
+// Every level keeps a list of tips: what we are about to do, why each move was played (lessons with level.why),
+// a wrong move, and the recap at the end. The newest tip pops up beside the board on wide screens (over the
+// table) and as a sheet under the board on phones, so the learner reads it while looking at the board. The
+// arrows (or a swipe) step back through earlier tips. The floating bubble opens the popup again; the minimize
+// button keeps it closed until the learner taps the bubble (new tips then show a dot on the bubble).
+// Nothing moves on until the learner presses a button.
+type TipKind = 'intro' | 'move' | 'fail' | 'done';
+interface Tip { kind: TipKind; idx?: number }
+const coach = { open: false, minimized: loadMinimized(), view: null as number | null, key: '', unread: false };
+function loadMinimized(): boolean {
+  try { return localStorage.getItem('learn-coach-min') === '1'; } catch { return false; }
+}
+function saveMinimized(v: boolean) {
+  try { localStorage.setItem('learn-coach-min', v ? '1' : '0'); } catch { /* private mode: keep it for this visit only */ }
+}
+
+function levelTips(ctrl: LearnCtrl): Tip[] {
+  const vm = ctrl.vm!;
+  const made = vm.usiCList.filter((u) => u.color === vm.level.color).length;
+  const failed = vm.levelState === 'fail';
+  const tips: Tip[] = [{ kind: 'intro' }];
+  if (vm.level.why) for (let i = 0; i < (failed ? made - 1 : made); i++) tips.push({ kind: 'move', idx: i });
+  if (failed) tips.push({ kind: 'fail', idx: made - 1 });
+  if (vm.levelState === 'completed') tips.push({ kind: 'done' });
+  return tips;
+}
+
+function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
+  const vm = ctrl.vm!;
+  const { stage, level } = vm;
+  const box = q('[data-coach]');
+  const bubble = q('[data-bubble]');
+  const off = vm.stageState === 'init' || vm.stageState === 'completed';
+  ctrl.coachMinimized = coach.minimized;
+  if (off) {
+    box.hidden = true;
+    bubble.hidden = true;
+    root.classList.remove('has-coach');
+    coach.key = '';
+    return;
+  }
+
+  // a new tip: show it (unless the learner minimized the coach, or restarted a level whose intro they read)
+  const tips = levelTips(ctrl);
+  const current = tips.length - 1;
+  const key = `${stage.key}#${level.id}:${tips.length}:${tips[current].kind}`;
+  const fresh = key !== coach.key;
+  if (fresh) {
+    coach.key = key;
+    coach.view = null;
+    const quietIntro = tips[current].kind === 'intro' && vm.coach !== 'intro';
+    if (coach.minimized) coach.unread = !quietIntro;
+    else coach.open = !quietIntro;
+  }
+  const shown = coach.view ?? current;
+  const tip = tips[shown];
+  const isCurrent = shown === current;
+
+  const setOpen = (open: boolean, minimize = false) => {
+    coach.open = open;
+    if (open) { coach.unread = false; coach.minimized = false; coach.view = null; saveMinimized(false); }
+    if (minimize) { coach.minimized = true; saveMinimized(true); }
+    ctrl.coachMinimized = coach.minimized;
+    if (!open && vm.waiting) ctrl.continueAfterMove();
+  };
+
+  // the floating bubble
+  bubble.hidden = coach.open;
+  bubble.className = `learn__bubble${coach.unread ? ' unread' : ''}`;
+  bubble.setAttribute('aria-expanded', String(coach.open));
+  bubble.setAttribute('aria-label', i18n('il_coachBubble'));
+  bubble.onclick = go(() => setOpen(true));
+  bubble.replaceChildren(icon('tip'), el('span', { class: 'dot', 'aria-hidden': 'true' }));
+
+  root.classList.toggle('has-coach', coach.open);
+  if (!coach.open) {
+    box.hidden = true;
+    return;
+  }
+
+  const made = vm.usiCList.filter((u) => u.color === level.color).length;
+  const total = level.why?.length ?? 0;
+  const name = (i?: number) => (i === undefined ? undefined : level.moveNames?.[i]);
+  const btn = (label: string, fn: () => void, primary = true, fid = 'coach-main') =>
+    el('button', { type: 'button', class: `btn${primary ? ' primary' : ''}`, 'data-fid': fid, 'data-coach-focus': primary, onclick: go(fn) }, label);
+  const last = level.id === stage.levels.length;
+
+  let body: Child[] = [];
+  if (tip.kind === 'intro') {
+    body = [
+      el('h2', {}, i18n('il_coachIntroTitle')),
+      el('p', { class: 'lead' }, rich(level.goal)),
+      total ? el('p', { class: 'hint' }, i18n('il_coachIntroWhy')) : null,
+      isCurrent && el('div', { class: 'buttons' }, btn(i18n('il_start'), () => setOpen(false))),
+    ];
+  } else if (tip.kind === 'move') {
+    const i = tip.idx!;
+    body = [
+      el('h2', {}, el('span', { class: 'tick', 'aria-hidden': 'true' }, '✓'), ' ',
+        name(i) ? el('bdi', { dir: 'ltr' }, name(i)!) : i18n('il_goodMove')),
+      el('p', { class: 'lead' }, rich(level.why?.[i] ?? '')),
+      total > 1 ? steps(i + 1, total) : null,
+      isCurrent && el('div', { class: 'buttons' },
+        btn(vm.waiting ? i18n('il_continueOpponent') : i18n('il_continue'), () => setOpen(false))),
+    ];
+  } else if (tip.kind === 'done') {
+    const recap = level.why && level.moveNames
+      ? el('div', { class: 'recap' },
+          el('p', { class: 'eyebrow' }, i18n('il_recapTitle')),
+          el('ol', {}, ...level.why.map((w, i) => el('li', {}, el('bdi', { dir: 'ltr', class: 'mv' }, level.moveNames![i]), ' ', rich(w)))))
+      : el('p', { class: 'lead' }, el('span', { class: 'muted' }, i18n('il_doneWith')), ' ', rich(level.goal.replace(/ המהלכים.*$/, '')));
+    body = [
+      el('h2', {}, congratsFor(`${stage.key}${level.id}`), ' ', stars(vm.score ?? 0)),
+      recap,
+      el('div', { class: 'buttons' },
+        btn(last ? i18n('il_finishStage') : i18n('il_nextLevel'), () => ctrl.nextLesson()),
+        btn(i18n('il_again'), () => ctrl.restartLevel(), false, 'coach-again')),
+    ];
+  } else {
+    const expected = level.scenario && name(tip.idx);
+    body = [
+      el('h2', { class: 'bad' }, i18n('il_wrongTitle')),
+      el('p', { class: 'lead' }, expected ? rich(i18nFormat('il_wrongPlan', expected)) : i18n('il_wrongTry')),
+      isCurrent && el('div', { class: 'buttons' }, btn(i18n('il_tryAgain'), () => ctrl.retryMove())),
+    ];
+  }
+
+  // older / newer: RTL, so the older tip is on the right
+  const goTo = (i: number) => go(() => { coach.view = i >= current ? null : Math.max(0, i); });
+  const nav = tips.length > 1
+    ? el('div', { class: 'coach-nav' },
+        el('button', { type: 'button', class: 'arrow', 'data-fid': 'coach-older', 'aria-label': i18n('il_tipOlder'), disabled: shown === 0, onclick: goTo(shown - 1) }, '→'),
+        el('span', { class: 'count' }, el('bdi', { dir: 'ltr' }, `${shown + 1} / ${tips.length}`)),
+        el('button', { type: 'button', class: 'arrow', 'data-fid': 'coach-newer', 'aria-label': i18n('il_tipNewer'), disabled: isCurrent, onclick: goTo(shown + 1) }, '←'),
+      )
+    : null;
+
+  const head = el('div', { class: 'coach-head' },
+    el('p', { class: 'eyebrow' }, i18nFormat('il_levelXofY', level.id, stage.levels.length)),
+    el('button', { type: 'button', class: 'coach-min', 'aria-label': i18n('il_coachMinimize'), 'data-fid': 'coach-min',
+      onclick: go(() => setOpen(false, true)) }, icon('minimize')));
+  const card = el('div', { class: `coach-card${isCurrent ? '' : ' older'}` }, head, ...body, nav);
+  let x0: number | null = null;
+  card.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+  card.addEventListener('touchend', (e) => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0;
+    x0 = null;
+    if (Math.abs(dx) < 50) return;
+    const to = dx > 0 ? shown - 1 : shown + 1; // swipe right shows the older tip (RTL)
+    if (to >= 0 && to <= current) { coach.view = to >= current ? null : to; ctrl.redraw(); }
+  });
+
+  box.hidden = false;
+  box.className = `learn__coach coach-${tip.kind}`;
+  box.setAttribute('role', 'dialog');
+  box.setAttribute('aria-modal', 'false');
+  box.setAttribute('aria-label', i18n(`il_coach_${tip.kind}`));
+  box.replaceChildren(card);
+
+  // a new tip: bring the board and the popup into view together, and move focus to its button
+  if (fresh) {
+    requestAnimationFrame(() => {
+      const board = root.querySelector<HTMLElement>('[data-board]')!.getBoundingClientRect();
+      const sheet = box.getBoundingClientRect();
+      const narrow = getComputedStyle(box).position === 'fixed';
+      if (narrow && (board.top < 48 || board.bottom > sheet.top)) window.scrollBy({ top: board.top - 56, behavior: 'smooth' });
+      if (tip.kind !== 'intro') box.querySelector<HTMLElement>('[data-coach-focus]')?.focus({ preventScroll: true });
+    });
+  }
+}
+
+function steps(made: number, total: number): HTMLElement {
+  return el('div', { class: 'steps', 'aria-label': i18nFormat('il_moveXofY', made, total) },
+    ...Array.from({ length: total }, (_, i) => el('span', { class: i < made ? 'on' : '', 'aria-hidden': 'true' })));
+}
+
 export function pieceSetSwitch(): HTMLElement {
   const kanji = document.documentElement.dataset.pieces === 'kanji';
   return el('div', { class: 'seg', role: 'group', 'aria-label': i18n('il_pieceSet') },
@@ -416,6 +602,8 @@ const icons: Record<string, string> = {
   restart: '<path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4.5h4.5"/>',
   cog: '<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>',
   close: '<path d="M6 6l12 12M18 6L6 18"/>',
+  minimize: '<path d="M6 12h12"/>',
+  tip: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4h0A1.5 1.5 0 0 1 4 14.5z"/><path d="M8 8.5h8M8 12h5"/>',
 };
 export function icon(name: string): HTMLElement {
   const s = el('span', { class: 'icon', 'aria-hidden': 'true' });

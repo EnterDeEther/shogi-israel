@@ -2,7 +2,7 @@
 // Source: https://github.com/WandererXII/lila/blob/89aea5f6f24c5e941c7cac8434a6e9e1acc15e94/ui/learn/src/interfaces.ts
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
-// Modified by Shogi Israel (shogi.co.il), 2026-10-24: unchanged.
+// Modified by Shogi Israel (shogi.co.il), 2026-10-24: added the coach state (Vm.coach, Vm.waiting) and the opening data (Level.why, moveNames, line).
 
 import type { DrawShape, SquareHighlight } from 'shogiground/draw';
 
@@ -44,6 +44,7 @@ export interface Level {
 
   text?: string; // helping text displayed on the board
   line?: Usi[]; // Shogi Israel: the textbook order for castle exercises, which accept any order (used by the tests)
+  moveNames?: string[]; // Shogi Israel: the user's moves in our notation (P-76), for the coach popup
   why?: string[]; // Shogi Israel: why each of the user's moves is played, shown one by one as they are made
   nextButton?: boolean; // wait for user to click next - allows user to review the solution
   offerIllegalDests?: boolean;
@@ -82,6 +83,10 @@ export interface Vm {
   levelState: LevelState;
   usiCList: UsiWithColor[];
   score?: Score;
+  // Shogi Israel: the coach popup beside the board (view.ts renderCoach) and whether the opponent's
+  // reply is waiting for the learner to press "continue" after reading why their move was played
+  coach?: 'intro' | 'move' | 'done' | 'fail';
+  waiting?: boolean;
 }
 
 export interface LearnOpts {

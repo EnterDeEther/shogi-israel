@@ -2,7 +2,7 @@
 // Source: https://github.com/WandererXII/lila/blob/89aea5f6f24c5e941c7cac8434a6e9e1acc15e94/ui/learn/src/ctrl.ts
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
-// Modified by Shogi Israel (shogi.co.il), 2026-10-24: window.lishogi sounds replaced by our own synthesized sounds (Lishogi's sound sets are not free to reuse); URLs are /learn/<stage>/ with #level, and changing stage or going to the menu pushes a history entry so the browser back button works; scroll only when the board is off screen.
+// Modified by Shogi Israel (shogi.co.il), 2026-10-24: window.lishogi sounds replaced by our own synthesized sounds (Lishogi's sound sets are not free to reuse); URLs are /learn/<stage>/ with #level, and changing stage or going to the menu pushes a history entry so the browser back button works; scroll only when the board is off screen; no automatic jump to the next level (the learner presses next in the coach popup), and in opening lessons the opponent's reply waits until the learner has read why their move was played.
 
 import type { Api } from 'shogiground/api';
 import { Shogiground } from 'shogiground/shogiground';
@@ -10,6 +10,7 @@ import type { Piece } from 'shogiground/types';
 import { opposite } from 'shogiground/util';
 import { shogigroundDropDests, shogigroundMoveDests } from 'shogiops/compat';
 import type { Role } from 'shogiops/types';
+import { makeSfen } from 'shogiops/sfen';
 import { makeUsi, parseSquareName, parseUsi } from 'shogiops/util';
 import * as categories from './categories';
 import * as ground from './ground';
@@ -37,6 +38,7 @@ export default class LearnCtrl {
   vm?: Vm; // active lesson, if active
 
   timeouts: number[] = [];
+  coachMinimized = false; // Shogi Israel: set by the view; when the coach is minimized the opponent does not wait
   progress: ProgressStorage;
   pref: any;
 
@@ -94,6 +96,7 @@ export default class LearnCtrl {
         level,
         levelState: 'play',
         usiCList: [],
+        coach: 'intro',
       };
       this.shogiground.selectSquare(null);
       this.shogiground.set(ground.initLevelConfig(level), true);
@@ -108,6 +111,13 @@ export default class LearnCtrl {
 
   nextLesson(): void {
     this.clearTimetouts();
+    // Shogi Israel: after the last level, "next" opens the stage summary first
+    if (this.vm && this.vm.level.id === this.vm.stage.levels.length && this.vm.levelState === 'completed' && this.vm.stageState === 'running') {
+      this.vm.stageState = 'completed';
+      this.vm.coach = undefined;
+      playSound('end');
+      return;
+    }
     if (this.vm) {
       if (this.vm.level.id < this.vm.stage.levels.length)
         this.setLesson(this.vm.stage.id, this.vm.level.id + 1);
@@ -119,28 +129,20 @@ export default class LearnCtrl {
   restartLevel(): void {
     if (this.vm) {
       this.setLesson(this.vm.stage.id, this.vm.level.id);
+      if (this.vm) this.vm.coach = undefined; // Shogi Israel: the learner already read this level's intro
     }
     this.redraw();
   }
 
   completeLevel(): void {
     if (this.vm) {
-      if (this.vm.level.id === this.vm.stage.levels.length) {
-        this.vm.stageState = 'completed';
-        playSound('end');
-      } else playSound('success');
+      // Shogi Israel: no timer to the next level; the coach popup shows the summary and a next button
+      playSound('success');
       this.vm.levelState = 'completed';
+      this.vm.coach = 'done';
+      this.vm.waiting = false;
       this.vm.score = calcScore(this.vm.level, this.vm.usiCList);
       this.progress.saveScore(this.vm.stage.key, this.vm.level.id, this.vm.score);
-      if (this.vm.stageState !== 'completed' && !this.vm.level.nextButton) {
-        this.clearTimetouts();
-        this.timeouts.push(
-          setTimeout(() => {
-            this.nextLesson();
-            this.redraw();
-          }, 1000),
-        );
-      }
       this.redraw();
     }
   }
@@ -148,6 +150,7 @@ export default class LearnCtrl {
   failLevel(): void {
     if (this.vm) {
       this.vm.levelState = 'fail';
+      this.vm.coach = 'fail';
       playSound('fail');
       this.redraw();
     }
@@ -185,24 +188,70 @@ export default class LearnCtrl {
     }
   }
 
+  /** Shogi Israel: is the next scenario move the opponent's, after a correct user move? */
+  private opponentPending(): boolean {
+    const vm = this.vm!;
+    const sc = vm.level.scenario;
+    const next = sc?.[vm.usiCList.length];
+    return !!next && next.color !== vm.level.color && vm.usiCList.every((u, i) => sc![i].usi === u.usi && sc![i].color === u.color);
+  }
+
   private applyUserMoveOrDrop(usi: Usi): void {
     if (this.vm) {
       this.vm.usiCList.push({ usi, color: this.vm.level.color });
       this.shogiground.set({ checks: inCheck(currentPosition(this.vm.level, this.vm.usiCList)) });
 
+      // Shogi Israel: in a lesson that explains its moves, stop after a correct move: the coach popup
+      // says why, and the opponent answers only when the learner presses continue
+      const level = this.vm.level;
+      this.vm.coach = level.why ? 'move' : undefined;
+      if (level.why && !this.coachMinimized && !level.failure?.(level, this.vm.usiCList) && this.opponentPending()) {
+        this.vm.waiting = true;
+        this.shogiground.set({ activeColor: undefined, movable: { dests: new Map() }, droppable: { dests: new Map() } });
+        this.redraw();
+        return;
+      }
+
       // make opponents move if available
       this.applyOpponentMoveOrDrop();
+      this.settle();
+    }
+  }
 
-      // check if we are done - success or fail
+  /** Shogi Israel: the learner read the reason for their move; now the opponent answers. */
+  continueAfterMove(): void {
+    if (!this.vm) return;
+    this.vm.waiting = false;
+    this.vm.coach = undefined;
+    this.applyOpponentMoveOrDrop();
+    this.settle();
+    this.redraw();
+  }
+
+  /** Shogi Israel: take back the wrong move (and the opponent's punishment) instead of restarting the level. */
+  retryMove(): void {
+    const vm = this.vm;
+    if (!vm) return;
+    const sc = vm.level.scenario;
+    if (!sc) return this.restartLevel();
+    let keep = 0;
+    while (keep < vm.usiCList.length && sc[keep]?.usi === vm.usiCList[keep].usi && sc[keep]?.color === vm.usiCList[keep].color) keep++;
+    vm.usiCList = vm.usiCList.slice(0, keep);
+    vm.levelState = 'play';
+    vm.coach = undefined;
+    const sfen = makeSfen(currentPosition(vm.level, vm.usiCList)).split(' ');
+    this.shogiground.set({ sfen: { board: sfen[0], hands: sfen[2] }, lastDests: [] });
+    this.refreshBoard();
+    this.redraw();
+  }
+
+  /** check if we are done - success or fail - and update shogiground accordingly */
+  private settle(): void {
+    if (this.vm) {
       if (this.vm.level.success(this.vm.level, this.vm.usiCList)) this.completeLevel();
       else if (this.vm.level.failure?.(this.vm.level, this.vm.usiCList)) this.failLevel();
 
-      // update shogiground accordingly
       const pos = currentPosition(this.vm.level, this.vm.usiCList);
-      const hasObstacles = !!this.vm.level.obstacles?.length;
-      const illegalDests = !!this.vm.level.offerIllegalDests || hasObstacles;
-      const active = this.vm.levelState !== 'fail' && this.vm.levelState !== 'completed';
-
       if (this.vm.levelState === 'fail' && this.vm.level.showFailureMove) {
         const usi =
           this.vm.level.showFailureMove === 'capture'
@@ -221,7 +270,15 @@ export default class LearnCtrl {
           ground.playUsi(this, usiC);
         }
       }
+      this.refreshBoard(pos);
+    }
+  }
 
+  private refreshBoard(pos = currentPosition(this.vm!.level, this.vm!.usiCList)): void {
+    if (this.vm) {
+      const hasObstacles = !!this.vm.level.obstacles?.length;
+      const illegalDests = !!this.vm.level.offerIllegalDests || hasObstacles;
+      const active = this.vm.levelState !== 'fail' && this.vm.levelState !== 'completed';
       pos.turn = this.vm.level.color;
 
       this.shogiground.set({
