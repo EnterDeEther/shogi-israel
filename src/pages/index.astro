@@ -8,7 +8,7 @@ import { pageExists, LISHOGI_TEAM } from '../lib/live';
 const live = new Set((await getCollection('rules')).map((e) => e.id));
 const START = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1';
 const first = `/rules/${RULES_COURSE[0].slug}/`;
-// Playing happens here first; Lishogi is for public games and tournaments (Dean, 2026-10-24).
+// Playing happens here first; Lishogi is for public games and tournaments.
 const hasPlay = pageExists('/play/');
 const hasAccount = pageExists('/account/');
 ---

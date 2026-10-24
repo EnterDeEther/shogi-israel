@@ -241,7 +241,7 @@ function renderHome(ctrl: LearnCtrl, _root: HTMLElement, q: Q, go: Go, stageLink
 
 /**
  * Shogi Israel: lila points every "what next" card at lishogi.org. Ours point to playing here first
- * (/play/, /account/) and keep Lishogi for public games and tournaments (Dean, 2026-10-24).
+ * (/play/, /account/) and keep Lishogi for public games and tournaments.
  * The island's data-has-* flags say which of our pages exist in this build; until one does, its Lishogi card stays.
  */
 function whatNextLinks(has: DOMStringMap): [href: string, seal: string, title: string, subtitle: string][] {
