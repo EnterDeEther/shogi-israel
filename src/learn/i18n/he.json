@@ -1,0 +1,52 @@
+{
+  "_meta": "Hebrew for the interactive lessons. Keys = Lishogi learn.xml names (translation/source/learn.xml) so upstream changes merge. Keys starting with il_ are ours (not in Lishogi). Text written by Shogi Israel from the locked glossary (Glossary v0, rows 1-103); not a translation of Lishogi's text. AGPL-3.0-or-later.",
+
+  "learnShogi": "ללמוד שוגי",
+  "byPlaying": "תוך כדי משחק",
+  "menu": "תפריט",
+  "shogiPieces": "כלי השוגי",
+
+  "stageX": "שלב %s",
+  "stageXComplete": "שלב %s הושלם",
+  "letsGo": "קדימה",
+  "next": "הבא",
+  "backToMenu": "חזרה לתפריט",
+  "yourScore": "הניקוד שלכם",
+  "puzzleFailed": "לא הפעם",
+  "retry": "נסו שוב",
+
+  "grabAllTheStars": "אספו את כל הכוכבים.",
+  "theFewerMoves": "כמה שפחות מסעים, יותר כוכבים בסוף.",
+
+  "awesome": "מדהים!",
+  "excellent": "מצוין!",
+  "greatJob": "עבודה טובה!",
+  "perfect": "מושלם!",
+  "outstanding": "יוצא מן הכלל!",
+  "wayToGo": "ככה עושים את זה!",
+  "yesYesYes": "כן, כן, כן!",
+  "youreGoodAtThis": "אתם טובים בזה!",
+  "nailedIt": "בול!",
+  "rightOn": "בדיוק!",
+
+  "theSilver": "גנרל כסף",
+  "itMovesEitherForwardOrDiagonallyBack": "משבצת אחת: ישר קדימה, או לאחד מארבעת האלכסונים.",
+  "silverIntro": "גנרל כסף (銀 gin, Silver) מתקדם בזהירות: משבצת אחת ישר קדימה, או משבצת אחת לאחד מארבעת האלכסונים. אין לו צעד הצידה, ואין לו צעד ישר אחורה.",
+  "silverPromotion": "הכניסו את גנרל הכסף לאזור ההכתרה ובחרו להכתיר. כסף מוכתר (成銀 narigin, Promoted Silver) זז כמו גנרל זהב.",
+  "silverSummary": "המשבצות המסומנות הן כל המקומות שגנרל הכסף יכול להגיע אליהם במסע אחד.",
+  "psilverSummary": "כסף מוכתר זז בדיוק כמו גנרל זהב: לכל כיוון, חוץ משני האלכסונים לאחור.",
+  "silverComplete": "כל הכבוד! עכשיו אתם מכירים את גנרל הכסף.",
+
+  "il_level": "תרגיל",
+  "il_levelXofY": "תרגיל %1$s מתוך %2$s",
+  "il_restart": "מהתחלה",
+  "il_resetProgress": "איפוס ההתקדמות",
+  "il_resetConfirm": "כל הכוכבים שאספתם יימחקו. להמשיך?",
+  "il_promoteQuestion": "להכתיר?",
+  "il_boardLabel": "לוח שוגי לתרגול. הכלים שלכם בתחתית. מזיזים בגרירה או בהקשה על הכלי ואז על משבצת היעד.",
+  "il_movesMade": "מסעים: %s",
+  "il_starsLeft": "נשארו %s כוכבים",
+  "il_starsLeftOne": "נשאר כוכב אחד",
+  "il_credit": "מבוסס על קוד השיעורים של Lishogi (רישיון AGPL-3.0). הטקסט בעברית: שוגי ישראל.",
+  "il_spikeNote": "גרסת ניסוי: שלב אחד בלבד."
+}
