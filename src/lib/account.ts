@@ -1,4 +1,4 @@
-// Accounts (Supabase): sign-in by email and password (Dean, 2026-10-24: no Google/SSO), a public nickname,
+// Accounts (Supabase): sign-in by email and password (no Google/SSO), a public nickname,
 // and progress that follows the account across devices. Without an account nothing changes:
 // progress stays in this browser only.
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js';

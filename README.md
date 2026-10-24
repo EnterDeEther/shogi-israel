@@ -33,7 +33,7 @@ Credit (also on the site's credits page):
 - The interactive lessons are adapted from the code and lesson structure of Lishogi (lishogi.org), free software under AGPL-3.0. Our changes, including the Hebrew text, are published under the same licence at github.com/EnterDeEther/shogi-israel. Thanks to the Lishogi team. Board and rules: shogiground and shogiops (GPL-3.0).
 
 ## Accounts (`/account/`)
-Optional accounts on Supabase: email + password (confirmed by email; no Google/SSO, Dean's call), a public nickname, and progress that follows the account. Off until the keys exist: without them the site builds exactly as before, with no account link.
+Optional accounts on Supabase: email + password (confirmed by email; no Google/SSO), a public nickname, and progress that follows the account. Off until the keys exist: without them the site builds exactly as before, with no account link.
 - Keys: the Vercel ↔ Supabase integration sets `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (or set `PUBLIC_SUPABASE_URL` / `PUBLIC_SUPABASE_ANON_KEY`).
 - Database: run `supabase/migrations/0001_accounts.sql` once (tables `profiles`, `progress`, `games`, with row-level security, and `delete_my_account()`).
 - Supabase settings: Authentication → URL configuration: Site URL `https://shogi.co.il`, redirect URLs `https://shogi.co.il/account/` and `https://*-enterdeether.vercel.app/account/`. Emails: paste `supabase/templates/confirm-signup.html` and `reset-password.html` into those two templates. Password minimum length 8. Before launch, set a custom SMTP sender: Supabase's built-in one sends only a few emails an hour.
