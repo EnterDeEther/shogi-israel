@@ -6,7 +6,12 @@ import Note from '../../components/mdx/Note.astro';
 import Task from '../../components/mdx/Task.astro';
 import Notation from '../../components/mdx/Notation.astro';
 import { getCollection, render } from 'astro:content';
-import { RULES_COURSE } from '../../lib/course';
+import { RULES_COURSE, PRACTICE } from '../../lib/course';
+
+// Practice stages that already have a page under src/pages/learn/ (e.g. "silver").
+const learnPages = new Set(
+  Object.keys(import.meta.glob('../learn/*.astro')).map((p) => p.split('/').pop()!.replace('.astro', '')),
+);
 
 export async function getStaticPaths() {
   const entries = await getCollection('rules');
@@ -28,6 +33,7 @@ const isLive = (slug?: string) => !!slug && live.includes(slug);
 const rendered = entry ? await render(entry) : null;
 const Content = rendered?.Content;
 const components = { Board, Term, Note, Task, Notation };
+const practice = (PRACTICE[stub.slug] ?? []).filter((p) => learnPages.has(p.stage));
 ---
 <Base
   title={entry ? entry.data.title : `שיעור ${stub.n}: ${stub.title}`}
@@ -57,6 +63,18 @@ const components = { Board, Term, Note, Task, Notation };
     <p class="complete" data-lesson-complete hidden>
       <strong>סיימתם את השיעור.</strong> ההתקדמות נשמרה במכשיר הזה.
     </p>
+
+    {practice.length > 0 && (
+      <section class="practice" aria-labelledby="practice-h">
+        <h2 id="practice-h">תרגול על הלוח</h2>
+        <p>תרגילים קצרים ואינטראקטיביים לשיעור הזה. משחקים עם הכלים עד שזה יושב בידיים.</p>
+        <ul>
+          {practice.map((p) => (
+            <li><a href={`/learn/${p.stage}/`}><span>{p.title}</span><span aria-hidden="true">←</span></a></li>
+          ))}
+        </ul>
+      </section>
+    )}
 
     <nav class="pager" aria-label="ניווט בין שיעורים">
       {prev ? (
@@ -109,6 +127,16 @@ const components = { Board, Term, Note, Task, Notation };
 
   .complete { margin: 32px 0 0; padding: 14px 16px; border-radius: 6px; background: #E3EFD6; color: #1F4A1C; }
   @media (prefers-color-scheme: dark) { .complete { background: #1F3320; color: #CFE8C6; } }
+
+  .practice { margin-top: 40px; padding: 20px; border: 1.5px solid var(--ink); border-radius: 6px; }
+  .practice h2 { font-size: 24px; margin: 0 0 6px; }
+  .practice p { margin: 0 0 12px; color: var(--ink-2); }
+  .practice ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .practice a {
+    display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 16px;
+    border-radius: 999px; background: var(--seal); color: var(--on-seal); text-decoration: none; font-weight: 700;
+  }
+  .practice a:hover { color: var(--on-seal); filter: brightness(0.92); }
 
   .pager { display: flex; gap: 12px; margin-top: 40px; }
   .pg {

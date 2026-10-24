@@ -13,3 +13,25 @@ export const RULES_COURSE: LessonStub[] = [
 ];
 
 export const pad = (n: number) => String(n).padStart(2, '0');
+
+// Interactive practice (/learn/<stage>/) that matches each Rules lesson.
+// Stage keys are Lishogi Learn stage names. A link only shows once its page exists in src/pages/learn/.
+export const PRACTICE: Record<string, { stage: string; title: string }[]> = {
+  '01-board-pieces-setup': [{ stage: 'setup', title: 'סידור הלוח' }],
+  '02-how-pieces-move': [
+    { stage: 'king', title: 'מלך' },
+    { stage: 'gold', title: 'גנרל זהב' },
+    { stage: 'silver', title: 'גנרל כסף' },
+    { stage: 'knight', title: 'פרש' },
+    { stage: 'lance', title: 'רומח' },
+    { stage: 'bishop', title: 'רץ' },
+    { stage: 'rook', title: 'צריח' },
+    { stage: 'pawn', title: 'רגלי' },
+  ],
+  '04-drops': [{ stage: 'drop', title: 'הצנחה' }],
+  '06-winning': [
+    { stage: 'check1', title: 'שח' },
+    { stage: 'outOfCheck', title: 'יציאה משח' },
+    { stage: 'checkmate1', title: 'מט במסע אחד' },
+  ],
+};
