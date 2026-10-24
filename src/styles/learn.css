@@ -134,6 +134,8 @@ html[data-pieces="kanji"] .learn piece::after { content: var(--k); font-family: 
 .learn .sg-shapes marker#arrowhead-green path { fill: #2F6B2A; }
 .learn .sg-shapes g.red line { stroke: var(--seal); }
 .learn .sg-shapes marker#arrowhead-red path { fill: var(--seal); }
+.learn .sg-shapes g.green ellipse { stroke: #2F6B2A; stroke-width: 1; opacity: .8; }
+.learn .sg-shapes g.red ellipse { stroke: var(--seal); stroke-width: 1; opacity: .8; }
 
 /* promotion choice */
 .learn sg-promotion { background-color: rgba(23, 21, 15, 0.35); }
