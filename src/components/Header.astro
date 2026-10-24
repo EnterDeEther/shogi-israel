@@ -10,7 +10,7 @@ const isCurrent = (href: string) => href !== '/#community' && path.startsWith(hr
 <header class="site-header">
   <div class="wrap bar">
     <a class="brand" href="/" aria-label="שוגי ישראל, לדף הבית">
-      <span class="seal" aria-hidden="true">将</span>
+      <img class="logo" src="/logo-96.png" width="44" height="44" alt="" />
       <span class="brand-name">שוגי ישראל</span>
     </a>
     <nav class="nav-wide" aria-label="ראשי">
@@ -32,6 +32,7 @@ const isCurrent = (href: string) => href !== '/#community' && path.startsWith(hr
   .site-header { border-bottom: 1px solid var(--rule); background: var(--washi); position: relative; z-index: 20; }
   .bar { display: flex; align-items: center; justify-content: space-between; min-height: 64px; }
   .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+  .logo { width: 44px; height: 44px; flex-shrink: 0; }
   .brand-name { font-family: var(--f-display); font-weight: 900; font-size: 22px; letter-spacing: -0.2px; }
   .nav-wide { display: none; gap: 28px; }
   .nav-wide a { color: var(--ink); text-decoration: none; font-weight: 500; padding: 8px 0; border-bottom: 2px solid transparent; }
