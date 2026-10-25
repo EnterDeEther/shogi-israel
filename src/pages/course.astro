@@ -72,6 +72,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
         <p class="rank-name" data-rank-name></p>
         <div class="bar" aria-hidden="true"><span data-rank-bar></span></div>
         <p class="small muted" data-rank-text></p>
+        <p class="rank-share" data-rank-share></p>
         <details class="rank-how">
           <summary class="small">איך צוברים נקודות?</summary>
           <ul class="small">
@@ -146,6 +147,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
   import { accountsEnabled, hasStoredSession } from '../lib/account-config';
   import { LEVEL_COUNTS as levelCounts } from '../lib/level-counts';
   import { rankFor, xpBreakdown } from '../lib/xp';
+  import { shareButton } from '../lib/share-card';
 
   const root = document.querySelector<HTMLElement>('[data-course]')!;
   // The personal course is for signed-in visitors; everyone else keeps the static path and the sign-up card.
@@ -164,6 +166,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
     $('[data-rank-kanji]').textContent = r.rank.kanji;
     $('[data-rank-name]').textContent = r.rank.name;
     $('[data-rank-bar]').style.width = `${r.next ? Math.round((100 * r.into) / r.span) : 100}%`;
+    if (r.rank.index > 0) $('[data-rank-share]').replaceChildren(shareButton({ title: `הגעתי לדרגה ${r.rank.name}`, sub: 'במסלול הלימוד האישי של שוגי ישראל', kanji: r.rank.kanji, path: '/course/' }, 'shogi-israel-rank.png', 'btn btn-ghost'));
     $('[data-rank-text]').textContent = r.next
       ? `${xp.toLocaleString('he-IL')} נקודות · עוד ${(r.next.min - xp).toLocaleString('he-IL')} לדרגה ${r.next.name}`
       : `${xp.toLocaleString('he-IL')} נקודות · הדרגה הגבוהה ביותר באתר`;

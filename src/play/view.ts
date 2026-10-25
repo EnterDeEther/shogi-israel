@@ -4,6 +4,7 @@
 // Page is RTL; the board is LTR and never mirrors. Plain DOM, same helpers as the lessons.
 // AGPL-3.0-or-later, like the rest of this site.
 import { el, icon, nextInCourse, pieceSetSwitch } from '../learn/view';
+import { shareButton } from '../lib/share-card';
 import { copyText, downloadKif, kifFileName, LISHOGI_IMPORT_URL } from '../lib/kif';
 import type PlayCtrl from './ctrl';
 import type { PlaySettings } from './ctrl';
@@ -231,6 +232,7 @@ function status(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void): HTM
       // signed-out only (global.css hides it once html[data-signed-in] is set)
       el('p', { class: 'small', 'data-signed-out-only': '' },
         won ? 'כל הכבוד! ' : '', el('a', { href: '/account/?mode=signup' }, 'פתחו חשבון בחינם'), ' כדי לשמור את המשחקים שלכם ולהתקדם במסלול, בכל מכשיר.'),
+      won ? shareButton({ title: `ניצחתי את המחשב ברמה ${ctrl.level.level}`, sub: 'שוגי, השחמט היפני. משחקים בעברית ובחינם', kanji: '勝', path: '/play/' }, 'shogi-israel-win.png', 'btn share') : null,
       nextInCourse(),
     );
   }
