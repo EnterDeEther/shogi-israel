@@ -1,0 +1,288 @@
+---
+import Page from '../layouts/Page.astro';
+import Note from '../components/mdx/Note.astro';
+
+// Facts checked on 2026-10-24: JSA title-match times (Meijin 9 h, Ryuo/Oi/Osho 8 h, Oza 5 h, Kio/Kisei 4 h),
+// the NHK Cup (10 min, then 30 s byoyomi with ten 1-minute thinking periods), the ABEMA team event
+// (Fischer, 5 min + 5 s), Lishogi's clock (main|byoyomi, increment slider, periods make a game unrated).
+// Our own /play/ clock: src/play/ctrl.ts and src/play/view.ts (CLOCK_INFO_URL points here).
+
+const toc = [
+  { id: 'clock', label: 'שעון שוגי' },
+  { id: 'types', label: 'ארבעת סוגי השעון' },
+  { id: 'compare', label: 'השוואה מהירה' },
+  { id: 'try', label: 'נסו בעצמכם' },
+  { id: 'pros', label: 'שעון אצל המקצוענים' },
+  { id: 'online', label: 'שעון בליש׳וגי' },
+  { id: 'flag', label: 'כשהזמן נגמר' },
+  { id: 'ours', label: 'השעון במשחקים באתר שלנו' },
+];
+---
+<Page
+  title="איך משחק על זמן עובד?"
+  eyebrow="למד לשחק"
+  updated="25 באוקטובר 2026"
+  description="איך עובד שעון בשוגי: זמן ראשי, ספירת שניות, תוספת זמן וזמן קבוע, איך משחקים המקצוענים, איך קוראים את השעון בליש׳וגי, ואיך השעון עובד במשחק נגד המחשב באתר."
+>
+  <p>במשחק שוגי רציני לכל שחקן יש זמן מוגבל לחשוב. השעון שומר שאף אחד לא ייתקע על מהלך אחד שעה, ושהיריב לא יחכה לנצח. רוב המשחקים בשוגי משוחקים עם שעון, מהמשחק הכי מהיר באינטרנט ועד אליפויות שנמשכות יומיים.</p>
+  <p>הבשורה הטובה: השעון בשוגי פשוט, ויש בו רעיון אחד שכדאי להכיר. הוא נקרא <strong>ספירת שניות</strong>, וכמעט כל משחק בשוגי נגמר בו.</p>
+
+  <nav class="toc" aria-label="תוכן העמוד">
+    <ol>{toc.map((t) => <li><a href={`#${t.id}`}>{t.label}</a></li>)}</ol>
+  </nav>
+
+  <h2 id="clock">שעון שוגי</h2>
+  <p>שעון שוגי (<bdi dir="ltr">対局時計, <span lang="ja-Latn">taikyoku dokei</span></bdi>) הוא בעצם שני שעוני עצר בקופסה אחת, אחד לכל שחקן. עשיתם מהלך? לוחצים על הכפתור שלכם. השעון שלכם נעצר, והשעון של היריב מתחיל לרוץ. בכל רגע רץ רק שעון אחד: של מי שתורו עכשיו.</p>
+  <p>מי שמשחק שחמט מכיר את זה משעון שחמט. ההבדל הגדול הוא מה שקורה כשהזמן הראשי נגמר.</p>
+
+  <dl class="defs">
+    <dt>זמן ראשי (<bdi dir="ltr">持ち時間, <span lang="ja-Latn">mochi-jikan</span></bdi>)</dt>
+    <dd>ביפנית ״הזמן שבידיים״: הזמן שכל שחקן מקבל לכל המשחק. מחלקים אותו כמו שרוצים: אפשר לחשוב רגע על מהלך פשוט ועשר דקות על מהלך קשה. מה שהשתמשתם בו, נגמר.</dd>
+  </dl>
+
+  <h2 id="types">ארבעת סוגי השעון</h2>
+
+  <h3>1. ספירת שניות: השעון של השוגי</h3>
+  <p><strong>ספירת שניות</strong> (<bdi dir="ltr">秒読み, <span lang="ja-Latn">byōyomi</span></bdi>) מתחילה כשהזמן הראשי נגמר. מעכשיו יש לכם מספר קבוע של שניות <em>לכל מהלך</em>. עשיתם מהלך בזמן? הספירה מתחילה מחדש מההתחלה במהלך הבא. לא הספקתם? הפסדתם בטיימאאוט.</p>
+  <p class="why"><strong>למה השם?</strong> 秒 (<span lang="ja-Latn">byō</span>) היא שנייה, ו־読み (<span lang="ja-Latn">yomi</span>) היא קריאה: ״קריאת השניות״. השם בא מהרושם שיושב ליד הלוח וקורא את השניות בקול (ראו בהמשך). באנגלית, וגם בליש׳וגי וב־81Dojo, משתמשים במילה היפנית: <bdi dir="ltr">byoyomi</bdi>.</p>
+  <p>דוגמה: <bdi dir="ltr" class="nt">10|30</bdi> הם 10 דקות זמן ראשי, ואחריהן 30 שניות לכל מהלך. מהלך שלקח 12 שניות לא ״חוסך״ 18 שניות לאחר כך. השניות לא נצברות.</p>
+  <p>למה זה טוב? כי אי אפשר להפסיד רק בגלל שהזמן נגמר בעמדה מנצחת: תמיד יש מספיק זמן לעשות מהלך. בשביל זה ספירת שניות היא הסטנדרט בשוגי, אצל המקצוענים ביפן, בליש׳וגי וב־81Dojo.</p>
+  <Note title="ככה זה נשמע ביפן">
+    <p>במשחק מקצועי יושב ליד הלוח רושם (<bdi dir="ltr">記録係, <span lang="ja-Latn">kirokugakari</span></bdi>) שסופר את השניות בקול: ״30 שניות... 40 שניות... 50 שניות, 1, 2, 3...״. אם הוא מגיע לעשר לפני שזזתם, המשחק נגמר.</p>
+  </Note>
+
+  <h3>2. זמן קבוע</h3>
+  <p>יש רק זמן ראשי, בלי שום תוספת. כשהוא נגמר, מפסידים, גם אם נשאר מט במהלך אחד. ביפנית קוראים לזה 切れ負け (<span lang="ja-Latn">kire-make</span>).</p>
+  <p class="why"><strong>למה השם?</strong> 切れ (<span lang="ja-Latn">kire</span>) הוא ״נגמר, נחתך״, ו־負け (<span lang="ja-Latn">make</span>) הוא הפסד: ״נגמר, הפסדת״. בשחמט באנגלית קוראים לזה <bdi dir="ltr">sudden death</bdi>, ״מוות פתאומי״, כי המשחק יכול להיגמר בבת אחת באמצע עמדה טובה.</p>
+  <p>זה נפוץ בטורנירים לחובבים ביפן ובאפליקציות מהירות, למשל משחק של 10 דקות לכל צד. זה מהיר ומרגש, אבל בסוף המשחק הוא הופך לפעמים למרוץ על השעון ולא על הלוח. למתחילים זה פחות מומלץ.</p>
+
+  <h3>3. תוספת זמן (שיטת פישר)</h3>
+  <p>אחרי כל מהלך מתווספות לזמן שלכם כמה שניות קבועות. כאן, בניגוד לספירת שניות, <strong>הזמן כן נצבר</strong>: מי ששיחק מהר צובר עתודה למהלך קשה בהמשך. זו השיטה הנפוצה בשחמט.</p>
+  <p class="why"><strong>למה השם?</strong> על שם בובי פישר, אלוף העולם בשחמט מ־1972. בשנות ה־80 הוא רצה לגמור עם משחקים שבהם מי שמנצח על הלוח מפסיד רק כי השעון נגמר, אז המציא שעון שמוסיף זמן אחרי כל מהלך ורשם עליו פטנט ב־1988. היום כמעט כל טורניר שחמט משוחק כך.</p>
+  <p>בשוגי היא פחות נפוצה, אבל יש לה מקום. טורניר הקבוצות של המקצוענים ב־ABEMA, למשל, משוחק ב־5 דקות לכל צד ועוד 5 שניות לכל מהלך. בליש׳וגי אפשר לבחור בה כשיוצרים משחק.</p>
+
+  <h3>4. דקות מחשבה נוספות</h3>
+  <p>תוספת לספירת שניות: חוץ מהשניות לכל מהלך, יש לכם כמה ״פעמים״ של זמן נוסף שאפשר לפתוח כשנתקעים. בגביע NHK, טורניר הטלוויזיה המפורסם, כל שחקן מקבל 10 דקות, ואחריהן 30 שניות לכל מהלך ועוד 10 דקות מחשבה נוספות. מהלך שלקח יותר מ־30 שניות ״שורף״ דקה אחת.</p>
+  <p class="why"><strong>למה השם?</strong> ביפנית 考慮時間 (<span lang="ja-Latn">kōryo-jikan</span>), ״זמן שיקול״: זמן שמוסיפים במיוחד לרגעים שבהם צריך לשקול מהלך קשה.</p>
+  <p>בליש׳וגי זה נקרא <bdi dir="ltr">periods</bdi>: למשל <bdi dir="ltr" class="nt">5|10 (2x)</bdi> הן שתי פעמים של ספירת שניות. מי שעבר את 10 השניות פעם אחת, מתחיל שוב מ־10 ולא מפסיד, עד הפעם השנייה.</p>
+
+  <h2 id="compare">השוואה מהירה</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>סוג</th><th>אחרי הזמן הראשי</th><th>הזמן נצבר?</th><th>איפה פוגשים אותו</th></tr></thead>
+      <tbody>
+        <tr><td><strong>ספירת שניות</strong></td><td>מספר שניות קבוע לכל מהלך</td><td>לא</td><td>כמעט בכל מקום בשוגי. גם אצלנו</td></tr>
+        <tr><td><strong>זמן קבוע</strong></td><td>כלום: טיימאאוט</td><td>אין מה לצבור</td><td>טורנירים לחובבים ואפליקציות ביפן</td></tr>
+        <tr><td><strong>תוספת זמן</strong></td><td>אין שלב כזה: כל מהלך מוסיף שניות</td><td>כן</td><td>שחמט. בשוגי: ABEMA וליש׳וגי</td></tr>
+        <tr><td><strong>דקות מחשבה נוספות</strong></td><td>ספירת שניות ועוד כמה דקות לשעת צרה</td><td>לא</td><td>גביע NHK, ליש׳וגי (בלי דירוג)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="try">נסו בעצמכם</h2>
+  <p>שעון קטן לתרגול, עם זמנים קצרים מאוד כדי שתראו מהר מה קורה. בחרו סוג, לחצו ״התחלה״, ואז ״עשיתי מהלך״ בכל פעם שאתם (או היריב הדמיוני) משחקים.</p>
+  <div class="demo" id="clock-demo">
+    <div class="demo-modes" role="radiogroup" aria-label="סוג השעון">
+      <button type="button" role="radio" aria-checked="true" data-mode="byo">ספירת שניות <bdi dir="ltr">0:15|5</bdi></button>
+      <button type="button" role="radio" aria-checked="false" data-mode="sd">זמן קבוע <bdi dir="ltr">0:30</bdi></button>
+      <button type="button" role="radio" aria-checked="false" data-mode="fis">תוספת זמן <bdi dir="ltr">0:15+5</bdi></button>
+    </div>
+    <div class="demo-faces">
+      <div class="face" data-side="0"><span class="who">פותח</span><span class="time" dir="ltr">0:15</span><span class="state small"></span></div>
+      <div class="face" data-side="1"><span class="who">משיב</span><span class="time" dir="ltr">0:15</span><span class="state small"></span></div>
+    </div>
+    <div class="demo-actions">
+      <button type="button" class="dbtn" data-act="start">התחלה</button>
+      <button type="button" class="dbtn dbtn--seal" data-act="move" disabled>עשיתי מהלך</button>
+    </div>
+    <p class="demo-msg small" aria-live="polite">כשהזמן הראשי נגמר, השעון נצבע באדום ומתחילה ספירת השניות.</p>
+  </div>
+
+  <h2 id="pros">שעון אצל המקצוענים</h2>
+  <p>במשחקי האליפות (התארים) של איגוד השוגי היפני, כל שחקן מקבל בין 4 ל־9 שעות. בסדרת המייג׳ין (名人戦), הוותיקה מכולן, יש 9 שעות לכל צד, וכל משחק נמשך יומיים. אחרי שהשעות נגמרות, נשארת דקה אחת לכל מהלך, וכך נגמרים רוב המשחקים: שני השחקנים הכי טובים ביפן, בספירת שניות של דקה.</p>
+  <p>יש גם פרט מעניין על השעון עצמו. בשיטה המסורתית, שנקראת ״שיטת שעון העצר״, הרושם מודד כל מהלך וסופר רק דקות שלמות: מהלך שלקח 40 שניות לא נספר בכלל, ומהלך של דקה ו־50 שניות נספר כדקה אחת. במשחקים קצרים יותר משתמשים בשעון שוגי רגיל, שסופר כל שנייה.</p>
+
+  <h2 id="online">שעון בליש׳וגי</h2>
+  <p>בליש׳וגי זמן משחק נכתב בשני מספרים עם קו ביניהם:</p>
+  <ul>
+    <li><bdi dir="ltr" class="nt">10|30</bdi>: עשר דקות זמן ראשי, ואחריהן ספירת שניות של 30 שניות לכל מהלך.</li>
+    <li><bdi dir="ltr" class="nt">0|10</bdi>: אין זמן ראשי בכלל. כל המשחק הוא 10 שניות לכל מהלך.</li>
+    <li>תוספת זמן נכתבת עם פלוס, למשל <bdi dir="ltr" class="nt">10+10</bdi>. כדי לבחור בה, שימו את ספירת השניות על 0 ופתחו את המחוון שמתחת לה.</li>
+    <li>משחק עם כמה פעמים של ספירת שניות, כמו <bdi dir="ltr" class="nt">5|10 (2x)</bdi>, הוא תמיד משחק בלי דירוג.</li>
+  </ul>
+  <p>למתחילים: <bdi dir="ltr" class="nt">10|30</bdi> או <bdi dir="ltr" class="nt">15|30</bdi>. יש זמן לחשוב, והמשחק נגמר בערך בחצי שעה. עוד על ליש׳וגי <a href="/lishogi/">במדריך שלנו</a>.</p>
+
+  <h2 id="flag">כשהזמן נגמר</h2>
+  <p>מי שהזמן שלו נגמר מפסיד ב<strong>טיימאאוט</strong> (<bdi dir="ltr">時間切れ, <span lang="ja-Latn">jikan-gire</span></bdi>, ״הזמן נחתך״). זה נכון גם אם הייתה לו עמדה מנצחת, וגם אם למשחק נשאר מט אחד. בשחמט יש מקרים שבהם זמן שנגמר הוא תיקו, כי ליריב אין מספיק כלים לתת מט. בשוגי אין חריג כזה: כלים שנלכדו חוזרים למשחק בהצנחה, ותמיד יש איך לתת מט.</p>
+  <ul>
+    <li><strong>אל תחכו לשנייה האחרונה.</strong> באינטרנט יש עיכוב קטן בין הלחיצה לשרת. בספירת שניות של 10, שחקו עד השנייה ה־8.</li>
+    <li><strong>ליד הלוח:</strong> עושים מהלך ולוחצים על השעון באותה יד. מהלך נחשב רק אחרי הלחיצה.</li>
+    <li><strong>תכננו את הזמן הראשי.</strong> השקיעו אותו בפתיחה ובאמצע המשחק, כשיש הכי הרבה החלטות. בספירת שניות עוד תהיה לכם הזדמנות לחשוב, בכל מהלך מחדש.</li>
+  </ul>
+
+  <h2 id="ours">השעון במשחקים באתר שלנו</h2>
+  <p>ב<a href="/play/">משחק נגד המחשב</a> השעון הוא לא חובה. בחלון ההגדרות, ליד ״שעון״, יש ארבע אפשרויות:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>אפשרות</th><th>למי</th></tr></thead>
+      <tbody>
+        <tr><td>בלי שעון</td><td>כשרק לומדים: חושבים כמה שרוצים</td></tr>
+        <tr><td class="opt">30 דק׳ + 60 שנ׳</td><td>משחק רגוע: חצי שעה, ואז דקה לכל מהלך, כמו אצל המקצוענים</td></tr>
+        <tr><td class="opt">10 דק׳ + 30 שנ׳</td><td>כמו <bdi dir="ltr" class="nt">10|30</bdi> בליש׳וגי. הכי מומלץ להתחיל בו</td></tr>
+        <tr><td class="opt">5 דק׳ + 10 שנ׳</td><td>משחק מהיר, למי שכבר מכיר את הכלים</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>כל האפשרויות עובדות בשיטת ספירת השניות, כמו בשוגי היפני:</p>
+  <ul>
+    <li>השעון שלכם רץ רק בתור שלכם. השעון של המחשב רץ רק בתור שלו.</li>
+    <li>כשהזמן הראשי נגמר, השעון מציג רק את השניות שנשארו למהלך הזה, והן מתחילות מחדש אחרי כל מהלך.</li>
+    <li>אם הספירה מגיעה לאפס, המשחק נגמר בטיימאאוט. זה נכון גם למחשב, אבל הוא חושב לכל היותר שתיים וחצי שניות למהלך, אז לא כדאי לבנות על זה.</li>
+    <li>החזרת מהלך לא מחזירה זמן. הזמן שהשתמשתם בו נשאר מחוק.</li>
+    <li>המשחק נשמר במכשיר. אם סגרתם את הדף באמצע, המשחק והשעון ממשיכים כשחוזרים.</li>
+  </ul>
+  <p>עצה: שחקו כמה משחקים בלי שעון עד שהחוקים יושבים טוב, ואז עברו ל־<strong>10 דק׳ + 30 שנ׳</strong>. ככה תהיו מוכנים למשחק הראשון בליש׳וגי.</p>
+</Page>
+
+<script>
+  // The practice clock: two faces, three modes, tiny times so each phase shows up within seconds.
+  type Mode = 'byo' | 'sd' | 'fis';
+  const MODES: Record<Mode, { main: number; byo: number; inc: number }> = {
+    byo: { main: 15_000, byo: 5_000, inc: 0 },
+    sd: { main: 30_000, byo: 0, inc: 0 },
+    fis: { main: 15_000, byo: 0, inc: 5_000 },
+  };
+  const root = document.getElementById('clock-demo');
+  if (root) {
+    const faces = [...root.querySelectorAll<HTMLElement>('.face')];
+    const msg = root.querySelector<HTMLElement>('.demo-msg')!;
+    const startBtn = root.querySelector<HTMLButtonElement>('[data-act="start"]')!;
+    const moveBtn = root.querySelector<HTMLButtonElement>('[data-act="move"]')!;
+    let mode: Mode = 'byo';
+    let main = [0, 0];
+    let turn = 0;
+    let since = 0;
+    let timer: number | undefined;
+    let over = false;
+
+    const fmt = (ms: number) => {
+      const s = Math.ceil(Math.max(0, ms) / 1000);
+      return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    };
+    const left = (side: number) => {
+      const m = MODES[mode];
+      const el = timer !== undefined && side === turn ? performance.now() - since : 0;
+      const rest = main[side] - el;
+      return rest > 0 ? { main: rest, byo: m.byo } : { main: 0, byo: Math.max(0, m.byo + rest) };
+    };
+    const draw = () => {
+      faces.forEach((f, side) => {
+        const t = left(side);
+        const inByo = mode === 'byo' && t.main <= 0;
+        f.querySelector('.time')!.textContent = inByo ? fmt(t.byo) : fmt(t.main);
+        f.classList.toggle('running', timer !== undefined && side === turn);
+        f.classList.toggle('byo', inByo);
+        f.querySelector('.state')!.textContent = inByo ? 'ספירת שניות' : '';
+      });
+    };
+    const reset = () => {
+      window.clearInterval(timer);
+      timer = undefined;
+      over = false;
+      main = [MODES[mode].main, MODES[mode].main];
+      turn = 0;
+      faces.forEach((f) => f.classList.remove('lost'));
+      startBtn.textContent = 'התחלה';
+      moveBtn.disabled = true;
+      draw();
+    };
+    const tick = () => {
+      const t = left(turn);
+      if (t.main <= 0 && t.byo <= 0) {
+        window.clearInterval(timer);
+        timer = undefined;
+        over = true;
+        faces[turn].classList.add('lost');
+        moveBtn.disabled = true;
+        startBtn.textContent = 'שוב';
+        msg.textContent = `${turn === 0 ? 'לפותח' : 'למשיב'} נגמר הזמן: טיימאאוט.`;
+      }
+      draw();
+    };
+
+    root.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach((b) =>
+      b.addEventListener('click', () => {
+        mode = b.dataset.mode as Mode;
+        root.querySelectorAll('[data-mode]').forEach((o) => o.setAttribute('aria-checked', String(o === b)));
+        msg.textContent = {
+          byo: 'כשהזמן הראשי נגמר, השעון נצבע באדום ומתחילה ספירת השניות.',
+          sd: 'אין ספירת שניות: כשהזמן נגמר, המשחק נגמר.',
+          fis: 'כל מהלך מוסיף 5 שניות. שחקו מהר וראו איך הזמן גדל.',
+        }[mode];
+        reset();
+      }),
+    );
+    startBtn.addEventListener('click', () => {
+      if (timer !== undefined || over) return reset();
+      since = performance.now();
+      timer = window.setInterval(tick, 100);
+      startBtn.textContent = 'איפוס';
+      moveBtn.disabled = false;
+      draw();
+    });
+    moveBtn.addEventListener('click', () => {
+      if (timer === undefined) return;
+      const t = left(turn);
+      main[turn] = Math.max(0, t.main) + MODES[mode].inc;
+      turn = 1 - turn;
+      since = performance.now();
+      draw();
+    });
+    reset();
+  }
+</script>
+
+<style>
+  .toc { margin: 20px 0 8px; padding: 14px 18px; border: 1.5px solid var(--rule); border-radius: 8px; }
+  .toc ol { margin: 0; padding-inline-start: 22px; columns: 2; column-gap: 28px; }
+  .toc li { margin-bottom: 4px; break-inside: avoid; }
+  @media (max-width: 520px) { .toc ol { columns: 1; } }
+  .defs { margin: 0 0 16px; }
+  .defs dt { font-weight: 700; margin-top: 16px; color: var(--ink); }
+  .defs dd { margin: 4px 0 0; color: var(--ink-2); line-height: 1.75; }
+  .table-wrap { overflow-x: auto; margin: 8px 0 12px; }
+  table { border-collapse: collapse; min-width: 260px; }
+  th, td { padding: 6px 12px; border-bottom: 1px solid var(--rule); text-align: start; vertical-align: top; }
+  th { font-weight: 700; color: var(--ink); border-bottom-width: 1.5px; }
+  td { color: var(--ink-2); }
+  @media (max-width: 520px) { th, td { padding: 6px 8px; } }
+  td.opt { font-weight: 700; white-space: nowrap; color: var(--ink); }
+
+  .why { font-size: 15px; padding-inline-start: 12px; border-inline-start: 3px solid var(--rule); }
+  .demo { margin: 16px 0 24px; padding: 16px; border: 1.5px solid var(--rule); border-radius: 10px; background: var(--washi-2); }
+  .demo-modes { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .demo-modes button {
+    font: inherit; font-size: 15px; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+    border: 1.5px solid var(--rule); background: var(--washi); color: var(--ink-2);
+  }
+  .demo-modes button[aria-checked='true'] { border-color: var(--seal); color: var(--seal); font-weight: 700; }
+  .demo-faces { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .face {
+    display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 8px;
+    border: 2px solid var(--rule); border-radius: 8px; background: var(--washi); transition: border-color .15s;
+  }
+  .face .who { font-weight: 700; color: var(--ink-2); }
+  .face .time { font-size: clamp(34px, 9vw, 48px); font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink); line-height: 1.1; }
+  .face .state { min-height: 1.4em; color: var(--seal); font-weight: 700; }
+  .face.running { border-color: var(--ink); }
+  .face.byo .time, .face.lost .time { color: var(--seal); }
+  .face.lost { border-color: var(--seal); }
+  .demo-actions { display: flex; gap: 10px; margin-top: 14px; }
+  .demo-actions .dbtn {
+    font: inherit; font-weight: 700; padding: 10px 18px; border-radius: 8px; cursor: pointer;
+    border: 1.5px solid var(--ink-2); background: var(--washi); color: var(--ink);
+  }
+  .demo-actions .dbtn--seal { flex: 1; background: var(--seal); border-color: var(--seal); color: var(--on-seal); }
+  .demo-actions .dbtn:disabled { opacity: .45; cursor: default; }
+  .demo-msg { margin: 12px 0 0 !important; color: var(--muted) !important; }
+</style>

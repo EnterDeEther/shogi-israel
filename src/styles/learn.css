@@ -1,4 +1,5 @@
 /* Interactive lessons (ported Lishogi Learn engine) — Direction A skin.
+   The board, piece, button and star rules are shared with the game against the computer (.play, play.css).
    Page RTL, board LTR and never mirrored. Pieces: English letters by default, kanji via html[data-pieces].
    Our own board and piece art; no Lishogi images, sounds or piece sets. */
 
@@ -37,7 +38,7 @@
 }
 
 /* squares = the kaya board with a 9x9 grid and the four hoshi dots (between files 3|4, 6|7 and ranks 3|4, 6|7) */
-.learn sg-squares {
+:is(.learn, .play) sg-squares {
   --dot: var(--grid) 2.5px, transparent 3px;
   background-color: var(--kaya);
   background-image:
@@ -53,21 +54,21 @@
 }
 
 /* coordinates: files 9..1 left to right on top, ranks 1..9 on the right; digits only (our notation) */
-.learn .sg-wrap coords { font: 600 11px/1 var(--f-body); color: var(--muted); opacity: 1; }
-.learn .sg-wrap coords.files { top: -18px; height: 14px; }
-.learn .sg-wrap coords.ranks { right: -17px; width: 14px; }
-.learn .sg-wrap coords.files coord { text-align: center; }
+:is(.learn, .play) .sg-wrap coords { font: 600 11px/1 var(--f-body); color: var(--muted); opacity: 1; }
+:is(.learn, .play) .sg-wrap coords.files { top: -18px; height: 14px; }
+:is(.learn, .play) .sg-wrap coords.ranks { right: -17px; width: 14px; }
+:is(.learn, .play) .sg-wrap coords.files coord { text-align: center; }
 
 /* ---------- pieces: pentagon, letter or kanji ---------- */
-.learn piece { --l: ''; --k: ''; }
-.learn piece::before,
-.learn piece::after {
+:is(.learn, .play) piece { --l: ''; --k: ''; }
+:is(.learn, .play) piece::before,
+:is(.learn, .play) piece::after {
   content: '';
   position: absolute;
   clip-path: polygon(50% 0, 86% 16%, 100% 100%, 0 100%, 14% 16%);
 }
-.learn piece::before { inset: 4% 8% 3%; background: var(--piece-line); }
-.learn piece::after {
+:is(.learn, .play) piece::before { inset: 4% 8% 3%; background: var(--piece-line); }
+:is(.learn, .play) piece::after {
   inset: calc(4% + 1.5px) calc(8% + 1.5px) calc(3% + 1.5px);
   background: var(--piece);
   content: var(--l);
@@ -80,47 +81,47 @@
 }
 /* pieces on the board are drawn at 2x and scaled down by shogiground: double the type there
    (not in the promotion picker, which draws at 1x) */
-.learn sg-pieces piece::after, .learn piece.dragging::after { font-size: clamp(26px, 8.8vw, 44px); }
-html[data-pieces="kanji"] .learn piece::after { content: var(--k); font-family: var(--f-kanji); font-weight: 800; }
-.learn piece { filter: drop-shadow(0 1px 1px rgba(40, 25, 10, 0.4)); }
+:is(.learn, .play) sg-pieces piece::after, :is(.learn, .play) piece.dragging::after { font-size: clamp(26px, 8.8vw, 44px); }
+html[data-pieces="kanji"] :is(.learn, .play) piece::after { content: var(--k); font-family: var(--f-kanji); font-weight: 800; }
+:is(.learn, .play) piece { filter: drop-shadow(0 1px 1px rgba(40, 25, 10, 0.4)); }
 
 /* who owns it: pointing direction. Board orientation is the player's colour (lila behaviour). */
-.learn .orientation-sente piece.gote::before, .learn .orientation-sente piece.gote::after,
-.learn .orientation-gote piece.sente::before, .learn .orientation-gote piece.sente::after { transform: rotate(180deg); }
-.learn piece.gote::after { background: var(--piece-gote); }
+:is(.learn, .play) .orientation-sente piece.gote::before, :is(.learn, .play) .orientation-sente piece.gote::after,
+:is(.learn, .play) .orientation-gote piece.sente::before, :is(.learn, .play) .orientation-gote piece.sente::after { transform: rotate(180deg); }
+:is(.learn, .play) piece.gote::after { background: var(--piece-gote); }
 
-.learn piece.king { --l: 'K'; --k: '王'; }
-.learn piece.gote.king { --k: '玉'; }
-.learn piece.rook { --l: 'R'; --k: '飛'; }
-.learn piece.bishop { --l: 'B'; --k: '角'; }
-.learn piece.gold { --l: 'G'; --k: '金'; }
-.learn piece.silver { --l: 'S'; --k: '銀'; }
-.learn piece.knight { --l: 'N'; --k: '桂'; }
-.learn piece.lance { --l: 'L'; --k: '香'; }
-.learn piece.pawn { --l: 'P'; --k: '歩'; }
-.learn piece.dragon { --l: '+R'; --k: '龍'; }
-.learn piece.horse { --l: '+B'; --k: '馬'; }
-.learn piece.promotedsilver { --l: '+S'; --k: '全'; }
-.learn piece.promotedknight { --l: '+N'; --k: '圭'; }
-.learn piece.promotedlance { --l: '+L'; --k: '杏'; }
-.learn piece.tokin { --l: '+P'; --k: 'と'; }
-.learn piece:is(.dragon, .horse, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { color: var(--seal); }
+:is(.learn, .play) piece.king { --l: 'K'; --k: '王'; }
+:is(.learn, .play) piece.gote.king { --k: '玉'; }
+:is(.learn, .play) piece.rook { --l: 'R'; --k: '飛'; }
+:is(.learn, .play) piece.bishop { --l: 'B'; --k: '角'; }
+:is(.learn, .play) piece.gold { --l: 'G'; --k: '金'; }
+:is(.learn, .play) piece.silver { --l: 'S'; --k: '銀'; }
+:is(.learn, .play) piece.knight { --l: 'N'; --k: '桂'; }
+:is(.learn, .play) piece.lance { --l: 'L'; --k: '香'; }
+:is(.learn, .play) piece.pawn { --l: 'P'; --k: '歩'; }
+:is(.learn, .play) piece.dragon { --l: '+R'; --k: '龍'; }
+:is(.learn, .play) piece.horse { --l: '+B'; --k: '馬'; }
+:is(.learn, .play) piece.promotedsilver { --l: '+S'; --k: '全'; }
+:is(.learn, .play) piece.promotedknight { --l: '+N'; --k: '圭'; }
+:is(.learn, .play) piece.promotedlance { --l: '+L'; --k: '杏'; }
+:is(.learn, .play) piece.tokin { --l: '+P'; --k: 'と'; }
+:is(.learn, .play) piece:is(.dragon, .horse, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { color: var(--seal); }
 @media (prefers-color-scheme: dark) {
-  .learn piece:is(.dragon, .horse, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { color: #B8361F; }
+  :is(.learn, .play) piece:is(.dragon, .horse, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { color: #B8361F; }
 }
 
 /* ---------- square states ---------- */
-.learn sg-squares sq { position: relative; }
-.learn sg-squares sq.dest { background: radial-gradient(rgba(28, 27, 25, 0.38) 18%, transparent 20%); }
-.learn sg-squares sq.oc.dest { background: radial-gradient(transparent 76%, rgba(28, 27, 25, 0.35) 78%); }
-.learn sg-squares sq.dest.hover { background: rgba(28, 27, 25, 0.18); }
-.learn sg-squares sq.last-dest { background-color: rgba(184, 54, 31, 0.16); }
-.learn sg-squares sq.selected { background-color: rgba(47, 107, 42, 0.35); }
-.learn sg-squares sq.check { background: radial-gradient(ellipse at center, rgba(184, 54, 31, 0.9) 0%, rgba(184, 54, 31, 0) 75%); }
+:is(.learn, .play) sg-squares sq { position: relative; }
+:is(.learn, .play) sg-squares sq.dest { background: radial-gradient(rgba(28, 27, 25, 0.38) 18%, transparent 20%); }
+:is(.learn, .play) sg-squares sq.oc.dest { background: radial-gradient(transparent 76%, rgba(28, 27, 25, 0.35) 78%); }
+:is(.learn, .play) sg-squares sq.dest.hover { background: rgba(28, 27, 25, 0.18); }
+:is(.learn, .play) sg-squares sq.last-dest { background-color: rgba(184, 54, 31, 0.16); }
+:is(.learn, .play) sg-squares sq.selected { background-color: rgba(47, 107, 42, 0.35); }
+:is(.learn, .play) sg-squares sq.check { background: radial-gradient(ellipse at center, rgba(184, 54, 31, 0.9) 0%, rgba(184, 54, 31, 0) 75%); }
 /* squareHighlights from shapes.ts pieceMovesHighlihts: where the piece can go */
-.learn sg-squares sq.help { background-color: rgba(47, 107, 42, 0.22); box-shadow: inset 0 0 0 2px rgba(47, 107, 42, 0.55); }
+:is(.learn, .play) sg-squares sq.help { background-color: rgba(47, 107, 42, 0.22); box-shadow: inset 0 0 0 2px rgba(47, 107, 42, 0.55); }
 /* obstacles = stars to grab */
-.learn sg-squares sq.star::after {
+:is(.learn, .play) sg-squares sq.star::after {
   content: '★';
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
@@ -130,34 +131,34 @@ html[data-pieces="kanji"] .learn piece::after { content: var(--k); font-family: 
 }
 
 /* arrows (shapes.ts arrow(): brush green / red) */
-.learn .sg-shapes g.green line { stroke: #2F6B2A; }
-.learn .sg-shapes marker#arrowhead-green path { fill: #2F6B2A; }
-.learn .sg-shapes g.red line { stroke: var(--seal); }
-.learn .sg-shapes marker#arrowhead-red path { fill: var(--seal); }
-.learn .sg-shapes g.green ellipse { stroke: #2F6B2A; stroke-width: 1; opacity: .8; }
-.learn .sg-shapes g.red ellipse { stroke: var(--seal); stroke-width: 1; opacity: .8; }
+:is(.learn, .play) .sg-shapes g.green line { stroke: #2F6B2A; }
+:is(.learn, .play) .sg-shapes marker#arrowhead-green path { fill: #2F6B2A; }
+:is(.learn, .play) .sg-shapes g.red line { stroke: var(--seal); }
+:is(.learn, .play) .sg-shapes marker#arrowhead-red path { fill: var(--seal); }
+:is(.learn, .play) .sg-shapes g.green ellipse { stroke: #2F6B2A; stroke-width: 1; opacity: .8; }
+:is(.learn, .play) .sg-shapes g.red ellipse { stroke: var(--seal); stroke-width: 1; opacity: .8; }
 
 /* promotion choice */
-.learn sg-promotion { background-color: rgba(23, 21, 15, 0.35); }
-.learn sg-promotion sg-promotion-choices { background: var(--washi); border: 2px solid var(--grid); border-radius: 8px; box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.6); }
-.learn sg-promotion sg-promotion-choices piece { background: var(--washi); border-radius: 6px; }
-.learn sg-promotion sg-promotion-choices piece:hover { background: var(--washi-2); }
+:is(.learn, .play) sg-promotion { background-color: rgba(23, 21, 15, 0.35); }
+:is(.learn, .play) sg-promotion sg-promotion-choices { background: var(--washi); border: 2px solid var(--grid); border-radius: 8px; box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.6); }
+:is(.learn, .play) sg-promotion sg-promotion-choices piece { background: var(--washi); border-radius: 6px; }
+:is(.learn, .play) sg-promotion sg-promotion-choices piece:hover { background: var(--washi-2); }
 
 /* hands (inlined by shogiground above and below the board); hidden when empty */
-.learn .sg-hand-wrap { position: absolute; left: 0; right: 0; z-index: 2; }
+:is(.learn, .play) .sg-hand-wrap { position: absolute; left: 0; right: 0; z-index: 2; }
 /* hands sit outside the squares: the opponent's above the file numbers, yours under the board */
-.learn .sg-hand-wrap.hand-top { top: auto; bottom: calc(100% + 18px); }
-.learn .sg-hand-wrap.hand-bottom { bottom: auto; top: calc(100% + 4px); }
-.learn sg-hand { display: flex; gap: 2px; height: 40px; }
-.learn sg-hand sg-hp-wrap { position: relative; flex: 0 1 40px; min-width: 0; height: 40px; }
-.learn sg-hand sg-hp-wrap[data-nb='0'] { display: none; }
-.learn sg-hand piece { position: relative; display: block; width: 100%; height: 100%; }
-.learn sg-hand sg-hp-wrap::after { content: attr(data-nb); position: absolute; top: 0; right: 0; font: 700 11px/1 var(--f-body); background: var(--ink); color: var(--washi); border-radius: 3px; padding: 2px 4px; }
+:is(.learn, .play) .sg-hand-wrap.hand-top { top: auto; bottom: calc(100% + 18px); }
+:is(.learn, .play) .sg-hand-wrap.hand-bottom { bottom: auto; top: calc(100% + 4px); }
+:is(.learn, .play) sg-hand { display: flex; gap: 2px; height: 40px; }
+:is(.learn, .play) sg-hand sg-hp-wrap { position: relative; flex: 0 1 40px; min-width: 0; height: 40px; }
+:is(.learn, .play) sg-hand sg-hp-wrap[data-nb='0'] { display: none; }
+:is(.learn, .play) sg-hand piece { position: relative; display: block; width: 100%; height: 100%; }
+:is(.learn, .play) sg-hand sg-hp-wrap::after { content: attr(data-nb); position: absolute; top: 0; right: 0; font: 700 11px/1 var(--f-body); background: var(--ink); color: var(--washi); border-radius: 3px; padding: 2px 4px; }
 
 
 /* the box the board squares fill: keyboard cursor and overlays sit on it */
 .learn__sgbox { position: relative; }
-.learn.no-coords .sg-wrap coords { display: none; }
+.learn.no-coords .sg-wrap coords, .play.no-coords .sg-wrap coords { display: none; }
 .learn__board:focus { outline: none; }
 .learn__board:focus-visible .learn__sg.sg-wrap { outline: 3px solid var(--focus); outline-offset: 3px; }
 .kbd-cursor { display: none; position: absolute; width: calc(100% / 9); height: calc(100% / 9); z-index: 5; pointer-events: none; box-shadow: inset 0 0 0 3px var(--focus), inset 0 0 0 5px var(--washi); }
@@ -228,8 +229,8 @@ html[data-pieces="kanji"] .learn piece::after { content: var(--k); font-family: 
 .learn .progress button.active { border-color: var(--seal); box-shadow: inset 0 0 0 1.5px var(--seal); background: var(--washi); }
 .learn .progress button.done { background: var(--washi); }
 .learn .progress .stars { font-size: 11px; letter-spacing: -1px; }
-.learn .stars .on { color: #C99A1E; }
-.learn .stars .off { color: var(--rule); }
+:is(.learn, .play) .stars .on { color: #C99A1E; }
+:is(.learn, .play) .stars .off { color: var(--rule); }
 .learn__table .tools { display: flex; border-top: 1px solid var(--rule); }
 .learn__table .tool {
   flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px;
@@ -237,7 +238,7 @@ html[data-pieces="kanji"] .learn piece::after { content: var(--k); font-family: 
 }
 .learn__table .tool + .tool { border-inline-start: 1px solid var(--rule); }
 .learn__table .tool:hover { background: var(--washi-2); }
-.learn .icon { display: inline-flex; }
+:is(.learn, .play) .icon { display: inline-flex; }
 
 /* ---------- side map in a lesson: back button + stages by category (lila css/_side-lesson.scss) ---------- */
 .learn__side-map { user-select: none; }
@@ -327,14 +328,14 @@ html[data-pieces="kanji"] .learn piece::after { content: var(--k); font-family: 
 .learn__settings .foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid var(--rule); padding-top: 14px; }
 
 /* ---------- buttons ---------- */
-.learn .btn {
+:is(.learn, .play) .btn {
   min-height: 44px; padding: 0 18px; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
   border: 1px solid var(--ink); background: transparent; color: var(--ink); text-decoration: none;
   font: 700 16px var(--f-body);
 }
-.learn .btn.primary { background: var(--seal); border-color: var(--seal); color: var(--on-seal); }
-.learn .btn.primary:hover { background: var(--seal-hover); border-color: var(--seal-hover); }
-.learn .link { min-height: 44px; border: 0; background: none; color: var(--seal); font: 600 15px var(--f-body); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; padding: 0; }
+:is(.learn, .play) .btn.primary { background: var(--seal); border-color: var(--seal); color: var(--on-seal); }
+:is(.learn, .play) .btn.primary:hover { background: var(--seal-hover); border-color: var(--seal-hover); }
+:is(.learn, .play) .link { min-height: 44px; border: 0; background: none; color: var(--seal); font: 600 15px var(--f-body); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; padding: 0; }
 
 /* Shogi Israel: reasons behind the moves made so far (level.why) */
 .learn__table .why { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line, rgba(0,0,0,.12)); text-align: start; color: inherit; }

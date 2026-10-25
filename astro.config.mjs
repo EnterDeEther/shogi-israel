@@ -12,12 +12,21 @@ const isDraftLesson = (page) => {
   return m !== null && !liveLessons.has(m[1]);
 };
 
+const isolation = { 'Cross-Origin-Opener-Policy': 'same-origin', 'Cross-Origin-Embedder-Policy': 'require-corp' };
+
 export default defineConfig({
   site: 'https://shogi.co.il',
   trailingSlash: 'ignore',
   integrations: [
     mdx(),
-    sitemap({ filter: (page) => !isDraftLesson(page) }),
+    // /play/ has noindex for now; drop it from this filter when that goes.
+    sitemap({ filter: (page) => !isDraftLesson(page) && !/\/play\//.test(page) }),
   ],
   build: { format: 'directory' },
+  // The play page's engines need SharedArrayBuffer (cross-origin isolation). Production sets these headers
+  // per route in vercel.json; the dev and preview servers set them everywhere.
+  vite: {
+    server: { headers: isolation },
+    preview: { headers: isolation },
+  },
 });

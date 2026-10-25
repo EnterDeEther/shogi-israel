@@ -3,10 +3,14 @@ import Base from '../layouts/Base.astro';
 import Board from '../components/Board.astro';
 import { getCollection } from 'astro:content';
 import { RULES_COURSE, pad } from '../lib/course';
+import { pageExists, LISHOGI_TEAM } from '../lib/live';
 
 const live = new Set((await getCollection('rules')).map((e) => e.id));
 const START = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1';
 const first = `/rules/${RULES_COURSE[0].slug}/`;
+// Playing happens here first; Lishogi is for public games and tournaments.
+const hasPlay = pageExists('/play/');
+const hasAccount = pageExists('/account/');
 ---
 <Base
   title="שוגי ישראל"
@@ -22,6 +26,7 @@ const first = `/rules/${RULES_COURSE[0].slug}/`;
           <span>התחילו את קורס החוקים</span>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
         </a>
+        {hasPlay && <a class="btn btn-ghost" href="/play/">כבר יודעים לשחק? שחקו נגד המחשב</a>}
         <p class="small muted">8 שיעורים קצרים · בלי הרשמה · ההתקדמות נשמרת רק במכשיר שלכם</p>
       </div>
     </div>
@@ -74,15 +79,26 @@ const first = `/rules/${RULES_COURSE[0].slug}/`;
     </ol>
   </section>
 
+  {hasPlay && (
+    <section id="play" class="wrap block" aria-labelledby="play-h">
+      <h2 id="play-h">משחקים כאן, באתר</h2>
+      <ul class="rows links play">
+        <li><a href="/play/"><span class="row-title"><strong>שחקו נגד המחשב</strong></span><span class="small muted">עשר רמות, ממתחילים ועד מתקדמים. ישר בדפדפן, בחינם</span></a></li>
+        {hasAccount && <li><a href="/account/"><span class="row-title"><strong>פתחו חשבון בשוגי ישראל</strong></span><span class="small muted">ההתקדמות והמשחקים שלכם נשמרים בכל מכשיר</span></a></li>}
+        <li><span class="row"><span class="row-title"><strong>משחק מול חבר</strong></span><span class="small muted">בקרוב: שולחים קישור הזמנה ומשחקים</span></span></li>
+      </ul>
+    </section>
+  )}
+
   <section id="community" class="wrap block" aria-labelledby="community-h">
     <div class="community">
       <h2 id="community-h">משחקים עם ישראלים</h2>
       <p>אנחנו קהילה קטנה ומתחילה. בואו להיות מהראשונים.</p>
       <ul class="rows links">
-        <li><a href="https://lishogi.org/team/---shogi-israel" rel="noopener"><span class="row-title"><strong>הקבוצה שלנו בליש׳וגי</strong></span><span class="small muted">משחקים אונליין, בחינם</span></a></li>
-        <li><a href="https://www.instagram.com/shogi.israel/" rel="noopener"><span class="row-title"><strong>אינסטגרם</strong></span><bdi dir="ltr" class="small muted">@shogi.israel</bdi></a></li>
         <li><a href="https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien" rel="noopener"><span class="row-title"><strong>קהילת הוואטסאפ</strong></span><span class="small muted">עדכונים, שאלות ומפגשים</span></a></li>
+        <li><a href="https://www.instagram.com/shogi.israel/" rel="noopener"><span class="row-title"><strong>אינסטגרם</strong></span><bdi dir="ltr" class="small muted">@shogi.israel</bdi></a></li>
         <li><span class="row"><span class="row-title"><strong>מפגשי היכרות בתל אביב</strong></span><span class="small muted">בקרוב</span></span></li>
+        <li><a href={LISHOGI_TEAM} rel="noopener"><span class="row-title"><strong>הקבוצה שלנו בליש׳וגי</strong></span><span class="small muted">טורנירים ויריבים מכל העולם</span></a></li>
       </ul>
     </div>
   </section>
@@ -128,10 +144,11 @@ const first = `/rules/${RULES_COURSE[0].slug}/`;
     .three li { flex-direction: column; border-top: 2px solid var(--ink); border-bottom: 0; }
   }
 
-  .course { max-width: 720px; }
+  .course, .play { max-width: 720px; }
   .community { background: var(--washi-2); border-radius: 8px; padding: 28px 22px; max-width: 720px; }
   .community h2 { margin-bottom: 8px; }
   .community > p { margin: 0 0 16px; color: var(--ink-2); }
   .links { border-top-color: var(--rule); }
   .links a, .links .row { justify-content: space-between; min-height: 52px; }
+  .play a, .play .row { flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; padding-block: 12px; }
 </style>

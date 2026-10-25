@@ -1,6 +1,18 @@
+# Private notes, agent instructions and keys never belong in this public repo
+CLAUDE.md
+CLAUDE.local.md
+AGENTS.md
+.claude/
+knowledge/
+notes/
+*.pem
+*.key
+supabase/.temp/
+
 node_modules/
 dist/
 .astro/
 .vercel/
 .env*
 .DS_Store
+public/engines/

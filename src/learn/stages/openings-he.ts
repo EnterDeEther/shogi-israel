@@ -1,6 +1,6 @@
 // Shogi Israel (shogi.co.il), 2026-10-24: the opening, strategy and castle lessons, as data.
-// Move lines: openings research (knowledge/content/learn/openings-research.md, sections in the comments), every
-// line replayed and checked there and again by test/stages.test.ts. Hebrew text written fresh for these lessons,
+// Every move line is replayed and checked by test/stages.test.ts. The § numbers in the comments are
+// section numbers in our openings notes. Hebrew text written fresh for these lessons,
 // with terms from the glossary sheet. Each level's "why" has one reason per user (sente) move, in order.
 // AGPL-3.0-or-later, like the rest of src/learn/.
 
@@ -1135,7 +1135,7 @@ export const staticCastles: CastleStage = {
 };
 
 // ---------------------------------------------------------------- what if the opponent gets it wrong
-// Each position is a line from the lessons above with one typical mistake by the opponent (openings research,
+// Each position is a line from the lessons above with one typical mistake by the opponent (openings notes,
 // "Typical mistakes"), found and checked by machine: the punishment wins material against any defence.
 
 export const whatIf: WhatIfStage = {
