@@ -36,7 +36,7 @@ const NAME_HE_PLURAL: Record<PieceType, string> = {
   K: 'מלכים', R: 'צריחים', B: 'רצים', G: 'גנרלי זהב', S: 'גנרלי כסף', N: 'פרשים', L: 'רמחים', P: 'רגלים',
 };
 const NAME_HE_PROMOTED: Partial<Record<PieceType, string>> = {
-  R: 'צריח מוכתר', B: 'רץ מוכתר', S: 'גנרל כסף מוכתר', N: 'פרש מוכתר', L: 'רומח מוכתר', P: 'טוקין',
+  R: 'דרקון', B: 'סוס', S: 'כסף מוכתר', N: 'פרש מוכתר', L: 'רומח מוכתר', P: 'טוקין',
 };
 
 export const SIDE_HE: Record<Side, string> = { sente: 'הפותח', gote: 'המשיב' };

@@ -5,12 +5,13 @@
 //   "sente" | "gote"  → a two-button question (פותח / משיב)
 //   (none)            → an instruction only, nothing to check
 // `hint`: shown under the board after a second wrong tap.
+// `why`: shown with a correct answer, to say why it is right.
 // Board tasks write their feedback here and under the board; Step.astro shows whichever sits next to the board.
-interface Props { answer?: string; hint?: string }
-const { answer, hint } = Astro.props;
+interface Props { answer?: string; hint?: string; why?: string }
+const { answer, hint, why } = Astro.props;
 const choice = answer === 'sente' || answer === 'gote';
 ---
-<div class="task" data-task data-answer={answer} data-hint={hint} data-kind={answer ? (choice ? 'choice' : 'board') : 'none'}>
+<div class="task" data-task data-answer={answer} data-hint={hint} data-why={why} data-kind={answer ? (choice ? 'choice' : 'board') : 'none'}>
   <p class="task-label">{answer ? 'נסו בעצמכם' : 'לפני שממשיכים'}</p>
   <div class="task-body"><slot /></div>
   {choice && (

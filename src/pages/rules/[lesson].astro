@@ -9,6 +9,7 @@ import Step from '../../components/mdx/Step.astro';
 import Piece from '../../components/Piece.astro';
 import { getCollection, render } from 'astro:content';
 import { RULES_COURSE, PRACTICE } from '../../lib/course';
+import { pageExists, LISHOGI_TEAM } from '../../lib/live';
 import { stages } from '../../learn/categories';
 import { stageUrl } from '../../learn/urls';
 
@@ -39,13 +40,13 @@ const practice = (PRACTICE[stub.slug] ?? []).filter((p) => learnPages.has(p.stag
 ---
 <Base
   title={entry ? entry.data.title : `שיעור ${stub.n}: ${stub.title}`}
-  description={entry ? entry.data.description : `שיעור ${stub.n} בקורס החוקים של שוגי ישראל. השיעור בכתיבה.`}
+  description={entry ? entry.data.description : `שיעור ${stub.n} בחוקים הבסיסיים של שוגי ישראל. השיעור בכתיבה.`}
   noindex={!entry}
 >
   <div class="wrap lesson" data-lesson={stub.slug}>
     <div class="meta">
-      <nav aria-label="מיקום" class="small muted"><a href="/rules/">קורס החוקים</a> · שיעור {stub.n} מתוך {total}</nav>
-      <div class="bar" role="progressbar" aria-label="מיקום בקורס" aria-valuenow={stub.n} aria-valuemin="0" aria-valuemax={total}>
+      <nav aria-label="מיקום" class="small muted"><a href="/rules/">חוקים בסיסיים</a> · שיעור {stub.n} מתוך {total}</nav>
+      <div class="bar" role="progressbar" aria-label="מיקום בשיעורים" aria-valuenow={stub.n} aria-valuemin="0" aria-valuemax={total}>
         <span style={`width:${(stub.n / total) * 100}%`}></span>
       </div>
     </div>
@@ -57,8 +58,17 @@ const practice = (PRACTICE[stub.slug] ?? []).filter((p) => learnPages.has(p.stag
     ) : (
       <article class="prose">
         <h1>שיעור {stub.n}: {stub.title}</h1>
-        <p>השיעור הזה עוד בכתיבה. בינתיים אפשר לחזור לשיעור הקודם, או לשחק ולתרגל בקבוצה שלנו בליש׳וגי.</p>
-        <p><a href="https://lishogi.org/team/---shogi-israel" rel="noopener">לקבוצה בליש׳וגי</a></p>
+        {pageExists('/play/') ? (
+          <>
+            <p>השיעור הזה עוד בכתיבה. בינתיים אפשר לחזור לשיעור הקודם, לתרגל בשיעורים האינטראקטיביים, או לשחק משחק שלם נגד המחשב כאן באתר.</p>
+            <p><a href="/play/">לשחק נגד המחשב</a> · <a href="/learn/">לשיעורים האינטראקטיביים</a></p>
+          </>
+        ) : (
+          <>
+            <p>השיעור הזה עוד בכתיבה. בינתיים אפשר לחזור לשיעור הקודם, לתרגל בשיעורים האינטראקטיביים, או לשחק בקבוצה שלנו בליש׳וגי.</p>
+            <p><a href="/learn/">לשיעורים האינטראקטיביים</a> · <a href={LISHOGI_TEAM} rel="noopener">לקבוצה בליש׳וגי</a></p>
+          </>
+        )}
       </article>
     )}
 
@@ -82,7 +92,7 @@ const practice = (PRACTICE[stub.slug] ?? []).filter((p) => learnPages.has(p.stag
       {prev ? (
         <a class="pg prev" href={`/rules/${prev.slug}/`}><span class="small muted">→ הקודם</span><span>{prev.title}</span></a>
       ) : (
-        <a class="pg prev" href="/rules/"><span class="small muted">→ חזרה</span><span>כל הקורס</span></a>
+        <a class="pg prev" href="/rules/"><span class="small muted">→ חזרה</span><span>כל השיעורים</span></a>
       )}
       {next && (
         <a class:list={['pg next', { soon: !isLive(next.slug) }]} href={`/rules/${next.slug}/`}>

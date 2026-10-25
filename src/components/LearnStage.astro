@@ -3,14 +3,15 @@
 // One island per page. data-stage = the stage slug (e.g. "silver", "out-of-check"); empty = the stage map.
 import '../styles/shogiground.css';
 import '../styles/learn.css';
+import { pageExists } from '../lib/live';
 
 interface Props {
   stage?: string;
 }
 const { stage = '' } = Astro.props;
 ---
-<section class="learn-island" data-learn data-stage={stage} aria-label="שיעור אינטראקטיבי">
-  <noscript><p>השיעור האינטראקטיבי צריך JavaScript. אפשר ללמוד את אותו חומר בעמודי <a href="/rules/">קורס החוקים</a>.</p></noscript>
+<section class="learn-island" data-learn data-stage={stage} data-has-play={pageExists('/play/') ? '' : undefined} data-has-account={pageExists('/account/') ? '' : undefined} data-has-lishogi-guide={pageExists('/lishogi/') ? '' : undefined} aria-label="שיעור אינטראקטיבי">
+  <noscript><p>השיעור האינטראקטיבי צריך JavaScript. אפשר ללמוד את אותו חומר בשיעורי <a href="/rules/">החוקים הבסיסיים</a>.</p></noscript>
 </section>
 <p class="small muted learn-credit">
   מערכת השיעורים מבוססת על הקוד ועל מבנה הלימוד של <a href="https://lishogi.org/learn" rel="noopener">Lishogi</a> (רישיון AGPL-3.0). הטקסט בעברית שלנו.{' '}

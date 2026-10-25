@@ -1,5 +1,4 @@
-// The Rules course outline (re-cut 2026-10-24: 5 = check and mate, 6 = illegal moves + endings;
-// see content/learn/lesson-stage-map.md). A lesson is live when its MDX file exists in src/content/rules/.
+// The Rules course outline. A lesson is live when its MDX file exists in src/content/rules/.
 export interface LessonStub { n: number; slug: string; title: string }
 
 export const RULES_COURSE: LessonStub[] = [
@@ -18,7 +17,6 @@ export const pad = (n: number) => String(n).padStart(2, '0');
 // Interactive practice (/learn/<stage>/) that matches each Rules lesson.
 // Stage keys are Lishogi Learn stage keys (src/learn/stages/*.ts). A link only shows once the stage is in the engine.
 export const PRACTICE: Record<string, { stage: string; title: string }[]> = {
-  // Final map from content/learn/lesson-stage-map.md (content chat, 2026-10-24 15:55).
   '01-board-pieces-setup': [{ stage: 'introduction', title: 'הכרת הלוח' }],
   '02-how-pieces-move': [
     { stage: 'king', title: 'מלך' },

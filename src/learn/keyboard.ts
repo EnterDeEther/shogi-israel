@@ -1,4 +1,4 @@
-// Shogi Israel: keyboard play for the lesson board (shogiground is pointer-only). IS 5568 / WCAG 2.1.1.
+// Shogi Israel: keyboard play for the lesson board and the game against the computer (shogiground is pointer-only). IS 5568 / WCAG 2.1.1.
 // Tab to the board, then:
 //   arrows      move the cursor (as you see the board; works when it is turned for the second player)
 //   two digits  jump to a square: 7 then 6 = square 76
@@ -9,8 +9,8 @@
 //   ?           say these keys
 // Every step is announced in a polite live region, in Hebrew, with two-digit squares (76).
 // AGPL-3.0-or-later, like the rest of src/learn/.
+import type { Api } from 'shogiground/api';
 import type { Piece } from 'shogiground/types';
-import type LearnCtrl from './ctrl';
 import { i18n, i18nFormat } from './i18n';
 
 const pieceNames: Record<string, string> = {
@@ -36,7 +36,13 @@ const RANKS = 'abcdefghi';
 export const squareName = (key: string): string => `${key[0]}${RANKS.indexOf(key[1]) + 1}`;
 const keyOf = (file: number, rank: number): Key => `${file}${RANKS[rank - 1]}` as Key;
 
-export function attachKeyboard(ctrl: LearnCtrl, boardEl: HTMLElement, cursorEl: HTMLElement, live: HTMLElement): void {
+/** What the keyboard needs from its page: the lesson controller, or the game against the computer. */
+export interface KeyboardHost {
+  shogiground: Api;
+  vm?: { level: { color: Color } };
+}
+
+export function attachKeyboard(ctrl: KeyboardHost, boardEl: HTMLElement, cursorEl: HTMLElement, live: HTMLElement): void {
   const sg = () => ctrl.shogiground;
   let cursor: Key | undefined;
   let digits = '';

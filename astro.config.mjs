@@ -2,20 +2,36 @@
 import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
+import { readdirSync } from 'node:fs';
+
+// A Rules lesson is live once its MDX is in src/content/rules/; the others render an "on its way"
+// page with noindex, so they stay out of the sitemap. Nothing to edit here when a lesson lands.
+const liveLessons = new Set(readdirSync(new URL('./src/content/rules', import.meta.url)).map((f) => f.replace(/\.mdx?$/, '')));
+const isDraftLesson = (page) => {
+  const m = page.match(/\/rules\/(\d\d-[^/]+)\/?$/);
+  return m !== null && !liveLessons.has(m[1]);
+};
+
+const isolation = { 'Cross-Origin-Opener-Policy': 'same-origin', 'Cross-Origin-Embedder-Policy': 'require-corp' };
 
 export default defineConfig({
   site: 'https://shogi.co.il',
   trailingSlash: 'ignore',
   integrations: [
     mdx(),
-    // Lessons still being written render an "on its way" page; keep them out of the sitemap.
-    // When a lesson's MDX lands in src/content/rules/, remove its number from this list.
-    sitemap({ filter: (page) => !/\/rules\/0[3-8]-/.test(page) && !/\/account\//.test(page) }),
+    // /play/ has noindex for now; drop it from this filter when that goes.
+    sitemap({ filter: (page) => !isDraftLesson(page) && !/\/play\//.test(page) && !/\/account\//.test(page) }),
   ],
   // Stylesheets as files, so the CSP needs no style hashes (hashes would switch 'unsafe-inline' off).
   build: { format: 'directory', inlineStylesheets: 'never' },
-  // The Vercel ↔ Supabase integration names its public keys NEXT_PUBLIC_*; expose those to the browser too.
-  vite: { envPrefix: ['PUBLIC_', 'NEXT_PUBLIC_'] },
+  vite: {
+    // The Vercel ↔ Supabase integration can name its public keys NEXT_PUBLIC_*; expose those to the browser too.
+    envPrefix: ['PUBLIC_', 'NEXT_PUBLIC_'],
+    // The play page's engines need SharedArrayBuffer (cross-origin isolation). Production sets these headers
+    // per route in vercel.json; the dev and preview servers set them everywhere.
+    server: { headers: isolation },
+    preview: { headers: isolation },
+  },
   // Content-Security-Policy as a <meta> tag on every page: only our own scripts (inline ones by hash) may run,
   // and the browser may talk only to us and to Supabase. Headers that a <meta> can't set live in vercel.json.
   security: {
@@ -26,6 +42,8 @@ export default defineConfig({
         "img-src 'self' data: blob:",
         "font-src 'self' data:",
         "media-src 'self'",
+        // the play page's engines run in workers
+        "worker-src 'self' blob:",
         // Cloudflare Turnstile: the bot check on the account forms
         "frame-src https://challenges.cloudflare.com",
         "object-src 'none'",
@@ -35,7 +53,8 @@ export default defineConfig({
       ],
       // Boards and the lesson player set style="" attributes; styles can't run code, so allow them.
       styleDirective: { resources: ["'self'", "'unsafe-inline'"] },
-      scriptDirective: { resources: ["'self'", 'https://challenges.cloudflare.com'] },
+      // 'wasm-unsafe-eval' lets the engines compile WebAssembly; it does not allow eval() of JavaScript.
+      scriptDirective: { resources: ["'self'", "'wasm-unsafe-eval'", 'https://challenges.cloudflare.com'] },
     },
   },
 });

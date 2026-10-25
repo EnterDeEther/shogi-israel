@@ -5,24 +5,17 @@ course: rules
 lesson: 2
 slug: rules/02-how-pieces-move
 next: rules/03-promotion
-status: draft-v1          # 2026-10-24 · Content (written in the "Write rules lesson 2" thread)
-glossary: v0-locked       # rows 1-103, locked 2026-10-23
-facts: research/rules-course.md (Lesson 2) · content/learn/lesson-stage-map.md (Lesson 2)
+status: draft-v1
 reading_time_min: 7
 og_image_sfen: "9/9/9/9/4S4/9/9/9/9 b - 1"
 ---
 
 {/*
-EDITOR NOTES (not rendered)
-- Same components and rules as Lesson 1 (see the notes at the top of 01-board-pieces-setup.mdx).
-- Piece order = Lishogi's engine stages (king, gold, silver, knight, lance, bishop, rook, pawn),
-  so the practice block at the end runs in the same order as the text (lesson-stage-map.md).
+Authoring notes (not rendered)
+- Same components and conventions as Lesson 1 (see the notes at the top of 01-board-pieces-setup.mdx).
+- Piece order follows the interactive lessons (king, gold, silver, knight, lance, bishop, rook, pawn).
 - Unpromoted moves only. Promoted moves are Lesson 3; each piece gets at most one pointer to it.
-- First-use strings (<Term first>) all sit in 2.1, the first place the pieces are named. Hebrew only after that.
-- Every move rule: research/rules-course.md §Lesson 2 (JSA §4 + FESA 3.3-3.10).
-  Own piece / capture rule: FESA 3.1 + JSA §5.2. Chess traps: BGA + nullprogram + Wikipedia (same §).
-- Shogi Shack has no rules pages (it sends readers to Wikipedia). What we take from it is the formula
-  (content-map §3): one question per step, board first, contrast pairs (gold vs silver), a rule of thumb per piece.
+- First-use strings (<Term first>) all sit in 2.1, the first place the pieces are named.
 - Board geometry: forward for sente = lower rank number; file 1 is on the right. From 55: forward 54,
   forward diagonals 64 (left) and 44 (right), sideways 65 / 45, back 56, back diagonals 66 / 46.
 */}
@@ -231,19 +224,6 @@ EDITOR NOTES (not rendered)
 - רק הפרש מדלג. כל השאר נעצרים בכלי הראשון בדרך.
 - אין מלכה, אין הצרחה, ואין צעד כפול לרגלי.
 
-{/*
-PRACTICE (not rendered yet): the eight engine stages (king, gold, silver, knight, lance, bishop, rook, pawn)
-render here once they ship, per lesson-stage-map.md. Until then there is no practice link on purpose:
-Lishogi's own Learn course is the one we chose not to send people to.
-*/}
+{/* Practice links for the eight piece stages go here once they ship. */}
 
 **הבא:** [שיעור 3: הכתרה ←](/rules/03-promotion)
-
-{/*
-OPEN (before publishing)
-1. Practice block: wire in the engine stages when the silver spike is merged and the other seven are built.
-2. Address form (plural imperative) → Localization Guide (same as Lesson 1).
-3. 2.5 rule of thumb (silver attacks, gold defends) is our wording of a standard idea that Shogi Shack also
-   teaches (03 Strategies, attack and defence units). No numbers in it, so no source needed on the page.
-4. 2.9 "16 squares on an empty board" is plain geometry (8 along the file + 8 along the rank on a 9×9 board).
-*/}
