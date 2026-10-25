@@ -30,6 +30,14 @@ export { CONTACT_EMAIL } from './contact';
 
 export const NAV: NavItem[] = [
   {
+    label: 'הכירו את השוגי',
+    blurb: 'מאיפה הוא בא, ומה מוכר ומה חדש אם אתם שחקני שחמט.',
+    links: [
+      { href: '/chess/', label: 'לשחקני שחמט', hint: 'מה כבר מוכר, ומה חדש' },
+      { href: '/history/', label: 'ההיסטוריה של השוגי', hint: 'מ־1058 ועד היום' },
+    ],
+  },
+  {
     label: 'למדו לשחק',
     blurb: 'מאפס ועד פתיחות ואסטרטגיה, בעברית ובחינם.',
     links: [
@@ -46,14 +54,6 @@ export const NAV: NavItem[] = [
     links: [
       { href: '/play/', label: 'נגד המחשב', hint: 'משחק מלא, ישר בדפדפן' },
       { href: '/lishogi/', label: 'שחקו אונליין בליש׳וגי', hint: 'מדריך: משחקים מול כל העולם' },
-    ],
-  },
-  {
-    label: 'הכירו את השוגי',
-    blurb: 'מאיפה הוא בא, ומה מוכר ומה חדש אם אתם שחקני שחמט.',
-    links: [
-      { href: '/chess/', label: 'לשחקני שחמט', hint: 'מה כבר מוכר, ומה חדש' },
-      { href: '/history/', label: 'ההיסטוריה של השוגי', hint: 'מ־1058 ועד היום' },
     ],
   },
   {
