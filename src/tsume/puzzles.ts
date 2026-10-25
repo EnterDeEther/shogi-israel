@@ -31,7 +31,7 @@ export async function loadPuzzles(n: Length): Promise<Puzzle[]> {
   return data.map(([sfen, line]) => ({ sfen, line: line.split(' ') }));
 }
 
-// ---------- progress on this device: puzzle numbers (1-based) solved per length
+// ---------- progress: puzzle numbers (1-based) solved per length, on this device and in the account when signed in
 
 const KEY = 'tsume.solved';
 type Solved = Partial<Record<Length, number[]>>;
@@ -52,6 +52,7 @@ export function markSolved(n: Length, id: number): void {
   list.add(id);
   all[n] = [...list].sort((a, b) => a - b);
   storage.set(KEY, JSON.stringify(all));
+  document.dispatchEvent(new CustomEvent('progress-changed')); // the account sync (src/lib/account.ts) picks it up
 }
 
 /** The first puzzle not solved yet, from `from` on (wraps around); 1 when all are solved. */

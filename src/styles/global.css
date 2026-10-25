@@ -206,3 +206,17 @@ bdi.nt, .nt { font-weight: 700; font-variant-numeric: tabular-nums; white-space:
 [data-signed-in-only] { display: none; }
 html[data-signed-in] [data-signed-in-only] { display: revert; }
 html[data-signed-in] [data-signed-out-only] { display: none; }
+
+/* Points note for signed-in visitors (src/lib/xp-toast.ts): top centre, never over the board's controls. */
+.xp-toast {
+  position: fixed; top: 14px; left: 50%; transform: translate(-50%, -150%); z-index: 60;
+  display: flex; align-items: center; gap: 10px; max-width: calc(100vw - 32px);
+  padding: 10px 18px; border-radius: 999px; background: var(--ink); color: var(--washi);
+  font-weight: 500; box-shadow: 0 6px 20px rgba(0, 0, 0, .25); transition: transform .3s ease; pointer-events: none;
+}
+.xp-toast--on { transform: translate(-50%, 0); pointer-events: auto; }
+.xp-toast a { color: inherit; }
+.xp-toast--rank { border-radius: 14px; padding: 12px 18px; background: var(--seal); color: var(--on-seal); }
+.xp-toast__kanji { font-family: var(--f-kanji); font-size: 26px; line-height: 1; }
+@media (prefers-reduced-motion: reduce) { .xp-toast { transition: none; } }
+.xp-toast__nw { white-space: nowrap; }

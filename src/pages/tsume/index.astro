@@ -85,14 +85,18 @@ const seal: Record<number, string> = { 1: '一', 3: '三', 5: '五', 7: '七' };
 
 <script>
   import { LENGTHS, solvedList } from '../../tsume/puzzles';
-  for (const n of LENGTHS) {
-    const solved = solvedList(n).length;
-    const span = document.querySelector<HTMLElement>(`.coll[data-n="${n}"] [data-solved]`);
-    if (span && solved) {
-      span.textContent = ` · פתרתם ${solved.toLocaleString('he-IL')}`;
-      span.hidden = false;
+  const showSolved = () => {
+    for (const n of LENGTHS) {
+      const solved = solvedList(n).length;
+      const span = document.querySelector<HTMLElement>(`.coll[data-n="${n}"] [data-solved]`);
+      if (span && solved) {
+        span.textContent = ` · פתרתם ${solved.toLocaleString('he-IL')}`;
+        span.hidden = false;
+      }
     }
-  }
+  };
+  showSolved();
+  document.addEventListener('progress-synced', showSolved); // solved on another device
 </script>
 
 <style>

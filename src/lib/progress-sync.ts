@@ -1,13 +1,44 @@
-// Progress that follows a signed-in account: the Learn scores and the Rules lessons marked done.
-// Pure functions only (tested in test/progress-sync.test.ts); src/lib/account.ts does the I/O.
+// Progress that follows a signed-in account: the Learn scores, the Rules lessons marked done,
+// the tsume puzzles solved, and the guided course (/course/: starting point, steps read or skipped, games played).
+// Pure functions only (tested in test/progress-sync.test.ts); src/lib/progress-local.ts and src/lib/account.ts do the I/O.
 
 export interface LearnProgress { stages: Record<string, { scores: number[] }> }
-export interface SyncedProgress { learn: LearnProgress; rules: string[] }
+export type Track = 'new' | 'chess' | 'shogi';
+export interface CourseState {
+  /** The answer to "where do you start?"; null until chosen. */
+  track: Track | null;
+  /** When the track was chosen (ISO), so the newer choice wins when two devices disagree. */
+  trackAt: string;
+  /** Course steps opened from /course/ (reading steps count as done once opened). */
+  seen: string[];
+  /** Course steps the player marked as already known. */
+  skipped: string[];
+  /** Highest computer level with a finished game, and with a win (0 = none). */
+  played: number;
+  won: number;
+}
+export interface SyncedProgress {
+  learn: LearnProgress;
+  rules: string[];
+  /** Tsume puzzle numbers solved, per length ("1", "3", "5", "7"). */
+  tsume: Record<string, number[]>;
+  course: CourseState;
+}
 
 export const LEARN_KEY = 'shogi-il.learn.progress';
 export const RULES_PREFIX = 'done:';
+export const TSUME_KEY = 'shogi-il.tsume.solved';
+export const COURSE_KEY = 'shogi-il.course';
+export const TRACKS: Track[] = ['new', 'chess', 'shogi'];
 
-export const emptyProgress = (): SyncedProgress => ({ learn: { stages: {} }, rules: [] });
+export const emptyCourse = (): CourseState => ({ track: null, trackAt: '', seen: [], skipped: [], played: 0, won: 0 });
+export const emptyProgress = (): SyncedProgress => ({ learn: { stages: {} }, rules: [], tsume: {}, course: emptyCourse() });
+
+const strings = (v: unknown): string[] =>
+  Array.isArray(v) ? [...new Set(v.filter((s: unknown): s is string => typeof s === 'string'))].sort() : [];
+const level = (v: unknown): number => (typeof v === 'number' && v >= 1 ? Math.min(10, Math.floor(v)) : 0);
+const ids = (v: unknown): number[] =>
+  Array.isArray(v) ? [...new Set(v.filter((n: unknown): n is number => Number.isInteger(n) && (n as number) > 0))].sort((a, b) => a - b) : [];
 
 /** Coerce anything (old local data, a row from the server) into the expected shape. */
 export function normalize(raw: unknown): SyncedProgress {
@@ -20,7 +51,23 @@ export function normalize(raw: unknown): SyncedProgress {
       out.learn.stages[key] = { scores: v.scores.map((s: unknown) => (typeof s === 'number' && s > 0 ? Math.min(3, Math.floor(s)) : 0)) };
     }
   }
-  if (Array.isArray(r.rules)) out.rules = [...new Set(r.rules.filter((s: unknown): s is string => typeof s === 'string'))].sort();
+  out.rules = strings(r.rules);
+  if (r.tsume && typeof r.tsume === 'object') {
+    for (const [n, list] of Object.entries(r.tsume as Record<string, unknown>)) {
+      const solved = ids(list);
+      if (/^\d+$/.test(n) && solved.length) out.tsume[n] = solved;
+    }
+  }
+  const c = (r.course && typeof r.course === 'object' ? r.course : {}) as Record<string, unknown>;
+  out.course = {
+    track: TRACKS.includes(c.track as Track) ? (c.track as Track) : null,
+    trackAt: typeof c.trackAt === 'string' ? c.trackAt : '',
+    seen: strings(c.seen),
+    skipped: strings(c.skipped),
+    played: level(c.played),
+    won: level(c.won),
+  };
+  if (!out.course.track) out.course.trackAt = '';
   return out;
 }
 
@@ -33,6 +80,19 @@ export function merge(a: SyncedProgress, b: SyncedProgress): SyncedProgress {
     out.learn.stages[key] = { scores: Array.from({ length: Math.max(x.length, y.length) }, (_, i) => Math.max(x[i] ?? 0, y[i] ?? 0)) };
   }
   out.rules = [...new Set([...a.rules, ...b.rules])].sort();
+  for (const n of new Set([...Object.keys(a.tsume), ...Object.keys(b.tsume)])) {
+    out.tsume[n] = [...new Set([...(a.tsume[n] ?? []), ...(b.tsume[n] ?? [])])].sort((x, y) => x - y);
+  }
+  // the newer starting-point choice wins; everything else is a union / the best of both
+  const pick = b.course.track && (!a.course.track || b.course.trackAt > a.course.trackAt) ? b.course : a.course;
+  out.course = {
+    track: pick.track,
+    trackAt: pick.trackAt,
+    seen: [...new Set([...a.course.seen, ...b.course.seen])].sort(),
+    skipped: [...new Set([...a.course.skipped, ...b.course.skipped])].sort(),
+    played: Math.max(a.course.played, b.course.played),
+    won: Math.max(a.course.won, b.course.won),
+  };
   return out;
 }
 

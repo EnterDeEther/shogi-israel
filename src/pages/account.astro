@@ -24,7 +24,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
 
         <section data-view="signin" hidden>
           <h1 data-signin-title>כניסה לחשבון</h1>
-          <p class="lead">עם חשבון, ההתקדמות בשיעורים נשמרת ועוברת איתכם לכל מכשיר. בהמשך: כינוי בטבלאות הדירוג, סטטיסטיקה אישית ומשחקים מול חברים.</p>
+          <p class="lead">עם חשבון, ההתקדמות בשיעורים ובמסלול שלכם נשמרת ועוברת איתכם לכל מכשיר. בהמשך: כינוי בטבלאות הדירוג, סטטיסטיקה אישית ומשחקים מול חברים.</p>
           <div class="seg tabs" role="group" aria-label="כניסה או הרשמה">
             <button type="button" data-mode="signin" aria-pressed="true">כניסה</button>
             <button type="button" data-mode="signup" aria-pressed="false">הרשמה</button>
@@ -93,6 +93,16 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
           <h1><bdi data-nickname></bdi></h1>
           <p class="muted small">מחוברים בתור <bdi dir="ltr" data-email></bdi></p>
 
+          <h2>המסלול שלי</h2>
+          <div class="course-card" data-course-card>
+            <p class="small muted" data-course-where></p>
+            <p class="course-rank"><span class="course-kanji" lang="ja" aria-hidden="true" data-course-kanji></span> <strong data-course-rank></strong> <span class="small muted" data-course-xp></span></p>
+            <p class="course-title" data-course-title></p>
+            <div class="bar" aria-hidden="true"><span data-course-bar></span></div>
+            <p class="small muted" data-course-count></p>
+            <p class="course-links"><a class="btn" data-course-next href="/course/"><span>לצעד הבא</span></a> <a href="/course/">לכל המסלול</a></p>
+          </div>
+
           <h2>ההתקדמות שלי</h2>
           <dl class="stats">
             <div><dt>כוכבים בשיעורים</dt><dd><bdi dir="ltr" data-stat="stars"></bdi></dd></div>
@@ -137,7 +147,9 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
 
 <script>
   import { accountsEnabled } from '../lib/account-config';
-  import { stats } from '../lib/progress-sync';
+  import { stats, type SyncedProgress } from '../lib/progress-sync';
+  import { KIND_LABEL, nextStep, pathProgress, stepHref, TRACK_INFO } from '../lib/curriculum';
+  import { rankFor, xpBreakdown } from '../lib/xp';
 
   const root = document.querySelector<HTMLElement>('[data-account]')!;
   if (accountsEnabled) void start();
@@ -184,6 +196,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       $('[data-stat="levels"]').textContent = `${s.levelsDone} / ${s.levels}`;
       $('[data-stat="stages"]').textContent = `${s.stagesDone} / ${s.stages}`;
       $('[data-stat="rules"]').textContent = String(s.rulesDone);
+      showCourse(progress);
       await acc.syncGames();
       const g = await acc.gameSummary();
       $('[data-games]').hidden = g.played === 0;
@@ -193,6 +206,28 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       $('[data-stat="losses"]').textContent = String(g.losses);
       $('[data-stat="rating"]').textContent = String(profile.rating);
       show('home');
+    }
+
+    // The guided course: where they are on the path, and a button to the next step.
+    function showCourse(p: SyncedProgress) {
+      const next = nextStep(p, levelCounts);
+      const total = pathProgress(p, levelCounts);
+      const track = p.course.track;
+      const xp = xpBreakdown(p, levelCounts).total;
+      const r = rankFor(xp);
+      $('[data-course-kanji]').textContent = r.rank.kanji;
+      $('[data-course-rank]').textContent = `דרגה ${r.rank.name}`;
+      $('[data-course-xp]').textContent = `${xp.toLocaleString('he-IL')} נקודות${r.next ? ` · עוד ${(r.next.min - xp).toLocaleString('he-IL')} לדרגה ${r.next.name}` : ''}`;
+      $('[data-course-where]').textContent = track
+        ? `נקודת ההתחלה: ${TRACK_INFO[track].label}${next ? ` · ${next.unit.phase ? `שלב ${next.unit.phase}: ` : ''}${next.unit.title}` : ''}`
+        : 'עוד לא בחרתם מאיפה להתחיל.';
+      $('[data-course-title]').textContent = next ? `הצעד הבא: ${next.step.title} (${KIND_LABEL[next.step.kind]})` : 'סיימתם את כל המסלול!';
+      $('[data-course-bar]').style.width = `${total.of ? Math.round((100 * total.done) / total.of) : 0}%`;
+      $('[data-course-count]').textContent = `${total.done} מתוך ${total.of} צעדים`;
+      const link = $<HTMLAnchorElement>('[data-course-next]');
+      link.hidden = !next;
+      link.href = track && next ? stepHref(next.step, p, levelCounts) : '/course/';
+      $('span', link).textContent = track ? 'לצעד הבא' : 'בחרו מאיפה להתחיל';
     }
 
     function askNickname(isNew: boolean) {
@@ -375,6 +410,16 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
   .stats div { border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px; background: var(--washi-2); }
   .stats dt { font-size: 14px; color: var(--muted); }
   .stats dd { margin: 2px 0 0; font: 700 26px/1.2 var(--f-display); font-variant-numeric: tabular-nums; }
+  .course-card { border: 1px solid var(--rule); border-inline-start: 4px solid var(--seal); border-radius: 8px; padding: 14px 16px; background: var(--washi-2); display: flex; flex-direction: column; gap: 6px; }
+  .course-card p { margin: 0; }
+  .course-title { font-weight: 700; font-size: 18px; }
+  .course-rank { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+  .course-rank strong { font: 800 22px/1.2 var(--f-display); }
+  .course-kanji { display: inline-grid; place-items: center; min-width: 44px; height: 44px; padding: 0 6px; border-radius: 22px; background: var(--seal); color: var(--on-seal); font: 700 17px/1 var(--f-kanji); }
+  .course-links { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 6px !important; }
+  .course-links .btn { min-height: 48px; font-size: 16px; }
+  .bar { height: 8px; border-radius: 999px; background: var(--rule); overflow: hidden; }
+  .bar span { display: block; height: 100%; width: 0; background: var(--seal); border-radius: inherit; }
   .setting { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
   .setting-label { margin: 0; font-weight: 700; }
   .actions { display: flex; flex-wrap: wrap; gap: 10px; }

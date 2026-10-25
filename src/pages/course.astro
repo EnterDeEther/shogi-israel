@@ -1,0 +1,368 @@
+---
+// /course/: the guided course. A short "where do you start?" question, then one ordered path through the
+// rules, the interactive lessons, the guide, tsume and play, grouped as the basics and the three game phases.
+// The path is drawn here at build time, so everyone can see it. The personal part (the start question, next step,
+// progress marks, points and rank) is for signed-in visitors only (Dean, 2026-10-25); others get a sign-up card.
+import Base from '../layouts/Base.astro';
+import { CURRICULUM, KIND_LABEL, TRACK_INFO, stepHref } from '../lib/curriculum';
+import { LEVEL_COUNTS as levelCounts } from '../lib/level-counts';
+import { RANKS, stepXp, XP } from '../lib/xp';
+import { emptyProgress, TRACKS } from '../lib/progress-sync';
+import { accountsEnabled } from '../lib/account-config';
+import { pageExists } from '../lib/live';
+import { WHATSAPP_URL } from '../lib/nav';
+
+const empty = emptyProgress();
+const accountsOn = accountsEnabled && pageExists('/account/');
+const PHASES = CURRICULUM.filter((u) => u.phase).length;
+---
+<Base
+  title="המסלול שלי: מאיפה מתחילים"
+  description="מסלול לימוד שוגי מסודר, בעברית ובחינם: עונים על שאלה אחת, ומקבלים את הצעד הבא, מהחוקים הבסיסיים דרך פתיחה ואמצע המשחק ועד בעיות מט."
+>
+  <div class="wrap page" data-course>
+    <p class="eyebrow">למדו לשחק</p>
+    <h1>המסלול שלי</h1>
+    <p class="lead">כל מה שיש באתר ללמוד, בסדר אחד: קודם היסודות, ואז שלושת שלבי המשחק, פתיחה, אמצע המשחק וסוף המשחק. בכל צעד כתוב למה הוא שם, ותמיד תדעו מה הצעד הבא.</p>
+
+    <section class="gate card" data-gate aria-labelledby="gate-h">
+      <h2 id="gate-h">מסלול אישי, נקודות ודרגות</h2>
+      {accountsOn ? (
+        <>
+          <p>עם חשבון (בחינם) המסלול נהיה שלכם: עונים על שאלה אחת ומקבלים נקודת התחלה, רואים בכל רגע את הצעד הבא, וצוברים נקודות שמעלות אתכם בדרגה, מ־15 קיו ועד דאן. ההתקדמות נשמרת בכל מכשיר.</p>
+          <p class="small muted">מה שכבר עשיתם בדפדפן הזה נכנס לחשבון ונספר.</p>
+          <p class="gate-cta"><a class="btn" href="/account/"><span>פתחו חשבון בחינם</span></a> <a href="/account/">כבר יש לכם חשבון? כניסה</a></p>
+        </>
+      ) : (
+        <p>המסלול האישי ייפתח יחד עם החשבונות באתר. בינתיים אפשר ללמוד לפי הסדר שכאן.</p>
+      )}
+      <p class="small muted">כל השיעורים פתוחים גם בלי חשבון. הנה המסלול המלא:</p>
+    </section>
+
+    <section class="placement" data-placement hidden aria-labelledby="place-h">
+      <h2 id="place-h">מאיפה מתחילים? ספרו לנו מה אתם כבר יודעים</h2>
+      <div class="tracks" role="group" aria-labelledby="place-h">
+        {TRACKS.map((t) => (
+          <button type="button" class="track" data-track={t} aria-pressed="false">
+            <strong>{TRACK_INFO[t].label}</strong>
+            <span class="small muted">{TRACK_INFO[t].sub}</span>
+          </button>
+        ))}
+      </div>
+      <p class="small muted">אפשר לשנות את זה בכל רגע. התשובה רק קובעת מאיפה המסלול מתחיל, וכל הצעדים נשארים פתוחים.</p>
+    </section>
+
+    <section class="chosen" data-chosen hidden>
+      <p><span class="muted">נקודת ההתחלה:</span> <strong data-chosen-label></strong> · <button type="button" class="link" data-change>שינוי</button></p>
+      <p class="small muted" data-chosen-start></p>
+    </section>
+
+    <section class="next card" data-next hidden aria-labelledby="next-h">
+      <p class="eyebrow" id="next-h">הצעד הבא</p>
+      <p class="next-where small muted" data-next-where></p>
+      <h2 data-next-title></h2>
+      <p data-next-why></p>
+      <a class="btn" data-next-link href="/rules/01-board-pieces-setup/"><span>התחילו</span></a>
+    </section>
+
+    <section class="rank card" data-rank hidden aria-labelledby="rank-h">
+      <span class="rank-kanji" lang="ja" aria-hidden="true" data-rank-kanji></span>
+      <div class="rank-body">
+        <p class="small muted" id="rank-h">הדרגה שלכם</p>
+        <p class="rank-name" data-rank-name></p>
+        <div class="bar" aria-hidden="true"><span data-rank-bar></span></div>
+        <p class="small muted" data-rank-text></p>
+        <details class="rank-how">
+          <summary class="small">איך צוברים נקודות?</summary>
+          <ul class="small">
+            <li>כוכב בתרגול על הלוח: {XP.star} נקודות (עד 3 כוכבים בכל תרגיל)</li>
+            <li>שיעור בחוקים הבסיסיים: {XP.rules}</li>
+            <li>בעיית מט: {XP.tsume[1]} (מט ב־1), {XP.tsume[3]} (ב־3), {XP.tsume[5]} (ב־5), {XP.tsume[7]} (ב־7)</li>
+            <li>משחק ראשון שסיימתם בכל רמה נגד המחשב: {XP.played}</li>
+            <li>ניצחון ראשון בכל רמה: {XP.won} כפול מספר הרמה</li>
+            <li>קריאת פרק במדריך מתוך המסלול: {XP.read}</li>
+            <li>בונוס על כל צעד שהשלמתם במסלול: {XP.step}</li>
+            <li>בונוס על שלב שהשלמתם כולו: {XP.unit}</li>
+          </ul>
+          <p class="small muted">כל דבר נספר פעם אחת: חזרה על תרגיל או בעיה שכבר פתרתם לא מוסיפה נקודות, ושיפור מכוכב אחד לשלושה מוסיף רק את ההפרש. צעד שסימנתם "כבר יודעים" לא נותן נקודות. הדרגות נקראות על שם דרגות השוגי, קיו ודאן, אבל מודדות התקדמות בלימוד באתר, לא כוח משחק. יש {RANKS.length} דרגות, מ־{RANKS[0].name} ועד {RANKS[RANKS.length - 1].name}.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="done-all card" data-done-all hidden>
+      <h2>סיימתם את המסלול!</h2>
+      <p>עברתם את כל שלושת השלבים. מכאן ממשיכים לשחק: מול שחקנים מכל העולם, ומול ישראלים בקהילה.</p>
+      <p><a href="/lishogi/">שחקו אונליין בליש׳וגי</a> · <a href={WHATSAPP_URL} rel="noopener">קהילת הוואטסאפ</a> · <a href="/tsume/7/">בעיות מט ב־7 מהלכים</a></p>
+    </section>
+
+    <div class="overall" data-overall hidden>
+      <div class="bar" aria-hidden="true"><span data-overall-bar></span></div>
+      <p class="small muted" data-overall-text></p>
+    </div>
+
+    {accountsOn && <p class="small muted save-note" data-signed-in-only>ההתקדמות נשמרת בחשבון שלכם, בכל מכשיר.</p>}
+
+    {CURRICULUM.map((u) => (
+      <section class="unit" id={u.key} data-unit={u.key} aria-labelledby={`${u.key}-h`}>
+        <header class="unit-head">
+          <p class="unit-tag">{u.phase ? `שלב ${u.phase} מתוך ${PHASES}` : 'לפני שמתחילים'}</p>
+          <h2 id={`${u.key}-h`}>{u.title}</h2>
+          <p class="unit-goal"><strong>המטרה: {u.goal}.</strong> {u.why}</p>
+          <div class="unit-progress" data-unit-progress hidden>
+            <div class="bar" aria-hidden="true"><span></span></div>
+            <span class="small muted"></span>
+          </div>
+        </header>
+        <ol class="steps">
+          {u.steps.map((s) => (
+            <li class="step" data-step={s.id} data-kind={s.kind} data-only={s.only?.join(' ')} data-optional={s.optional?.join(' ')} hidden={!!s.only && !s.only.includes('new')}>
+              <span class="mark" aria-hidden="true"></span>
+              <div class="step-body">
+                <a class="step-title" href={stepHref(s, empty, levelCounts)} data-step-link>{s.title}</a>
+                <p class="step-meta small muted">
+                  <span>{KIND_LABEL[s.kind]}</span> · <span>{s.minutes} דק׳</span>
+                  <span class="opt" data-opt-tag hidden> · רשות</span>
+                  <span class="count" data-count></span>
+                  <span class="xp" data-xp hidden> · עד +{stepXp(s, levelCounts)} נק׳</span>
+                  <span class="sr-only" data-state-sr></span>
+                </p>
+                <p class="step-why">{s.why}</p>
+              </div>
+              <button type="button" class="step-skip small" data-skip hidden>כבר יודעים</button>
+            </li>
+          ))}
+        </ol>
+      </section>
+    ))}
+
+    <p class="small muted foot">עוד באתר: <a href="/learn/guide/">פתיחות, מבצרים ואסטרטגיה</a> · <a href="/learn/">כל השיעורים האינטראקטיביים</a> · <a href="/rules/">חוקים בסיסיים</a> · <a href="/tsume/">בעיות מט</a></p>
+  </div>
+</Base>
+
+<script>
+  import { CURRICULUM, TRACK_INFO, ALL_STEPS, KIND_LABEL, hasAnyProgress, isOptional, nextStep, pathProgress, stepCount, stepHref, stepState, stepsFor, unitProgress } from '../lib/curriculum';
+  import { readLocal, updateCourse } from '../lib/progress-local';
+  import type { SyncedProgress, Track } from '../lib/progress-sync';
+  import { accountsEnabled, hasStoredSession } from '../lib/account-config';
+  import { LEVEL_COUNTS as levelCounts } from '../lib/level-counts';
+  import { rankFor, xpBreakdown } from '../lib/xp';
+
+  const root = document.querySelector<HTMLElement>('[data-course]')!;
+  // The personal course is for signed-in visitors; everyone else keeps the static path and the sign-up card.
+  const signedIn = accountsEnabled && hasStoredSession();
+  const $ = <T extends HTMLElement>(sel: string, scope: ParentNode = root) => scope.querySelector<T>(sel)!;
+  let changing = false;
+
+  const STATE_SR = { done: 'הושלם', skipped: 'סומן כמוכר', todo: '' } as const;
+
+  function render(p: SyncedProgress = readLocal()) {
+    const track = p.course.track;
+    $('[data-gate]').hidden = true;
+    const xp = xpBreakdown(p, levelCounts).total;
+    const r = rankFor(xp);
+    $('[data-rank]').hidden = false;
+    $('[data-rank-kanji]').textContent = r.rank.kanji;
+    $('[data-rank-name]').textContent = r.rank.name;
+    $('[data-rank-bar]').style.width = `${r.next ? Math.round((100 * r.into) / r.span) : 100}%`;
+    $('[data-rank-text]').textContent = r.next
+      ? `${xp.toLocaleString('he-IL')} נקודות · עוד ${(r.next.min - xp).toLocaleString('he-IL')} לדרגה ${r.next.name}`
+      : `${xp.toLocaleString('he-IL')} נקודות · הדרגה הגבוהה ביותר באתר`;
+    const picking = !track || changing;
+    $('[data-placement]').hidden = !picking;
+    root.querySelectorAll<HTMLButtonElement>('[data-track]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.track === track)));
+    $('[data-chosen]').hidden = picking;
+    if (track) {
+      $('[data-chosen-label]').textContent = TRACK_INFO[track].label;
+      $('[data-chosen-start]').textContent = TRACK_INFO[track].start;
+    }
+
+    // Next step: once a track is chosen, or for anyone who already started somewhere on the site.
+    const next = nextStep(p, levelCounts);
+    const showNext = (!!track || hasAnyProgress(p)) && !picking;
+    $('[data-next]').hidden = !showNext || !next;
+    $('[data-done-all]').hidden = !showNext || !!next;
+    if (next) {
+      const { unit, step } = next;
+      const c = stepCount(step, p, levelCounts);
+      $('[data-next-where]').textContent = `${unit.phase ? `שלב ${unit.phase}: ` : ''}${unit.title} · ${KIND_LABEL[step.kind]} · ${step.minutes} דק׳${c && c.done ? ` · ${c.done} מתוך ${c.of}` : ''}`;
+      $('[data-next-title]').textContent = step.title;
+      $('[data-next-why]').textContent = step.why;
+      const link = $<HTMLAnchorElement>('[data-next-link]');
+      link.href = stepHref(step, p, levelCounts);
+      link.dataset.stepLink = step.id;
+      $('span', link).textContent = stepState(step, p, levelCounts) === 'todo' && started(step.id, p) ? 'המשיכו' : 'התחילו';
+    }
+
+    const total = pathProgress(p, levelCounts);
+    $('[data-overall]').hidden = !showNext;
+    $('[data-overall-bar]').style.width = `${total.of ? Math.round((100 * total.done) / total.of) : 0}%`;
+    $('[data-overall-text]').textContent = `${total.done} מתוך ${total.of} צעדים במסלול`;
+
+    for (const u of CURRICULUM) {
+      const sec = $(`[data-unit="${u.key}"]`);
+      const visible = new Set(stepsFor(u, track).map((s) => s.id));
+      for (const s of u.steps) {
+        const li = $(`[data-step="${s.id}"]`, sec);
+        li.hidden = !visible.has(s.id);
+        const state = stepState(s, p, levelCounts);
+        li.dataset.state = state;
+        li.classList.toggle('is-next', next?.step.id === s.id && showNext);
+        $<HTMLAnchorElement>('[data-step-link]', li).href = stepHref(s, p, levelCounts);
+        $('[data-opt-tag]', li).hidden = !isOptional(s, track);
+        const c = stepCount(s, p, levelCounts);
+        $('[data-count]', li).textContent = c && c.done && state === 'todo' ? ` · ${c.done} מתוך ${c.of}` : '';
+        $('[data-state-sr]', li).textContent = STATE_SR[state] ? ` · ${STATE_SR[state]}` : '';
+        $('[data-xp]', li).hidden = state !== 'todo';
+        const skip = $<HTMLButtonElement>('[data-skip]', li);
+        skip.hidden = state === 'done';
+        skip.textContent = state === 'skipped' ? 'בטלו סימון' : 'כבר יודעים';
+        skip.setAttribute('aria-label', `${state === 'skipped' ? 'בטלו סימון' : 'כבר יודעים'}: ${s.title}`);
+      }
+      const up = unitProgress(u, p, levelCounts);
+      const bar = $('[data-unit-progress]', sec);
+      bar.hidden = !showNext;
+      $<HTMLElement>('.bar span', bar).style.width = `${up.of ? Math.round((100 * up.done) / up.of) : 0}%`;
+      $('.small', bar).textContent = up.done === up.of ? 'הושלם ✓' : `${up.done} מתוך ${up.of}`;
+    }
+  }
+
+  // A step was started if any part of it has progress (a learn stage touched, a puzzle solved).
+  function started(id: string, p: SyncedProgress): boolean {
+    const s = ALL_STEPS.find((x) => x.id === id)!;
+    if (s.kind === 'learn') return s.learn!.some((k) => (p.learn.stages[k]?.scores ?? []).some((x) => x > 0));
+    if (s.kind === 'tsume') return (p.tsume[String(s.tsume)]?.length ?? 0) > 0;
+    return false;
+  }
+
+  root.querySelectorAll<HTMLButtonElement>('[data-track]').forEach((b) =>
+    b.addEventListener('click', () => {
+      const t = b.dataset.track as Track;
+      const before = readLocal().course.track;
+      changing = false;
+      render(updateCourse((c) => { c.track = t; c.trackAt = new Date().toISOString(); }, { overwrite: !!before && before !== t }));
+      $('[data-chosen]').scrollIntoView({ block: 'nearest' });
+    }));
+  $('[data-change]').addEventListener('click', () => {
+    changing = true;
+    render();
+    $<HTMLButtonElement>('[data-track][aria-pressed="true"]')?.focus();
+  });
+
+  root.addEventListener('click', (e) => {
+    const t = e.target as HTMLElement;
+    const skip = t.closest<HTMLButtonElement>('[data-skip]');
+    if (skip) {
+      const id = skip.closest<HTMLElement>('[data-step]')!.dataset.step!;
+      const was = readLocal().course.skipped.includes(id);
+      render(updateCourse((c) => {
+        c.skipped = was ? c.skipped.filter((x) => x !== id) : [...c.skipped, id].sort();
+      }, { overwrite: was }));
+      return;
+    }
+    // Reading steps count as done once opened from here.
+    const link = t.closest<HTMLAnchorElement>('[data-step-link]');
+    const id = link?.dataset.stepLink || link?.closest<HTMLElement>('[data-step]')?.dataset.step;
+    const step = id && ALL_STEPS.find((s) => s.id === id);
+    if (step && step.kind === 'read' && !readLocal().course.seen.includes(step.id)) {
+      updateCourse((c) => { c.seen = [...c.seen, step.id].sort(); });
+    }
+  });
+
+  if (signedIn) {
+    render();
+    document.addEventListener('progress-synced', () => render());
+    // Coming back with the browser's back button after a lesson: show the new progress.
+    window.addEventListener('pageshow', (e) => { if (e.persisted) render(); });
+  }
+</script>
+
+<style>
+  .page { padding-top: 36px; max-width: 760px; }
+  [hidden] { display: none !important; }
+  h1 { margin: 6px 0 8px; }
+  .lead { margin: 0 0 24px; font-size: 18px; line-height: 1.7; color: var(--ink-2); }
+  .link { appearance: none; background: none; border: 0; padding: 0; font: inherit; color: var(--seal); text-decoration: underline; cursor: pointer; }
+  .card { background: var(--washi-2); border: 1px solid var(--rule); border-radius: 10px; padding: 18px 20px; }
+
+  .gate { margin: 0 0 8px; display: flex; flex-direction: column; gap: 8px; border-inline-start: 4px solid var(--seal); }
+  .gate h2 { margin: 0; font-size: 22px; }
+  .gate p { margin: 0; color: var(--ink-2); line-height: 1.6; }
+  .gate-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 6px 0 !important; }
+
+  .rank { display: flex; gap: 16px; align-items: flex-start; margin: 0 0 16px; }
+  .rank-kanji {
+    flex-shrink: 0; width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--seal); color: var(--on-seal); font: 700 22px/1 var(--f-kanji); writing-mode: vertical-rl; letter-spacing: 1px;
+  }
+  .rank-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .rank-body p { margin: 0; }
+  .rank-name { font: 800 26px/1.2 var(--f-display); }
+  .rank-how summary { cursor: pointer; color: var(--seal); margin-top: 4px; }
+  .rank-how ul { margin: 8px 0; padding-inline-start: 20px; color: var(--ink-2); }
+  .rank-how li { margin-bottom: 4px; }
+  .xp { color: var(--seal); }
+
+  .placement h2 { font-size: 22px; margin: 0 0 12px; }
+  .tracks { display: grid; gap: 10px; margin-bottom: 10px; }
+  @media (min-width: 700px) { .tracks { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .track {
+    appearance: none; text-align: start; font: inherit; color: var(--ink); cursor: pointer;
+    display: flex; flex-direction: column; gap: 4px; min-height: 76px; padding: 14px 16px;
+    background: var(--washi); border: 1.5px solid var(--ink); border-radius: 10px;
+  }
+  .track strong { font-size: 18px; }
+  .track:hover { background: var(--washi-2); }
+  .track[aria-pressed="true"] { border-color: var(--seal); box-shadow: inset 0 0 0 1.5px var(--seal); }
+  .placement > p { margin: 0 0 20px; }
+
+  .chosen p { margin: 0 0 4px; }
+  .chosen { margin-bottom: 16px; }
+
+  .next { margin: 0 0 16px; display: flex; flex-direction: column; gap: 6px; border-inline-start: 4px solid var(--seal); }
+  .next .eyebrow { margin: 0; }
+  .next h2 { margin: 0; font-size: 24px; }
+  .next p { margin: 0; color: var(--ink-2); line-height: 1.6; }
+  .next .btn { align-self: flex-start; margin-top: 8px; }
+  .done-all { margin: 0 0 16px; }
+  .done-all h2 { margin: 0 0 6px; }
+  .done-all p { margin: 0 0 6px; color: var(--ink-2); }
+
+  .bar { height: 8px; border-radius: 999px; background: var(--rule); overflow: hidden; }
+  .bar span { display: block; height: 100%; width: 0; background: var(--seal); border-radius: inherit; transition: width .3s; }
+  .overall { margin: 0 0 8px; }
+  .overall p { margin: 6px 0 0; }
+  .save-note { margin: 0 0 8px; }
+
+  .unit { margin-top: 40px; scroll-margin-top: 16px; }
+  .unit-tag { margin: 0; font-size: 14px; font-weight: 700; color: var(--seal); }
+  .unit-head h2 { margin: 2px 0 6px; font-size: clamp(26px, 5vw, 32px); }
+  .unit-goal { margin: 0 0 10px; color: var(--ink-2); line-height: 1.65; }
+  .unit-progress { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .unit-progress .bar { flex: 1; max-width: 240px; }
+
+  .steps { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+  .step { display: flex; gap: 12px; align-items: flex-start; padding: 14px 0; border-bottom: 1px solid var(--rule); }
+  .mark {
+    flex-shrink: 0; width: 26px; height: 26px; margin-top: 2px; border-radius: 50%;
+    border: 2px solid var(--rule); display: grid; place-items: center; font-size: 15px; font-weight: 700;
+  }
+  .step[data-state="done"] .mark { background: var(--ok-text); border-color: var(--ok-text); color: var(--washi); }
+  .step[data-state="done"] .mark::after { content: '✓'; }
+  .step[data-state="skipped"] .mark { border-style: dashed; border-color: var(--muted); color: var(--muted); }
+  .step[data-state="skipped"] .mark::after { content: '–'; }
+  .step.is-next .mark { border-color: var(--seal); background: var(--seal); }
+  .step.is-next { background: linear-gradient(to left, transparent, var(--washi-2)); }
+  .step-body { flex: 1; min-width: 0; }
+  .step-title { font-weight: 700; font-size: 17px; color: var(--ink); }
+  .step-title:hover { color: var(--seal); }
+  .step[data-state="skipped"] .step-title { color: var(--muted); }
+  .step-meta { margin: 2px 0 4px; }
+  .step-why { margin: 0; color: var(--ink-2); line-height: 1.55; font-size: 15px; }
+  .step-skip {
+    appearance: none; flex-shrink: 0; cursor: pointer; font: inherit; font-size: 14px; color: var(--muted);
+    background: none; border: 1px solid var(--rule); border-radius: 999px; padding: 6px 12px; min-height: 36px;
+  }
+  .step-skip:hover { color: var(--ink); border-color: var(--ink); }
+  .foot { margin-top: 32px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+</style>
