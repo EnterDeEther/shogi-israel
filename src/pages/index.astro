@@ -14,16 +14,16 @@ const hasAccount = pageExists('/account/');
 ---
 <Base
   title="שוגי ישראל"
-  description="השחמט היפני, בעברית ומאפס. קורס חוקים קצר ואינטראקטיבי, בחינם ובלי הרשמה, וקהילה ישראלית של שחקני שוגי."
+  description="השחמט היפני, בעברית ומאפס. חוקים בסיסיים בשיעורים קצרים ואינטראקטיביים, בחינם ובלי הרשמה, וקהילה ישראלית של שחקני שוגי."
 >
   <section class="hero wrap">
     <div class="hero-text">
       <p class="eyebrow">השחמט היפני · בעברית, מאפס</p>
       <h1>שוגי. המשחק שבו אף כלי לא באמת יוצא מהמשחק.</h1>
-      <p class="lead">כלי שאכלתם עובר לצד שלכם, ואפשר להצניח אותו בחזרה על הלוח. כאן לומדים את החוקים בעברית, צעד אחר צעד, בחינם.</p>
+      <p class="lead">כלי שלכדתם עובר לצד שלכם, ואפשר להצניח אותו בחזרה על הלוח. כאן לומדים את החוקים בעברית, צעד אחר צעד, בחינם.</p>
       <div class="cta">
         <a class="btn" href={first}>
-          <span>התחילו את קורס החוקים</span>
+          <span>התחילו בחוקים הבסיסיים</span>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
         </a>
         {hasPlay && <a class="btn btn-ghost" href="/play/">כבר יודעים לשחק? שחקו נגד המחשב</a>}
@@ -44,7 +44,7 @@ const hasAccount = pageExists('/account/');
       </li>
       <li>
         <span class="num" lang="ja" aria-hidden="true">二</span>
-        <div><h3>הצנחה</h3><p>כלי שנאכל עובר לידיים שלכם. בתורכם אפשר להניח אותו כמעט בכל משבצת פנויה.</p></div>
+        <div><h3>הצנחה</h3><p>כלי שנלכד עובר לידיים שלכם. בתורכם אפשר להניח אותו כמעט בכל משבצת פנויה.</p></div>
       </li>
       <li>
         <span class="num" lang="ja" aria-hidden="true">三</span>
@@ -55,8 +55,8 @@ const hasAccount = pageExists('/account/');
 
   <section class="wrap block" aria-labelledby="course">
     <div class="head-row">
-      <h2 id="course">קורס החוקים</h2>
-      <a class="small" href="/rules/">לכל הקורס</a>
+      <h2 id="course">חוקים בסיסיים</h2>
+      <a class="small" href="/rules/">לכל השיעורים</a>
     </div>
     <ol class="rows course">
       {RULES_COURSE.map((l, i) => (
