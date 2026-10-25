@@ -350,6 +350,10 @@ function renderLesson(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go, stageLin
             : el('a', { href: '/learn/', class: 'btn primary', 'data-autofocus': true, 'data-fid': 'ov-next', onclick: go(() => ctrl.setHome()) }, i18n('whatNext')),
           el('button', { type: 'button', class: 'btn', 'data-fid': 'ov-menu', onclick: go(() => ctrl.setHome()) }, i18n('backToMenu')),
         ),
+        // Shogi Israel: the moment to offer an account (signed-out only; global.css hides it once signed in)
+        root.dataset.hasAccount !== undefined
+          ? el('p', { class: 'small', 'data-signed-out-only': '' }, el('a', { href: '/account/?mode=signup' }, i18n('il_saveStars')), ' ', i18n('il_saveStarsWhy'))
+          : null,
       ),
     );
     overlay.onclick = go(() => { vm.stageState = 'end'; });

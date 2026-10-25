@@ -105,6 +105,9 @@ function coach(ctrl: TsumeCtrl, go: Go): HTMLElement {
       body.push(el('div', { class: 'buttons' },
         ctrl.id < ctrl.count ? btn('לבעיה הבאה', () => location.assign(`#${ctrl.id + 1}`), true, 'next') : null,
         btn('שוב', () => ctrl.load(ctrl.id), false, 'again')));
+      // signed-out only (global.css hides it once html[data-signed-in] is set)
+      if (f.clean) body.push(el('p', { class: 'small', 'data-signed-out-only': '' },
+        el('a', { href: '/account/?mode=signup' }, 'פתחו חשבון בחינם'), ' והבעיות שפתרתם יישמרו בכל מכשיר, ויספרו לנקודות ולדרגה שלכם.'));
       break;
     case 'shown':
       cls = 'shown';
