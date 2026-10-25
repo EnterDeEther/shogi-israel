@@ -42,6 +42,13 @@ const GUIDE: Record<string, { anchor: string; text: string }> = {
   strategy: { anchor: 'strategy', text: 'il_guideStrategy' },
 };
 
+// The game phase a lesson belongs to (opening, middle game, endgame), shown as a chip that links to the explanation.
+const PHASE_BY_CATEGORY: Record<string, string> = { openings: 'il_phaseOpening', castles: 'il_phaseCastles', strategy: 'il_phaseMiddle' };
+const PHASE_BY_STAGE: Record<string, string> = { whatIf: 'il_phaseOpening', checkmate1: 'il_phaseEnd' };
+const phaseOf = (categoryKey: string, stageKey?: string): string | undefined => (stageKey && PHASE_BY_STAGE[stageKey]) || PHASE_BY_CATEGORY[categoryKey];
+const phaseChip = (phase: string | undefined, stop = false) =>
+  phase && el('p', { class: 'phase' }, el('a', { href: '/learn/guide/#phases', onclick: stop ? (e: Event) => e.stopPropagation() : undefined }, i18n(phase)));
+
 /** Our strings use **bold** for a new term, and moves like P-76 must stay left-to-right. */
 export function rich(text: string): DocumentFragment {
   const f = document.createDocumentFragment();
@@ -219,6 +226,7 @@ function renderHome(ctrl: LearnCtrl, _root: HTMLElement, q: Q, go: Go, stageLink
     ...categories.map((c) =>
       el('section', { class: 'categ', 'aria-labelledby': `cat-${c.key}` },
         el('h2', { id: `cat-${c.key}` }, c.name),
+        phaseChip(phaseOf(c.key)),
         GUIDE[c.key] && el('p', {}, el('a', { href: `/learn/guide/#${GUIDE[c.key].anchor}` }, i18n(GUIDE[c.key].text))),
         el('div', { class: 'categ_stages' },
           ...c.stages.map((s) => {
@@ -317,6 +325,7 @@ function renderLesson(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go, stageLin
         stageImg(stage.key),
         el('p', { class: 'eyebrow' }, i18nFormat('stageX', stage.id)),
         el('h2', { id: 'learn-ov-title' }, stage.title),
+        phaseChip(phaseOf(vm.category.key, stage.key), true),
         el('p', {}, rich(stage.intro)),
         GUIDE[vm.category.key] && el('p', { class: 'guide-link' }, el('a', { href: `/learn/guide/#${GUIDE[vm.category.key].anchor}`, onclick: (e: Event) => e.stopPropagation() }, i18n('il_guideRead'))),
         el('button', { type: 'button', class: 'btn primary', onclick: start, 'data-autofocus': true, 'data-fid': 'letsgo' }, i18n('letsGo')),
