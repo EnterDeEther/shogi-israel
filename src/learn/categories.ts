@@ -2,10 +2,10 @@
 // Source: https://github.com/WandererXII/lila/blob/89aea5f6f24c5e941c7cac8434a6e9e1acc15e94/ui/learn/src/categories.ts
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
-// Modified by Shogi Israel (shogi.co.il), 2026-10-24: i18n import points to our Hebrew shim; lila's stages in lila's order, without setup and repetition (Intermediate), which Dean removed on 2026-10-24; our own openings, castles and strategy categories added after lila's.
+// Modified by Shogi Israel (shogi.co.il), 2026-10-24: i18n import points to our Hebrew shim; lila's stages in lila's order, without setup and repetition (Intermediate), which Dean removed on 2026-10-24; our own openings, castles and strategy categories added after lila's, the strategy one ending with the "what if the opponent gets it wrong" stage.
 
 import { i18n } from './i18n';
-import { castleStage, openingStage } from './opening';
+import { castleStage, openingStage, whatIfStage } from './opening';
 import * as op from './stages/openings-he';
 import type { Category, IncompleteStage, Stage } from './interfaces';
 import bishop from './stages/bishop';
@@ -82,7 +82,7 @@ export const categories: Category[] = [
     stages: [
       op.primitiveClimbingSilver, op.climbingSilverVsRanging, op.sittingSilver, op.chainedSilver,
       op.bishopClimbingSilver, op.rapidSilver, op.bishopSittingSilver, op.spearingSparrow,
-    ].map(openingStage).map(createStage),
+    ].map(openingStage).concat(whatIfStage(op.whatIf)).map(createStage),
   },
 ];
 
