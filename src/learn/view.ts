@@ -264,6 +264,7 @@ function whatNextLinks(has: DOMStringMap): [href: string, seal: string, title: s
   const on = (k: string) => has[k] !== undefined;
   return [
     ['/rules/', '書', 'il_rulesCourse', 'il_rulesCourseSub'],
+    ...(on('hasTsume') ? [['/tsume/', '詰', 'il_tsume', 'il_tsumeSub'] as [string, string, string, string]] : []),
     on('hasPlay')
       ? ['/play/', '機', 'playMachine', 'il_playMachineHere']
       : ['https://lishogi.org/#ai', '機', 'playMachine', 'testYourSkillsWithTheComputer'],

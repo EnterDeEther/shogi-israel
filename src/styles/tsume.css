@@ -1,0 +1,32 @@
+/* Tsume player (/tsume/<N>/): the game page's frame (play.css) with a puzzle table. */
+
+.tsume .tsume-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; min-height: 60px; border-bottom: 1px solid var(--rule); }
+.tsume .tsume-head > div { display: flex; flex-direction: column; line-height: 1.35; }
+.tsume .tsume-head strong { font-size: 18px; }
+.tsume .tsume-head strong .muted { font-weight: 500; font-size: 15px; }
+
+.tsume .tsume-coach { padding: 12px 14px; border-bottom: 1px solid var(--rule); border-inline-start: 4px solid var(--rule); min-height: 132px; }
+.tsume .tsume-coach .title { display: block; font: 800 21px/1.3 var(--f-display); margin-bottom: 4px; }
+.tsume .tsume-coach p { margin: 0 0 8px; line-height: 1.6; font-size: 16px; }
+.tsume .tsume-coach .mv-name { font-weight: 700; }
+.tsume .tsume-coach .recap { color: var(--ink-2); }
+.tsume .tsume-coach .hint { color: var(--muted); }
+.tsume .tsume-coach .buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.tsume .tsume-coach.good { border-inline-start-color: var(--ok-text); }
+.tsume .tsume-coach.good .title { color: var(--ok-text); }
+.tsume .tsume-coach.bad { border-inline-start-color: var(--seal); }
+.tsume .tsume-coach.bad .title { color: var(--seal); }
+.tsume .tsume-coach.done { background: var(--won-bg); color: var(--won-fg); border-inline-start-color: var(--won-fg); }
+.tsume .tsume-coach.done p, .tsume .tsume-coach.done .recap { color: inherit; }
+.tsume .moves-box { height: 150px; }
+.tsume .moves .mv:disabled { cursor: default; }
+.tsume .moves .mv:disabled:hover { background: none; }
+
+/* phones: the feedback right under the board, then the buttons */
+@media (max-width: 859.98px) {
+  .tsume .table-box > .tsume-head { order: 0; }
+  .tsume .table-box > .tsume-coach { order: 1; min-height: 0; }
+  .tsume .table-box > .tools { order: 2; }
+  .tsume .table-box > .replay { order: 3; }
+  .tsume .moves-box { height: 96px; }
+}

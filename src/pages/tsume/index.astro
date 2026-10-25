@@ -1,0 +1,122 @@
+---
+// /tsume/: what a tsume is, its rules, how to practise, and the collections (mate in 1, 3, 5, 7).
+// Each collection is a player page (/tsume/<N>/). Progress is per device (src/tsume/puzzles.ts).
+import Base from '../../layouts/Base.astro';
+import Board from '../../components/Board.astro';
+import { LENGTH_INFO, LENGTHS } from '../../tsume/puzzles';
+
+const data = import.meta.glob<{ default: unknown[] }>('../../tsume/data/mate*.json', { eager: true });
+const count = (n: number) => data[`../../tsume/data/mate${n}.json`]?.default.length ?? 0;
+const total = LENGTHS.reduce((s, n) => s + count(n), 0);
+const seal: Record<number, string> = { 1: '一', 3: '三', 5: '五', 7: '七' };
+---
+<Base title="בעיות מט (צומה)" description={`${total.toLocaleString('he-IL')} בעיות מט בשוגי, בעברית ובחינם: מט במהלך אחד, ב־3, ב־5 וב־7 מהלכים. פותרים על הלוח ומקבלים משוב אחרי כל מהלך.`}>
+  <div class="wrap page tsume-hub">
+    <p class="eyebrow">למדו לשחק · סוף המשחק</p>
+    <h1>בעיות מט</h1>
+    <p class="lead measure">בעיית מט היא עמדה עם משימה אחת: לתת מט למלך של היריב, במספר מהלכים קבוע. ככה מתאמנים שחקני שוגי ביפן כבר מאות שנים, ויש כאן {total.toLocaleString('he-IL')} בעיות כאלה, מהקלות ביותר ועד בעיות שדורשות מחשבה.</p>
+
+    <section class="collections" aria-label="האוספים">
+      {LENGTHS.map((n) => (
+        <a class="coll" href={`/tsume/${n}/`} data-n={n}>
+          <span class="seal" aria-hidden="true" lang="ja">{seal[n]}</span>
+          <span class="text">
+            <strong>{LENGTH_INFO[n].title}</strong>
+            <span class="sub">{LENGTH_INFO[n].sub}</span>
+            <span class="small muted count"><span>{count(n).toLocaleString('he-IL')} בעיות</span><span data-solved hidden></span></span>
+          </span>
+        </a>
+      ))}
+    </section>
+
+    <nav class="toc measure" aria-label="בעמוד הזה">
+      <a href="#what">מה זו בעיית מט</a> · <a href="#phase">שלבי המשחק</a> · <a href="#rules">החוקים</a> · <a href="#example">דוגמה</a> · <a href="#how">איך מתאמנים</a> · <a href="#tips">טיפים</a> · <a href="#source">מאיפה הבעיות</a>
+    </nav>
+
+    <div class="prose measure">
+      <h2 id="what">מה זו בעיית מט?</h2>
+      <p>ביפנית קוראים לזה <span class="term"><strong>בעיית מט</strong> <bdi>(<span lang="ja">詰将棋</span> tsume-shōgi, Tsume)</bdi></span>, ובקיצור צומה. על הלוח יש מלך של היריב, כמה כלים סביבו, ולפעמים כמה כלים שלכם. בצד כתוב כמה מהלכים יש לכם, למשל ״מט ב־3 מהלכים״. צריך למצוא את הדרך היחידה שמובילה למט, מה שלא יעשה היריב.</p>
+      <h2 id="phase">בעיות מט ושלבי המשחק</h2>
+      <p>למשחק שוגי יש שלושה שלבים: <strong>פתיחה</strong>, שבה מתארגנים ובונים מבצר; <strong>אמצע המשחק</strong>, שבו פורצים לפי תוכנית ומחליפים כלים; ו<strong>סוף המשחק</strong>, שבו המבצר של אחד הצדדים נפרץ ומתחיל מירוץ למט. <a href="/learn/guide/#phases">עוד על שלושת השלבים</a>.</p>
+      <p>בעיות מט הן האימון של סוף המשחק. כמעט כל משחק שוגי נגמר במתקפה על המלך, ומי שרואה מט מהר יותר מנצח. בגלל שכלים שלכדתם חוזרים ללוח, המט בשוגי מגיע הרבה פעמים בבת אחת, מהצנחה שאף אחד לא ציפה לה. בעיות מט מלמדות לראות את זה, כמה מהלכים לפני שהוא קורה. את הפתיחה ואמצע המשחק מתרגלים ב<a href="/learn/#cat-openings">שיעורי הפתיחות, המבצרים והאסטרטגיה</a>.</p>
+
+      <h2 id="rules">החוקים של בעיית מט</h2>
+      <ul>
+        <li><strong>אתם התוקף</strong> (<span lang="ja">攻め方</span>, ☗, למטה). המגן (<span lang="ja">玉方</span>, ☖) הוא הצד של המלך, למעלה.</li>
+        <li><strong>כל מהלך שלכם חייב להיות שח.</strong> אין מהלכים שקטים ואין ״הכנות״. בגלל זה מתחילים תמיד מהשאלה: אילו שחים יש לי?</li>
+        <li><strong>המגן מתגונן הכי טוב שאפשר.</strong> הוא בוחר את התשובה שדוחה את המט הכי הרבה. בבעיה טובה יש רק מסלול אחד למט.</li>
+        <li><strong>כל הכלים שלא על הלוח ולא בידכם נמצאים ביד של המגן.</strong> הוא יכול להצניח אותם כדי לחסום שח. לכן שח מרחוק עם צריח או רץ הוא לפעמים לא מספיק.</li>
+        <li><strong>סופרים את המהלכים של שני הצדדים.</strong> ״מט ב־3 מהלכים״ הוא שח שלכם, תשובה של המגן, ומט. לכן אורך בעיית מט הוא תמיד מספר אי זוגי.</li>
+        <li><strong>בסוף לא נשארים כלים ביד.</strong> בבעיה טובה כל כלי שקיבלתם נחוץ, וכל כלי שעל הלוח עושה משהו.</li>
+        <li>כל חוקי השוגי חלים, כולל האיסור על <a href="/rules/05-check-mate/">מט בהצנחת רגלי</a>.</li>
+      </ul>
+
+      <h2 id="example">דוגמה: מט במהלך אחד</h2>
+      <p>המלך של המגן בפינה. ביד שלכם גנרל זהב. איפה מציבים אותו?</p>
+      <Board sfen="8k/9/8P/9/9/9/9/9/9 b G 1" highlight="12" caption="המלך ב־11, רגלי שלכם ב־13, וביד: גנרל זהב" />
+      <p>הצנחה של הזהב ב־12 היא מט. הזהב נותן שח, הוא שומר על 21 ועל 22, והמלך לא יכול ללכוד אותו כי הרגלי ב־13 שומר עליו. זו התבנית הכי נפוצה בשוגי, וקוראים לה ״זהב על הראש״ (<span lang="ja">頭金</span>, atama-kin).</p>
+      <p><a href="/tsume/1/">לבעיות של מט במהלך אחד ←</a></p>
+
+      <h2 id="how">איך מתאמנים</h2>
+      <ol>
+        <li><strong>מתחילים ממט במהלך אחד.</strong> גם אם זה נראה קל. המטרה היא לראות את המט תוך שניות, בלי לנסות מהלכים על הלוח.</li>
+        <li><strong>פותרים בראש לפני שמזיזים.</strong> מהלך לא נכון על הלוח נספר כטעות. הבעיה נחשבת פתורה רק בלי טעויות ובלי רמז.</li>
+        <li><strong>עוברים לרמה הבאה</strong> כשרוב הבעיות נפתרות בפחות מדקה. רוב השחקנים החזקים פותרים מאות בעיות של 3 ו־5 מהלכים.</li>
+        <li><strong>מעט בכל יום.</strong> חמש בעיות ביום עדיפות על חמישים פעם בחודש.</li>
+      </ol>
+      <p>אחרי כל מהלך תקבלו משוב, ממש ליד הלוח. מהלך שאינו שח, או שח שהמגן יכול לברוח ממנו, יישאר על הלוח עם התשובה של המגן, כדי שתראו למה הוא לא עבד. אחר כך לוחצים ״נסו שוב״. אפשר לבקש רמז שמסמן את הכלי של המהלך הבא, או לראות את הפתרון המלא.</p>
+
+      <h2 id="tips">טיפים לפתרון</h2>
+      <ul>
+        <li><strong>ספרו את משבצות הבריחה של המלך.</strong> לאן הוא יכול לזוז? מה שומר על כל משבצת? המט נמצא בדרך כלל במקום שסוגר את המשבצת האחרונה.</li>
+        <li><strong>תחשבו על הצנחות.</strong> הכלים בידכם הם הנשק העיקרי. זהב מול המלך, כסף באלכסון, ופרש שקופץ מעל המגינים.</li>
+        <li><strong>אל תפחדו להקריב.</strong> הרבה בעיות מתחילות בהקרבה שמושכת את המלך החוצה, או שמכריחה כלי מגן לזוז. כלי שהקרבתם עדיין עשה את העבודה.</li>
+        <li><strong>שימו לב להכתרה.</strong> לפעמים דווקא מהלך <em>בלי</em> הכתרה הוא הנכון, למשל כסף שצריך את התנועה האחורנית שלו באלכסון.</li>
+        <li><strong>שח מרחוק? בדקו חסימות.</strong> למגן יש את כל שאר הכלים, והוא יכול להצניח אחד מהם באמצע הדרך.</li>
+      </ul>
+
+      <h2 id="source">מאיפה הבעיות?</h2>
+      <p>את כל הבעיות כאן יצרנו בעצמנו, בעזרת מחשב: תוכנה שלנו בונה עמדות סביב מלך, ושומרת רק את אלה שהן בעיה נקייה. כלומר: יש בדיוק מהלך אחד נכון בכל שלב, כל הכלים ביד מנוצלים, ואין על הלוח אף כלי מיותר. כל בעיה נבדקה בשני פותרים נפרדים, כך שהפתרון בטוח נכון. הבעיות חופשיות לשימוש, כמו כל <a href="https://github.com/EnterDeEther/shogi-israel" rel="noopener">קוד האתר</a>.</p>
+      <p>בעיות שמחשב יוצר נקיות ונכונות, אבל הן לא יצירות אמנות. אם תרצו לראות את הצד האמנותי של בעיות המט, עם הקרבות מפתיעות ועמדות יפות, יש את <a href="https://lishogi.org/training" rel="noopener">הבעיות של ליש׳וגי</a> (<bdi dir="ltr">Puzzles</bdi>, באנגלית), ואת אוסף הבעיות של <a href="https://shogishack.net/pages/tsumi-and-hisshi/abc-of-tsumi.html" rel="noopener">Shogi Shack</a> (באנגלית), שהשראה ממנו עזרה לנו לבנות את העמוד הזה.</p>
+      <p>עוד לא בטוחים איך עובד שח ומט? התחילו מ<a href="/rules/05-check-mate/">שיעור 5: שח ומט</a> ומהתרגול <a href="/learn/checkmate1/">מט במהלך אחד</a> בשיעורים האינטראקטיביים.</p>
+    </div>
+  </div>
+</Base>
+
+<script>
+  import { LENGTHS, solvedList } from '../../tsume/puzzles';
+  for (const n of LENGTHS) {
+    const solved = solvedList(n).length;
+    const span = document.querySelector<HTMLElement>(`.coll[data-n="${n}"] [data-solved]`);
+    if (span && solved) {
+      span.textContent = ` · פתרתם ${solved.toLocaleString('he-IL')}`;
+      span.hidden = false;
+    }
+  }
+</script>
+
+<style>
+  .tsume-hub { padding-top: 36px; }
+  .tsume-hub h1 { margin: 6px 0 8px; }
+  .tsume-hub .lead { margin: 0 0 22px; }
+  .collections { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); margin: 0 0 26px; }
+  .coll {
+    display: flex; gap: 14px; align-items: center; padding: 14px 16px; min-height: 92px;
+    border: 1.5px solid var(--ink); border-radius: 8px; background: var(--washi); color: var(--ink); text-decoration: none;
+  }
+  .coll:hover { background: var(--washi-2); }
+  .coll .seal {
+    flex: none; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--seal); color: var(--on-seal); font: 800 28px/1 var(--f-kanji);
+  }
+  .coll .text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .coll strong { font: 800 20px/1.3 var(--f-display); }
+  .coll .sub { color: var(--ink-2); font-size: 15px; line-height: 1.45; }
+  .coll .count { margin-top: 2px; }
+  .toc { margin: 0 0 8px; line-height: 2; }
+  .prose :global(h2) { margin: 40px 0 12px; font-size: clamp(24px, 4.5vw, 30px); scroll-margin-top: 16px; }
+  .prose :global(p), .prose :global(li) { color: var(--ink-2); line-height: 1.75; }
+  .prose :global(p) { margin: 0 0 14px; }
+  .prose ul, .prose ol { padding-inline-start: 22px; margin: 0 0 16px; }
+  .prose li { margin-bottom: 6px; }
+</style>
