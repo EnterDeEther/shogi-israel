@@ -31,6 +31,10 @@ export async function signUp(email: string, password: string, captchaToken?: str
 export async function signIn(email: string, password: string, captchaToken?: string) {
   return supabase().auth.signInWithPassword({ email, password, options: { captchaToken } });
 }
+/** The code from the sign-up email (template: supabase/templates/confirm-signup.html), typed on /account/. */
+export async function verifySignupCode(email: string, token: string) {
+  return supabase().auth.verifyOtp({ email, token, type: 'email' });
+}
 /** Emails a link back to /account/, which opens the "new password" form (PASSWORD_RECOVERY). */
 export async function sendPasswordReset(email: string, captchaToken?: string) {
   return supabase().auth.resetPasswordForEmail(email, { redirectTo: redirectTo(), captchaToken });
