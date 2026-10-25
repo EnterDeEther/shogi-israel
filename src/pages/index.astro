@@ -6,7 +6,6 @@ import { RULES_COURSE, pad } from '../lib/course';
 import { pageExists, LISHOGI_TEAM } from '../lib/live';
 import { liveSections, isLive, ACCOUNT } from '../lib/nav';
 import { accountsEnabled } from '../lib/account-config';
-import { stages } from '../learn/categories';
 
 const live = new Set((await getCollection('rules')).map((e) => e.id));
 const START = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1';
@@ -16,9 +15,8 @@ const hasPlay = pageExists('/play/');
 const hasAccount = pageExists('/account/');
 const accountsOn = hasAccount && accountsEnabled;
 const sections = liveSections();
-// The guided course: the first button sends new visitors to it, and returning ones straight to their next step.
-const hasCourse = pageExists('/course/');
-const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length]));
+// The guided course is for signed-in visitors: for them the first button goes to their next step.
+const hasCourse = pageExists('/course/') && accountsOn;
 ---
 <Base
   title="שוגי ישראל"
@@ -30,8 +28,8 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       <h1>ברוכים הבאים לשוגי ישראל</h1>
       <p class="lead">הבית של שחקני השוגי בישראל. לומדים את השחמט היפני בעברית ומאפס, משחקים כאן באתר, ופוגשים שחקנים אחרים. הכול בחינם.</p>
       <div class="cta">
-        <a class="btn" href={hasCourse ? '/course/' : first} data-hero-start data-level-counts={hasCourse ? JSON.stringify(levelCounts) : undefined}>
-          <span data-hero-label>{hasCourse ? 'התחילו כאן: מאיפה מתחילים?' : 'התחילו בחוקים הבסיסיים'}</span>
+        <a class="btn" href={first} data-hero-start={hasCourse ? '' : undefined}>
+          <span data-hero-label>התחילו בחוקים הבסיסיים</span>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
         </a>
         {hasPlay && <a class="btn btn-ghost" href="/play/">כבר יודעים לשחק? שחקו נגד המחשב</a>}
@@ -40,7 +38,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"></path></svg>
         </a>
         <p class="small muted">
-          {hasCourse ? 'שאלה אחת, ומסלול מסודר עד בעיות מט' : '8 שיעורים קצרים'} · בלי הרשמה ·
+          8 שיעורים קצרים · בלי הרשמה ·
           {accountsOn ? (
             <>
               <span data-signed-out-only>ההתקדמות נשמרת במכשיר, ועם <a href="/account/">חשבון</a> (לא חובה) גם בין מכשירים</span>
@@ -172,18 +170,22 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
   markDone();
   document.addEventListener('progress-synced', markDone);
 
-  // Returning visitors: the first button goes straight to the next step of their course.
-  const start = document.querySelector<HTMLAnchorElement>('[data-hero-start][data-level-counts]');
-  if (start) {
+  // Signed-in visitors: the first button goes to their course (straight to the next step once they picked a start).
+  const start = document.querySelector<HTMLAnchorElement>('[data-hero-start]');
+  if (start && document.documentElement.hasAttribute('data-signed-in')) {
     const showNext = async () => {
-      const [{ readLocal }, { hasAnyProgress, nextStep, stepHref }] = await Promise.all([import('../lib/progress-local'), import('../lib/curriculum')]);
+      const [{ readLocal }, { nextStep, stepHref }, { LEVEL_COUNTS }] = await Promise.all([import('../lib/progress-local'), import('../lib/curriculum'), import('../lib/level-counts')]);
       const p = readLocal();
-      if (!p.course.track && !hasAnyProgress(p)) return;
-      const levelCounts = JSON.parse(start.dataset.levelCounts || '{}');
-      const next = nextStep(p, levelCounts);
-      if (!next) return;
-      start.href = stepHref(next.step, p, levelCounts);
-      start.querySelector('[data-hero-label]')!.textContent = 'המשיכו במסלול שלכם'; // same length as before: the hero doesn't jump
+      const next = nextStep(p, LEVEL_COUNTS);
+      const label = start.querySelector('[data-hero-label]')!;
+      // labels about as long as the one they replace, so the hero doesn't jump
+      if (!p.course.track || !next) {
+        start.href = '/course/';
+        label.textContent = 'המסלול שלי: מאיפה מתחילים?';
+        return;
+      }
+      start.href = stepHref(next.step, p, LEVEL_COUNTS);
+      label.textContent = 'המשיכו במסלול שלכם';
       start.title = next.step.title;
     };
     void showNext();

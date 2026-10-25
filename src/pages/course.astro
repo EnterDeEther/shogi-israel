@@ -1,16 +1,17 @@
 ---
 // /course/: the guided course. A short "where do you start?" question, then one ordered path through the
 // rules, the interactive lessons, the guide, tsume and play, grouped as the basics and the three game phases.
-// The path is drawn here at build time; the script marks progress from this device (and the account, if signed in).
+// The path is drawn here at build time, so everyone can see it. The personal part (the start question, next step,
+// progress marks, points and rank) is for signed-in visitors only (Dean, 2026-10-25); others get a sign-up card.
 import Base from '../layouts/Base.astro';
-import { stages } from '../learn/categories';
 import { CURRICULUM, KIND_LABEL, TRACK_INFO, stepHref } from '../lib/curriculum';
+import { LEVEL_COUNTS as levelCounts } from '../lib/level-counts';
+import { RANKS, stepXp, XP } from '../lib/xp';
 import { emptyProgress, TRACKS } from '../lib/progress-sync';
 import { accountsEnabled } from '../lib/account-config';
 import { pageExists } from '../lib/live';
 import { WHATSAPP_URL } from '../lib/nav';
 
-const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length]));
 const empty = emptyProgress();
 const accountsOn = accountsEnabled && pageExists('/account/');
 const PHASES = CURRICULUM.filter((u) => u.phase).length;
@@ -19,12 +20,26 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
   title="המסלול שלי: מאיפה מתחילים"
   description="מסלול לימוד שוגי מסודר, בעברית ובחינם: עונים על שאלה אחת, ומקבלים את הצעד הבא, מהחוקים הבסיסיים דרך פתיחה ואמצע המשחק ועד בעיות מט."
 >
-  <div class="wrap page" data-course data-level-counts={JSON.stringify(levelCounts)}>
+  <div class="wrap page" data-course>
     <p class="eyebrow">למדו לשחק</p>
     <h1>המסלול שלי</h1>
     <p class="lead">כל מה שיש באתר ללמוד, בסדר אחד: קודם היסודות, ואז שלושת שלבי המשחק, פתיחה, אמצע המשחק וסוף המשחק. בכל צעד כתוב למה הוא שם, ותמיד תדעו מה הצעד הבא.</p>
 
-    <section class="placement" data-placement aria-labelledby="place-h">
+    <section class="gate card" data-gate aria-labelledby="gate-h">
+      <h2 id="gate-h">מסלול אישי, נקודות ודרגות</h2>
+      {accountsOn ? (
+        <>
+          <p>עם חשבון (בחינם) המסלול נהיה שלכם: עונים על שאלה אחת ומקבלים נקודת התחלה, רואים בכל רגע את הצעד הבא, וצוברים נקודות שמעלות אתכם בדרגה, מ־15 קיו ועד דאן. ההתקדמות נשמרת בכל מכשיר.</p>
+          <p class="small muted">מה שכבר עשיתם בדפדפן הזה נכנס לחשבון ונספר.</p>
+          <p class="gate-cta"><a class="btn" href="/account/"><span>פתחו חשבון בחינם</span></a> <a href="/account/">כבר יש לכם חשבון? כניסה</a></p>
+        </>
+      ) : (
+        <p>המסלול האישי ייפתח יחד עם החשבונות באתר. בינתיים אפשר ללמוד לפי הסדר שכאן.</p>
+      )}
+      <p class="small muted">כל השיעורים פתוחים גם בלי חשבון. הנה המסלול המלא:</p>
+    </section>
+
+    <section class="placement" data-placement hidden aria-labelledby="place-h">
       <h2 id="place-h">מאיפה מתחילים? ספרו לנו מה אתם כבר יודעים</h2>
       <div class="tracks" role="group" aria-labelledby="place-h">
         {TRACKS.map((t) => (
@@ -50,6 +65,30 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
       <a class="btn" data-next-link href="/rules/01-board-pieces-setup/"><span>התחילו</span></a>
     </section>
 
+    <section class="rank card" data-rank hidden aria-labelledby="rank-h">
+      <span class="rank-kanji" lang="ja" aria-hidden="true" data-rank-kanji></span>
+      <div class="rank-body">
+        <p class="small muted" id="rank-h">הדרגה שלכם</p>
+        <p class="rank-name" data-rank-name></p>
+        <div class="bar" aria-hidden="true"><span data-rank-bar></span></div>
+        <p class="small muted" data-rank-text></p>
+        <details class="rank-how">
+          <summary class="small">איך צוברים נקודות?</summary>
+          <ul class="small">
+            <li>כוכב בתרגול על הלוח: {XP.star} נקודות (עד 3 כוכבים בכל תרגיל)</li>
+            <li>שיעור בחוקים הבסיסיים: {XP.rules}</li>
+            <li>בעיית מט: {XP.tsume[1]} (מט ב־1), {XP.tsume[3]} (ב־3), {XP.tsume[5]} (ב־5), {XP.tsume[7]} (ב־7)</li>
+            <li>משחק ראשון שסיימתם בכל רמה נגד המחשב: {XP.played}</li>
+            <li>ניצחון ראשון בכל רמה: {XP.won} כפול מספר הרמה</li>
+            <li>קריאת פרק במדריך מתוך המסלול: {XP.read}</li>
+            <li>בונוס על כל צעד שהשלמתם במסלול: {XP.step}</li>
+            <li>בונוס על שלב שהשלמתם כולו: {XP.unit}</li>
+          </ul>
+          <p class="small muted">כל דבר נספר פעם אחת: חזרה על תרגיל או בעיה שכבר פתרתם לא מוסיפה נקודות, ושיפור מכוכב אחד לשלושה מוסיף רק את ההפרש. צעד שסימנתם "כבר יודעים" לא נותן נקודות. הדרגות נקראות על שם דרגות השוגי, קיו ודאן, אבל מודדות התקדמות בלימוד באתר, לא כוח משחק. יש {RANKS.length} דרגות, מ־{RANKS[0].name} ועד {RANKS[RANKS.length - 1].name}.</p>
+        </details>
+      </div>
+    </section>
+
     <section class="done-all card" data-done-all hidden>
       <h2>סיימתם את המסלול!</h2>
       <p>עברתם את כל שלושת השלבים. מכאן ממשיכים לשחק: מול שחקנים מכל העולם, ומול ישראלים בקהילה.</p>
@@ -61,12 +100,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
       <p class="small muted" data-overall-text></p>
     </div>
 
-    {accountsOn && (
-      <p class="small muted save-note">
-        <span data-signed-out-only>ההתקדמות נשמרת בדפדפן הזה. עם <a href="/account/">חשבון</a> (לא חובה) היא עוברת איתכם לכל מכשיר.</span>
-        <span data-signed-in-only>ההתקדמות נשמרת בחשבון שלכם, בכל מכשיר.</span>
-      </p>
-    )}
+    {accountsOn && <p class="small muted save-note" data-signed-in-only>ההתקדמות נשמרת בחשבון שלכם, בכל מכשיר.</p>}
 
     {CURRICULUM.map((u) => (
       <section class="unit" id={u.key} data-unit={u.key} aria-labelledby={`${u.key}-h`}>
@@ -89,11 +123,12 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
                   <span>{KIND_LABEL[s.kind]}</span> · <span>{s.minutes} דק׳</span>
                   <span class="opt" data-opt-tag hidden> · רשות</span>
                   <span class="count" data-count></span>
+                  <span class="xp" data-xp hidden> · עד +{stepXp(s, levelCounts)} נק׳</span>
                   <span class="sr-only" data-state-sr></span>
                 </p>
                 <p class="step-why">{s.why}</p>
               </div>
-              <button type="button" class="step-skip small" data-skip>כבר יודעים</button>
+              <button type="button" class="step-skip small" data-skip hidden>כבר יודעים</button>
             </li>
           ))}
         </ol>
@@ -108,9 +143,13 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
   import { CURRICULUM, TRACK_INFO, ALL_STEPS, KIND_LABEL, hasAnyProgress, isOptional, nextStep, pathProgress, stepCount, stepHref, stepState, stepsFor, unitProgress } from '../lib/curriculum';
   import { readLocal, updateCourse } from '../lib/progress-local';
   import type { SyncedProgress, Track } from '../lib/progress-sync';
+  import { accountsEnabled, hasStoredSession } from '../lib/account-config';
+  import { LEVEL_COUNTS as levelCounts } from '../lib/level-counts';
+  import { rankFor, xpBreakdown } from '../lib/xp';
 
   const root = document.querySelector<HTMLElement>('[data-course]')!;
-  const levelCounts: Record<string, number> = JSON.parse(root.dataset.levelCounts || '{}');
+  // The personal course is for signed-in visitors; everyone else keeps the static path and the sign-up card.
+  const signedIn = accountsEnabled && hasStoredSession();
   const $ = <T extends HTMLElement>(sel: string, scope: ParentNode = root) => scope.querySelector<T>(sel)!;
   let changing = false;
 
@@ -118,6 +157,16 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
 
   function render(p: SyncedProgress = readLocal()) {
     const track = p.course.track;
+    $('[data-gate]').hidden = true;
+    const xp = xpBreakdown(p, levelCounts).total;
+    const r = rankFor(xp);
+    $('[data-rank]').hidden = false;
+    $('[data-rank-kanji]').textContent = r.rank.kanji;
+    $('[data-rank-name]').textContent = r.rank.name;
+    $('[data-rank-bar]').style.width = `${r.next ? Math.round((100 * r.into) / r.span) : 100}%`;
+    $('[data-rank-text]').textContent = r.next
+      ? `${xp.toLocaleString('he-IL')} נקודות · עוד ${(r.next.min - xp).toLocaleString('he-IL')} לדרגה ${r.next.name}`
+      : `${xp.toLocaleString('he-IL')} נקודות · הדרגה הגבוהה ביותר באתר`;
     const picking = !track || changing;
     $('[data-placement]').hidden = !picking;
     root.querySelectorAll<HTMLButtonElement>('[data-track]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.track === track)));
@@ -163,6 +212,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
         const c = stepCount(s, p, levelCounts);
         $('[data-count]', li).textContent = c && c.done && state === 'todo' ? ` · ${c.done} מתוך ${c.of}` : '';
         $('[data-state-sr]', li).textContent = STATE_SR[state] ? ` · ${STATE_SR[state]}` : '';
+        $('[data-xp]', li).hidden = state !== 'todo';
         const skip = $<HTMLButtonElement>('[data-skip]', li);
         skip.hidden = state === 'done';
         skip.textContent = state === 'skipped' ? 'בטלו סימון' : 'כבר יודעים';
@@ -218,10 +268,12 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
     }
   });
 
-  render();
-  document.addEventListener('progress-synced', () => render());
-  // Coming back with the browser's back button after a lesson: show the new progress.
-  window.addEventListener('pageshow', (e) => { if (e.persisted) render(); });
+  if (signedIn) {
+    render();
+    document.addEventListener('progress-synced', () => render());
+    // Coming back with the browser's back button after a lesson: show the new progress.
+    window.addEventListener('pageshow', (e) => { if (e.persisted) render(); });
+  }
 </script>
 
 <style>
@@ -231,6 +283,24 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
   .lead { margin: 0 0 24px; font-size: 18px; line-height: 1.7; color: var(--ink-2); }
   .link { appearance: none; background: none; border: 0; padding: 0; font: inherit; color: var(--seal); text-decoration: underline; cursor: pointer; }
   .card { background: var(--washi-2); border: 1px solid var(--rule); border-radius: 10px; padding: 18px 20px; }
+
+  .gate { margin: 0 0 8px; display: flex; flex-direction: column; gap: 8px; border-inline-start: 4px solid var(--seal); }
+  .gate h2 { margin: 0; font-size: 22px; }
+  .gate p { margin: 0; color: var(--ink-2); line-height: 1.6; }
+  .gate-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 6px 0 !important; }
+
+  .rank { display: flex; gap: 16px; align-items: flex-start; margin: 0 0 16px; }
+  .rank-kanji {
+    flex-shrink: 0; width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--seal); color: var(--on-seal); font: 700 22px/1 var(--f-kanji); writing-mode: vertical-rl; letter-spacing: 1px;
+  }
+  .rank-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .rank-body p { margin: 0; }
+  .rank-name { font: 800 26px/1.2 var(--f-display); }
+  .rank-how summary { cursor: pointer; color: var(--seal); margin-top: 4px; }
+  .rank-how ul { margin: 8px 0; padding-inline-start: 20px; color: var(--ink-2); }
+  .rank-how li { margin-bottom: 4px; }
+  .xp { color: var(--seal); }
 
   .placement h2 { font-size: 22px; margin: 0 0 12px; }
   .tracks { display: grid; gap: 10px; margin-bottom: 10px; }

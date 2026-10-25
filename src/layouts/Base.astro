@@ -135,6 +135,7 @@ const ogUrl = new URL(ogImage, Astro.site);
       if (accountsEnabled && hasStoredSession()) {
         document.documentElement.setAttribute('data-signed-in', '');
         if (location.pathname !== '/account/') import('../lib/account').then((m) => m.startSync());
+        import('../lib/xp-toast').then((m) => m.startXpNotes()); // points and ranks: signed-in visitors only
       }
     </script>
   </body>
