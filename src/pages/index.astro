@@ -105,13 +105,17 @@ const hasAccount = pageExists('/account/');
 </Base>
 
 <script>
-  // "Done" marks from this device's progress (no account, nothing sent anywhere).
-  document.querySelectorAll<HTMLElement>('[data-progress]').forEach((a) => {
-    let done = false;
-    try { done = localStorage.getItem(`done:${a.dataset.progress}`) === '1'; } catch {}
-    const tag = a.querySelector<HTMLElement>('[data-tag]');
-    if (done && tag) tag.textContent = 'הושלם ✓';
-  });
+  // "Done" marks from this device's progress (merged with the account's when signed in).
+  const markDone = () => {
+    document.querySelectorAll<HTMLElement>('[data-progress]').forEach((a) => {
+      let done = false;
+      try { done = localStorage.getItem(`done:${a.dataset.progress}`) === '1'; } catch {}
+      const tag = a.querySelector<HTMLElement>('[data-tag]');
+      if (done && tag) tag.textContent = 'הושלם ✓';
+    });
+  };
+  markDone();
+  document.addEventListener('progress-synced', markDone);
 </script>
 
 <style>

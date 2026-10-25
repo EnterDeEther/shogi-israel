@@ -20,13 +20,41 @@ export default defineConfig({
   integrations: [
     mdx(),
     // /play/ has noindex for now; drop it from this filter when that goes.
-    sitemap({ filter: (page) => !isDraftLesson(page) && !/\/play\//.test(page) }),
+    sitemap({ filter: (page) => !isDraftLesson(page) && !/\/play\//.test(page) && !/\/account\//.test(page) }),
   ],
-  build: { format: 'directory' },
-  // The play page's engines need SharedArrayBuffer (cross-origin isolation). Production sets these headers
-  // per route in vercel.json; the dev and preview servers set them everywhere.
+  // Stylesheets as files, so the CSP needs no style hashes (hashes would switch 'unsafe-inline' off).
+  build: { format: 'directory', inlineStylesheets: 'never' },
   vite: {
+    // The Vercel ↔ Supabase integration can name its public keys NEXT_PUBLIC_*; expose those to the browser too.
+    envPrefix: ['PUBLIC_', 'NEXT_PUBLIC_'],
+    // The play page's engines need SharedArrayBuffer (cross-origin isolation). Production sets these headers
+    // per route in vercel.json; the dev and preview servers set them everywhere.
     server: { headers: isolation },
     preview: { headers: isolation },
+  },
+  // Content-Security-Policy as a <meta> tag on every page: only our own scripts (inline ones by hash) may run,
+  // and the browser may talk only to us and to Supabase. Headers that a <meta> can't set live in vercel.json.
+  security: {
+    csp: {
+      directives: [
+        "default-src 'self'",
+        "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+        "img-src 'self' data: blob:",
+        "font-src 'self' data:",
+        "media-src 'self'",
+        // the play page's engines run in workers
+        "worker-src 'self' blob:",
+        // Cloudflare Turnstile: the bot check on the account forms
+        "frame-src https://challenges.cloudflare.com",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+        "upgrade-insecure-requests",
+      ],
+      // Boards and the lesson player set style="" attributes; styles can't run code, so allow them.
+      styleDirective: { resources: ["'self'", "'unsafe-inline'"] },
+      // 'wasm-unsafe-eval' lets the engines compile WebAssembly; it does not allow eval() of JavaScript.
+      scriptDirective: { resources: ["'self'", "'wasm-unsafe-eval'", 'https://challenges.cloudflare.com'] },
+    },
   },
 });

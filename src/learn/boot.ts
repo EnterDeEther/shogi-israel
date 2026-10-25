@@ -136,6 +136,9 @@ export function bootLearn(root: HTMLElement): LearnCtrl {
     requestAnimationFrame(() => requestAnimationFrame(scrollToCategory));
   });
 
+  // Signed in on another device: the account sync merged more progress into storage.
+  document.addEventListener('progress-synced', () => { ctrl.progress.reload(); ctrl.redraw(); });
+
   render(ctrl, root, openSettings);
   if (!slugFromPath()) scrollToCategory();
   // Overlays take focus so keyboard users can start the stage.
