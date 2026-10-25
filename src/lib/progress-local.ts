@@ -1,7 +1,7 @@
 // This device's copy of the progress in src/lib/progress-sync.ts: where each part lives in localStorage.
 // No Supabase here, so pages without an account (the course page, the home page) can read it cheaply.
 import type { GameRecord } from '../play/record';
-import { COURSE_KEY, emptyProgress, gameResult, LEARN_KEY, normalize, RULES_PREFIX, TSUME_KEY, type CourseState, type SyncedProgress } from './progress-sync';
+import { COURSE_KEY, emptyProgress, gameResult, INBOX_KEY, LEARN_KEY, normalize, RULES_PREFIX, TSUME_KEY, type CourseState, type InboxState, type SyncedProgress } from './progress-sync';
 
 const HISTORY_KEY = 'shogi-il.play.history'; // finished games on this device (src/play/record.ts)
 
@@ -38,7 +38,7 @@ export function readLocal(): SyncedProgress {
       if (k?.startsWith(RULES_PREFIX) && localStorage.getItem(k) === '1') p.rules.push(k.slice(RULES_PREFIX.length));
     }
   } catch { /* no storage: nothing local */ }
-  const out = normalize({ ...p, tsume: readJson(TSUME_KEY, {}), course: readJson(COURSE_KEY, {}) });
+  const out = normalize({ ...p, tsume: readJson(TSUME_KEY, {}), course: readJson(COURSE_KEY, {}), inbox: readJson(INBOX_KEY, {}) });
   const h = fromHistory();
   out.course.played = Math.max(out.course.played, h.played);
   out.course.won = Math.max(out.course.won, h.won);
@@ -57,6 +57,7 @@ export function writeLocal(p: SyncedProgress) {
     if (Object.keys(p.tsume).length) localStorage.setItem(TSUME_KEY, JSON.stringify(p.tsume));
     else localStorage.removeItem(TSUME_KEY);
     localStorage.setItem(COURSE_KEY, JSON.stringify(p.course));
+    localStorage.setItem(INBOX_KEY, JSON.stringify(p.inbox));
   } catch { /* fine */ }
 }
 
@@ -67,5 +68,14 @@ export function updateCourse(change: (c: CourseState) => void, opts: { overwrite
   try { localStorage.setItem(COURSE_KEY, JSON.stringify(p.course)); } catch { /* not saved; fine */ }
   // An undo (un-skip, new starting point) must replace the account's copy, not be merged back from it.
   document.dispatchEvent(new CustomEvent(opts.overwrite ? 'progress-reset' : 'progress-changed'));
+  return p;
+}
+
+/** Change the inbox part on this device (notes read, settings) and tell the account sync about it. */
+export function updateInbox(change: (i: InboxState) => void): SyncedProgress {
+  const p = readLocal();
+  change(p.inbox);
+  try { localStorage.setItem(INBOX_KEY, JSON.stringify(p.inbox)); } catch { /* not saved; fine */ }
+  document.dispatchEvent(new CustomEvent('progress-changed'));
   return p;
 }
