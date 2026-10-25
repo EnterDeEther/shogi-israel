@@ -27,6 +27,7 @@ reset role; set local role anon;
 select set_config('request.jwt.claims','{"role":"anon"}',true);
 do $$ begin begin perform count(*) from progress; insert into results values('anon reads progress','ALLOWED'); exception when others then insert into results values('anon reads progress','blocked: '||sqlstate); end; end $$;
 do $$ begin begin perform delete_my_account(); insert into results values('anon delete fn','ALLOWED'); exception when others then insert into results values('anon delete fn','blocked: '||sqlstate); end; end $$;
+insert into results select 'anon community counts (totals only: 1, 1, 1)', community_counts()::text;
 reset role;
 insert into results select 'A progress after B tamper', data::text from progress where user_id='00000000-0000-0000-0000-0000000000a1';
 insert into results select 'A nickname after B tamper', nickname from profiles where id='00000000-0000-0000-0000-0000000000a1';

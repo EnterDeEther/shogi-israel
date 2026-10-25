@@ -77,8 +77,8 @@ const practice = (PRACTICE[stub.slug] ?? []).filter((p) => learnPages.has(p.stag
       <strong>סיימתם את השיעור.</strong>
       {accountsEnabled ? (
         <>
-          <span data-signed-out-only> ההתקדמות נשמרה במכשיר הזה. כדי לשמור אותה בכל מכשיר, <a href="/account/">פתחו חשבון</a> (לא חובה).</span>
-          <span data-signed-in-only> ההתקדמות נשמרה בחשבון שלכם.</span>
+          <span data-signed-out-only> ההתקדמות נשמרה במכשיר הזה. כדי לשמור אותה בכל מכשיר, <a href="/account/?mode=signup">פתחו חשבון</a> (לא חובה).</span>
+          <span data-signed-in-only> ההתקדמות נשמרה בחשבון שלכם.<span data-next-step></span></span>
         </>
       ) : ' ההתקדמות נשמרה במכשיר הזה.'}
     </p>

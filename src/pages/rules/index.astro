@@ -13,7 +13,7 @@ const byId = new Map(entries.map((e) => [e.id, e]));
     <h1>חוקים בסיסיים</h1>
     <p class="lead measure">כל מה שצריך כדי לשחק משחק שוגי ראשון. כל שיעור הוא לוח, פסקה קצרה ומשימה אחת. {accountsEnabled ? (
       <>
-        <span data-signed-out-only>ההתקדמות נשמרת במכשיר, ועם <a href="/account/">חשבון</a> (לא חובה) גם בין מכשירים.</span>
+        <span data-signed-out-only>ההתקדמות נשמרת במכשיר, ועם <a href="/account/?mode=signup">חשבון</a> (לא חובה) גם בין מכשירים.</span>
         <span data-signed-in-only>ההתקדמות נשמרת בחשבון שלכם, בכל מכשיר.</span>
       </>
     ) : 'ההתקדמות נשמרת במכשיר שלכם.'}</p>

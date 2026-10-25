@@ -19,8 +19,7 @@ export default defineConfig({
   trailingSlash: 'ignore',
   integrations: [
     mdx(),
-    // /play/ has noindex for now; drop it from this filter when that goes.
-    sitemap({ filter: (page) => !isDraftLesson(page) && !/\/play\//.test(page) && !/\/account\//.test(page) }),
+    sitemap({ filter: (page) => !isDraftLesson(page) && !/\/account\//.test(page) }),
   ],
   // Stylesheets as files, so the CSP needs no style hashes (hashes would switch 'unsafe-inline' off).
   build: { format: 'directory', inlineStylesheets: 'never' },

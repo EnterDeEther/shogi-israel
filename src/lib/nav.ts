@@ -69,9 +69,9 @@ export const NAV: NavItem[] = [
   },
   {
     label: 'קהילה',
-    blurb: 'שחקנים ישראלים: קבוצות, משחקים ומפגשים.',
+    blurb: 'שחקנים ישראלים: איפה משחקים ומדברים.',
     links: [
-      { href: '/#community', label: 'משחקים עם ישראלים' },
+      { href: '/community/', label: 'דף הקהילה', hint: 'איפה משחקים ומדברים' },
       { href: WHATSAPP_URL, label: 'קהילת הוואטסאפ', external: true },
       { href: INSTAGRAM_URL, label: 'אינסטגרם', external: true },
     ],

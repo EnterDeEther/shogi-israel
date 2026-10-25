@@ -24,7 +24,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
 
         <section data-view="signin" hidden>
           <h1 data-signin-title>כניסה לחשבון</h1>
-          <p class="lead">עם חשבון, ההתקדמות בשיעורים ובמסלול שלכם נשמרת ועוברת איתכם לכל מכשיר. בהמשך: כינוי בטבלאות הדירוג, סטטיסטיקה אישית ומשחקים מול חברים.</p>
+          <p class="lead">עם חשבון (בחינם), ההתקדמות בשיעורים, בבעיות המט ובמסלול שלכם נשמרת ועוברת איתכם לכל מכשיר. מקבלים מסלול לימוד אישי, צוברים נקודות ודרגות, והמשחקים נגד המחשב נשמרים.</p>
           <div class="seg tabs" role="group" aria-label="כניסה או הרשמה">
             <button type="button" data-mode="signin" aria-pressed="true">כניסה</button>
             <button type="button" data-mode="signup" aria-pressed="false">הרשמה</button>
@@ -34,6 +34,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
             <input id="acc-email" name="email" type="email" dir="ltr" autocomplete="email" inputmode="email" required />
             <label for="acc-pass">סיסמה</label>
             <input id="acc-pass" name="password" type="password" dir="ltr" autocomplete="current-password" minlength="8" required aria-describedby="acc-pass-help" />
+            <button type="button" class="link show-pass" data-show-pass aria-controls="acc-pass" aria-pressed="false">הצגת הסיסמה</button>
             <p id="acc-pass-help" class="small muted" data-signup-only hidden>לפחות 8 תווים, אותיות וספרות. עדיף משפט קצר שקל לכם לזכור.</p>
             <div class="captcha" data-captcha></div>
             <button type="submit" class="btn wide"><span data-submit-label>כניסה</span></button>
@@ -195,6 +196,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       recovering = false;
       const session = await acc.getSession();
       if (!session) return show('signin');
+      try { localStorage.setItem('shogi-il.account.seen', '1'); } catch {}
       root.querySelectorAll('[data-email]').forEach((e) => { e.textContent = session.user.email ?? ''; });
       profile = await acc.getProfile(session.user.id);
       const progress = (await acc.syncProgress()) ?? acc.readLocal();
@@ -261,6 +263,21 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
     };
     root.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach((b) =>
       b.addEventListener('click', () => setMode(b.dataset.mode as typeof mode)));
+    // Newcomers come to sign up: open on הרשמה when asked (?mode=signup, from the sign-up prompts) or when
+    // nobody has signed in on this browser before (SEEN is set on every sign-in).
+    const SEEN = 'shogi-il.account.seen';
+    let seen = false;
+    try { seen = localStorage.getItem(SEEN) === '1'; } catch {}
+    const asked = new URLSearchParams(location.search).get('mode');
+    if (asked === 'signup' || (asked !== 'signin' && !seen)) setMode('signup');
+    const passInput = $<HTMLInputElement>('#acc-pass');
+    const showPass = $<HTMLButtonElement>('[data-show-pass]');
+    showPass.addEventListener('click', () => {
+      const show = passInput.type === 'password';
+      passInput.type = show ? 'text' : 'password';
+      showPass.textContent = show ? 'הסתרת הסיסמה' : 'הצגת הסיסמה';
+      showPass.setAttribute('aria-pressed', String(show));
+    });
 
     const validEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
     const authForm = $<HTMLFormElement>('[data-auth-form]');
@@ -434,6 +451,9 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
   .err { color: var(--seal); font-weight: 500; min-height: 1.5em; }
   .err:empty { min-height: 0; }
   .link { appearance: none; background: none; border: 0; padding: 0; font: inherit; color: var(--seal); text-decoration: underline; cursor: pointer; }
+  /* The panels show after the session check: hold a screen's height so the footer doesn't jump (layout shift). */
+  [data-account] { min-height: 100vh; min-height: 100svh; }
+  .show-pass { align-self: flex-start; min-height: 24px; font-size: 14px; }
   .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 0; }
   .stats div { border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px; background: var(--washi-2); }
   .stats dt { font-size: 14px; color: var(--muted); }

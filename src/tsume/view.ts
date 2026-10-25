@@ -3,9 +3,11 @@
 // (right after each move, beside the board), the buttons, and the moves so far.
 // AGPL-3.0-or-later, like the rest of this site.
 import type { Role } from 'shogiops/types';
-import { el, icon, pieceSetSwitch } from '../learn/view';
+import { el, icon, nextInCourse, pieceSetSwitch } from '../learn/view';
 import type TsumeCtrl from './ctrl';
 import { solvedList } from './puzzles';
+import { weekIndex, weekPuzzle, weekStreak, weeksHe, WEEK_LENGTH } from './week';
+import { shareButton } from '../lib/share-card';
 
 const MARK: Record<Color, string> = { sente: '☗', gote: '☖' };
 
@@ -105,6 +107,16 @@ function coach(ctrl: TsumeCtrl, go: Go): HTMLElement {
       body.push(el('div', { class: 'buttons' },
         ctrl.id < ctrl.count ? btn('לבעיה הבאה', () => location.assign(`#${ctrl.id + 1}`), true, 'next') : null,
         btn('שוב', () => ctrl.load(ctrl.id), false, 'again')));
+      // signed-out only (global.css hides it once html[data-signed-in] is set)
+      if (f.clean) body.push(el('p', { class: 'small', 'data-signed-out-only': '' },
+        el('a', { href: '/account/?mode=signup' }, 'פתחו חשבון בחינם'), ' והבעיות שפתרתם יישמרו בכל מכשיר, ויספרו לנקודות ולדרגה שלכם.'));
+      if (f.clean && ctrl.n === WEEK_LENGTH && ctrl.id === weekPuzzle(weekIndex(), ctrl.count)) {
+        const streak = weekStreak(solvedList(WEEK_LENGTH), ctrl.count);
+        const text = `פתרתי את בעיית השבוע בשוגי ישראל${streak > 1 ? `, ${weeksHe(streak)} ברצף` : ''}`;
+        body.push(el('p', { class: 'week-done' }, el('strong', {}, 'זו בעיית השבוע ✓'), streak > 1 ? ` רצף של ${weeksHe(streak)}.` : ' בעיה חדשה תעלה ביום ראשון.'));
+        body.push(shareButton({ title: text, sub: 'בעיית מט אחת בכל שבוע. נסו גם אתם', kanji: '詰', path: '/tsume/week/' }, 'shogi-israel-tsume.png'));
+      }
+      if (f.clean) { const next = nextInCourse(); if (next) body.push(next); }
       break;
     case 'shown':
       cls = 'shown';

@@ -41,7 +41,7 @@ const hasCourse = pageExists('/course/') && accountsOn;
           8 שיעורים קצרים · בלי הרשמה ·
           {accountsOn ? (
             <>
-              <span data-signed-out-only>ההתקדמות נשמרת במכשיר, ועם <a href="/account/">חשבון</a> (לא חובה) גם בין מכשירים</span>
+              <span data-signed-out-only>ההתקדמות נשמרת במכשיר, ועם <a href="/account/?mode=signup">חשבון</a> (לא חובה) גם בין מכשירים</span>
               <span data-signed-in-only>ההתקדמות נשמרת בחשבון שלכם, בכל מכשיר</span>
             </>
           ) : 'ההתקדמות נשמרת במכשיר שלכם'}
@@ -126,7 +126,7 @@ const hasCourse = pageExists('/course/') && accountsOn;
       <h2 id="play-h">משחקים כאן, באתר</h2>
       <ul class="rows links play">
         <li><a href="/play/"><span class="row-title"><strong>שחקו נגד המחשב</strong></span><span class="small muted">עשר רמות, ממתחילים ועד מתקדמים. ישר בדפדפן, בחינם</span></a></li>
-        {hasAccount && <li><a href="/account/"><span class="row-title"><strong>פתחו חשבון בשוגי ישראל</strong></span><span class="small muted">ההתקדמות והמשחקים שלכם נשמרים בכל מכשיר</span></a></li>}
+        {hasAccount && <li><a href="/account/?mode=signup"><span class="row-title"><strong>פתחו חשבון בשוגי ישראל</strong></span><span class="small muted">ההתקדמות והמשחקים שלכם נשמרים בכל מכשיר</span></a></li>}
         <li><span class="row"><span class="row-title"><strong>משחק מול חבר</strong></span><span class="small muted">בקרוב: שולחים קישור הזמנה ומשחקים</span></span></li>
       </ul>
     </section>
@@ -137,10 +137,10 @@ const hasCourse = pageExists('/course/') && accountsOn;
       <h2 id="community-h">משחקים עם ישראלים</h2>
       <p>אנחנו קהילה קטנה ומתחילה. בואו להיות מהראשונים.</p>
       <ul class="rows links">
-        <li><a href="https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien" rel="noopener"><span class="row-title"><strong>קהילת הוואטסאפ</strong></span><span class="small muted">עדכונים, שאלות ומפגשים</span></a></li>
+        <li><a href="https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien" rel="noopener"><span class="row-title"><strong>קהילת הוואטסאפ</strong></span><span class="small muted">עדכונים, שאלות, ומי רוצה לשחק</span></a></li>
         <li><a href="https://www.instagram.com/shogi.israel/" rel="noopener"><span class="row-title"><strong>אינסטגרם</strong></span><bdi dir="ltr" class="small muted">@shogi.israel</bdi></a></li>
-        <li><span class="row"><span class="row-title"><strong>מפגשי היכרות בתל אביב</strong></span><span class="small muted">בקרוב</span></span></li>
         <li><a href={LISHOGI_TEAM} rel="noopener"><span class="row-title"><strong>הקבוצה שלנו בליש׳וגי</strong></span><span class="small muted">טורנירים ויריבים מכל העולם</span></a></li>
+        <li><a href="/community/"><span class="row-title"><strong>דף הקהילה</strong></span><span class="small muted">הכול במקום אחד</span></a></li>
       </ul>
     </div>
   </section>
@@ -203,6 +203,21 @@ const hasCourse = pageExists('/course/') && accountsOn;
     };
     void showNext();
     document.addEventListener('progress-synced', () => void showNext());
+  } else if (start) {
+    // Signed-out visitors coming back: the first button picks up the rules course where they stopped.
+    void import('../lib/course').then(({ RULES_COURSE }) => {
+      const done = (slug: string) => { try { return localStorage.getItem(`done:${slug}`) === '1'; } catch { return false; } };
+      if (!RULES_COURSE.some((l) => done(l.slug))) return; // first visit: keep "התחילו בחוקים הבסיסיים"
+      const next = RULES_COURSE.find((l) => !done(l.slug));
+      const label = start.querySelector('[data-hero-label]')!;
+      if (next) {
+        start.href = `/rules/${next.slug}/`;
+        label.textContent = `המשיכו: שיעור ${next.n}, ${next.title}`;
+      } else {
+        start.href = '/learn/';
+        label.textContent = 'המשיכו לתרגול על הלוח';
+      }
+    });
   }
 </script>
 

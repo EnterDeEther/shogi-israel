@@ -217,6 +217,7 @@ html[data-signed-in] [data-signed-out-only] { display: none; }
 .xp-toast--on { transform: translate(-50%, 0); pointer-events: auto; }
 .xp-toast a { color: inherit; }
 .xp-toast--rank { border-radius: 14px; padding: 12px 18px; background: var(--seal); color: var(--on-seal); }
+.xp-toast--guest { border-radius: 14px; width: max-content; max-width: min(460px, calc(100vw - 32px)); line-height: 1.5; }
 .xp-toast__kanji { font-family: var(--f-kanji); font-size: 26px; line-height: 1; }
 @media (prefers-reduced-motion: reduce) { .xp-toast { transition: none; } }
 .xp-toast__nw { white-space: nowrap; }

@@ -4,6 +4,7 @@
 import Base from '../../layouts/Base.astro';
 import Board from '../../components/Board.astro';
 import { LENGTH_INFO, LENGTHS } from '../../tsume/puzzles';
+import { WEEK_LENGTH } from '../../tsume/week';
 
 const data = import.meta.glob<{ default: unknown[] }>('../../tsume/data/mate*.json', { eager: true });
 const count = (n: number) => data[`../../tsume/data/mate${n}.json`]?.default.length ?? 0;
@@ -15,6 +16,17 @@ const seal: Record<number, string> = { 1: '一', 3: '三', 5: '五', 7: '七' };
     <p class="eyebrow">למדו לשחק · סוף המשחק</p>
     <h1>בעיות מט</h1>
     <p class="lead measure">בעיית מט היא עמדה עם משימה אחת: לתת מט למלך של היריב, במספר מהלכים קבוע. ככה מתאמנים שחקני שוגי ביפן כבר מאות שנים, ויש כאן {total.toLocaleString('he-IL')} בעיות כאלה, מהקלות ביותר ועד בעיות שדורשות מחשבה.</p>
+
+    <section class="week card" data-week data-count={count(WEEK_LENGTH)} aria-labelledby="week-h">
+      <span class="seal" aria-hidden="true" lang="ja">週</span>
+      <div class="week-body">
+        <h2 id="week-h">בעיית השבוע</h2>
+        <p>בעיה אחת בכל שבוע, אותה בעיה לכולם: {LENGTH_INFO[WEEK_LENGTH].title}. בעיה חדשה עולה בכל יום ראשון.</p>
+        <p class="week-state small" data-week-state></p>
+        <p><a class="btn" href={`/tsume/${WEEK_LENGTH}/`} data-week-link><span>לבעיית השבוע</span></a></p>
+        <p class="small muted" data-signed-out-only>עם <a href="/account/?mode=signup">חשבון חינמי</a> הרצף נשמר בכל מכשיר.</p>
+      </div>
+    </section>
 
     <section class="collections" aria-label="האוספים">
       {LENGTHS.map((n) => (
@@ -85,6 +97,7 @@ const seal: Record<number, string> = { 1: '一', 3: '三', 5: '五', 7: '七' };
 
 <script>
   import { LENGTHS, solvedList } from '../../tsume/puzzles';
+  import { weekIndex, weekPuzzle, weekStreak, weeksHe, WEEK_LENGTH } from '../../tsume/week';
   const showSolved = () => {
     for (const n of LENGTHS) {
       const solved = solvedList(n).length;
@@ -97,9 +110,34 @@ const seal: Record<number, string> = { 1: '一', 3: '三', 5: '五', 7: '七' };
   };
   showSolved();
   document.addEventListener('progress-synced', showSolved); // solved on another device
+
+  // The puzzle of the week (src/tsume/week.ts): its link, and the streak worked out from the solved list.
+  const card = document.querySelector<HTMLElement>('[data-week]');
+  const showWeek = () => {
+    if (!card) return;
+    const count = Number(card.dataset.count);
+    const id = weekPuzzle(weekIndex(), count);
+    const solved = solvedList(WEEK_LENGTH);
+    const streak = weekStreak(solved, count);
+    card.querySelector<HTMLAnchorElement>('[data-week-link]')!.href = `/tsume/${WEEK_LENGTH}/#${id}`;
+    card.querySelector('[data-week-state]')!.textContent = solved.includes(id)
+      ? `פתרתם את בעיית השבוע ✓${streak > 1 ? ` · רצף של ${weeksHe(streak)}` : ''}. הבאה תעלה ביום ראשון.`
+      : streak > 0
+        ? `רצף של ${weeksHe(streak)}. פתרו גם את זו כדי להמשיך אותו.`
+        : `השבוע: בעיה ${id} באוסף.`;
+  };
+  showWeek();
+  document.addEventListener('progress-synced', showWeek);
 </script>
 
 <style>
+  .week { display: flex; gap: 16px; align-items: flex-start; margin: 8px 0 24px; padding: 18px; border: 1.5px solid var(--seal); border-radius: 8px; max-width: 720px; }
+  .week .seal { flex-shrink: 0; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--seal); color: var(--on-seal); font: 700 30px/1 var(--f-kanji); }
+  .week-body { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .week-body h2 { margin: 0; font-size: 24px; }
+  .week-body p { margin: 0; }
+  .week-body .btn { align-self: flex-start; }
+  .week-state:empty { display: none; }
   .tsume-hub { padding-top: 36px; }
   .tsume-hub h1 { margin: 6px 0 8px; }
   .tsume-hub .lead { margin: 0 0 22px; }

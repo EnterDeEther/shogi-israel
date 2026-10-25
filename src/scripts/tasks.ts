@@ -32,6 +32,29 @@ function markDone() {
     try { localStorage.setItem(`done:${lessonId}`, '1'); } catch {}
     document.dispatchEvent(new CustomEvent('progress-changed'));
     document.querySelector<HTMLElement>('[data-lesson-complete]')?.removeAttribute('hidden');
+    // the whole rules course done: a card to share
+    void import('../lib/course').then(async ({ RULES_COURSE }) => {
+      const all = RULES_COURSE.every((l) => { try { return localStorage.getItem(`done:${l.slug}`) === '1'; } catch { return false; } });
+      const box = document.querySelector<HTMLElement>('[data-lesson-complete]');
+      if (!all || !box || box.querySelector('.share-btn')) return;
+      const { shareButton } = await import('../lib/share-card');
+      const p = document.createElement('span');
+      p.className = 'course-done';
+      p.append(' סיימתם את כל קורס החוקים! ', shareButton({ title: 'סיימתי את קורס החוקים של שוגי', sub: 'השחמט היפני, בעברית ומאפס. 8 שיעורים קצרים', kanji: '将棋', path: '/rules/' }, 'shogi-israel-rules.png', 'btn btn-ghost'));
+      box.append(p);
+    });
+    // signed in with a starting point: where the course goes from here
+    const slot = document.querySelector<HTMLElement>('[data-next-step]');
+    if (slot && document.documentElement.hasAttribute('data-signed-in')) {
+      void import('../lib/next-step').then(({ courseNext }) => {
+        const n = courseNext();
+        if (!n) return;
+        const a = document.createElement('a');
+        a.href = n.href;
+        a.textContent = n.title;
+        slot.replaceChildren(' הצעד הבא במסלול: ', a, ` (${n.kind}).`);
+      });
+    }
   }
 }
 

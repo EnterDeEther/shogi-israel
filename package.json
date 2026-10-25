@@ -17,7 +17,8 @@
     "prebuild": "npm run engines",
     "build": "astro build",
     "preview": "astro preview",
-    "test": "bun test test/"
+    "test": "bun test test/",
+    "og": "node scripts/og/make.mjs"
   },
   "engines": {
     "node": "24.x"

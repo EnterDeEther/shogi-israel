@@ -17,6 +17,11 @@ so a slot for a page still being built can wait in the list and appears when the
 Sections: "למדו לשחק" (lessons only), "שחקו", "הכירו את השוגי" (background reading), "כלים", "קהילה". Each section's `blurb` and links also draw the "מה יש באתר" cards on the home page. A section with a single live link shows as a plain link in the menu.
 Every page is in `sitemap-index.xml` unless it sets `noindex` on `<Base>`.
 
+## Share images and search data
+A page's link preview (og:image) is `public/og/<path with dashes>.png` when that file exists (`/rules/03-promotion/` → `rules-03-promotion.png`), otherwise `public/og/default.png`.
+The cards are written in `src/lib/og-cards.ts` (text, seal kanji, board). After changing one, or after adding a lesson, run `npm run og` (needs Playwright's Chromium) and commit the new images.
+JSON-LD (site name on the home page, the course on `/rules/`, breadcrumbs inside `/rules/`, `/learn/` and `/tsume/`) comes from `src/lib/seo.ts`.
+
 ## Design rules (Direction A, "נייר ודיו")
 - Page is `dir="rtl"`; **the board is always `dir="ltr"` and never mirrors** (file 9 left, file 1 right, rank 1 top).
 - Pieces: English letters by default, kanji via the switch above any board (one site-wide setting, saved on the device).
@@ -50,7 +55,7 @@ Credit (also on the site's credits page):
 ## Accounts (`/account/`)
 Optional accounts on Supabase: email + password (confirmed by email; no Google/SSO), a public nickname, and progress that follows the account. Off until the keys exist: without them the site builds exactly as before, with no account link.
 - Keys: the Vercel ↔ Supabase integration sets `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (or set `PUBLIC_SUPABASE_URL` / `PUBLIC_SUPABASE_ANON_KEY`).
-- Database: run `supabase/migrations/0001_accounts.sql` once (tables `profiles`, `progress`, `games`, with row-level security, and `delete_my_account()`).
+- Database: run `supabase/migrations/0001_accounts.sql` once (tables `profiles`, `progress`, `games`, with row-level security, and `delete_my_account()`), then `0002_community_counts.sql` (the totals on `/community/`; counts only, callable signed out). `supabase/tests/rls.sql` checks the rules.
 - Supabase settings: Authentication → URL configuration: Site URL `https://shogi.co.il`, redirect URLs `https://shogi.co.il/account/` and `https://*-enterdeether.vercel.app/account/`. Emails: paste `supabase/templates/confirm-signup.html` and `reset-password.html` into those two templates. The sign-up email carries both a 6-digit code (`{{ .Token }}`, typed on /account/ so the sign-in stays in the visitor's browser) and the confirmation link; keep Email OTP length at 6. Password minimum length 8. Before launch, set a custom SMTP sender: Supabase's built-in one sends only a few emails an hour.
 - Code: `src/lib/account-config.ts` (is it on), `src/lib/account.ts` (client, sign-in, sync), `src/lib/progress-sync.ts` (merge rules, tested). Lessons and the rules course fire `progress-changed` / `progress-reset`; the sync merges (best score per level, union of finished lessons) and fires `progress-synced`.
 - Play vs AI: `syncGames()` sends the device's finished games (`shogi-il.play.history`) to `games` after each `shogi-il:game-end` and on sign-in, deduped by the game's id; the account page counts them. `profiles.rating` is server-only, for future leaderboards.
