@@ -53,30 +53,6 @@ const hasCourse = pageExists('/course/') && accountsOn;
     </div>
   </section>
 
-  <section class="wrap block" aria-labelledby="offer">
-    <h2 id="offer">מה יש באתר</h2>
-    <ul class="offer">
-      {sections.map((s) => (
-        <li class="card">
-          <h3>{s.label}</h3>
-          {s.blurb && <p>{s.blurb}</p>}
-          <ul>
-            {s.links.map((l) => (
-              <li><a href={l.href} rel={l.external ? 'noopener' : undefined}>{l.label}{l.external && <span class="ext" aria-hidden="true"> ↗</span>}</a></li>
-            ))}
-          </ul>
-        </li>
-      ))}
-      {isLive(ACCOUNT) && (
-        <li class="card">
-          <h3>החשבון שלי</h3>
-          <p>ההתקדמות והמשחקים נשמרים בכל מכשיר. לא חובה, והכול עובד גם בלי.</p>
-          <ul><li><a href="/account/">כניסה או הרשמה</a></li></ul>
-        </li>
-      )}
-    </ul>
-  </section>
-
   <section class="wrap block" aria-labelledby="three">
     <h2 id="three">שלושה דברים שעושים את השוגי לשוגי</h2>
     <ol class="three">
@@ -105,6 +81,19 @@ const hasCourse = pageExists('/course/') && accountsOn;
     </ol>
     <p><a class="small" href="/learn/guide/#phases">הסבר על שלושת השלבים</a></p>
   </section>
+
+  {pageExists('/course/') && (
+    <section class="wrap block" aria-labelledby="start-h" data-signed-out-only>
+      <div class="start">
+        <h2 id="start-h">לא בטוחים מאיפה להתחיל?</h2>
+        <p>במסלול לימוד אישי עונים על שאלה אחת ומקבלים סדר לימוד ברור, מהחוקים ועד בעיות מט. עם חשבון בחינם יש גם נקודות ודרגות, מ־15 קיו ועד דאן.</p>
+        <div class="start-cta">
+          <a class="btn" href="/course/"><span>ראו את המסלול</span></a>
+          {accountsOn && <a class="btn btn-ghost" href="/account/?mode=signup"><span>פתחו חשבון בחינם</span></a>}
+        </div>
+      </div>
+    </section>
+  )}
 
   <section class="wrap block" aria-labelledby="course">
     <div class="head-row">
@@ -155,6 +144,30 @@ const hasCourse = pageExists('/course/') && accountsOn;
       </ul>
     </div>
   </section>
+
+  <section class="wrap block" aria-labelledby="offer">
+    <h2 id="offer">מה יש באתר</h2>
+    <ul class="offer">
+      {sections.map((s) => (
+        <li class="card">
+          <h3>{s.label}</h3>
+          {s.blurb && <p>{s.blurb}</p>}
+          <ul>
+            {s.links.map((l) => (
+              <li><a href={l.href} rel={l.external ? 'noopener' : undefined}>{l.label}{l.external && <span class="ext" aria-hidden="true"> ↗</span>}</a></li>
+            ))}
+          </ul>
+        </li>
+      ))}
+      {isLive(ACCOUNT) && (
+        <li class="card">
+          <h3>החשבון שלי</h3>
+          <p>ההתקדמות והמשחקים נשמרים בכל מכשיר. לא חובה, והכול עובד גם בלי.</p>
+          <ul><li><a href="/account/">כניסה או הרשמה</a></li></ul>
+        </li>
+      )}
+    </ul>
+  </section>
 </Base>
 
 <script>
@@ -181,7 +194,7 @@ const hasCourse = pageExists('/course/') && accountsOn;
       // labels about as long as the one they replace, so the hero doesn't jump
       if (!p.course.track || !next) {
         start.href = '/course/';
-        label.textContent = 'המסלול שלי: מאיפה מתחילים?';
+        label.textContent = 'מסלול לימוד אישי: מאיפה מתחילים?';
         return;
       }
       start.href = stepHref(next.step, p, LEVEL_COUNTS);
@@ -242,6 +255,12 @@ const hasCourse = pageExists('/course/') && accountsOn;
   .ext { color: var(--muted); font-weight: 400; }
   @media (min-width: 700px) { .offer { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   @media (min-width: 1000px) { .offer { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; } }
+
+  .start { background: var(--washi-2); border: 1px solid var(--rule); border-radius: 8px; padding: 24px 22px; max-width: 720px; }
+  .start h2 { margin-bottom: 8px; }
+  .start p { margin: 0 0 16px; color: var(--ink-2); }
+  .start-cta { display: flex; flex-direction: column; gap: 10px; }
+  @media (min-width: 700px) { .start-cta { flex-direction: row; } }
 
   .course, .play { max-width: 720px; }
   .community { background: var(--washi-2); border-radius: 8px; padding: 28px 22px; max-width: 720px; }

@@ -69,7 +69,6 @@ const senteHand = handOf('sente');
   <details class="alt">
     <summary>תיאור הלוח בטקסט</summary>
     {desc.map((l) => <p>{l}</p>)}
-    <p class="muted">SFEN: <bdi dir="ltr" class="sfen">{sfen}</bdi></p>
   </details>
 </figure>
 
@@ -153,5 +152,4 @@ const senteHand = handOf('sente');
   .alt { margin-top: 8px; font-size: 15px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
   .alt summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 700; color: var(--ink-2); }
   .alt p { margin: 0 0 10px; }
-  .sfen { font-family: ui-monospace, monospace; font-size: 13px; word-break: break-all; white-space: normal; }
 </style>
