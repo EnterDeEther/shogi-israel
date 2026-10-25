@@ -4,6 +4,7 @@
 // Page is RTL; the board is LTR and never mirrors. Plain DOM, same helpers as the lessons.
 // AGPL-3.0-or-later, like the rest of this site.
 import { el, icon, pieceSetSwitch } from '../learn/view';
+import { copyText, downloadKif, type KifEnd, kifFileName, LISHOGI_IMPORT_URL, makeKif } from '../lib/kif';
 import type PlayCtrl from './ctrl';
 import type { PlaySettings } from './ctrl';
 import type { GameEnd } from './game';
@@ -179,6 +180,57 @@ function controls(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void, op
   );
 }
 
+const KIF_REASON: Record<GameEnd['reason'], KifEnd['reason']> = {
+  mate: 'checkmate',
+  stalemate: 'checkmate', // no legal move: a loss, written like a mate
+  resign: 'resign',
+  time: 'timeout',
+  repetition: 'repetition',
+  perpetual: 'repetition', // with a winner: the side that gave perpetual check lost
+  impasse: 'impasse',
+  draw: 'repetition',
+};
+
+/** The finished game as a KIF file: download, copy, or take it to Lishogi's analysis board. */
+function kifText(ctrl: PlayCtrl): string {
+  const r = ctrl.record!;
+  const ai = `מחשב רמה ${r.level} (${r.engine})`;
+  return makeKif({
+    startSfen: r.startSfen,
+    moves: r.moves,
+    sente: r.playerColor === 'sente' ? 'שחקן' : ai,
+    gote: r.playerColor === 'gote' ? 'שחקן' : ai,
+    date: new Date(r.startedAt),
+    event: 'משחק נגד המחשב',
+    end: r.result && { reason: KIF_REASON[r.result.reason], winner: r.result.winner },
+  });
+}
+
+function kifButtons(ctrl: PlayCtrl): HTMLElement {
+  const flash = (btn: HTMLElement, text: string) => {
+    const before = btn.textContent;
+    btn.textContent = text;
+    window.setTimeout(() => (btn.textContent = before), 2000);
+  };
+  const b = (label: string, fn: (btn: HTMLElement) => void) => {
+    const btn = el('button', { type: 'button', class: 'link' }, label);
+    btn.addEventListener('click', (e) => { e.preventDefault(); fn(btn); });
+    return btn;
+  };
+  return el('div', { class: 'kif-export', 'data-hook': 'export' },
+    el('span', { class: 'small' }, 'רישום המשחק (KIF):'),
+    b('הורדה', () => downloadKif(kifText(ctrl), kifFileName({ date: new Date(ctrl.record!.startedAt) }))),
+    b('העתקה', async (btn) => flash(btn, (await copyText(kifText(ctrl))) ? 'הועתק ✓' : 'ההעתקה נכשלה')),
+    b('ניתוח ב־Lishogi', async (btn) => {
+      // Lishogi's import page takes the KIF pasted into its box: copy first, then open it.
+      const ok = await copyText(kifText(ctrl));
+      flash(btn, ok ? 'הועתק, הדביקו בחלון שנפתח' : 'ההעתקה נכשלה');
+      window.open(LISHOGI_IMPORT_URL, '_blank', 'noopener');
+    }),
+    el('a', { href: '/kif/', class: 'small' }, 'מה זה?'),
+  );
+}
+
 function status(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void): HTMLElement | null {
   if (!ctrl.record) return null;
   const end = ctrl.ended;
@@ -197,7 +249,7 @@ function status(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void): HTM
         el('button', { type: 'button', class: `btn${next ? '' : ' primary'}`, 'data-fid': 'again', onclick: go(() => ctrl.newGame(ctrl.settings)) }, 'משחק נוסף'),
         el('button', { type: 'button', class: 'link', onclick: go(() => ctrl.openSetup()) }, 'הגדרות משחק'),
       ),
-      el('div', { 'data-hook': 'export' }), // slot for the KIF export buttons
+      kifButtons(ctrl),
     );
   }
   if (ctrl.engineError) {
