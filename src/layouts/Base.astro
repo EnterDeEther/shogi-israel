@@ -132,8 +132,9 @@ const ogUrl = new URL(ogImage, Astro.site);
     <script>
       // Signed-in visitors: keep lesson progress in step with the account. Others never load the client.
       import { accountsEnabled, hasStoredSession } from '../lib/account-config';
-      if (accountsEnabled && hasStoredSession() && location.pathname !== '/account/') {
-        import('../lib/account').then((m) => m.startSync());
+      if (accountsEnabled && hasStoredSession()) {
+        document.documentElement.setAttribute('data-signed-in', '');
+        if (location.pathname !== '/account/') import('../lib/account').then((m) => m.startSync());
       }
     </script>
   </body>

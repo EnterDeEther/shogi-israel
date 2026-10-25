@@ -5,6 +5,7 @@ import { getCollection } from 'astro:content';
 import { RULES_COURSE, pad } from '../lib/course';
 import { pageExists, LISHOGI_TEAM } from '../lib/live';
 import { liveSections, isLive, ACCOUNT } from '../lib/nav';
+import { accountsEnabled } from '../lib/account-config';
 
 const live = new Set((await getCollection('rules')).map((e) => e.id));
 const START = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1';
@@ -12,6 +13,7 @@ const first = `/rules/${RULES_COURSE[0].slug}/`;
 // Playing happens here first; Lishogi is for public games and tournaments.
 const hasPlay = pageExists('/play/');
 const hasAccount = pageExists('/account/');
+const accountsOn = hasAccount && accountsEnabled;
 const sections = liveSections();
 ---
 <Base
@@ -33,7 +35,15 @@ const sections = liveSections();
           <span>מה יש באתר? סקירה קצרה</span>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"></path></svg>
         </a>
-        <p class="small muted">8 שיעורים קצרים · בלי הרשמה · ההתקדמות נשמרת רק במכשיר שלכם</p>
+        <p class="small muted">
+          8 שיעורים קצרים · בלי הרשמה ·
+          {accountsOn ? (
+            <>
+              <span data-signed-out-only>ההתקדמות נשמרת במכשיר, ועם <a href="/account/">חשבון</a> (לא חובה) גם בין מכשירים</span>
+              <span data-signed-in-only>ההתקדמות נשמרת בחשבון שלכם, בכל מכשיר</span>
+            </>
+          ) : 'ההתקדמות נשמרת במכשיר שלכם'}
+        </p>
       </div>
     </div>
     <div class="hero-board">

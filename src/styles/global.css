@@ -201,3 +201,8 @@ bdi.nt, .nt { font-weight: 700; font-variant-numeric: tabular-nums; white-space:
 @media (prefers-reduced-motion: no-preference) {
   html { scroll-behavior: smooth; }
 }
+
+/* Text that depends on whether the visitor has an account session (set in Base.astro). */
+[data-signed-in-only] { display: none; }
+html[data-signed-in] [data-signed-in-only] { display: revert; }
+html[data-signed-in] [data-signed-out-only] { display: none; }
