@@ -1,0 +1,92 @@
+---
+// The community's home: where Israeli players talk and play, plus a few live totals once there are enough
+// players for them to mean something. No events here until meetups are planned (Dean, 2026-10-25).
+import Page from '../layouts/Page.astro';
+import { pageExists, LISHOGI_TEAM } from '../lib/live';
+import { WHATSAPP_URL, INSTAGRAM_URL } from '../lib/nav';
+import { accountsEnabled } from '../lib/account-config';
+const hasPlay = pageExists('/play/');
+const hasWeek = pageExists('/tsume/week/');
+---
+<Page
+  title="הקהילה"
+  eyebrow="שוגי ישראל"
+  description="איפה שחקני שוגי בישראל משחקים ומדברים: קהילת הוואטסאפ, האינסטגרם, הקבוצה והליגה הישראלית בליש׳וגי, ומשחקים כאן באתר."
+>
+  <p>אנחנו קהילה קטנה ומתחילה של שחקני שוגי בישראל, ממתחילים גמורים ועד שחקנים עם ניסיון. כאן כל המקומות שבהם משחקים ומדברים.</p>
+
+  {accountsEnabled && (
+    <section class="pulse" data-pulse hidden aria-labelledby="pulse-h">
+      <h2 id="pulse-h">מה קורה באתר</h2>
+      <ul class="stats">
+        <li><strong data-n="players"></strong><span>שחקנים עם חשבון</span></li>
+        <li><strong data-n="active_week"></strong><span>התאמנו השבוע</span></li>
+        <li><strong data-n="games_week"></strong><span>משחקים נגד המחשב השבוע</span></li>
+      </ul>
+      <p class="small muted">מספרים כלליים בלבד, בלי שמות.</p>
+    </section>
+  )}
+
+  <h2 id="talk">איפה מדברים</h2>
+  <ul class="rows links">
+    <li><a href={WHATSAPP_URL} rel="noopener"><span class="row-title"><strong>קהילת הוואטסאפ</strong></span><span class="small muted">עדכונים, שאלות, ומי רוצה לשחק</span></a></li>
+    <li><a href={INSTAGRAM_URL} rel="noopener"><span class="row-title"><strong>אינסטגרם</strong></span><bdi dir="ltr" class="small muted">@shogi.israel</bdi></a></li>
+  </ul>
+
+  <h2 id="play">איפה משחקים</h2>
+  <ul class="rows links">
+    <li><a href={LISHOGI_TEAM} rel="noopener"><span class="row-title"><strong>הקבוצה שלנו בליש׳וגי</strong></span><span class="small muted">טורנירים של הקבוצה, ויריבים מכל העולם</span></a></li>
+    <li><a href="/lishogi/#team"><span class="row-title"><strong>הליגה הישראלית</strong></span><span class="small muted">איך זה עובד ואיך מצטרפים</span></a></li>
+    {hasPlay && <li><a href="/play/"><span class="row-title"><strong>נגד המחשב, כאן באתר</strong></span><span class="small muted">עשר רמות, בלי הרשמה</span></a></li>}
+    {hasWeek && <li><a href="/tsume/week/"><span class="row-title"><strong>בעיית השבוע</strong></span><span class="small muted">בעיית מט חדשה בכל יום ראשון</span></a></li>}
+  </ul>
+
+  <h2 id="us">מי אנחנו</h2>
+  <p>שוגי ישראל נבנה בהתנדבות, כדי שיהיה בישראל מקום ללמוד ולשחק שוגי בעברית. <a href="/about/">עוד עלינו</a>. רוצים לעזור בתרגום, בהוראה או סתם להציע משהו? <a href="/about/#contact">כתבו לנו</a>.</p>
+</Page>
+
+<script>
+  // Live totals from the accounts database (supabase/migrations/0002_community_counts.sql): counts only,
+  // never who. Shown once there are enough players for the numbers to mean something.
+  import { SUPABASE_KEY, SUPABASE_URL, accountsEnabled } from '../lib/account-config';
+
+  const MIN_PLAYERS = 10;
+  const box = document.querySelector<HTMLElement>('[data-pulse]');
+  if (accountsEnabled && box) {
+    fetch(`${SUPABASE_URL}/rest/v1/rpc/community_counts`, {
+      method: 'POST',
+      headers: { apikey: SUPABASE_KEY, authorization: `Bearer ${SUPABASE_KEY}`, 'content-type': 'application/json' },
+      body: '{}',
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((counts: Record<string, number> | null) => {
+        if (!counts || !(counts.players >= MIN_PLAYERS)) return;
+        box.querySelectorAll<HTMLElement>('[data-n]').forEach((el) => {
+          el.textContent = Number(counts[el.dataset.n!] ?? 0).toLocaleString('he-IL');
+        });
+        box.hidden = false;
+      })
+      .catch(() => {});
+  }
+</script>
+
+<style>
+  /* stronger than Page.astro's prose list styles */
+  ul.rows.links { margin: 0 0 8px; padding: 0; }
+  .links a { justify-content: space-between; min-height: 52px; }
+  .links .row-title { flex: 1; }
+  .pulse { margin: 28px 0 8px; padding: 22px; border-radius: 8px; background: var(--washi-2); }
+  .pulse h2 { margin: 0 0 14px !important; font-size: 24px !important; }
+  ul.stats.stats { list-style: none; margin: 0 0 8px; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  ul.stats.stats li { margin: 0; display: flex; flex-direction: column; gap: 2px; }
+  .stats strong { font: 800 34px/1.1 var(--f-display); color: var(--ink); font-variant-numeric: tabular-nums; }
+  .stats span { font-size: 15px; line-height: 1.4; color: var(--ink-2); }
+  @media (max-width: 560px) {
+    /* phones: the hint goes under the title instead of squeezing it */
+    ul.rows.links a { flex-direction: column; align-items: flex-start; justify-content: center; gap: 0; padding: 8px 0; }
+    ul.rows.links .row-title { flex: none; }
+    .stats strong { font-size: 28px; }
+    .stats span { font-size: 14px; }
+  }
+  .pulse .small { margin: 0; }
+</style>
