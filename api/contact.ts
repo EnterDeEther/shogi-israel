@@ -1,6 +1,6 @@
 // Vercel Function: POST /api/contact. Sends a contact-form message to CONTACT_EMAIL through Resend.
 // Needs the RESEND_API_KEY environment variable (a Resend key with sending access for shogi.co.il).
-import { CONTACT_EMAIL, checkContact, contactEmail } from '../src/lib/contact';
+import { CONTACT_EMAIL, checkContact, contactEmail } from '../src/lib/contact.js'; // .js: Node ESM needs the extension once Vercel compiles this
 
 const FROM = 'שוגי ישראל <noreply@shogi.co.il>';
 const ALLOWED_ORIGIN = /^https:\/\/((www\.)?shogi\.co\.il|shogi-israel-[a-z0-9-]+-enterdeether\.vercel\.app)$/;
