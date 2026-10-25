@@ -2,6 +2,7 @@
 import Page from '../layouts/Page.astro';
 import { pageExists } from '../lib/live';
 import { CONTACT_EMAIL, INSTAGRAM_URL } from '../lib/nav';
+import ContactForm from '../components/ContactForm.astro';
 const hasPlay = pageExists('/play/');
 ---
 <Page title="אודות" eyebrow="שוגי ישראל" description="מי אנחנו, למה בנינו את האתר, ומי עזר לנו בדרך: קרדיטים, מקורות ויצירת קשר.">
@@ -30,6 +31,7 @@ const hasPlay = pageExists('/play/');
   </ul>
 
   <h2 id="contact">צור קשר</h2>
-  <p>כתבו לנו במייל: <a href={`mailto:${CONTACT_EMAIL}`}><bdi dir="ltr">{CONTACT_EMAIL}</bdi></a>. מצאתם טעות בשיעור, או משהו לא עובד באתר? נשמח לשמוע.</p>
-  <p>אפשר גם בהודעה פרטית באינסטגרם, <a href={INSTAGRAM_URL} rel="noopener"><bdi dir="ltr">@shogi.israel</bdi></a>.</p>
+  <p>מצאתם טעות בשיעור, משהו לא עובד באתר, או סתם רוצים לשאול? כתבו לנו כאן ונענה במייל.</p>
+  <ContactForm />
+  <p>אפשר גם לכתוב ישירות ל־<a href={`mailto:${CONTACT_EMAIL}`}><bdi dir="ltr">{CONTACT_EMAIL}</bdi></a>, או בהודעה פרטית באינסטגרם, <a href={INSTAGRAM_URL} rel="noopener"><bdi dir="ltr">@shogi.israel</bdi></a>.</p>
 </Page>

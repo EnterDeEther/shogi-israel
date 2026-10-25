@@ -23,11 +23,16 @@ Every page is in `sitemap-index.xml` unless it sets `noindex` on `<Base>`.
 - Squares are two digits (`76`), moves `P-76`; always inside `<bdi dir="ltr">`.
 - Type: Frank Ruhl Libre (display), Heebo (body), Shippori Mincho (kanji). Self-hosted via Fontsource, OFL.
 - Accessibility target: IS 5568 AA (built to WCAG 2.1 AA). Every board has a text description; tasks work by keyboard.
-- Privacy: no cookies, no forms. Vercel Web Analytics only (cookieless).
+- Privacy: no cookies. Vercel Web Analytics only (cookieless). The one form is the contact form (below); `/privacy/` says what it collects.
 
 ## Contact
 Email [contact@shogi.co.il](mailto:contact@shogi.co.il), or Instagram [@shogi.israel](https://www.instagram.com/shogi.israel/).
-The address lives in `CONTACT_EMAIL` in `src/lib/nav.ts`; pages import it from there. Security issues: see `SECURITY.md`.
+The address lives in `CONTACT_EMAIL` in `src/lib/contact.ts` (re-exported from `src/lib/nav.ts`). Security issues: see `SECURITY.md`.
+
+The contact form on `/about/#contact` (`src/components/ContactForm.astro`) posts to the Vercel Function `api/contact.ts`,
+which checks the fields (`src/lib/contact.ts`) and emails them to `CONTACT_EMAIL` through Resend, with Reply-To set to the sender.
+It needs `RESEND_API_KEY` in the Vercel project's environment variables (a Resend key with sending access for shogi.co.il).
+Without it the form answers with an error and links to the email address.
 
 ## Local dev
 ```
