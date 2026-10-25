@@ -34,7 +34,7 @@ const ext = (l: NavLink) => (l.external ? { rel: 'noopener', target: '_blank' } 
       ) : (
         <a class="top" href={i.href} aria-current={here(i)} {...ext(i)}>{i.label}</a>
       ))}
-      {account && <a class="account" href={account.href} aria-current={here(account)}>{account.label}</a>}
+      {account && <a class="account" href={account.href} aria-current={here(account)}><span data-signed-in-only>{account.label}</span><span data-signed-out-only>הרשמה / כניסה</span></a>}
     </nav>
 
     <button type="button" class="theme-btn" data-theme-toggle aria-label="מעבר למצב כהה" aria-pressed="false">
@@ -67,7 +67,7 @@ const ext = (l: NavLink) => (l.external ? { rel: 'noopener', target: '_blank' } 
         ) : (
           <a class="solo" href={i.href} aria-current={here(i)} {...ext(i)}>{i.label}</a>
         ))}
-        {account && <a class="solo account" href={account.href} aria-current={here(account)}>{account.label}</a>}
+        {account && <a class="solo account" href={account.href} aria-current={here(account)}><span data-signed-in-only>{account.label}</span><span data-signed-out-only>הרשמה / כניסה</span></a>}
       </nav>
     </details>
   </div>

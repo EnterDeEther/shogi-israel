@@ -31,7 +31,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
         <>
           <p>עם חשבון (בחינם) המסלול נהיה שלכם: עונים על שאלה אחת ומקבלים נקודת התחלה, רואים בכל רגע את הצעד הבא, וצוברים נקודות שמעלות אתכם בדרגה, מ־15 קיו ועד דאן. ההתקדמות נשמרת בכל מכשיר.</p>
           <p class="small muted">מה שכבר עשיתם בדפדפן הזה נכנס לחשבון ונספר.</p>
-          <p class="gate-cta"><a class="btn" href="/account/"><span>פתחו חשבון בחינם</span></a> <a href="/account/">כבר יש לכם חשבון? כניסה</a></p>
+          <p class="gate-cta"><a class="btn" href="/account/?mode=signup"><span>פתחו חשבון בחינם</span></a> <a href="/account/?mode=signin">כבר יש לכם חשבון? כניסה</a></p>
         </>
       ) : (
         <p>המסלול האישי ייפתח יחד עם החשבונות באתר. בינתיים אפשר ללמוד לפי הסדר שכאן.</p>
@@ -72,6 +72,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
         <p class="rank-name" data-rank-name></p>
         <div class="bar" aria-hidden="true"><span data-rank-bar></span></div>
         <p class="small muted" data-rank-text></p>
+        <p class="rank-share" data-rank-share></p>
         <details class="rank-how">
           <summary class="small">איך צוברים נקודות?</summary>
           <ul class="small">
@@ -91,8 +92,8 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
 
     <section class="done-all card" data-done-all hidden>
       <h2>סיימתם את המסלול!</h2>
-      <p>עברתם את כל שלושת השלבים. מכאן ממשיכים לשחק: מול שחקנים מכל העולם, ומול ישראלים בקהילה.</p>
-      <p><a href="/lishogi/">שחקו אונליין בליש׳וגי</a> · <a href={WHATSAPP_URL} rel="noopener">קהילת הוואטסאפ</a> · <a href="/tsume/7/">בעיות מט ב־7 מהלכים</a></p>
+      <p>עברתם את כל שלושת השלבים. מכאן ממשיכים לשחק: נגד המחשב ברמות גבוהות יותר, עם ישראלים בקהילה, ומול שחקנים מכל העולם.</p>
+      <p><a href="/play/?level=5">נגד המחשב, מרמה 5 והלאה</a> · <a href="/tsume/7/">בעיות מט ב־7 מהלכים</a> · <a href={WHATSAPP_URL} rel="noopener">קהילת הוואטסאפ</a> · <a href="/lishogi/">יריבים מכל העולם בליש׳וגי</a></p>
     </section>
 
     <div class="overall" data-overall hidden>
@@ -146,6 +147,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
   import { accountsEnabled, hasStoredSession } from '../lib/account-config';
   import { LEVEL_COUNTS as levelCounts } from '../lib/level-counts';
   import { rankFor, xpBreakdown } from '../lib/xp';
+  import { shareButton } from '../lib/share-card';
 
   const root = document.querySelector<HTMLElement>('[data-course]')!;
   // The personal course is for signed-in visitors; everyone else keeps the static path and the sign-up card.
@@ -164,6 +166,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
     $('[data-rank-kanji]').textContent = r.rank.kanji;
     $('[data-rank-name]').textContent = r.rank.name;
     $('[data-rank-bar]').style.width = `${r.next ? Math.round((100 * r.into) / r.span) : 100}%`;
+    if (r.rank.index > 0) $('[data-rank-share]').replaceChildren(shareButton({ title: `הגעתי לדרגה ${r.rank.name}`, sub: 'במסלול הלימוד האישי של שוגי ישראל', kanji: r.rank.kanji, path: '/course/' }, 'shogi-israel-rank.png', 'btn btn-ghost'));
     $('[data-rank-text]').textContent = r.next
       ? `${xp.toLocaleString('he-IL')} נקודות · עוד ${(r.next.min - xp).toLocaleString('he-IL')} לדרגה ${r.next.name}`
       : `${xp.toLocaleString('he-IL')} נקודות · הדרגה הגבוהה ביותר באתר`;

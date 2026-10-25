@@ -6,6 +6,7 @@ import '../styles/global.css';
 import Analytics from '@vercel/analytics/astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import { ogImageFor, structuredData, ldJson } from '../lib/seo';
 
 interface Props {
   title: string;
@@ -14,10 +15,11 @@ interface Props {
   noindex?: boolean;
 }
 
-const { title, description, ogImage = '/og/default.png', noindex = false } = Astro.props;
+const { title, description, ogImage = ogImageFor(Astro.url.pathname), noindex = false } = Astro.props;
 const fullTitle = title === 'שוגי ישראל' ? 'שוגי ישראל · השחמט היפני, בעברית' : `${title} · שוגי ישראל`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogUrl = new URL(ogImage, Astro.site);
+const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description);
 ---
 <!doctype html>
 <html lang="he" dir="rtl" data-pieces="letters">
@@ -42,7 +44,9 @@ const ogUrl = new URL(ogImage, Astro.site);
     <meta property="og:image" content={ogUrl} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={fullTitle} />
     <meta name="twitter:card" content="summary_large_image" />
+    {ld.map((d) => <script is:inline type="application/ld+json" set:html={ldJson(d)} />)}
     <script is:inline>
       // Apply the saved piece set and colour theme before first paint. Storage can be missing (in-app
       // browsers): fall back to letters and to the system's light/dark setting.
@@ -130,12 +134,14 @@ const ogUrl = new URL(ogImage, Astro.site);
       applyTheme(root.getAttribute('data-theme-pref') || 'auto');
     </script>
     <script>
-      // Signed-in visitors: keep lesson progress in step with the account. Others never load the client.
+      // Signed-in visitors: keep lesson progress in step with the account. Others never load the Supabase client.
       import { accountsEnabled, hasStoredSession } from '../lib/account-config';
       if (accountsEnabled && hasStoredSession()) {
         document.documentElement.setAttribute('data-signed-in', '');
         if (location.pathname !== '/account/') import('../lib/account').then((m) => m.startSync());
-        import('../lib/xp-toast').then((m) => m.startXpNotes()); // points and ranks: signed-in visitors only
+        import('../lib/xp-toast').then((m) => m.startXpNotes()); // points and ranks
+      } else if (accountsEnabled) {
+        import('../lib/xp-toast').then((m) => m.startXpNotes(true)); // a preview of the points an account would keep
       }
     </script>
   </body>

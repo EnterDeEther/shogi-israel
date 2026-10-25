@@ -17,6 +17,11 @@ so a slot for a page still being built can wait in the list and appears when the
 Sections: "למדו לשחק" (lessons only), "שחקו", "הכירו את השוגי" (background reading), "כלים", "קהילה". Each section's `blurb` and links also draw the "מה יש באתר" cards on the home page. A section with a single live link shows as a plain link in the menu.
 Every page is in `sitemap-index.xml` unless it sets `noindex` on `<Base>`.
 
+## Share images and search data
+A page's link preview (og:image) is `public/og/<path with dashes>.png` when that file exists (`/rules/03-promotion/` → `rules-03-promotion.png`), otherwise `public/og/default.png`.
+The cards are written in `src/lib/og-cards.ts` (text, seal kanji, board). After changing one, or after adding a lesson, run `npm run og` (needs Playwright's Chromium) and commit the new images.
+JSON-LD (site name on the home page, the course on `/rules/`, breadcrumbs inside `/rules/`, `/learn/` and `/tsume/`) comes from `src/lib/seo.ts`.
+
 ## Design rules (Direction A, "נייר ודיו")
 - Page is `dir="rtl"`; **the board is always `dir="ltr"` and never mirrors** (file 9 left, file 1 right, rank 1 top).
 - Pieces: English letters by default, kanji via the switch above any board (one site-wide setting, saved on the device).

@@ -10,6 +10,7 @@ import { i18n, i18nFormat } from './i18n';
 import type { Stage } from './interfaces';
 import { stageUrl } from './urls';
 import { average } from './util';
+import { courseNext } from '../lib/next-step';
 
 // Same list and random pick as lila's views/congrats.ts
 const congratsKeys = [
@@ -22,6 +23,12 @@ const congratsFor = (seed: string) => i18n(congratsKeys[[...seed].reduce((a, c) 
 
 type Child = Node | string | null | undefined | false;
 type Attrs = Record<string, string | boolean | undefined | ((e: Event) => void)>;
+/** Shogi Israel: the next step of a signed-in visitor's course (src/lib/next-step.ts), for end screens. */
+export function nextInCourse(): HTMLElement | null {
+  const n = courseNext();
+  return n ? el('p', { class: 'small next-in-course' }, 'הצעד הבא במסלול: ', el('a', { href: n.href }, n.title), ` (${n.kind})`) : null;
+}
+
 export function el<K extends keyof HTMLElementTagNameMap>(tag: K, attrs?: Attrs, ...children: Child[]): HTMLElementTagNameMap[K];
 export function el(tag: string, attrs?: Attrs, ...children: Child[]): HTMLElement;
 export function el(tag: string, attrs: Attrs = {}, ...children: Child[]): HTMLElement {
@@ -269,7 +276,7 @@ function whatNextLinks(has: DOMStringMap): [href: string, seal: string, title: s
       ? ['/play/', '機', 'playMachine', 'il_playMachineHere']
       : ['https://lishogi.org/#ai', '機', 'playMachine', 'testYourSkillsWithTheComputer'],
     on('hasAccount')
-      ? ['/account/', '登', 'register', 'il_getAShogiIsraelAccount']
+      ? ['/account/?mode=signup', '登', 'register', 'il_getAShogiIsraelAccount']
       : ['https://lishogi.org/signup', '登', 'register', 'getAFreeLishogiAccount'],
     [on('hasLishogiGuide') ? '/lishogi/' : 'https://lishogi.org/team/---shogi-israel', '対', 'playPeople', 'il_opponentsOnLishogi'],
   ];
@@ -350,6 +357,11 @@ function renderLesson(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go, stageLin
             : el('a', { href: '/learn/', class: 'btn primary', 'data-autofocus': true, 'data-fid': 'ov-next', onclick: go(() => ctrl.setHome()) }, i18n('whatNext')),
           el('button', { type: 'button', class: 'btn', 'data-fid': 'ov-menu', onclick: go(() => ctrl.setHome()) }, i18n('backToMenu')),
         ),
+        // Shogi Israel: the moment to offer an account (signed-out only; global.css hides it once signed in)
+        root.dataset.hasAccount !== undefined
+          ? el('p', { class: 'small', 'data-signed-out-only': '' }, el('a', { href: '/account/?mode=signup' }, i18n('il_saveStars')), ' ', i18n('il_saveStarsWhy'))
+          : null,
+        nextInCourse(),
       ),
     );
     overlay.onclick = go(() => { vm.stageState = 'end'; });
