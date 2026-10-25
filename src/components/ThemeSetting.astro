@@ -1,0 +1,9 @@
+---
+// Light / dark / follow-the-system switch. Every instance drives one site-wide setting (html[data-theme]),
+// remembered on this device only. Logic lives in Base.astro so there is one listener.
+---
+<div class="seg" role="group" aria-label="מראה האתר">
+  <button type="button" data-theme-set="auto" aria-pressed="true">כמו המכשיר</button>
+  <button type="button" data-theme-set="light" aria-pressed="false">בהיר</button>
+  <button type="button" data-theme-set="dark" aria-pressed="false">כהה</button>
+</div>

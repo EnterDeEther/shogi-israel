@@ -139,8 +139,7 @@ const practice = (PRACTICE[stub.slug] ?? []).filter((p) => learnPages.has(p.stag
   .prose :global(td:nth-child(4)) { font-family: var(--f-kanji); font-weight: 800; }
   .prose :global(.term strong) { color: var(--ink); }
 
-  .complete { margin: 32px 0 0; padding: 14px 16px; border-radius: 6px; background: #E3EFD6; color: #1F4A1C; }
-  @media (prefers-color-scheme: dark) { .complete { background: #1F3320; color: #CFE8C6; } }
+  .complete { margin: 32px 0 0; padding: 14px 16px; border-radius: 6px; background: var(--fb-ok-bg); color: var(--fb-ok-fg); }
 
   .practice { margin-top: 40px; padding: 20px; border: 1.5px solid var(--ink); border-radius: 6px; }
   .practice h2 { font-size: 24px; margin: 0 0 6px; }

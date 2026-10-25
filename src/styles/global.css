@@ -19,6 +19,23 @@
   --piece-gote: #DCC08A;
   --piece-ink: #1C1B19;
   --focus: #B8361F;
+  --piece-seal: #B8361F;
+  --btn-hover: #000;
+  --btn-hover-ink: var(--washi);
+  --ok-text: #2F6B2A;
+  --no-text: #8A2A12;
+  --fb-ok-bg: #E3EFD6;
+  --fb-ok-fg: #1F4A1C;
+  --fb-no-bg: #F6E1D9;
+  --fb-no-fg: #6E1F0E;
+  --sq-no: #F2D3C8;
+  --won-bg: #E3EED6;
+  --won-fg: #1E4A1B;
+  --lost-bg: #F6DDD5;
+  --lost-fg: #7A2414;
+  --overlay-play: rgba(246, 241, 231, 0.95);
+  --overlay-learn: rgba(246, 241, 231, 0.93);
+  --star-off: rgba(255, 255, 255, 0.35);
 
   --f-display: 'Frank Ruhl Libre Variable', 'Frank Ruhl Libre', 'Noto Serif Hebrew', serif;
   --f-body: 'Heebo Variable', 'Heebo', 'Assistant', system-ui, sans-serif;
@@ -30,8 +47,11 @@
   color-scheme: light;
 }
 
+/* Dark palette. The inline script in Base.astro sets html[data-theme] to the visitor's choice, or to the
+   system's when they have none; the media query is only the fallback for a browser without scripts.
+   The two blocks must carry the same values. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     --washi: #17150F;
     --washi-2: #221F18;
     --ink: #EFE7D7;
@@ -42,8 +62,53 @@
     --seal-hover: #F28A70;
     --on-seal: #17150F;
     --focus: #F28A70;
+    --btn-hover: #fff;
+    --btn-hover-ink: #17150F;
+    --ok-text: #8FCB85;
+    --no-text: #F2A48F;
+    --fb-ok-bg: #1F3320;
+    --fb-ok-fg: #CFE8C6;
+    --fb-no-bg: #3A1F18;
+    --fb-no-fg: #F2CFC4;
+    --sq-no: #E9C2B4;
+    --won-bg: #22341F;
+    --won-fg: #CFE3B8;
+    --lost-bg: #3A1E17;
+    --lost-fg: #F2B9A8;
+    --overlay-play: rgba(23, 21, 15, 0.95);
+    --overlay-learn: rgba(23, 21, 15, 0.93);
+    --star-off: rgba(0, 0, 0, 0.35);
     color-scheme: dark;
   }
+}
+:root[data-theme="dark"] {
+  --washi: #17150F;
+  --washi-2: #221F18;
+  --ink: #EFE7D7;
+  --ink-2: #D6CCB8;
+  --muted: #B0A48E;
+  --rule: #3B352A;
+  --seal: #E8694C;
+  --seal-hover: #F28A70;
+  --on-seal: #17150F;
+  --focus: #F28A70;
+  --btn-hover: #fff;
+  --btn-hover-ink: #17150F;
+  --ok-text: #8FCB85;
+  --no-text: #F2A48F;
+  --fb-ok-bg: #1F3320;
+  --fb-ok-fg: #CFE8C6;
+  --fb-no-bg: #3A1F18;
+  --fb-no-fg: #F2CFC4;
+  --sq-no: #E9C2B4;
+  --won-bg: #22341F;
+  --won-fg: #CFE3B8;
+  --lost-bg: #3A1E17;
+  --lost-fg: #F2B9A8;
+  --overlay-play: rgba(23, 21, 15, 0.95);
+  --overlay-learn: rgba(23, 21, 15, 0.93);
+  --star-off: rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -101,8 +166,7 @@ img, svg { max-width: 100%; }
   border: 0; border-radius: 6px; text-decoration: none;
   font: 700 18px/1.2 var(--f-body); cursor: pointer;
 }
-.btn:hover { color: var(--washi); background: #000; }
-@media (prefers-color-scheme: dark) { .btn:hover { background: #fff; color: #17150F; } }
+.btn:hover { color: var(--btn-hover-ink); background: var(--btn-hover); }
 .btn svg { flex-shrink: 0; }
 .btn-ghost {
   background: transparent; color: var(--ink); border: 1.5px solid var(--ink);

@@ -116,8 +116,7 @@ const senteHand = handOf('sente');
   .pc.g::after { background: var(--piece-gote); }
   .pl, .pk { position: relative; z-index: 1; font-size: clamp(12px, 4.2vw, 19px); }
   .pl { font: 800 clamp(12px, 4.2vw, 19px)/1 var(--f-body); letter-spacing: -0.5px; }
-  .pc.pro .pl, .pc.pro .pk { color: var(--seal); }
-  @media (prefers-color-scheme: dark) { .pc.pro .pl, .pc.pro .pk { color: #B8361F; } }
+  .pc.pro .pl, .pc.pro .pk { color: var(--piece-seal); }
   .pk { display: none; font-family: var(--f-kanji); font-weight: 800; }
   :global(html[data-pieces="kanji"]) .pl { display: none; }
   :global(html[data-pieces="kanji"]) .pk { display: inline; }
@@ -129,7 +128,7 @@ const senteHand = handOf('sente');
   .bd:global(.live) .sq:hover { background: #F1DDB0; }
   .bd:global(.live) .sq:focus-visible { outline: 3px solid var(--ink); outline-offset: -3px; z-index: 3; }
   .sq:global(.ok) { background: #CFE3B8 !important; box-shadow: inset 0 0 0 3px #2F6B2A; }
-  .sq:global(.no) { background: #F2D3C8 !important; box-shadow: inset 0 0 0 3px var(--seal); animation: nudge 0.25s; }
+  .sq:global(.no) { background: var(--sq-no) !important; box-shadow: inset 0 0 0 3px var(--seal); animation: nudge 0.25s; }
   .sq :global(.mk) {
     position: absolute; top: 2px; inset-inline-end: 3px; z-index: 4;
     font: 800 clamp(11px, 3vw, 15px)/1 var(--f-body); color: var(--seal);
@@ -146,13 +145,8 @@ const senteHand = handOf('sente');
   /* Answer feedback, right under the board */
   .board-fb { margin: 8px 0 0; padding: 10px 12px; border-radius: 6px; font-weight: 700; font-size: 16px; line-height: 1.5; }
   .board-fb:empty { display: none; }
-  .board-fb:global(.is-ok) { background: #E3EFD6; color: #1F4A1C; }
-  .board-fb:global(.is-no) { background: #F6E1D9; color: #6E1F0E; }
-  @media (prefers-color-scheme: dark) {
-    .board-fb:global(.is-ok) { background: #1F3320; color: #CFE8C6; }
-    .board-fb:global(.is-no) { background: #3A1F18; color: #F2CFC4; }
-    .sq:global(.no) { background: #E9C2B4 !important; }
-  }
+  .board-fb:global(.is-ok) { background: var(--fb-ok-bg); color: var(--fb-ok-fg); }
+  .board-fb:global(.is-no) { background: var(--fb-no-bg); color: var(--fb-no-fg); }
 
   .hand { margin: 6px 0; color: var(--muted); }
   .cap { margin-top: 10px; font-size: 15px; color: var(--muted); line-height: 1.6; }

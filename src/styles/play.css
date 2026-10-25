@@ -27,10 +27,9 @@
 .play__overlay {
   position: absolute; inset: -56px -14px -40px 0; z-index: 20;
   display: flex; align-items: center; justify-content: center;
-  background: rgba(246, 241, 231, 0.95); backdrop-filter: blur(2px);
+  background: var(--overlay-play); backdrop-filter: blur(2px);
   border-radius: 8px; direction: rtl; overflow-y: auto;
 }
-@media (prefers-color-scheme: dark) { .play__overlay { background: rgba(23, 21, 15, 0.95); } }
 .play__overlay[hidden] { display: none; }
 .play__overlay .screen { width: 100%; max-width: 460px; padding: 16px 18px; text-align: center; }
 .play__overlay h2 { margin: 0 0 12px; font-size: clamp(24px, 5vw, 30px); }
@@ -105,13 +104,9 @@
 .play .result { padding: 14px; border-bottom: 1px solid var(--rule); }
 .play .result strong { display: block; font: 800 24px/1.3 var(--f-display); }
 .play .result p { margin: 4px 0 10px; line-height: 1.55; }
-.play .result.won { background: #E3EED6; color: #1E4A1B; }
-.play .result.lost { background: #F6DDD5; color: #7A2414; }
+.play .result.won { background: var(--won-bg); color: var(--won-fg); }
+.play .result.lost { background: var(--lost-bg); color: var(--lost-fg); }
 .play .result.draw { background: var(--washi-2); }
-@media (prefers-color-scheme: dark) {
-  .play .result.won { background: #22341F; color: #CFE3B8; }
-  .play .result.lost { background: #3A1E17; color: #F2B9A8; }
-}
 .play .result .buttons { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
 .play .result .btn { color: inherit; border-color: currentColor; }
 .play .result .btn.primary { color: var(--on-seal); border-color: var(--seal); }
