@@ -1,0 +1,77 @@
+---
+// Share cards (1200×630) that scripts/og/make.mjs photographs into public/og/<slug>.png.
+// Built only when OG_RENDER is set (npm run og), so the live site never has these pages.
+import '@fontsource-variable/heebo';
+import '@fontsource-variable/frank-ruhl-libre';
+import '@fontsource/shippori-mincho/800.css';
+import '../../styles/global.css';
+import Board from '../../components/Board.astro';
+import { ogCards, ogSlug, type OgCard } from '../../lib/og-cards';
+
+export function getStaticPaths() {
+  if (!process.env.OG_RENDER) return [];
+  return ogCards().map((card) => ({ params: { slug: ogSlug(card.path) }, props: { card } }));
+}
+const { card } = Astro.props as { card: OgCard };
+---
+<!doctype html>
+<html lang="he" dir="rtl" data-pieces="letters" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex" />
+    <title>{card.title}</title>
+  </head>
+  <body>
+    <div class="card" data-card>
+      <div class="side">
+        <div class="brand"><span class="seal" lang="ja">{card.seal}</span><span>שוגי ישראל</span></div>
+        {card.eyebrow && <p class="eyebrow">{card.eyebrow}</p>}
+        <h1 data-fit>{card.title}</h1>
+        <p class="sub">{card.sub}</p>
+        <p class="url">shogi.co.il</p>
+      </div>
+      <div class="board">
+        <Board sfen={card.sfen} highlight={card.highlight} zones={card.zones} kanji={card.kanji} toggle={false} />
+      </div>
+    </div>
+    <script>
+      // Once the fonts are in, long titles step down in size until they fit on two lines.
+      document.fonts.ready.then(() => {
+        const h = document.querySelector<HTMLElement>('[data-fit]')!;
+        let size = 76;
+        const lines = () => Math.round(h.getBoundingClientRect().height / (size * 1.12));
+        while (size > 48 && lines() > 2) { size -= 4; h.style.fontSize = size + 'px'; }
+        document.body.dataset.ready = '1';
+      });
+    </script>
+  </body>
+</html>
+
+<style>
+  body { margin: 0; background: var(--washi); }
+  .card {
+    width: 1200px; height: 630px; box-sizing: border-box; padding: 0 80px;
+    display: flex; align-items: center; justify-content: space-between; gap: 56px; overflow: hidden;
+    background: var(--washi);
+  }
+  .side { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+  .brand { display: flex; align-items: center; gap: 16px; font: 700 30px/1 var(--f-display); color: var(--ink); }
+  .brand .seal { width: 72px; height: 72px; border-radius: 8px; font-size: 46px; }
+  .eyebrow { margin: 34px 0 10px; font-size: 25px; font-weight: 700; color: var(--seal); letter-spacing: 0; }
+  h1 { font: 900 76px/1.12 var(--f-display); color: var(--ink); margin: 0; }
+  .brand + h1 { margin-top: 30px; }
+  .sub {
+    margin: 18px 0 0; font-size: 28px; line-height: 1.45; color: var(--ink-2);
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .url { margin: 24px 0 0; font: 700 26px/1 var(--f-body); color: var(--seal); direction: ltr; }
+
+  .board { width: 446px; flex-shrink: 0; }
+  .board :global(.board-fig) { margin: 0; max-width: none; }
+  .board :global(.bw) { display: block; }
+  .board :global(.files), .board :global(.ranks), .board :global(.hand.gote), .board :global(.alt), .board :global(.board-fb) { display: none; }
+  .board :global(.hand.sente) { margin: 12px 0 0; font-size: 22px; text-align: center; }
+  .board :global(.pl), .board :global(.pk) { font-size: 22px; }
+  .board :global(.pk) { font-size: 25px; }
+  .board :global(.bd) { box-shadow: 0 18px 30px -16px rgba(60, 40, 20, 0.6); }
+</style>
