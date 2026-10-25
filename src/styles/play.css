@@ -20,6 +20,10 @@
   padding: 62px 20px 46px 6px;
   touch-action: none;
 }
+/* phones: edge to edge, as the lessons' board (learn.css, which also narrows the rank numbers) */
+@media (max-width: 600px) {
+  .play__board { max-width: none; margin-inline: calc(-1 * var(--gutter)); padding-left: 2px; padding-right: 15px; }
+}
 .play__sg.sg-wrap { border: 2px solid var(--grid); border-radius: 2px; box-shadow: 0 10px 24px -14px rgba(60, 40, 20, 0.55); }
 .play__sgbox { position: relative; }
 .play__board:focus { outline: none; }
@@ -133,7 +137,7 @@
 /* ---------- phones: the setup takes the board's place; under the board, the turn and the buttons come first ---------- */
 @media (max-width: 859.98px) {
   .play.setup-open .play__sg { display: none; }
-  .play.setup-open .play__board { padding: 0; }
+  .play.setup-open .play__board { padding: 0; margin-inline: 0; }
   .play.setup-open .play__overlay { position: static; background: none; backdrop-filter: none; }
   .play .table-box { display: flex; flex-direction: column; }
   .play .table-box > .status-line, .play .table-box > .result { order: 1; border-bottom: 1px solid var(--rule); }
