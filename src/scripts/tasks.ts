@@ -32,6 +32,18 @@ function markDone() {
     try { localStorage.setItem(`done:${lessonId}`, '1'); } catch {}
     document.dispatchEvent(new CustomEvent('progress-changed'));
     document.querySelector<HTMLElement>('[data-lesson-complete]')?.removeAttribute('hidden');
+    // signed in with a starting point: where the course goes from here
+    const slot = document.querySelector<HTMLElement>('[data-next-step]');
+    if (slot && document.documentElement.hasAttribute('data-signed-in')) {
+      void import('../lib/next-step').then(({ courseNext }) => {
+        const n = courseNext();
+        if (!n) return;
+        const a = document.createElement('a');
+        a.href = n.href;
+        a.textContent = n.title;
+        slot.replaceChildren(' הצעד הבא במסלול: ', a, ` (${n.kind}).`);
+      });
+    }
   }
 }
 
