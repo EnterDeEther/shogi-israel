@@ -47,6 +47,7 @@ export const NAV: NavItem[] = [
       { href: '/learn/#cat-openings', label: 'פתיחות', sub: true },
       { href: '/learn/#cat-castles', label: 'מבצרים', sub: true },
       { href: '/learn/#cat-strategy', label: 'אסטרטגיה', sub: true },
+      { href: '/tsume/', label: 'בעיות מט', hint: 'אימון לסוף המשחק: מט ב־1 עד 7 מהלכים' },
     ],
   },
   {
