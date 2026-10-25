@@ -6,6 +6,9 @@
 
 /* ---------- layout (lila css/_layout.scss): run = side | board | table, map = side | stages ---------- */
 .wrap--learn { max-width: 1260px; }
+/* The island is drawn by script. Give it its margin and a screen's height before that, so nothing jumps (layout shift). */
+.wrap--learn { min-height: 100vh; min-height: 100svh; }
+.learn-island { margin: 20px 0 8px; }
 .learn { display: grid; gap: 20px; margin: 20px 0 8px; grid-template-columns: minmax(0, 1fr); }
 .learn__side { grid-area: side; min-width: 0; }
 .learn__main { grid-area: main; min-width: 0; }

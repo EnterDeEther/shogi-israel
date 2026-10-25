@@ -228,6 +228,9 @@ function status(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void): HTM
         el('button', { type: 'button', class: 'link', onclick: go(() => ctrl.openSetup()) }, 'הגדרות משחק'),
       ),
       kifButtons(ctrl),
+      // signed-out only (global.css hides it once html[data-signed-in] is set)
+      el('p', { class: 'small', 'data-signed-out-only': '' },
+        won ? 'כל הכבוד! ' : '', el('a', { href: '/account/?mode=signup' }, 'פתחו חשבון בחינם'), ' כדי לשמור את המשחקים שלכם ולהתקדם במסלול, בכל מכשיר.'),
     );
   }
   if (ctrl.engineError) {
@@ -286,13 +289,24 @@ function setupScreen(ctrl: PlayCtrl, draft: PlaySettings, go: (fn: () => void) =
   );
 }
 
+/** In-app browsers (Instagram, WhatsApp) often can't run the engines: make it easy to move the page to a real browser. */
+function copyLink(): HTMLElement {
+  const btn = el('button', { type: 'button', class: 'btn' }, 'העתקת הקישור לדף');
+  btn.addEventListener('click', () => {
+    navigator.clipboard?.writeText(location.href).then(() => { btn.textContent = 'הקישור הועתק. הדביקו אותו בדפדפן'; }, () => {});
+  });
+  return btn;
+}
+
 function unsupported(reason: 'isolation' | 'wasm'): HTMLElement {
   return el('div', { class: 'screen' },
     el('h2', {}, 'הדפדפן הזה לא מריץ את המחשב'),
     el('p', {}, reason === 'wasm'
       ? 'המחשב רץ אצלכם בדפדפן ודורש דפדפן עדכני. נסו גרסה עדכנית של Chrome, Firefox, Edge או Safari.'
       : 'הדף נפתח בתוך אפליקציה שחוסמת את מה שהמחשב צריך. פתחו את הקישור בדפדפן הרגיל (Chrome או Safari).'),
-    el('p', {}, 'בינתיים אפשר לשחק נגד המחשב ב־', el('a', { href: 'https://lishogi.org', rel: 'noopener' }, 'Lishogi'), '.'),
+    el('p', {}, 'בינתיים אפשר להתאמן כאן גם בדפדפן הזה: ',
+      el('a', { href: '/learn/' }, 'שיעורים אינטראקטיביים'), ' או ', el('a', { href: '/tsume/' }, 'בעיות מט'), '.'),
+    reason === 'isolation' ? copyLink() : null,
   );
 }
 
