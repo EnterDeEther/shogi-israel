@@ -39,6 +39,7 @@ export const NAV: NavItem[] = [
       { href: '/lishogi/', label: 'המדריך לליש׳וגי', hint: 'לשחק אונליין מול כל העולם' },
       { href: '/kif/', label: 'רישום משחקים (KIF)' },
       { href: '/clock/', label: 'משחק על זמן', hint: 'איך השעון עובד' },
+      { href: '/history/', label: 'ההיסטוריה של השוגי', hint: 'מ־1058 ועד היום' },
     ],
   },
   {
