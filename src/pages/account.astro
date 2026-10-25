@@ -176,6 +176,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       $('[data-stat="levels"]').textContent = `${s.levelsDone} / ${s.levels}`;
       $('[data-stat="stages"]').textContent = `${s.stagesDone} / ${s.stages}`;
       $('[data-stat="rules"]').textContent = String(s.rulesDone);
+      await acc.syncGames();
       const g = await acc.gameSummary();
       $('[data-games]').hidden = g.played === 0;
       $('[data-no-games]').hidden = g.played > 0;

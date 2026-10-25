@@ -65,3 +65,10 @@ export function stats(p: SyncedProgress, levelCounts: Record<string, number>): S
 export const NICKNAME_RE = /^[A-Za-z0-9\u05D0-\u05EA_-]{3,16}$/;
 /** Same reserved words as the database check: staff-looking names are refused. */
 export const RESERVED_RE = /(admin|moderator|support|shogi.?israel|official|staff|system|root|מנהל|הנהלה|שוגי.?ישראל|רשמי|צוות|תמיכה)/i;
+
+/** A finished game against the computer, from the player's side. Under two moves counts as abandoned. */
+export function gameResult(r: { moves: string[]; playerColor: string; result?: { winner?: string } }): 'win' | 'loss' | 'draw' | 'abort' {
+  if (!r.result || r.moves.length < 2) return 'abort';
+  if (!r.result.winner) return 'draw';
+  return r.result.winner === r.playerColor ? 'win' : 'loss';
+}

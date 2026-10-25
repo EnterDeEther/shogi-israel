@@ -3,7 +3,8 @@
 // progress stays in this browser only.
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js';
 import { AUTH_STORAGE_KEY, SUPABASE_KEY, SUPABASE_URL } from './account-config';
-import { emptyProgress, LEARN_KEY, merge, normalize, RULES_PREFIX, same, type SyncedProgress } from './progress-sync';
+import type { GameRecord } from '../play/record';
+import { emptyProgress, gameResult, LEARN_KEY, merge, normalize, RULES_PREFIX, same, type SyncedProgress } from './progress-sync';
 
 let client: SupabaseClient | null = null;
 export function supabase(): SupabaseClient {
@@ -38,6 +39,7 @@ export async function setPassword(password: string) {
 export async function signOut() {
   await supabase().auth.signOut();
   writeLocal(emptyProgress());
+  clearLocalGames();
 }
 export async function deleteAccount() {
   const { error } = await supabase().rpc('delete_my_account');
@@ -73,6 +75,55 @@ export async function gameSummary(): Promise<{ played: number; wins: number; los
     losses: rows.filter((r) => r.result === 'loss').length,
     draws: rows.filter((r) => r.result === 'draw').length,
   };
+}
+
+const HISTORY_KEY = 'shogi-il.play.history'; // finished games on this device (src/play/record.ts)
+const SENT_KEY = 'shogi-il.play.sent'; // ids of those already in the account
+
+function readJson<T>(key: string, fallback: T): T {
+  try {
+    const v = JSON.parse(localStorage.getItem(key) || 'null');
+    return v ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function clearLocalGames() {
+  try {
+    localStorage.removeItem(HISTORY_KEY);
+    localStorage.removeItem(SENT_KEY);
+  } catch { /* fine */ }
+}
+
+/** Log this device's finished games that the account doesn't have yet. The (user, client_id) key drops repeats. */
+export async function syncGames(): Promise<number> {
+  const session = await getSession();
+  if (!session) return 0;
+  const sent = new Set(readJson<string[]>(SENT_KEY, []));
+  const todo = readJson<GameRecord[]>(HISTORY_KEY, []).filter((r) => r?.id && r.result && !sent.has(r.id));
+  if (!todo.length) return 0;
+  const { recordKif } = await import('../play/record-kif');
+  const rows = todo.map((r) => {
+    let kif: string | null = null;
+    try { kif = recordKif(r); } catch { /* bad record: log the result without the file */ }
+    return {
+      user_id: session.user.id,
+      client_id: r.id,
+      opponent: 'ai',
+      level: r.level,
+      color: r.playerColor,
+      result: gameResult(r),
+      moves: Math.min(r.moves.length, 1000),
+      kif,
+      played_at: r.endedAt ?? r.startedAt,
+    };
+  });
+  const { error } = await supabase().from('games').upsert(rows, { onConflict: 'user_id,client_id', ignoreDuplicates: true });
+  if (error) return 0;
+  for (const r of todo) sent.add(r.id);
+  try { localStorage.setItem(SENT_KEY, JSON.stringify([...sent].slice(-500))); } catch { /* sent again next time; harmless */ }
+  return rows.length;
 }
 
 // ---------- progress ----------
@@ -134,5 +185,7 @@ export function startSync() {
   // "reset my progress" in the lessons: overwrite the account's copy instead of merging it back
   document.addEventListener('progress-reset', () => void pushLocal());
   window.addEventListener('pagehide', () => { if (timer) void syncProgress(); });
+  document.addEventListener('shogi-il:game-end', () => void syncGames());
   void syncProgress();
+  void syncGames();
 }

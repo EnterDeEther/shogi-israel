@@ -4,12 +4,13 @@
 // Page is RTL; the board is LTR and never mirrors. Plain DOM, same helpers as the lessons.
 // AGPL-3.0-or-later, like the rest of this site.
 import { el, icon, pieceSetSwitch } from '../learn/view';
-import { copyText, downloadKif, type KifEnd, kifFileName, LISHOGI_IMPORT_URL, makeKif } from '../lib/kif';
+import { copyText, downloadKif, kifFileName, LISHOGI_IMPORT_URL } from '../lib/kif';
 import type PlayCtrl from './ctrl';
 import type { PlaySettings } from './ctrl';
 import type { GameEnd } from './game';
 import { engineLabel, getLevel, levels } from './levels';
 import { highestBeaten } from './record';
+import { recordKif } from './record-kif';
 
 const SIDE: Record<Color, string> = { sente: 'פותח', gote: 'משיב' };
 const MARK: Record<Color, string> = { sente: '☗', gote: '☖' };
@@ -180,31 +181,8 @@ function controls(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void, op
   );
 }
 
-const KIF_REASON: Record<GameEnd['reason'], KifEnd['reason']> = {
-  mate: 'checkmate',
-  stalemate: 'checkmate', // no legal move: a loss, written like a mate
-  resign: 'resign',
-  time: 'timeout',
-  repetition: 'repetition',
-  perpetual: 'repetition', // with a winner: the side that gave perpetual check lost
-  impasse: 'impasse',
-  draw: 'repetition',
-};
-
 /** The finished game as a KIF file: download, copy, or take it to Lishogi's analysis board. */
-function kifText(ctrl: PlayCtrl): string {
-  const r = ctrl.record!;
-  const ai = `מחשב רמה ${r.level} (${r.engine})`;
-  return makeKif({
-    startSfen: r.startSfen,
-    moves: r.moves,
-    sente: r.playerColor === 'sente' ? 'שחקן' : ai,
-    gote: r.playerColor === 'gote' ? 'שחקן' : ai,
-    date: new Date(r.startedAt),
-    event: 'משחק נגד המחשב',
-    end: r.result && { reason: KIF_REASON[r.result.reason], winner: r.result.winner },
-  });
-}
+const kifText = (ctrl: PlayCtrl): string => recordKif(ctrl.record!);
 
 function kifButtons(ctrl: PlayCtrl): HTMLElement {
   const flash = (btn: HTMLElement, text: string) => {

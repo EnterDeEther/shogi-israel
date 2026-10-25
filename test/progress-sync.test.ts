@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { merge, normalize, NICKNAME_RE, RESERVED_RE, stats } from '../src/lib/progress-sync';
+import { gameResult, merge, normalize, NICKNAME_RE, RESERVED_RE, stats } from '../src/lib/progress-sync';
 
 describe('progress sync', () => {
   test('merge keeps the best score per level and every finished lesson', () => {
@@ -26,5 +26,18 @@ describe('progress sync', () => {
     for (const bad of ['ab', 'a b', 'x'.repeat(17), 'דין!', '']) expect(NICKNAME_RE.test(bad)).toBe(false);
     for (const r of ['Admin', 'ShogiIsrael', 'shogi_israel', 'מנהל_האתר', 'שוגי-ישראל']) expect(RESERVED_RE.test(r)).toBe(true);
     expect(RESERVED_RE.test('שחקן_שוגי')).toBe(false);
+  });
+});
+
+describe('game result', () => {
+  const g = (moves: number, winner?: string, playerColor = 'sente') => ({ moves: Array(moves).fill('7g7f'), playerColor, result: { winner } });
+  test('from the player side', () => {
+    expect(gameResult(g(40, 'sente'))).toBe('win');
+    expect(gameResult(g(40, 'sente', 'gote'))).toBe('loss');
+    expect(gameResult(g(40))).toBe('draw');
+  });
+  test('unfinished or too short is abandoned', () => {
+    expect(gameResult(g(1, 'gote'))).toBe('abort');
+    expect(gameResult({ moves: ['7g7f', '3c3d'], playerColor: 'sente' })).toBe('abort');
   });
 });
