@@ -4,6 +4,9 @@
 /** The public address. Contact-form messages go here too. */
 export const CONTACT_EMAIL = 'contact@shogi.co.il';
 
+/** The form shows only in builds that can send it (RESEND_API_KEY set in Vercel); until then pages show the email link. */
+export const CONTACT_FORM_LIVE = typeof process !== 'undefined' && Boolean(process.env.RESEND_API_KEY);
+
 export const LIMITS = { name: 80, email: 200, message: 4000, minMessage: 10 } as const;
 /** A person needs a few seconds to fill the form; faster than this is a bot. */
 export const MIN_FILL_MS = 3000;
