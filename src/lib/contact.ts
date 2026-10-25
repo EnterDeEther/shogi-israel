@@ -7,6 +7,9 @@ export const CONTACT_EMAIL = 'contact@shogi.co.il';
 /** The form shows only in builds that can send it (RESEND_API_KEY set in Vercel); until then pages show the email link. */
 export const CONTACT_FORM_LIVE = typeof process !== 'undefined' && Boolean(process.env.RESEND_API_KEY);
 
+/** Cloudflare Turnstile (bot check) public site key, for shogi.co.il and *.vercel.app. The secret stays in Vercel. */
+export const TURNSTILE_SITE_KEY = '0x4AAAAAAFleBpVksiOS6Xuk';
+
 export const LIMITS = { name: 80, email: 200, message: 4000, minMessage: 10 } as const;
 /** A person needs a few seconds to fill the form; faster than this is a bot. */
 export const MIN_FILL_MS = 3000;
@@ -55,4 +58,18 @@ export function contactEmail(input: ContactInput, to: string, from: string) {
     subject: `פנייה מהאתר: ${input.name}`,
     text: `${input.message}\n\n---\nמאת: ${input.name} <${input.email}>\nנשלח מטופס יצירת הקשר ב־shogi.co.il. כדי לענות, השיבו למייל הזה.`,
   };
+}
+
+/** Asks Cloudflare whether a Turnstile token is real, unused and from our site. Network errors count as a fail. */
+export async function verifyTurnstile(token: string, secret: string, ip?: string | null, doFetch: typeof fetch = fetch) {
+  if (!token) return false;
+  const body = new URLSearchParams({ secret, response: token });
+  if (ip) body.set('remoteip', ip);
+  try {
+    const res = await doFetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body });
+    const data = (await res.json()) as { success?: boolean };
+    return data.success === true;
+  } catch {
+    return false;
+  }
 }

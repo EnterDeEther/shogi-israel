@@ -1,6 +1,7 @@
 // Vercel Function: POST /api/contact. Sends a contact-form message to CONTACT_EMAIL through Resend.
 // Needs the RESEND_API_KEY environment variable (a Resend key with sending access for shogi.co.il).
-import { CONTACT_EMAIL, checkContact, contactEmail } from '../src/lib/contact.js'; // .js: Node ESM needs the extension once Vercel compiles this
+// With TURNSTILE_SECRET_KEY set, a message also needs a valid Cloudflare Turnstile token.
+import { CONTACT_EMAIL, checkContact, contactEmail, verifyTurnstile } from '../src/lib/contact.js'; // .js: Node ESM needs the extension once Vercel compiles this
 
 const FROM = 'שוגי ישראל <noreply@shogi.co.il>';
 const ALLOWED_ORIGIN = /^https:\/\/((www\.)?shogi\.co\.il|shogi-israel-[a-z0-9-]+-enterdeether\.vercel\.app)$/;
@@ -29,6 +30,13 @@ export async function POST(request: Request): Promise<Response> {
   const checked = checkContact(fields);
   // Bots get the same answer as people, so they learn nothing.
   if (!checked.ok) return checked.error === 'spam' ? reply(200, 'sent') : reply(400, 'invalid', checked.error);
+
+  const turnstileSecret = process.env.TURNSTILE_SECRET_KEY;
+  if (turnstileSecret) {
+    const token = typeof fields['cf-turnstile-response'] === 'string' ? (fields['cf-turnstile-response'] as string) : '';
+    const ip = request.headers.get('x-real-ip') ?? request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
+    if (!(await verifyTurnstile(token, turnstileSecret, ip))) return reply(400, 'invalid', 'captcha');
+  }
 
   const key = process.env.RESEND_API_KEY;
   if (!key) return reply(503, 'error', 'not-configured');

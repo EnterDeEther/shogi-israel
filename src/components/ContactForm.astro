@@ -1,6 +1,6 @@
 ---
 // Contact form. Posts to /api/contact, which emails the message to CONTACT_EMAIL (see api/contact.ts).
-import { LIMITS } from '../lib/contact';
+import { LIMITS, TURNSTILE_SITE_KEY } from '../lib/contact';
 ---
 <form class="contact" method="post" action="/api/contact" novalidate data-contact>
   <div class="contact__field">
@@ -22,16 +22,20 @@ import { LIMITS } from '../lib/contact';
   </div>
   <input type="hidden" name="startedAt" value="" />
   <p class="small muted">נשתמש בשם ובמייל רק כדי לענות לכם. <a href="/privacy/#contact-form">מדיניות פרטיות</a></p>
+  <div class="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} data-language="he" data-theme="auto" data-size="flexible"></div>
   <button type="submit" class="btn">שליחה</button>
   <p class="contact__status" role="status" data-status></p>
 </form>
 
+<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <script>
+  type WithTurnstile = Window & { turnstile?: { reset: (el?: Element) => void } };
   const messages = {
     sent: 'ההודעה נשלחה. תודה! נענה לכם במייל.',
     name: 'כתבו את השם שלכם.',
     email: 'בדקו את כתובת המייל.',
     message: 'ההודעה קצרה מדי. כתבו לפחות כמה מילים.',
+    captcha: 'רגע, Cloudflare עדיין בודק שאתם לא רובוט. חכו שהבדיקה תסתיים ונסו שוב, או כתבו לנו ישירות במייל.',
     error: 'משהו השתבש והשליחה לא הצליחה. נסו שוב, או כתבו לנו ישירות במייל.',
     sending: 'שולחים…',
   } as const;
@@ -60,6 +64,11 @@ import { LIMITS } from '../lib/contact';
         (form.elements.namedItem(field) as HTMLElement).focus();
         return;
       }
+      const captcha = form.querySelector<HTMLInputElement>('[name="cf-turnstile-response"]');
+      if (form.querySelector('.cf-turnstile') && !captcha?.value) {
+        show('captcha');
+        return;
+      }
       button.disabled = true;
       show('sending');
       try {
@@ -72,7 +81,7 @@ import { LIMITS } from '../lib/contact';
         if (data.ok) {
           form.reset();
           show('sent', true);
-        } else if (data.error === 'name' || data.error === 'email' || data.error === 'message') {
+        } else if (data.error === 'name' || data.error === 'email' || data.error === 'message' || data.error === 'captcha') {
           show(data.error);
         } else {
           show('error');
@@ -80,6 +89,8 @@ import { LIMITS } from '../lib/contact';
       } catch {
         show('error');
       } finally {
+        // A Turnstile token works once; get a fresh one for the next send.
+        (window as WithTurnstile).turnstile?.reset(form.querySelector('.cf-turnstile') ?? undefined);
         button.disabled = false;
       }
     });
