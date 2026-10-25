@@ -48,6 +48,7 @@ function setupBoardTask(task: HTMLElement, answer: string) {
   });
   const squares = [...grid.querySelectorAll<HTMLElement>('[data-sq]')];
   const hint = task.dataset.hint;
+  const why = task.dataset.why;
   let misses = 0;
   grid.classList.add('live');
   grid.removeAttribute('aria-hidden');
@@ -80,7 +81,7 @@ function setupBoardTask(task: HTMLElement, answer: string) {
     clearMisses();
     if (matches(answer, sq)) {
       mark(s, 'ok', '✓');
-      say('is-ok', `נכון! משבצת ${sq}.`);
+      say('is-ok', `נכון! משבצת ${sq}.` + (why ? ` ${why}` : ''));
       task.classList.add('done');
       fig.classList.add('revealed');
       const label = task.querySelector('.task-label');

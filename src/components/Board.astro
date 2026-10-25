@@ -12,9 +12,10 @@ interface Props {
   toggle?: boolean; // show the letters/kanji switch above the board (default true)
   size?: 'full' | 'compact';
   reveal?: boolean; // keep highlight/zones hidden until the Task under this board is answered correctly
+  kanji?: boolean; // always show kanji, whatever the site-wide switch says (for lessons on reading the pieces)
 }
 
-const { sfen, highlight = '', zones = false, caption, toggle = true, size = 'full', reveal = false } = Astro.props;
+const { sfen, highlight = '', zones = false, caption, toggle = true, size = 'full', reveal = false, kanji = false } = Astro.props;
 const pos = parseSfen(sfen);
 const hl = new Set(highlight.split(',').map((s) => s.trim()).filter(Boolean));
 const files = [9, 8, 7, 6, 5, 4, 3, 2, 1];
@@ -27,8 +28,8 @@ const handOf = (side: 'sente' | 'gote') =>
 const goteHand = handOf('gote');
 const senteHand = handOf('sente');
 ---
-<figure class:list={['board-fig', size, { reveal }]} data-board>
-  {toggle && (
+<figure class:list={['board-fig', size, { reveal, kanji }]} data-board>
+  {toggle && !kanji && (
     <div class="board-head">
       <span class="small muted">סימון הכלים</span>
       <PieceToggle />
@@ -120,6 +121,8 @@ const senteHand = handOf('sente');
   .pk { display: none; font-family: var(--f-kanji); font-weight: 800; }
   :global(html[data-pieces="kanji"]) .pl { display: none; }
   :global(html[data-pieces="kanji"]) .pk { display: inline; }
+  .kanji .pl { display: none; }
+  .kanji .pk { display: inline; }
 
   /* Interactive states, switched on by the Task script */
   .bd:global(.live) .sq { cursor: pointer; -webkit-tap-highlight-color: transparent; }
