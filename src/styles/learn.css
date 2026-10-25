@@ -382,6 +382,11 @@ html[data-pieces="kanji"] :is(.learn, .play) piece::after { content: var(--k); f
 .learn__coach .recap ol { margin: 4px 0 14px; padding-inline-start: 1.2em; font: 500 15px/1.55 var(--f-body); }
 .learn__coach .recap li { margin-bottom: 6px; }
 .learn__coach .recap .mv { font-weight: 800; }
+.learn__coach .recap .rep { display: block; margin-top: 2px; font-size: 14px; color: var(--muted); }
+.learn__coach .recap .mv.opp::before, .learn__coach .reply .mv::before { content: '△ '; }
+.learn__coach .reply { margin: 0 0 12px; padding: 10px 12px; border-radius: 8px; background: var(--washi-2); }
+.learn__coach .reply p { margin: 0; font: 500 15px/1.55 var(--f-body); }
+.learn__coach .reply .eyebrow { margin-bottom: 2px; }
 .learn__coach .buttons { display: flex; flex-wrap: wrap; gap: 10px; }
 .learn__coach .buttons .btn { flex: 1 1 auto; justify-content: center; }
 .learn__coach .coach-nav { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--rule); }

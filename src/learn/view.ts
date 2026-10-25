@@ -70,7 +70,7 @@ const sealStages: Record<string, string> = {
   fourthFileRook: '四', centralRook: '中', thirdFileRook: '三', yagura: '矢', bishopExchange: '角', ishida: '石',
   quickIshida: '罠', opposingRook: '向', doubleRangingRook: '相', sidePawn: '横', twistingRook: '捻',
   rangingCastles: '美', staticCastles: '舟', primitiveClimbingSilver: '棒', climbingSilverVsRanging: '急', sittingSilver: '腰',
-  chainedSilver: '鎌', bishopClimbingSilver: '登', rapidSilver: '早', bishopSittingSilver: '掛', spearingSparrow: '雀',
+  chainedSilver: '鎌', bishopClimbingSilver: '登', rapidSilver: '早', bishopSittingSilver: '掛', spearingSparrow: '雀', whatIf: '誤',
 };
 export function stageImg(key: string): HTMLElement {
   const role = pieceStages[key];
@@ -418,7 +418,7 @@ function renderLesson(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go, stageLin
 // arrows (or a swipe) step back through earlier tips. The floating bubble opens the popup again; the minimize
 // button keeps it closed until the learner taps the bubble (new tips then show a dot on the bubble).
 // Nothing moves on until the learner presses a button.
-type TipKind = 'intro' | 'move' | 'fail' | 'done';
+type TipKind = 'intro' | 'move' | 'reply' | 'fail' | 'done';
 interface Tip { kind: TipKind; idx?: number }
 const coach = { open: false, minimized: loadMinimized(), view: null as number | null, key: '', unread: false };
 function loadMinimized(): boolean {
@@ -485,12 +485,24 @@ function makeDraggable(bubble: HTMLElement) {
 
 function levelTips(ctrl: LearnCtrl): Tip[] {
   const vm = ctrl.vm!;
-  const made = vm.usiCList.filter((u) => u.color === vm.level.color).length;
+  const { level } = vm;
+  const made = vm.usiCList.filter((u) => u.color === level.color).length;
   const failed = vm.levelState === 'fail';
+  // the opponent's replies that follow the plan (a punishment after a wrong move is not one of them)
+  const sc = level.scenario ?? [];
+  let replied = 0;
+  for (let i = 0; i < vm.usiCList.length && sc[i]?.usi === vm.usiCList[i].usi; i++) if (sc[i].color !== level.color) replied++;
   const tips: Tip[] = [{ kind: 'intro' }];
-  if (vm.level.why) for (let i = 0; i < (failed ? made - 1 : made); i++) tips.push({ kind: 'move', idx: i });
+  if (level.why)
+    for (let i = 0; i < (failed ? made - 1 : made); i++) {
+      tips.push({ kind: 'move', idx: i });
+      if (level.replies?.[i] && i < replied) tips.push({ kind: 'reply', idx: i });
+    }
   if (failed) tips.push({ kind: 'fail', idx: made - 1 });
-  if (vm.levelState === 'completed') tips.push({ kind: 'done' });
+  if (vm.levelState === 'completed') {
+    if (tips[tips.length - 1].kind === 'reply') tips.pop(); // the last reply is shown inside the summary
+    tips.push({ kind: 'done' });
+  }
   return tips;
 }
 
@@ -551,6 +563,9 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
   const made = vm.usiCList.filter((u) => u.color === level.color).length;
   const total = level.why?.length ?? 0;
   const name = (i?: number) => (i === undefined ? undefined : level.moveNames?.[i]);
+  const reply = (i: number) => el('div', { class: 'reply' },
+    el('p', { class: 'eyebrow' }, i18n('il_opponentPlayed'), ' ', el('bdi', { dir: 'ltr', class: 'mv' }, level.replyNames?.[i] ?? '')),
+    el('p', {}, rich(level.replies![i])));
   const btn = (label: string, fn: () => void, primary = true, fid = 'coach-main') =>
     el('button', { type: 'button', class: `btn${primary ? ' primary' : ''}`, 'data-fid': fid, 'data-coach-focus': primary, onclick: go(fn) }, label);
   const last = level.id === stage.levels.length;
@@ -560,7 +575,7 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
     body = [
       el('h2', {}, i18n('il_coachIntroTitle')),
       el('p', { class: 'lead' }, rich(level.goal)),
-      total ? el('p', { class: 'hint' }, i18n('il_coachIntroWhy')) : null,
+      total ? el('p', { class: 'hint' }, i18n(level.replies ? 'il_coachIntroWhyReplies' : 'il_coachIntroWhy')) : null,
       !knowsBubble && el('div', { class: 'how' }, icon('bulb'), el('p', {}, rich(i18n('il_coachHow')))),
       isCurrent && el('div', { class: 'buttons' }, btn(i18n('il_start'), () => setOpen(false))),
     ];
@@ -574,13 +589,26 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
       isCurrent && el('div', { class: 'buttons' },
         btn(vm.waiting ? i18n('il_continueOpponent') : i18n('il_continue'), () => setOpen(false))),
     ];
+  } else if (tip.kind === 'reply') {
+    const i = tip.idx!;
+    body = [
+      el('h2', {}, i18n('il_opponentPlayed'), ' ', el('bdi', { dir: 'ltr' }, level.replyNames?.[i] ?? '')),
+      el('p', { class: 'lead' }, rich(level.replies![i])),
+      isCurrent && el('div', { class: 'buttons' }, btn(i18n('il_yourTurn'), () => setOpen(false))),
+    ];
   } else if (tip.kind === 'done') {
+    const lastIdx = (level.why?.length ?? 0) - 1;
+    const lastReply = level.replies?.[lastIdx] && vm.usiCList.length === level.scenario?.length && vm.usiCList[vm.usiCList.length - 1].color !== level.color;
     const recap = level.why && level.moveNames
       ? el('div', { class: 'recap' },
           el('p', { class: 'eyebrow' }, i18n('il_recapTitle')),
-          el('ol', {}, ...level.why.map((w, i) => el('li', {}, el('bdi', { dir: 'ltr', class: 'mv' }, level.moveNames![i]), ' ', rich(w)))))
+          el('ol', {}, ...level.why.map((w, i) => el('li', {}, el('bdi', { dir: 'ltr', class: 'mv' }, level.moveNames![i]), ' ', rich(w),
+            level.replies?.[i] && level.replyNames?.[i] && i < lastIdx
+              ? el('span', { class: 'rep' }, ' ', el('bdi', { dir: 'ltr', class: 'mv opp' }, level.replyNames[i]), ' ', rich(level.replies[i]))
+              : null))))
       : el('p', { class: 'lead' }, el('span', { class: 'muted' }, i18n('il_doneWith')), ' ', rich(level.goal.replace(/ המהלכים.*$/, '')));
     body = [
+      lastReply ? reply(lastIdx) : null,
       el('h2', {}, congratsFor(`${stage.key}${level.id}`), ' ', stars(vm.score ?? 0)),
       recap,
       el('div', { class: 'buttons' },
