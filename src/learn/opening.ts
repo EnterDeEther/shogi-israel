@@ -1,6 +1,6 @@
 // Shogi Israel (shogi.co.il), 2026-10-24: builds opening, strategy and castle stages from a full move line,
 // so each lesson is written as data (src/learn/stages/openings-he.ts) instead of hand-computed positions.
-// Lines come from the openings research (knowledge/content/learn/openings-research.md), checked move by move.
+// Every line is checked move by move by test/stages.test.ts.
 // AGPL-3.0-or-later, like the rest of src/learn/.
 
 import { makeSfen, parseSfen } from 'shogiops/sfen';
@@ -10,7 +10,7 @@ import { i18nFormat } from './i18n';
 import type { IncompleteLevel, IncompleteStage, Level, UsiWithColor } from './interfaces';
 import { createLevel } from './level';
 import { scenarioFailure, scenarioSuccess } from './assert';
-import { circle } from './shapes';
+import { arrow, circle } from './shapes';
 import { createScenario, currentPosition } from './util';
 
 const START = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1';
@@ -18,6 +18,7 @@ const START = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1';
 export interface OpeningLevel {
   aim: string; // what this part of the opening is for
   why: string[]; // one reason per sente move in this part
+  replies?: string[]; // one note per gote reply in this part, so the learner knows what the opponent is doing
 }
 export interface OpeningStage {
   key: string;
@@ -28,6 +29,21 @@ export interface OpeningStage {
   line: string; // USI from the start position, sente and gote alternating
   skip?: number; // sente moves already played before the stage starts (taught in an earlier stage)
   levels: OpeningLevel[];
+}
+export interface WhatIfLevel {
+  aim: string; // what the opponent got wrong, and what to look for
+  setup: string; // USI from the start position up to and including the opponent's mistake
+  line: string; // the learner's punishment, with the opponent's replies
+  why: string[];
+  replies?: string[];
+}
+export interface WhatIfStage {
+  key: string;
+  title: string;
+  subtitle: string;
+  intro: string;
+  complete: string;
+  levels: WhatIfLevel[];
 }
 export interface CastleLevel {
   aim: string;
@@ -79,7 +95,8 @@ export function openingStage(d: OpeningStage): IncompleteStage {
   const levels: IncompleteLevel[] = d.levels.map((l) => {
     const sfen = makeSfen(pos);
     const slice = plies.slice(p, Math.min(p + 2 * l.why.length, plies.length));
-    const western = slice.map((u) => playWestern(pos, u)).filter((_, i) => i % 2 === 0);
+    const all = slice.map((u) => playWestern(pos, u));
+    const western = all.filter((_, i) => i % 2 === 0);
     p += slice.length;
     return {
       goal: `${l.aim} ${i18nFormat('il_movesList', western.join(', '))}`,
@@ -90,6 +107,39 @@ export function openingStage(d: OpeningStage): IncompleteStage {
       scenario: createScenario(slice, 'sente', true),
       why: l.why,
       moveNames: western,
+      replies: l.replies,
+      replyNames: all.filter((_, i) => i % 2 === 1),
+    };
+  });
+  return {
+    key: d.key, title: d.title, subtitle: d.subtitle, intro: d.intro, complete: d.complete,
+    levels: levels.map((l, i) => createLevel(l, i)),
+  };
+}
+
+/** The opponent has just made a typical opening mistake (shown with a red arrow); the learner punishes it. */
+export function whatIfStage(d: WhatIfStage): IncompleteStage {
+  const levels: IncompleteLevel[] = d.levels.map((l) => {
+    const pos = startPos();
+    const setup = l.setup.trim().split(/\s+/);
+    setup.forEach((u) => playWestern(pos, u));
+    const sfen = makeSfen(pos);
+    const mistake = parseUsi(setup[setup.length - 1])!;
+    const slice = l.line.trim().split(/\s+/);
+    const all = slice.map((u) => playWestern(pos, u));
+    return {
+      goal: l.aim,
+      sfen,
+      nbMoves: l.why.length,
+      success: scenarioSuccess,
+      failure: scenarioFailure,
+      scenario: createScenario(slice, 'sente', true),
+      drawShapes: (_level: Level, usiCList: UsiWithColor[]) =>
+        usiCList.length || !('from' in mistake) ? [] : [arrow(makeSquareName(mistake.from), makeSquareName(mistake.to), 'red')],
+      why: l.why,
+      moveNames: all.filter((_, i) => i % 2 === 0),
+      replies: l.replies,
+      replyNames: all.filter((_, i) => i % 2 === 1),
     };
   });
   return {

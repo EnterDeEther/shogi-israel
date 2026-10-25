@@ -12,7 +12,7 @@ export function getStaticPaths() {
 const { stage } = Astro.params;
 const { title, subtitle } = Astro.props;
 ---
-<Base title={`${title} · שיעור אינטראקטיבי`} description={`תרגול אינטראקטיבי בשוגי: ${title}. ${subtitle}`.replace(/\*\*/g, '')} noindex>
+<Base title={`${title} · שיעור אינטראקטיבי`} description={`תרגול אינטראקטיבי בשוגי: ${title}. ${subtitle}`.replace(/\*\*/g, '')}>
   <div class="wrap wrap--learn">
     <LearnStage stage={stage} />
   </div>

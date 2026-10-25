@@ -1,8 +1,27 @@
 ---
+import { isSection, liveNav } from '../lib/nav';
+
 const year = new Date().getFullYear();
+const items = liveNav();
+const sections = items.filter(isSection);
+const solos = items.filter((i) => !isSection(i));
 ---
 <footer class="site-footer">
   <div class="wrap inner">
+    <nav aria-label="מפת האתר" class="sitemap">
+      {sections.map((s) => (
+        <div>
+          <h2>{s.label}</h2>
+          <ul>{s.links.map((l) => <li><a href={l.href} rel={l.external ? 'noopener' : undefined}>{l.label}</a></li>)}</ul>
+        </div>
+      ))}
+      {solos.length > 0 && (
+        <div>
+          <h2>עוד</h2>
+          <ul>{solos.map((l) => <li><a href={l.href} rel={l.external ? 'noopener' : undefined}>{l.label}</a></li>)}</ul>
+        </div>
+      )}
+    </nav>
     <nav aria-label="קישורים משפטיים ומידע" class="legal">
       <a href="/accessibility/">הצהרת נגישות</a>
       <a href="/privacy/">מדיניות פרטיות</a>
@@ -18,6 +37,12 @@ const year = new Date().getFullYear();
 <style>
   .site-footer { margin-top: 72px; border-top: 1px solid var(--rule); padding: 32px 0 40px; }
   .inner { display: flex; flex-direction: column; gap: 10px; }
+  .sitemap { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 24px; padding-bottom: 20px; margin-bottom: 10px; border-bottom: 1px solid var(--rule); }
+  .sitemap h2 { font-family: inherit; font-size: 13px; font-weight: 700; color: var(--muted); margin: 0 0 6px; }
+  .sitemap ul { list-style: none; margin: 0; padding: 0; }
+  .sitemap a { color: var(--ink); text-decoration: none; min-height: 32px; padding: 4px 0; line-height: 1.3; display: inline-flex; align-items: center; }
+  .sitemap a:hover { color: var(--seal); text-decoration: underline; }
+  @media (min-width: 900px) { .sitemap { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
   .legal { display: flex; flex-wrap: wrap; gap: 4px 20px; }
   .legal a { color: var(--ink-2); min-height: 32px; display: inline-flex; align-items: center; }
   p { margin: 0; line-height: 1.6; }

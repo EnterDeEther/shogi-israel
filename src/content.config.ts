@@ -2,7 +2,7 @@ import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
-// Lessons are written by the Content chat (one MDX file per lesson) and dropped in as-is.
+// One MDX file per lesson.
 const rules = defineCollection({
   loader: glob({
     pattern: '*.mdx',

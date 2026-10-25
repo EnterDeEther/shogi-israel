@@ -1,20 +1,12 @@
 ---
+// The menu itself lives in src/lib/nav.ts; this file only draws it (desktop bar + phone panel).
+import { ACCOUNT, isCurrent, isLive, isSection, liveNav, withChips, type NavLink } from '../lib/nav';
+
 const path = Astro.url.pathname;
-// Everything that teaches the game sits under one heading (Dean, 2026-10-24).
-const learn = {
-  label: 'למד לשחק',
-  links: [
-    { href: '/rules/', label: 'קורס החוקים' },
-    { href: '/learn/', label: 'שיעורים אינטראקטיביים' },
-    { href: '/lishogi/', label: 'המדריך לליש׳וגי' },
-  ],
-};
-const links = [
-  { href: '/#community', label: 'קהילה' },
-  { href: '/about/', label: 'אודות' },
-];
-const isCurrent = (href: string) => href !== '/#community' && path.startsWith(href);
-const inLearn = learn.links.some((l) => isCurrent(l.href));
+const items = liveNav();
+const account = isLive(ACCOUNT) ? ACCOUNT : undefined;
+const here = (l: NavLink) => (isCurrent(l, path) ? 'page' : undefined);
+const ext = (l: NavLink) => (l.external ? { rel: 'noopener', target: '_blank' } : {});
 ---
 <header class="site-header">
   <div class="wrap bar">
@@ -22,24 +14,55 @@ const inLearn = learn.links.some((l) => isCurrent(l.href));
       <img class="logo" src="/logo-96.png" width="44" height="44" alt="" />
       <span class="brand-name">שוגי ישראל</span>
     </a>
+
     <nav class="nav-wide" aria-label="ראשי">
-      <details class="nav-group" data-nav-group>
-        <summary class={inLearn ? 'current' : undefined}>{learn.label}<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg></summary>
-        <div class="nav-menu">
-          {learn.links.map((l) => <a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a>)}
-        </div>
-      </details>
-      {links.map((l) => <a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a>)}
+      {items.map((i) => isSection(i) ? (
+        <details class="nav-group" data-nav-group>
+          <summary class={i.links.some((l) => isCurrent(l, path)) ? 'current' : undefined}>
+            {i.label}
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
+          </summary>
+          <div class="nav-menu">
+            {i.links.map((l) => (
+              <a href={l.href} class={l.sub ? 'sub' : undefined} aria-current={here(l)} {...ext(l)}>
+                <span class="label">{l.label}{l.external && <span class="ext" aria-hidden="true">↗</span>}</span>
+                {l.hint && <span class="hint">{l.hint}</span>}
+              </a>
+            ))}
+          </div>
+        </details>
+      ) : (
+        <a class="top" href={i.href} aria-current={here(i)} {...ext(i)}>{i.label}</a>
+      ))}
+      {account && <a class="account" href={account.href} aria-current={here(account)}>{account.label}</a>}
     </nav>
-    <details class="nav-narrow">
+
+    <details class="nav-narrow" data-nav-narrow>
       <summary aria-label="תפריט">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"></path></svg>
+        <svg class="i-open" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"></path></svg>
+        <svg class="i-close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
       </summary>
-      <nav aria-label="ראשי (נייד)">
-        <a href="/">בית</a>
-        <span class="nav-heading">{learn.label}</span>
-        {learn.links.map((l) => <a class="sub" href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a>)}
-        {links.map((l) => <a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a>)}
+      <nav class="panel" aria-label="ראשי (נייד)">
+        {items.map((i) => isSection(i) ? (
+          <section class="group">
+            <h2 class="group-title">{i.label}</h2>
+            <ul>
+              {withChips(i.links).map((l) => Array.isArray(l) ? (
+                <li class="chips">{l.map((c) => <a href={c.href} aria-current={here(c)}>{c.label}</a>)}</li>
+              ) : (
+                <li>
+                  <a href={l.href} aria-current={here(l)} {...ext(l)}>
+                    <span class="label">{l.label}{l.external && <span class="ext" aria-hidden="true">↗</span>}</span>
+                    {l.hint && <span class="hint">{l.hint}</span>}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : (
+          <a class="solo" href={i.href} aria-current={here(i)} {...ext(i)}>{i.label}</a>
+        ))}
+        {account && <a class="solo account" href={account.href} aria-current={here(account)}>{account.label}</a>}
       </nav>
     </details>
   </div>
@@ -47,59 +70,95 @@ const inLearn = learn.links.some((l) => isCurrent(l.href));
 
 <style>
   .site-header { border-bottom: 1px solid var(--rule); background: var(--washi); position: relative; z-index: 20; }
-  .bar { display: flex; align-items: center; justify-content: space-between; min-height: 64px; }
-  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+  .bar { display: flex; align-items: center; justify-content: space-between; min-height: 64px; gap: 16px; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); flex-shrink: 0; }
   .logo { width: 44px; height: 44px; flex-shrink: 0; }
-  .brand-name { font-family: var(--f-display); font-weight: 900; font-size: 22px; letter-spacing: -0.2px; }
-  .nav-wide { display: none; gap: 28px; }
-  .nav-wide a { color: var(--ink); text-decoration: none; font-weight: 500; padding: 8px 0; border-bottom: 2px solid transparent; }
-  .nav-wide a:hover, .nav-wide a[aria-current="page"] { border-bottom-color: var(--seal); color: var(--ink); }
+  .brand-name { font-family: var(--f-display); font-weight: 900; font-size: 22px; letter-spacing: -0.2px; white-space: nowrap; }
+  .ext { font-size: 0.8em; margin-inline-start: 4px; color: var(--muted); }
+  .hint { display: block; font-size: 14px; font-weight: 400; color: var(--muted); line-height: 1.4; }
+
+  /* ---------- phones: a full-height panel under the bar ---------- */
+  .nav-wide { display: none; }
   .nav-narrow summary {
     list-style: none; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: var(--ink); border-radius: 6px;
+    cursor: pointer; color: var(--ink); border-radius: 6px; margin-inline-end: -10px;
   }
   .nav-narrow summary::-webkit-details-marker { display: none; }
-  .nav-narrow[open] summary { background: var(--washi-2); }
-  .nav-narrow nav {
-    position: absolute; inset-inline: 0; top: 100%; background: var(--washi);
-    border-bottom: 1px solid var(--rule); padding: 8px var(--gutter) 16px; display: flex; flex-direction: column;
-    box-shadow: 0 12px 20px -16px rgba(0, 0, 0, 0.4);
+  .nav-narrow .i-close, .nav-narrow[open] .i-open { display: none; }
+  .nav-narrow[open] .i-close { display: block; }
+  .panel {
+    position: absolute; inset-inline: 0; top: 100%; height: calc(100dvh - 64px); overflow-y: auto; overscroll-behavior: contain;
+    background: var(--washi); border-top: 1px solid var(--rule);
+    padding: 8px var(--gutter) 32px; display: flex; flex-direction: column;
   }
-  .nav-narrow nav a {
-    min-height: 52px; display: flex; align-items: center; color: var(--ink); text-decoration: none;
-    font-size: 18px; font-weight: 500; border-bottom: 1px solid var(--rule);
+  .group { padding: 16px 0 8px; border-bottom: 1px solid var(--rule); }
+  .group-title {
+    margin: 0 0 4px; font-family: inherit; font-size: 13px; font-weight: 700; letter-spacing: 0.4px; color: var(--seal);
   }
-  .nav-narrow nav a:last-child { border-bottom: 0; }
-  .nav-narrow nav a[aria-current="page"] { color: var(--seal); font-weight: 700; }
+  .group ul { list-style: none; margin: 0; padding: 0; }
+  .group a, .panel .solo {
+    display: flex; flex-direction: column; justify-content: center; min-height: 48px; padding: 6px 0;
+    color: var(--ink); text-decoration: none; font-size: 18px; font-weight: 500; line-height: 1.35;
+  }
+  .group .chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 2px 0 10px; }
+  .group .chips a {
+    min-height: 40px; padding: 0 14px; font-size: 16px; border: 1px solid var(--rule); border-radius: 999px; background: var(--washi-2);
+  }
+  .panel .solo { min-height: 60px; font-weight: 700; border-bottom: 1px solid var(--rule); }
+  .panel .solo.account { margin-top: 20px; min-height: 48px; justify-content: center; align-items: center; border: 1.5px solid var(--ink); border-radius: 8px; }
+  .panel a[aria-current="page"] { color: var(--seal); font-weight: 700; }
+  .panel a[aria-current="page"] .label::before { content: '● '; font-size: 0.6em; vertical-align: middle; }
+
+  /* ---------- desktop: a bar with dropdowns ---------- */
+  @media (min-width: 900px) {
+    .nav-narrow { display: none; }
+    .nav-wide { display: flex; align-items: center; gap: 26px; }
+  }
+  .nav-wide .top, .nav-group summary {
+    color: var(--ink); text-decoration: none; font-weight: 500; padding: 8px 0; border-bottom: 2px solid transparent; white-space: nowrap;
+  }
+  .nav-wide .top:hover, .nav-wide .top[aria-current="page"] { border-bottom-color: var(--seal); }
   .nav-group { position: relative; }
-  .nav-group summary {
-    list-style: none; display: flex; align-items: center; gap: 6px; cursor: pointer;
-    color: var(--ink); font-weight: 500; padding: 8px 0; border-bottom: 2px solid transparent;
-  }
+  .nav-group summary { list-style: none; display: flex; align-items: center; gap: 6px; cursor: pointer; }
   .nav-group summary::-webkit-details-marker { display: none; }
   .nav-group summary:hover, .nav-group summary.current { border-bottom-color: var(--seal); }
   .nav-group[open] summary svg { transform: rotate(180deg); }
   .nav-menu {
-    position: absolute; top: calc(100% + 8px); inset-inline-start: -14px; min-width: 220px; z-index: 30;
+    position: absolute; top: calc(100% + 8px); inset-inline-start: -14px; min-width: 250px; z-index: 30;
     display: flex; flex-direction: column; padding: 6px; background: var(--washi);
     border: 1.5px solid var(--ink); border-radius: 8px; box-shadow: 0 12px 24px -16px rgba(0, 0, 0, 0.5);
   }
-  .nav-wide .nav-menu a { padding: 10px 12px; border-radius: 4px; border-bottom: 0; }
-  .nav-wide .nav-menu a:hover, .nav-wide .nav-menu a[aria-current="page"] { background: var(--washi-2); }
-  .nav-heading { min-height: 40px; display: flex; align-items: flex-end; font-size: 14px; font-weight: 700; color: var(--muted); }
-  .nav-narrow nav a.sub { padding-inline-start: 14px; }
-  @media (min-width: 768px) {
-    .nav-wide { display: flex; align-items: center; }
-    .nav-narrow { display: none; }
+  .nav-menu a { padding: 9px 12px; border-radius: 4px; color: var(--ink); text-decoration: none; font-weight: 500; }
+  .nav-menu a.sub { padding-block: 7px; padding-inline-start: 26px; font-size: 15px; }
+  .nav-menu a:hover, .nav-menu a[aria-current="page"] { background: var(--washi-2); }
+  .nav-menu a[aria-current="page"] .label { color: var(--seal); }
+  .nav-wide .account {
+    color: var(--ink); text-decoration: none; font-weight: 700; padding: 7px 14px; border: 1.5px solid var(--ink); border-radius: 6px;
   }
+  .nav-wide .account:hover, .nav-wide .account[aria-current="page"] { background: var(--washi-2); }
 </style>
 
 <script>
-  // "למד לשחק" menu: close on Escape (focus back on the heading) and on a click elsewhere.
-  document.querySelectorAll<HTMLDetailsElement>('[data-nav-group]').forEach((d) => {
+  // Desktop dropdowns: one open at a time; close on Escape (focus back on the heading) and on a click elsewhere.
+  const groups = document.querySelectorAll<HTMLDetailsElement>('[data-nav-group]');
+  groups.forEach((d) => {
+    d.addEventListener('toggle', () => { if (d.open) groups.forEach((o) => { if (o !== d) o.open = false; }); });
     d.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && d.open) { d.open = false; d.querySelector('summary')?.focus(); }
     });
-    document.addEventListener('click', (e) => { if (d.open && !d.contains(e.target as Node)) d.open = false; });
   });
+  document.addEventListener('click', (e) => {
+    groups.forEach((d) => { if (d.open && !d.contains(e.target as Node)) d.open = false; });
+  });
+
+  // Phone panel: the page behind does not scroll while it is open; Escape or a link closes it
+  // (a link to a #section on this same page would otherwise leave the panel covering it).
+  const narrow = document.querySelector<HTMLDetailsElement>('[data-nav-narrow]');
+  if (narrow) {
+    narrow.addEventListener('toggle', () => { document.documentElement.style.overflow = narrow.open ? 'hidden' : ''; });
+    narrow.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && narrow.open) { narrow.open = false; narrow.querySelector('summary')?.focus(); }
+    });
+    narrow.querySelectorAll('.panel a').forEach((a) => a.addEventListener('click', () => { narrow.open = false; }));
+  }
 </script>
