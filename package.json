@@ -4,6 +4,12 @@
   "private": true,
   "type": "module",
   "description": "שוגי ישראל — the Hebrew home of shogi in Israel (shogi.co.il)",
+  "homepage": "https://shogi.co.il",
+  "author": "שוגי ישראל <contact@shogi.co.il> (https://shogi.co.il)",
+  "bugs": {
+    "url": "https://github.com/EnterDeEther/shogi-israel/issues",
+    "email": "contact@shogi.co.il"
+  },
   "scripts": {
     "engines": "node scripts/copy-engines.mjs",
     "predev": "npm run engines",

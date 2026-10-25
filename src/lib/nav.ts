@@ -24,6 +24,7 @@ export const isSection = (i: NavItem): i is NavSection => 'links' in i;
 
 export const WHATSAPP_URL = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
 export const INSTAGRAM_URL = 'https://www.instagram.com/shogi.israel/';
+export const CONTACT_EMAIL = 'contact@shogi.co.il';
 
 export const NAV: NavItem[] = [
   {

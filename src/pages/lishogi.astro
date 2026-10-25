@@ -1,5 +1,6 @@
 ---
 import Page from '../layouts/Page.astro';
+import { CONTACT_EMAIL, INSTAGRAM_URL } from '../lib/nav';
 import Note from '../components/mdx/Note.astro';
 
 // Facts checked on lishogi.org on 2026-10-24 (FAQ, /rating-ranks, /tournament/help, /new-player, the team pages).
@@ -135,7 +136,7 @@ const ranks = [
     <li><strong>ליגה חודשית:</strong> טורניר <bdi dir="ltr">Round-robin</bdi> שבו כל אחד משחק נגד כל אחד, בקבוצות קטנות לפי רמה.</li>
     <li><strong>קרב קבוצות</strong> מדי פעם, מול קבוצה מחו״ל.</li>
   </ul>
-  <p>רוצים לארגן טורניר בעצמכם? מנהלי הקבוצה פותחים טורנירים שסגורים לחברי הקבוצה. כתבו לנו <a href="https://www.instagram.com/shogi.israel/" rel="noopener">באינסטגרם</a> או בוואטסאפ, ונעזור לכם להקים אותו.</p>
+  <p>רוצים לארגן טורניר בעצמכם? מנהלי הקבוצה פותחים טורנירים שסגורים לחברי הקבוצה. כתבו לנו במייל, <a href={`mailto:${CONTACT_EMAIL}`}><bdi dir="ltr">{CONTACT_EMAIL}</bdi></a>, <a href={INSTAGRAM_URL} rel="noopener">באינסטגרם</a> או בוואטסאפ, ונעזור לכם להקים אותו.</p>
 
   <h2 id="tournaments">סוגי טורנירים</h2>
   <dl class="defs">

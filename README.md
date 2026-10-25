@@ -25,6 +25,10 @@ Every page is in `sitemap-index.xml` unless it sets `noindex` on `<Base>`.
 - Accessibility target: IS 5568 AA (built to WCAG 2.1 AA). Every board has a text description; tasks work by keyboard.
 - Privacy: no cookies, no forms. Vercel Web Analytics only (cookieless).
 
+## Contact
+Email [contact@shogi.co.il](mailto:contact@shogi.co.il), or Instagram [@shogi.israel](https://www.instagram.com/shogi.israel/).
+The address lives in `CONTACT_EMAIL` in `src/lib/nav.ts`; pages import it from there. Security issues: see `SECURITY.md`.
+
 ## Local dev
 ```
 npm install
