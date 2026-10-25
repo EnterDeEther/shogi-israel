@@ -11,3 +11,7 @@ export const LEVEL_COUNTS: Record<string, number> = {
   primitiveClimbingSilver: 3, climbingSilverVsRanging: 3, sittingSilver: 5, chainedSilver: 2, bishopClimbingSilver: 2,
   rapidSilver: 3, bishopSittingSilver: 3, spearingSparrow: 2, whatIf: 3,
 };
+
+// Puzzles per tsume collection (mate in N → count), for the email job, which can't read the data files.
+// test/notify.test.ts checks it against src/tsume/data/.
+export const TSUME_COUNTS: Record<number, number> = { 1: 597, 3: 1000, 5: 1000, 7: 967 };

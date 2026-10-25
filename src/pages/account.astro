@@ -5,6 +5,7 @@ import { accountsEnabled } from '../lib/account-config';
 import { stages } from '../learn/categories';
 import { GROUP_LABEL } from '../lib/inbox';
 import { INBOX_GROUPS } from '../lib/progress-sync';
+import { CONSENT_TEXT } from '../lib/consent';
 
 // Levels per Learn stage, for the stats (so the page doesn't ship the whole lesson engine).
 const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length]));
@@ -38,6 +39,10 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
             <input id="acc-pass" name="password" type="password" dir="ltr" autocomplete="current-password" minlength="8" required aria-describedby="acc-pass-help" />
             <button type="button" class="link show-pass" data-show-pass aria-controls="acc-pass" aria-pressed="false">הצגת הסיסמה</button>
             <p id="acc-pass-help" class="small muted" data-signup-only hidden>לפחות 8 תווים, אותיות וספרות. עדיף משפט קצר שקל לכם לזכור.</p>
+            <label class="check" for="acc-weekly" data-signup-only hidden>
+              <input type="checkbox" id="acc-weekly" />
+              <span>{CONSENT_TEXT.week}. אפשר להפסיק בכל רגע.</span>
+            </label>
             <div class="captcha" data-captcha></div>
             <button type="submit" class="btn wide"><span data-submit-label>כניסה</span></button>
             <p class="err" role="alert" data-err></p>
@@ -135,6 +140,19 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
             ))}
           </fieldset>
           <p class="small muted" data-notify-saved>ההגדרות נשמרות בחשבון ועוברות איתכם לכל מכשיר.</p>
+          <fieldset class="notify" data-email-prefs>
+            <legend>מיילים (רק אם תבקשו)</legend>
+            <label class="switch-row" for="email-week">
+              <span><strong>בעיית השבוע במייל</strong><span class="small muted">{CONSENT_TEXT.week}</span></span>
+              <input type="checkbox" class="switch" id="email-week" data-email-kind="week" />
+            </label>
+            <label class="switch-row" for="email-return">
+              <span><strong>תזכורת לחזור</strong><span class="small muted">{CONSENT_TEXT.return}</span></span>
+              <input type="checkbox" class="switch" id="email-return" data-email-kind="return" />
+            </label>
+          </fieldset>
+          <p class="small err" data-email-paused hidden>המיילים הושהו כי המייל האחרון לא הגיע אליכם (או סומן כספאם). הדליקו שוב כדי לחדש.</p>
+          <p class="small muted" data-email-note>לכל היותר מייל אחד בשבוע, אף פעם לא בשישי ובשבת, ובכל מייל יש קישור להפסקה בלחיצה אחת. מיילי החשבון (אישור כתובת, איפוס סיסמה) נשלחים רק כשאתם מבקשים. פרטים ב<a href="/privacy/#emails">מדיניות הפרטיות</a>.</p>
 
           <h2>הגדרות</h2>
           <div class="setting">
@@ -215,6 +233,9 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       $('[data-stat="rules"]').textContent = String(s.rulesDone);
       showCourse(progress);
       showNotify(progress);
+      await acc.applySignupConsent(session);
+      void acc.touchLastSeen();
+      void showEmail();
       await acc.syncGames();
       const g = await acc.gameSummary();
       $('[data-games]').hidden = g.played === 0;
@@ -262,6 +283,28 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       $('[data-notify-saved]').textContent = ok ? 'נשמר. ההגדרות עוברות איתכם לכל מכשיר.' : 'נשמר במכשיר הזה. נעדכן את החשבון בפעם הבאה שתהיו מחוברים.';
     }));
 
+    // Email nudges: off until turned on here (or ticked at sign-up). The server keeps when and how consent was given.
+    const emailBoxes = [...root.querySelectorAll<HTMLInputElement>('[data-email-kind]')];
+    const emailBox = (k: string) => emailBoxes.find((b) => b.dataset.emailKind === k)!;
+    async function showEmail() {
+      const prefs = await acc.getEmailPrefs();
+      $('[data-email-prefs]').hidden = !prefs; // the table isn't there yet (migration 0003 not run): hide, don't break
+      if (!prefs) return;
+      emailBox('week').checked = prefs.email_week;
+      emailBox('return').checked = prefs.email_return;
+      $('[data-email-paused]').hidden = !prefs.paused_reason || !(prefs.email_week || prefs.email_return);
+    }
+    emailBoxes.forEach((b) => b.addEventListener('change', async () => {
+      emailBoxes.forEach((x) => { x.disabled = true; });
+      const ok = await acc.setEmailPrefs(emailBox('week').checked, emailBox('return').checked, 'settings');
+      emailBoxes.forEach((x) => { x.disabled = false; });
+      $('[data-email-note]').textContent = ok
+        ? (emailBox('week').checked || emailBox('return').checked ? 'נשמר. אפשר להפסיק בכל רגע, כאן או מהקישור שבתחתית כל מייל.' : 'נשמר. לא נשלח לכם מיילים כאלה.')
+        : 'השמירה לא הצליחה. נסו שוב בעוד רגע.';
+      if (!ok) b.checked = !b.checked;
+      else $('[data-email-paused]').hidden = true;
+    }));
+
     function askNickname(isNew: boolean) {
       $('[data-nick-title]').textContent = isNew ? 'בחרו כינוי' : 'שינוי כינוי';
       $<HTMLInputElement>('#acc-nick').value = profile?.nickname ?? '';
@@ -277,7 +320,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       root.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
       $('[data-signin-title]').textContent = m === 'signin' ? 'כניסה לחשבון' : 'פתיחת חשבון';
       $('[data-submit-label]').textContent = m === 'signin' ? 'כניסה' : 'פתיחת חשבון';
-      $('[data-signup-only]').hidden = m === 'signin';
+      root.querySelectorAll<HTMLElement>('[data-signup-only]').forEach((e) => { e.hidden = m === 'signin'; });
       $('[data-signin-only]').hidden = m === 'signup';
       $<HTMLInputElement>('#acc-pass').autocomplete = m === 'signin' ? 'current-password' : 'new-password';
       fail('signin', '');
@@ -322,7 +365,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
         if (error.status === 429) return fail('signin', 'יותר מדי ניסיונות. חכו כמה דקות ונסו שוב.');
         return fail('signin', 'המייל או הסיסמה לא נכונים.');
       }
-      const { data, error } = await acc.signUp(email, password, captchaToken);
+      const { data, error } = await acc.signUp(email, password, captchaToken, $<HTMLInputElement>('#acc-weekly').checked);
       authCaptcha.reset();
       busy(authForm, false);
       if (error) {
@@ -470,6 +513,9 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
   .course-links .btn { min-height: 48px; font-size: 16px; }
   .bar { height: 8px; border-radius: 999px; background: var(--rule); overflow: hidden; }
   .bar span { display: block; height: 100%; width: 0; background: var(--seal); border-radius: inherit; }
+  .check { display: flex; gap: 10px; align-items: flex-start; font-weight: 400 !important; font-size: 16px; line-height: 1.5; cursor: pointer; margin-top: 6px; }
+  .form .check input { width: 20px; height: 20px; min-height: 0; padding: 0; border: revert; background: revert; margin: 2px 0 0; flex: none; accent-color: var(--seal); }
+  [data-email-prefs] { margin-top: 10px; }
   .notify { border: 1px solid var(--rule); border-radius: 8px; padding: 4px 16px; margin: 0; background: var(--washi-2); }
   .notify legend { padding: 0 6px; margin-inline-start: -6px; font-weight: 700; }
   .switch-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 56px; padding: 8px 0; border-bottom: 1px solid var(--rule); cursor: pointer; }
