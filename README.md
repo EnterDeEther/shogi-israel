@@ -37,3 +37,9 @@ Engine ported from Lishogi's Learn module; details and file-by-file changes in `
 Credit (also on the site's credits page):
 - מערכת השיעורים האינטראקטיבית מבוססת על הקוד ועל מבנה הלימוד של Lishogi (lishogi.org), תוכנה חופשית ברישיון AGPL-3.0. השינויים שלנו, כולל הטקסטים בעברית, פתוחים באותו רישיון ב-github.com/EnterDeEther/shogi-israel. תודה לצוות Lishogi.
 - The interactive lessons are adapted from the code and lesson structure of Lishogi (lishogi.org), free software under AGPL-3.0. Our changes, including the Hebrew text, are published under the same licence at github.com/EnterDeEther/shogi-israel. Thanks to the Lishogi team. Board and rules: shogiground and shogiops (GPL-3.0).
+
+## KIF game records (`/kif/`)
+`src/lib/kif.ts` is the one KIF module for the site: `makeKif()` writes a game (start SFEN + USI moves) as a
+Lishogi-compatible UTF-8 KIF, `parseKif()` reads one back (Shift_JIS files too, via `readKifFile()`), plus
+`downloadKif()`, `copyText()` and `LISHOGI_IMPORT_URL`. Any page that plays a game should export through it.
+`/kif/` is the Hebrew guide to the format with a KIF viewer (`src/components/KifViewer.astro`). Tests: `test/kif.test.ts`.
