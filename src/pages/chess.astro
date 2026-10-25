@@ -4,10 +4,11 @@
 // Numbers on this page are sourced at the bottom; don't add one without a source.
 import Page from '../layouts/Page.astro';
 import Piece from '../components/Piece.astro';
-import { isLive } from '../lib/nav';
+import { pageExists } from '../lib/live';
 
 // Play here first: the CTA goes to /play/ once it exists, until then to the piece lesson.
-const playLive = isLive({ href: '/play/', label: '' });
+const playLive = pageExists('/play/');
+const guideLive = pageExists('/lishogi/');
 const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>';
 ---
 <Page
@@ -154,7 +155,7 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
       <a class="btn" href="/rules/02-how-pieces-move/"><span>הכירו את הכלים</span><Fragment set:html={arrow} /></a>
     )}
   </div>
-  <p class="small muted">רוצים יריבים אנושיים? שחקנים ישראלים נפגשים ב<a href="/#community">קהילה שלנו</a>, ומשחקים פומביים וטורנירים מתקיימים בליש׳וגי.</p>
+  <p class="small muted">רוצים יריבים אנושיים? שחקנים ישראלים נפגשים ב<a href="/#community">קהילה שלנו</a>, ומשחקים פומביים וטורנירים מתקיימים {guideLive ? <a href="/lishogi/">בליש׳וגי</a> : 'בליש׳וגי'}.</p>
 
   <details class="more sources">
     <summary>מקורות</summary>
