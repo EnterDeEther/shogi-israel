@@ -425,3 +425,8 @@ html[data-pieces="kanji"] :is(.learn, .play) piece::after { content: var(--k); f
   .learn.has-coach { padding-bottom: 48vh; }
   .learn.has-coach .learn__bubble { display: none; }
 }
+
+/* The game phase a lesson belongs to; links to the explanation on /learn/guide/. */
+.learn__map .phase, .learn__overlay .phase { margin: 0 0 10px; font-size: 14px; }
+.learn__map .phase a, .learn__overlay .phase a { display: inline-block; padding: 2px 12px; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-2); text-decoration: none; }
+.learn__map .phase a:hover, .learn__overlay .phase a:hover { color: var(--seal); border-color: var(--seal); }
