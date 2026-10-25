@@ -1,4 +1,4 @@
-// The guided course (/course/, "המסלול שלי"): one ordered path through everything on the site that teaches,
+// The guided course (/course/, "מסלול לימוד אישי"): one ordered path through everything on the site that teaches,
 // from the first rules lesson to tsume, grouped as the basics and then the three phases of a game
 // (פתיחה, אמצע המשחק, סוף המשחק). The answer to "where do you start?" (a Track) decides which steps
 // are part of the path and which are optional. Progress comes from what the lessons, tsume and play already
