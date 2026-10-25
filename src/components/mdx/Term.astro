@@ -2,7 +2,7 @@
 // Glossary first-use string: "גנרל כסף (銀 gin, Silver)".
 // Piece terms draw the kanji inside a piece shape (Piece.astro).
 // The bracket part is isolated in <bdi> so the parentheses can't flip in RTL, and the kanji gets lang="ja".
-// `id` is the glossary key (Glossary v0, column H). TODO(Localization): validate the child text against the sheet at build.
+// `id` is the glossary key.
 import Piece from '../Piece.astro';
 interface Props { id?: string; first?: boolean }
 const { id = '' } = Astro.props;
