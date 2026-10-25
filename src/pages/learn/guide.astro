@@ -1,0 +1,148 @@
+---
+// /learn/guide/: what an opening, a castle and a strategy are, and why. Linked both ways with the lessons:
+// each lesson category on /learn/ and each lesson's start screen point here, and this page lists the lessons.
+import Page from '../../layouts/Page.astro';
+import Board from '../../components/Board.astro';
+import { categories } from '../../learn/categories';
+import { stageUrl } from '../../learn/urls';
+
+const START = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1';
+const MINO = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/8P/PPPPPPPP1/1B1RG1SK1/LNS2G1NL b - 15';
+const YAGURA = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/2PPP4/PPSG1PPPP/1KGB3R1/LN4SNL b - 27';
+
+const cat = (key: string) => categories.find((c) => c.key === key)!;
+const lessons = (key: string) => cat(key).stages.map((s) => ({ href: stageUrl(s.key), title: s.title, subtitle: s.subtitle.replace(/\*\*/g, '') }));
+const stage = (key: string) => cat('openings').stages.concat(cat('castles').stages, cat('strategy').stages).find((s) => s.key === key)!;
+const link = (key: string) => ({ href: stageUrl(key), title: stage(key).title });
+---
+<Page
+  title="פתיחות, מבצרים ואסטרטגיה: מה זה ולמה"
+  eyebrow="למדו לשחק"
+  description="איך משחק שוגי בנוי מההתחלה ועד ההתקפה: מה זו פתיחה, מה זה מבצר ומה זו אסטרטגיה, ולמה צריך את שלושתם. עם קישורים לשיעורים."
+>
+  <p class="lead">אחרי שלמדתם איך הכלים זזים, כדאי לראות איך משחק שלם בנוי. כמו בשחמט, כל משחק שוגי מתחלק לשלושה שלבים: <strong>פתיחה</strong>, <strong>אמצע המשחק</strong> ו<strong>סוף המשחק</strong>. בכל שלב המטרה אחרת, ולכן גם המהלכים הטובים אחרים. בדף הזה נסביר מה קורה בכל שלב, ואיפה נכנסים הפתיחות, המבצרים והאסטרטגיות שבשיעורים.</p>
+
+  <h2 id="phases">שלושת שלבי המשחק</h2>
+  <ol class="phases">
+    <li>
+      <h3>פתיחה</h3>
+      <p><strong>המטרה: להתארגן.</strong> משחררים את הצריח והרץ, בוחרים באיזה צד תוקפים, ובונים <a href="#castle">מבצר</a> סביב המלך. עדיין כמעט אין חילופים.</p>
+    </li>
+    <li>
+      <h3>אמצע המשחק</h3>
+      <p><strong>המטרה: לפרוץ.</strong> שני הצדדים מוכנים, ומתחילה ההתקפה לפי <a href="#strategy">אסטרטגיה</a>. מחליפים כלים, וכל כלי שנלכד נכנס ליד ומחכה להצנחה. כאן מתחילה העבודה האמיתית.</p>
+    </li>
+    <li>
+      <h3>סוף המשחק</h3>
+      <p><strong>המטרה: להכריע.</strong> המבצר של אחד הצדדים נפרץ, וההתקפה על המלך הופכת למירוץ: מי שמגיע למט ראשון מנצח. בשלב הזה ספירת מהלכים חשובה יותר מחומר. <a href="#endgame">עוד על סוף המשחק</a>.</p>
+    </li>
+  </ol>
+  <p>כך הנושאים בשיעורים משתלבים בשלבים: פתיחות הן השלב הראשון, מבצרים נבנים בפתיחה ומגינים עליכם באמצע המשחק, ואסטרטגיות הן התוכניות של אמצע המשחק. כדאי לשאול לפני כל מהלך באיזה שלב אתם נמצאים, כי זה משנה מה כדאי לעשות.</p>
+
+  <nav class="toc small" aria-label="בדף הזה">
+    <a href="#phases">שלושת השלבים</a>
+    <a href="#opening">פתיחה</a>
+    <a href="#castle">מבצר</a>
+    <a href="#strategy">אסטרטגיה</a>
+    <a href="#endgame">סוף המשחק</a>
+    <a href="#order">באיזה סדר ללמוד</a>
+  </nav>
+
+  <h2 id="opening">שלב ראשון: פתיחה</h2>
+  <p><strong>פתיחה</strong> היא כעשרים המהלכים הראשונים במשחק. בתחילת המשחק הצריח והרץ, הכלים החזקים ביותר, חסומים מאחורי הרגלים שלהם ולא יכולים לזוז. לכן כמעט כל משחק מתחיל בפתיחת דרך לאחד מהם: רגלי ל־76 משחרר את הרץ, ורגלי ל־26 משחרר את הצריח.</p>
+  <Board sfen={START} caption="מערך הפתיחה: הצריח והרץ חסומים מאחורי הרגלים." />
+  <p>פתיחה טובה משיגה ארבעה דברים. כדאי לשאול את עצמכם אם המהלך הבא תורם לאחד מהם:</p>
+  <ol>
+    <li><strong>משחררת את הכלים הגדולים.</strong> כל דחיפת רגלי היא בעצם בחירה: איזה כלי אני רוצה להפעיל קודם?</li>
+    <li><strong>קובעת איפה תוקפים ואיפה גרים.</strong> הצריח הוא התוקף הראשי, והמלך מתרחק ממנו אל הצד השני של הלוח. זה הכלל החשוב ביותר בפתיחה: <em>המלך לא עומד ליד הצריח</em>. אם הם באותו צד, היריב יכול להצניח רץ ולתקוף את שניהם בבת אחת, מהלך שנקרא <strong>מזלג מלך וצריח</strong>, ולזכות בצריח.</li>
+    <li><strong>מתחילה לבנות את המבצר.</strong> לכל פתיחה יש מבצר שמתאים לה, והמבצר נבנה תוך כדי הפתיחה.</li>
+    <li><strong>מכינה חילוף רגלים.</strong> התקפה מתחילה בדחיפת רגלי שמציעה חילוף. אחרי החילוף יש לכם רגלי ביד, ורגלי ביד הוא החומר שממנו בונים את ההתקפה הבאה.</li>
+  </ol>
+
+  <h3>שתי משפחות של פתיחות</h3>
+  <p>רוב הפתיחות שייכות לאחת משתי משפחות, לפי המקום שבו הצריח עומד:</p>
+  <ul>
+    <li><strong>צריח קבוע</strong> נשאר בטור 2 ותוקף ישר קדימה, והמלך עובר שמאלה. זו הגישה הישירה.</li>
+    <li><strong>צריח נודד</strong> עובר שמאלה, למשל לטור 6, והמלך עובר ימינה אל מבצר מינו. המשחק עם צריח נודד מתנהל בסבלנות: ממתינים להתקפה של היריב, מחליפים כלים בצד שבו הוא תוקף, ואז עוברים להתקפת נגד.</li>
+  </ul>
+  <p>אף משפחה אינה טובה מהאחרת. מומלץ ללמוד פתיחה אחת מכל משפחה, וכך תבינו גם מה היריב מנסה לעשות נגדכם.</p>
+  <p class="lessons-head">השיעורים בנושא:</p>
+  <ul class="lessons">
+    {lessons('openings').map((l) => <li><a href={l.href}>{l.title}</a> <span class="muted">{l.subtitle}</span></li>)}
+  </ul>
+
+  <h2 id="castle">מבצר: נבנה בפתיחה, מגן באמצע המשחק</h2>
+  <p>בשחמט המלך מוגן בעזרת הצרחה, מהלך אחד ויחיד. בשוגי אין הצרחה, והמלך זקוק להגנה חזקה יותר, כי כל כלי שנלכד עובר ליריב, והוא יכול להצניח אותו ליד המלך שלכם בכל רגע. לכן בונים <strong>מבצר</strong> במספר מהלכים: המלך זז הצידה, ושלושה גנרלים, זהב, כסף וזהב, מסדרים את עצמם סביבו.</p>
+  <Board sfen={MINO} highlight="28,38,49,58" caption="מבצר מינו: המלך ב־28, הכסף ב־38 והזהבים ב־49 וב־58." />
+  <p>מה הופך את המבצר לחזק? כל גנרל מגן על הגנרל שלידו באלכסון, ולכן קשה ללכוד אחד מהם בלי שהיריב ישלם על כך. בנוסף, המלך עומד מחוץ לטור של הצריח ומחוץ לאלכסון הראשי של הרץ, ולכן קשה לתקוף אותו מרחוק.</p>
+  <h3>שלושה כללים לכל מבצר</h3>
+  <ul>
+    <li><strong>קודם מגינים, אבל לא מגזימים.</strong> להתקפה דרושים בערך ארבעה כלים: צריח, רץ, כסף ופרש. המשחק הוא מירוץ בין שני הצדדים, ומי שמסיים את המבצר ואת ההתקפה מהלך לפני השני, מנצח.</li>
+    <li><strong>הגנרלים מתקדמים באלכסון.</strong> זהב שהתקדם ישר משאיר חורים מאחוריו, ואינו יכול לחזור אחורה באלכסון. כסף יכול לסגת, ולכן הכסף הוא הכלי ששולחים קדימה, והזהב נשאר להגן.</li>
+    <li><strong>לכל מבצר יש צד חלש.</strong> מינו חזק מהצדדים וחלש מלמעלה, ויגורה חזק מקדימה וחלש מהקצה. חלק מהפתיחות נבחרות בדיוק כדי לתקוף את הצד החלש של מבצר היריב.</li>
+  </ul>
+  <Board sfen={YAGURA} highlight="88,77,78,67" caption="יגורה: חומה של גנרלים לפני המלך ב־88, וקשה לפרוץ אותה מקדימה." />
+  <p>איזה מבצר מתאים לאיזו פתיחה?</p>
+  <table class="pairs">
+    <thead><tr><th>פתיחה</th><th>מבצר</th><th>למה</th></tr></thead>
+    <tbody>
+      <tr><td>צריח נודד: טור 6, טור 7, אישידה, צריח מרכזי</td><td>מינו, ואחר כך מינו גבוה וכתר הכסף</td><td>בונים אותו מהר, והוא חזק מול התקפות מהצד, שמהן מגיעות ההתקפות של צריח קבוע</td></tr>
+      <tr><td>צריח נודד הדדי</td><td>שני הזהבים</td><td>ההתקפה מגיעה מלמעלה</td></tr>
+      <tr><td>צריח קבוע נגד צריח נודד, התקפה מהירה</td><td>סירה</td><td>בונים אותו במהירות</td></tr>
+      <tr><td>צריח קבוע נגד צריח נודד, משחק איטי</td><td>דוב במאורה</td><td>הוא הכי בטוח, והמשחק יימשך זמן רב</td></tr>
+      <tr><td>יגורה, וצריח קבוע נגד צריח קבוע</td><td>יגורה</td><td>שני הצדדים תוקפים מקדימה</td></tr>
+    </tbody>
+  </table>
+  <p class="lessons-head">השיעורים בנושא:</p>
+  <ul class="lessons">
+    {lessons('castles').map((l) => <li><a href={l.href}>{l.title}</a> <span class="muted">{l.subtitle}</span></li>)}
+  </ul>
+
+  <h2 id="strategy">שלב שני: אמצע המשחק ואסטרטגיה</h2>
+  <p>הפתיחה נגמרה והמבצר מוכן, ועכשיו מתחיל אמצע המשחק, ובו צריך לדעת איך תוקפים. <strong>אסטרטגיה</strong> היא תוכנית ההתקפה: איפה פורצים, באילו כלים ובאיזה סדר. בשוגי רוב התוכניות מתבססות על הכסף, הגנרל היחיד שיכול גם לתקוף וגם לסגת.</p>
+  <h3>התקפה מהירה או משחק איטי</h3>
+  <p>לפני שבוחרים תוכנית שואלים שאלה אחת: מי מוכן ראשון? אם המבצר של היריב עוד לא סיים להיבנות, כדאי לבצע <strong>התקפה מהירה</strong> לפני שיספיק לסיים. אם הוא כבר מוגן, התקפה מהירה לא תצליח, ועדיף <strong>משחק איטי</strong>: מחזקים את המבצר ושומרים על היוזמה עד שנוצרת הזדמנות.</p>
+  <h3>רעיונות שחוזרים בכל תוכנית</h3>
+  <ul>
+    <li><strong>שני תוקפים מול מגן אחד.</strong> לפני שדוחפים, סופרים כמה כלים תוקפים וכמה מגינים על משבצת הפריצה. זה הרעיון של הכסף המטפס: הכסף והצריח, יחד, מול מגן בודד.</li>
+    <li><strong>הכסף יוצא להתקפה והזהב נשאר בבית.</strong> כסף שיצא יכול לחזור אחורה באלכסון, וזהב שיצא לא יחזור.</li>
+    <li><strong>התקפת קצה.</strong> הרומח והצריח עומדים בטור הקצה, זה מאחורי זה, ורגלי פותח להם את הטור. רגלי הקצה ב־16 גם משאיר למלך משבצת לברוח אליה.</li>
+    <li><strong>רגלי תלוי.</strong> מצניחים רגלי ממש מול אזור ההכתרה, כך שבמהלך הבא הוא נכנס אליו ומוכתר. קשה מאוד לעצור אותו.</li>
+    <li><strong>הפרש מתקדם רק קדימה.</strong> קופצים רק למשבצת מוגנת, או כשהקפיצה מרוויחה חומר.</li>
+    <li><strong>לפעמים יוזמה שווה יותר מחומר.</strong> רגלי נוסף לא שווה הרבה אם בזמן שלקחתם אותו היריב השלים את המבצר.</li>
+  </ul>
+  <p class="lessons-head">השיעורים בנושא:</p>
+  <ul class="lessons">
+    {lessons('strategy').map((l) => <li><a href={l.href}>{l.title}</a> <span class="muted">{l.subtitle}</span></li>)}
+  </ul>
+
+  <h2 id="endgame">שלב שלישי: סוף המשחק</h2>
+  <p>כשהמבצר של אחד הצדדים נפרץ, המשחק נכנס לשלב האחרון. כאן כבר לא מחליפים כלים בשקט: כל שח מכריח תשובה, ומי שמצליח לרצף שחים עד למט, מנצח. לכן בסוף המשחק <strong>ספירת מהלכים</strong> חשובה יותר מחומר, ואפשר גם לוותר על כלים כדי להגיע למט מהר יותר. גם המגן חייב להתחשב בזה: לפעמים עדיף לברוח עם המלך מאשר לגונן עליו.</p>
+  <p>המיומנות שתעזור לכם כאן היא לזהות מט כמה מהלכים לפני שהוא קורה. התחילו ב<a href={stageUrl('check1')}>שח במהלך אחד</a> וב<a href={stageUrl('checkmate1')}>מט במהלך אחד</a>, ובשיעור <a href="/rules/05-check-mate/">שח ומט</a> בחוקים הבסיסיים.</p>
+
+  <h2 id="order">באיזה סדר ללמוד</h2>
+  <ol>
+    <li>מתחילים ב<a href={link('staticRook').href}>{link('staticRook').title}</a> וב<a href={link('rangingRook').href}>{link('rangingRook').title}</a>, שתי המשפחות בקצרה.</li>
+    <li>לומדים פתיחה אחת מכל משפחה: <a href={link('primitiveClimbingSilver').href}>{link('primitiveClimbingSilver').title}</a> לצריח קבוע, ו<a href={link('fourthFileRook').href}>{link('fourthFileRook').title}</a> עם מבצר מינו לצריח נודד.</li>
+    <li>ממשיכים ל<a href={link('centralRook').href}>{link('centralRook').title}</a>, ל<a href={link('yagura').href}>{link('yagura').title}</a> ול<a href={stageUrl('rangingCastles')}>{stage('rangingCastles').title}</a>.</li>
+    <li>ובסוף <a href={link('whatIf').href}>{link('whatIf').title}</a>, שבו תתרגלו ניצול של טעויות נפוצות.</li>
+  </ol>
+  <p><a class="btn" href="/learn/#cat-openings">לשיעורים האינטראקטיביים</a></p>
+</Page>
+
+<style>
+  .phases { list-style: none; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); margin: 0 0 16px; counter-reset: ph; }
+  .phases li { counter-increment: ph; border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px; margin: 0; }
+  .phases h3 { margin: 0 0 6px; }
+  .phases h3::before { content: counter(ph) ". "; color: var(--seal); }
+  .phases p { margin: 0; font-size: 15px; }
+  .toc { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 0 0 8px; }
+  .toc a { padding: 4px 12px; border: 1px solid var(--rule); border-radius: 999px; text-decoration: none; }
+  .lessons-head { margin: 18px 0 6px; font-weight: 600; color: var(--ink); }
+  .lessons { list-style: none; padding: 0; }
+  .lessons li { margin-bottom: 4px; }
+  .pairs { width: 100%; border-collapse: collapse; margin: 0 0 16px; font-size: 15px; }
+  .pairs th, .pairs td { text-align: start; padding: 8px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; line-height: 1.5; }
+  .pairs th { color: var(--ink); }
+  @media (max-width: 640px) { .pairs { font-size: 14px; } .pairs th, .pairs td { padding: 6px; } }
+</style>

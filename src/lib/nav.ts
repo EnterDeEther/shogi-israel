@@ -32,6 +32,7 @@ export const NAV: NavItem[] = [
     links: [
       { href: '/rules/', label: 'חוקים בסיסיים', hint: 'מאפס, צעד אחר צעד' },
       { href: '/learn/', label: 'שיעורים אינטראקטיביים', hint: 'תרגול על הלוח' },
+      { href: '/learn/guide/', label: 'פתיחות, מבצרים ואסטרטגיה', hint: 'מה זה ולמה' },
       { href: '/learn/#cat-openings', label: 'פתיחות', sub: true },
       { href: '/learn/#cat-castles', label: 'מבצרים', sub: true },
       { href: '/learn/#cat-strategy', label: 'אסטרטגיה', sub: true },
