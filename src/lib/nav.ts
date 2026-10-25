@@ -34,6 +34,7 @@ export const NAV: NavItem[] = [
       { href: '/learn/#cat-openings', label: 'פתיחות', sub: true },
       { href: '/learn/#cat-castles', label: 'מבצרים', sub: true },
       { href: '/learn/#cat-strategy', label: 'אסטרטגיה', sub: true },
+      { href: '/chess/', label: 'לשחקני שחמט', hint: 'מה כבר מוכר, ומה חדש' },
       { href: '/lishogi/', label: 'המדריך לליש׳וגי', hint: 'לשחק אונליין מול כל העולם' },
       { href: '/kif/', label: 'רישום משחקים (KIF)' },
       { href: '/clock/', label: 'משחק על זמן', hint: 'איך השעון עובד' },
