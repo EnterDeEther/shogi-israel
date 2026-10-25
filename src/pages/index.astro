@@ -53,30 +53,6 @@ const hasCourse = pageExists('/course/') && accountsOn;
     </div>
   </section>
 
-  <section class="wrap block" aria-labelledby="offer">
-    <h2 id="offer">מה יש באתר</h2>
-    <ul class="offer">
-      {sections.map((s) => (
-        <li class="card">
-          <h3>{s.label}</h3>
-          {s.blurb && <p>{s.blurb}</p>}
-          <ul>
-            {s.links.map((l) => (
-              <li><a href={l.href} rel={l.external ? 'noopener' : undefined}>{l.label}{l.external && <span class="ext" aria-hidden="true"> ↗</span>}</a></li>
-            ))}
-          </ul>
-        </li>
-      ))}
-      {isLive(ACCOUNT) && (
-        <li class="card">
-          <h3>החשבון שלי</h3>
-          <p>ההתקדמות והמשחקים נשמרים בכל מכשיר. לא חובה, והכול עובד גם בלי.</p>
-          <ul><li><a href="/account/">כניסה או הרשמה</a></li></ul>
-        </li>
-      )}
-    </ul>
-  </section>
-
   <section class="wrap block" aria-labelledby="three">
     <h2 id="three">שלושה דברים שעושים את השוגי לשוגי</h2>
     <ol class="three">
@@ -154,6 +130,30 @@ const hasCourse = pageExists('/course/') && accountsOn;
         <li><a href={LISHOGI_TEAM} rel="noopener"><span class="row-title"><strong>הקבוצה שלנו בליש׳וגי</strong></span><span class="small muted">טורנירים ויריבים מכל העולם</span></a></li>
       </ul>
     </div>
+  </section>
+
+  <section class="wrap block" aria-labelledby="offer">
+    <h2 id="offer">מה יש באתר</h2>
+    <ul class="offer">
+      {sections.map((s) => (
+        <li class="card">
+          <h3>{s.label}</h3>
+          {s.blurb && <p>{s.blurb}</p>}
+          <ul>
+            {s.links.map((l) => (
+              <li><a href={l.href} rel={l.external ? 'noopener' : undefined}>{l.label}{l.external && <span class="ext" aria-hidden="true"> ↗</span>}</a></li>
+            ))}
+          </ul>
+        </li>
+      ))}
+      {isLive(ACCOUNT) && (
+        <li class="card">
+          <h3>החשבון שלי</h3>
+          <p>ההתקדמות והמשחקים נשמרים בכל מכשיר. לא חובה, והכול עובד גם בלי.</p>
+          <ul><li><a href="/account/">כניסה או הרשמה</a></li></ul>
+        </li>
+      )}
+    </ul>
   </section>
 </Base>
 
