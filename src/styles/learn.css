@@ -105,10 +105,7 @@ html[data-pieces="kanji"] :is(.learn, .play) piece::after { content: var(--k); f
 :is(.learn, .play) piece.promotedknight { --l: '+N'; --k: '圭'; }
 :is(.learn, .play) piece.promotedlance { --l: '+L'; --k: '杏'; }
 :is(.learn, .play) piece.tokin { --l: '+P'; --k: 'と'; }
-:is(.learn, .play) piece:is(.dragon, .horse, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { color: var(--seal); }
-@media (prefers-color-scheme: dark) {
-  :is(.learn, .play) piece:is(.dragon, .horse, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { color: #B8361F; }
-}
+:is(.learn, .play) piece:is(.dragon, .horse, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { color: var(--piece-seal); }
 
 /* ---------- square states ---------- */
 :is(.learn, .play) sg-squares sq { position: relative; }
@@ -179,10 +176,9 @@ html[data-pieces="kanji"] :is(.learn, .play) piece::after { content: var(--k); f
 .learn__overlay {
   position: absolute; inset: 0; z-index: 20;
   display: flex; align-items: center; justify-content: center;
-  background: rgba(246, 241, 231, 0.93); backdrop-filter: blur(2px);
+  background: var(--overlay-learn); backdrop-filter: blur(2px);
   cursor: pointer; direction: rtl;
 }
-@media (prefers-color-scheme: dark) { .learn__overlay { background: rgba(23, 21, 15, 0.93); } }
 .learn__overlay[hidden] { display: none; }
 .learn__overlay .screen { max-width: 400px; padding: 20px; text-align: center; cursor: default; }
 .learn__overlay .stage-img { width: 72px; height: 72px; margin: 0 auto 8px; font-size: 38px; }
@@ -212,12 +208,8 @@ html[data-pieces="kanji"] :is(.learn, .play) piece::after { content: var(--k); f
 .learn__table .result { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 12px 14px; border-radius: 4px; }
 .learn__table .result strong { font: 800 22px/1.3 var(--f-display); }
 .learn__table .result .stars { font-size: 26px; }
-.learn__table .result.completed { background: #E3EED6; color: #1E4A1B; }
-.learn__table .result.failed { background: #F6DDD5; color: #7A2414; }
-@media (prefers-color-scheme: dark) {
-  .learn__table .result.completed { background: #22341F; color: #CFE3B8; }
-  .learn__table .result.failed { background: #3A1E17; color: #F2B9A8; }
-}
+.learn__table .result.completed { background: var(--won-bg); color: var(--won-fg); }
+.learn__table .result.failed { background: var(--lost-bg); color: var(--lost-fg); }
 .learn__table .levels { padding: 12px 18px 4px; }
 .learn__table .lvl { margin: 0 0 8px; color: var(--muted); }
 .learn .progress { list-style: none; padding: 0; margin: 0 0 12px; display: flex; flex-wrap: wrap; gap: 6px; }
@@ -305,8 +297,7 @@ html[data-pieces="kanji"] :is(.learn, .play) piece::after { content: var(--k); f
 }
 .learn__map .ribbon.done { background: var(--ink); }
 .learn__map .ribbon .stars { font-size: 13px; letter-spacing: 1px; }
-.learn__map .ribbon.done .stars .off { color: rgba(255, 255, 255, 0.35); }
-@media (prefers-color-scheme: dark) { .learn__map .ribbon.done .stars .off { color: rgba(0, 0, 0, 0.35); } }
+.learn__map .ribbon.done .stars .off { color: var(--star-off); }
 @media (prefers-reduced-motion: reduce) { .learn__map .stage { transition: none; } .learn__map .stage:hover { transform: none; } }
 
 /* ---------- settings dialog (the cog wheel) ---------- */

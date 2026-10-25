@@ -4,6 +4,8 @@ import Board from '../components/Board.astro';
 import { getCollection } from 'astro:content';
 import { RULES_COURSE, pad } from '../lib/course';
 import { pageExists, LISHOGI_TEAM } from '../lib/live';
+import { liveSections, isLive, ACCOUNT } from '../lib/nav';
+import { accountsEnabled } from '../lib/account-config';
 
 const live = new Set((await getCollection('rules')).map((e) => e.id));
 const START = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1';
@@ -11,6 +13,8 @@ const first = `/rules/${RULES_COURSE[0].slug}/`;
 // Playing happens here first; Lishogi is for public games and tournaments.
 const hasPlay = pageExists('/play/');
 const hasAccount = pageExists('/account/');
+const accountsOn = hasAccount && accountsEnabled;
+const sections = liveSections();
 ---
 <Base
   title="שוגי ישראל"
@@ -18,21 +22,57 @@ const hasAccount = pageExists('/account/');
 >
   <section class="hero wrap">
     <div class="hero-text">
-      <p class="eyebrow">השחמט היפני · בעברית, מאפס</p>
-      <h1>שוגי. המשחק שבו אף כלי לא באמת יוצא מהמשחק.</h1>
-      <p class="lead">כלי שלכדתם עובר לצד שלכם, ואפשר להצניח אותו בחזרה על הלוח. כאן לומדים את החוקים בעברית, צעד אחר צעד, בחינם.</p>
+      <p class="eyebrow">הקהילה הישראלית של השוגי, השחמט היפני</p>
+      <h1>ברוכים הבאים לשוגי ישראל</h1>
+      <p class="lead">הבית של שחקני השוגי בישראל. לומדים את השחמט היפני בעברית ומאפס, משחקים כאן באתר, ופוגשים שחקנים אחרים. הכול בחינם.</p>
       <div class="cta">
         <a class="btn" href={first}>
           <span>התחילו בחוקים הבסיסיים</span>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
         </a>
         {hasPlay && <a class="btn btn-ghost" href="/play/">כבר יודעים לשחק? שחקו נגד המחשב</a>}
-        <p class="small muted">8 שיעורים קצרים · בלי הרשמה · ההתקדמות נשמרת רק במכשיר שלכם</p>
+        <a class="btn btn-ghost" href="#offer">
+          <span>מה יש באתר? סקירה קצרה</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"></path></svg>
+        </a>
+        <p class="small muted">
+          8 שיעורים קצרים · בלי הרשמה ·
+          {accountsOn ? (
+            <>
+              <span data-signed-out-only>ההתקדמות נשמרת במכשיר, ועם <a href="/account/">חשבון</a> (לא חובה) גם בין מכשירים</span>
+              <span data-signed-in-only>ההתקדמות נשמרת בחשבון שלכם, בכל מכשיר</span>
+            </>
+          ) : 'ההתקדמות נשמרת במכשיר שלכם'}
+        </p>
       </div>
     </div>
     <div class="hero-board">
-      <Board sfen={START} caption="מערך הפתיחה. הלוח לא מתהפך לעברית: טור 9 משמאל, טור 1 מימין, בדיוק כמו על לוח אמיתי." />
+      <Board sfen={START} />
     </div>
+  </section>
+
+  <section class="wrap block" aria-labelledby="offer">
+    <h2 id="offer">מה יש באתר</h2>
+    <ul class="offer">
+      {sections.map((s) => (
+        <li class="card">
+          <h3>{s.label}</h3>
+          {s.blurb && <p>{s.blurb}</p>}
+          <ul>
+            {s.links.map((l) => (
+              <li><a href={l.href} rel={l.external ? 'noopener' : undefined}>{l.label}{l.external && <span class="ext" aria-hidden="true"> ↗</span>}</a></li>
+            ))}
+          </ul>
+        </li>
+      ))}
+      {isLive(ACCOUNT) && (
+        <li class="card">
+          <h3>החשבון שלי</h3>
+          <p>ההתקדמות והמשחקים נשמרים בכל מכשיר. לא חובה, והכול עובד גם בלי.</p>
+          <ul><li><a href="/account/">כניסה או הרשמה</a></li></ul>
+        </li>
+      )}
+    </ul>
   </section>
 
   <section class="wrap block" aria-labelledby="three">
@@ -135,6 +175,7 @@ const hasAccount = pageExists('/account/');
   }
 
   .block { margin-top: 64px; }
+  #offer { scroll-margin-top: 16px; }
   .block > h2, .head-row { margin-bottom: 18px; }
   .head-row { display: flex; align-items: baseline; justify-content: space-between; }
 
@@ -147,6 +188,17 @@ const hasAccount = pageExists('/account/');
     .three { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; border-top: 0; }
     .three li { flex-direction: column; border-top: 2px solid var(--ink); border-bottom: 0; }
   }
+
+  .offer { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .card { background: var(--washi-2); border: 1px solid var(--rule); border-radius: 8px; padding: 16px 18px 12px; }
+  .card h3 { font-family: var(--f-display); font-size: 21px; font-weight: 800; margin-bottom: 4px; }
+  .card p { margin: 0 0 8px; color: var(--ink-2); line-height: 1.55; font-size: 16px; }
+  .card ul { list-style: none; margin: 0; padding: 0; }
+  .card li a { display: flex; align-items: center; min-height: 44px; font-weight: 700; color: var(--ink); text-decoration: none; border-top: 1px solid var(--rule); }
+  .card li a:hover { color: var(--seal); text-decoration: underline; }
+  .ext { color: var(--muted); font-weight: 400; }
+  @media (min-width: 700px) { .offer { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 1000px) { .offer { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; } }
 
   .course, .play { max-width: 720px; }
   .community { background: var(--washi-2); border-radius: 8px; padding: 28px 22px; max-width: 720px; }

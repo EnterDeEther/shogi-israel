@@ -3,7 +3,7 @@
 // Adding a page: add a link to the right section below. An internal link only shows once its page
 // exists in src/pages/ (see isLive), so a slot for a page that is still being built can sit here
 // already and appears by itself when the page lands. Links with a #hash are always shown.
-// Everything that teaches the game goes under "למד לשחק".
+// Only lessons go under "למדו לשחק"; background reading goes under "הכירו את השוגי", utilities under "כלים".
 
 export interface NavLink {
   href: string;
@@ -16,6 +16,8 @@ export interface NavLink {
 }
 export interface NavSection {
   label: string;
+  /** One line for the card this section gets on the home page. */
+  blurb?: string;
   links: NavLink[];
 }
 /** A top-level entry: a section (a dropdown on desktop, a heading on phones) or a single link. */
@@ -28,7 +30,16 @@ export { CONTACT_EMAIL } from './contact';
 
 export const NAV: NavItem[] = [
   {
-    label: 'למד לשחק',
+    label: 'הכירו את השוגי',
+    blurb: 'מאיפה הוא בא, ומה מוכר ומה חדש אם אתם שחקני שחמט.',
+    links: [
+      { href: '/chess/', label: 'לשחקני שחמט', hint: 'מה כבר מוכר, ומה חדש' },
+      { href: '/history/', label: 'ההיסטוריה של השוגי', hint: 'מ־1058 ועד היום' },
+    ],
+  },
+  {
+    label: 'למדו לשחק',
+    blurb: 'מאפס ועד פתיחות ואסטרטגיה, בעברית ובחינם.',
     links: [
       { href: '/rules/', label: 'חוקים בסיסיים', hint: 'מאפס, צעד אחר צעד' },
       { href: '/learn/', label: 'שיעורים אינטראקטיביים', hint: 'תרגול על הלוח' },
@@ -36,21 +47,27 @@ export const NAV: NavItem[] = [
       { href: '/learn/#cat-openings', label: 'פתיחות', sub: true },
       { href: '/learn/#cat-castles', label: 'מבצרים', sub: true },
       { href: '/learn/#cat-strategy', label: 'אסטרטגיה', sub: true },
-      { href: '/chess/', label: 'לשחקני שחמט', hint: 'מה כבר מוכר, ומה חדש' },
-      { href: '/lishogi/', label: 'המדריך לליש׳וגי', hint: 'לשחק אונליין מול כל העולם' },
-      { href: '/kif/', label: 'רישום משחקים (KIF)' },
-      { href: '/clock/', label: 'משחק על זמן', hint: 'איך השעון עובד' },
-      { href: '/history/', label: 'ההיסטוריה של השוגי', hint: 'מ־1058 ועד היום' },
     ],
   },
   {
     label: 'שחקו',
+    blurb: 'נגד המחשב כאן באתר, או מול שחקנים מכל העולם.',
     links: [
       { href: '/play/', label: 'נגד המחשב', hint: 'משחק מלא, ישר בדפדפן' },
+      { href: '/lishogi/', label: 'שחקו אונליין בליש׳וגי', hint: 'מדריך: משחקים מול כל העולם' },
+    ],
+  },
+  {
+    label: 'כלים',
+    blurb: 'שעון משחק, וצפייה במשחקים שנרשמו.',
+    links: [
+      { href: '/clock/', label: 'שעון משחק', hint: 'איך משחקים על זמן' },
+      { href: '/kif/', label: 'רישום משחקים (KIF)', hint: 'צפייה וניתוח של משחק שנרשם' },
     ],
   },
   {
     label: 'קהילה',
+    blurb: 'שחקנים ישראלים: קבוצות, משחקים ומפגשים.',
     links: [
       { href: '/#community', label: 'משחקים עם ישראלים' },
       { href: WHATSAPP_URL, label: 'קהילת הוואטסאפ', external: true },
@@ -86,6 +103,12 @@ export const liveNav = (): NavItem[] =>
     if (links.length === 1) return [{ ...links[0], label: i.label, hint: undefined }];
     return [{ ...i, links }];
   });
+
+/** The sections that have at least one live link, as they stand (none collapsed into a plain link): the home page cards. */
+export const liveSections = (): NavSection[] =>
+  NAV.filter(isSection)
+    .map((s) => ({ ...s, links: s.links.filter((l) => isLive(l) && !l.sub) }))
+    .filter((s) => s.links.length > 0);
 
 /** Groups each run of sub links into one array, so a view can draw them as a row of chips. */
 export const withChips = (links: NavLink[]): (NavLink | NavLink[])[] =>

@@ -37,6 +37,11 @@ const ext = (l: NavLink) => (l.external ? { rel: 'noopener', target: '_blank' } 
       {account && <a class="account" href={account.href} aria-current={here(account)}>{account.label}</a>}
     </nav>
 
+    <button type="button" class="theme-btn" data-theme-toggle aria-label="מעבר למצב כהה" aria-pressed="false">
+      <svg class="i-moon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg>
+      <svg class="i-sun" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"></path></svg>
+    </button>
+
     <details class="nav-narrow" data-nav-narrow>
       <summary aria-label="תפריט">
         <svg class="i-open" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"></path></svg>
@@ -70,12 +75,23 @@ const ext = (l: NavLink) => (l.external ? { rel: 'noopener', target: '_blank' } 
 
 <style>
   .site-header { border-bottom: 1px solid var(--rule); background: var(--washi); position: relative; z-index: 20; }
-  .bar { display: flex; align-items: center; justify-content: space-between; min-height: 64px; gap: 16px; }
+  .bar { display: flex; align-items: center; min-height: 64px; gap: 16px; }
   .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); flex-shrink: 0; }
   .logo { width: 44px; height: 44px; flex-shrink: 0; }
   .brand-name { font-family: var(--f-display); font-weight: 900; font-size: 22px; letter-spacing: -0.2px; white-space: nowrap; }
   .ext { font-size: 0.8em; margin-inline-start: 4px; color: var(--muted); }
   .hint { display: block; font-size: 14px; font-weight: 400; color: var(--muted); line-height: 1.4; }
+
+  /* Light / dark button: shows the sun in dark mode (press for light) and the moon in light mode. */
+  .theme-btn {
+    appearance: none; background: transparent; border: 0; color: var(--ink); cursor: pointer;
+    width: 44px; height: 44px; border-radius: 6px; display: flex; align-items: center; justify-content: center;
+    margin-inline-start: auto; flex-shrink: 0;
+  }
+  .theme-btn:hover { background: var(--washi-2); }
+  .theme-btn .i-sun { display: none; }
+  :global(html[data-theme="dark"]) .theme-btn .i-sun { display: block; }
+  :global(html[data-theme="dark"]) .theme-btn .i-moon { display: none; }
 
   /* ---------- phones: a full-height panel under the bar ---------- */
   .nav-wide { display: none; }
@@ -110,9 +126,10 @@ const ext = (l: NavLink) => (l.external ? { rel: 'noopener', target: '_blank' } 
   .panel a[aria-current="page"] .label::before { content: '● '; font-size: 0.6em; vertical-align: middle; }
 
   /* ---------- desktop: a bar with dropdowns ---------- */
-  @media (min-width: 900px) {
+  @media (min-width: 1040px) {
     .nav-narrow { display: none; }
-    .nav-wide { display: flex; align-items: center; gap: 26px; }
+    .nav-wide { display: flex; align-items: center; gap: 22px; margin-inline-start: auto; }
+    .theme-btn { margin-inline-start: 0; }
   }
   .nav-wide .top, .nav-group summary {
     color: var(--ink); text-decoration: none; font-weight: 500; padding: 8px 0; border-bottom: 2px solid transparent; white-space: nowrap;
@@ -133,7 +150,7 @@ const ext = (l: NavLink) => (l.external ? { rel: 'noopener', target: '_blank' } 
   .nav-menu a:hover, .nav-menu a[aria-current="page"] { background: var(--washi-2); }
   .nav-menu a[aria-current="page"] .label { color: var(--seal); }
   .nav-wide .account {
-    color: var(--ink); text-decoration: none; font-weight: 700; padding: 7px 14px; border: 1.5px solid var(--ink); border-radius: 6px;
+    color: var(--ink); text-decoration: none; font-weight: 700; padding: 7px 14px; border: 1.5px solid var(--ink); border-radius: 6px; white-space: nowrap;
   }
   .nav-wide .account:hover, .nav-wide .account[aria-current="page"] { background: var(--washi-2); }
 </style>
