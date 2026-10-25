@@ -35,6 +35,13 @@ export function el(tag: string, attrs: Attrs = {}, ...children: Child[]): HTMLEl
   return e;
 }
 
+// Openings, castles and strategy are explained on /learn/guide/; the map and each stage's start screen link there.
+const GUIDE: Record<string, { anchor: string; text: string }> = {
+  openings: { anchor: 'opening', text: 'il_guideOpenings' },
+  castles: { anchor: 'castle', text: 'il_guideCastles' },
+  strategy: { anchor: 'strategy', text: 'il_guideStrategy' },
+};
+
 /** Our strings use **bold** for a new term, and moves like P-76 must stay left-to-right. */
 export function rich(text: string): DocumentFragment {
   const f = document.createDocumentFragment();
@@ -212,6 +219,7 @@ function renderHome(ctrl: LearnCtrl, _root: HTMLElement, q: Q, go: Go, stageLink
     ...categories.map((c) =>
       el('section', { class: 'categ', 'aria-labelledby': `cat-${c.key}` },
         el('h2', { id: `cat-${c.key}` }, c.name),
+        GUIDE[c.key] && el('p', {}, el('a', { href: `/learn/guide/#${GUIDE[c.key].anchor}` }, i18n(GUIDE[c.key].text))),
         el('div', { class: 'categ_stages' },
           ...c.stages.map((s) => {
             const status = statuses.get(s.key)!;
@@ -310,6 +318,7 @@ function renderLesson(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go, stageLin
         el('p', { class: 'eyebrow' }, i18nFormat('stageX', stage.id)),
         el('h2', { id: 'learn-ov-title' }, stage.title),
         el('p', {}, rich(stage.intro)),
+        GUIDE[vm.category.key] && el('p', { class: 'guide-link' }, el('a', { href: `/learn/guide/#${GUIDE[vm.category.key].anchor}`, onclick: (e: Event) => e.stopPropagation() }, i18n('il_guideRead'))),
         el('button', { type: 'button', class: 'btn primary', onclick: start, 'data-autofocus': true, 'data-fid': 'letsgo' }, i18n('letsGo')),
       ),
     );
