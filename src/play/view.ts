@@ -3,7 +3,7 @@
 // the game buttons, you and your clock. The setup (level, side, clock) opens on top of the board.
 // Page is RTL; the board is LTR and never mirrors. Plain DOM, same helpers as the lessons.
 // AGPL-3.0-or-later, like the rest of this site.
-import { el, icon, pieceSetSwitch } from '../learn/view';
+import { el, icon, nextInCourse, pieceSetSwitch } from '../learn/view';
 import { copyText, downloadKif, kifFileName, LISHOGI_IMPORT_URL } from '../lib/kif';
 import type PlayCtrl from './ctrl';
 import type { PlaySettings } from './ctrl';
@@ -231,6 +231,7 @@ function status(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void): HTM
       // signed-out only (global.css hides it once html[data-signed-in] is set)
       el('p', { class: 'small', 'data-signed-out-only': '' },
         won ? 'כל הכבוד! ' : '', el('a', { href: '/account/?mode=signup' }, 'פתחו חשבון בחינם'), ' כדי לשמור את המשחקים שלכם ולהתקדם במסלול, בכל מכשיר.'),
+      nextInCourse(),
     );
   }
   if (ctrl.engineError) {
