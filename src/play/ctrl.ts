@@ -57,6 +57,13 @@ export function loadSettings(): PlaySettings {
   } catch {
     /* defaults */
   }
+  // /play/?level=3 (from a course step on /course/) preselects that level on the setup screen
+  try {
+    const asked = Number(new URLSearchParams(window.location.search).get('level'));
+    if (Number.isInteger(asked) && asked >= 1 && asked <= 10) s.level = asked;
+  } catch {
+    /* no URL: keep the saved level */
+  }
   return s;
 }
 

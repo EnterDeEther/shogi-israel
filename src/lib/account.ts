@@ -4,7 +4,10 @@
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js';
 import { AUTH_STORAGE_KEY, SUPABASE_KEY, SUPABASE_URL } from './account-config';
 import type { GameRecord } from '../play/record';
-import { emptyProgress, gameResult, LEARN_KEY, merge, normalize, RULES_PREFIX, same, type SyncedProgress } from './progress-sync';
+import { emptyProgress, gameResult, merge, normalize, same, type SyncedProgress } from './progress-sync';
+import { readLocal, writeLocal } from './progress-local';
+
+export { readLocal };
 
 let client: SupabaseClient | null = null;
 export function supabase(): SupabaseClient {
@@ -127,31 +130,6 @@ export async function syncGames(): Promise<number> {
 }
 
 // ---------- progress ----------
-export function readLocal(): SyncedProgress {
-  const p = emptyProgress();
-  try {
-    const learn = localStorage.getItem(LEARN_KEY);
-    if (learn) p.learn = normalize({ learn: JSON.parse(learn) }).learn;
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (k?.startsWith(RULES_PREFIX) && localStorage.getItem(k) === '1') p.rules.push(k.slice(RULES_PREFIX.length));
-    }
-  } catch { /* no storage: nothing local */ }
-  return normalize(p);
-}
-
-function writeLocal(p: SyncedProgress) {
-  try {
-    if (Object.keys(p.learn.stages).length) localStorage.setItem(LEARN_KEY, JSON.stringify(p.learn));
-    else localStorage.removeItem(LEARN_KEY);
-    for (let i = localStorage.length - 1; i >= 0; i--) {
-      const k = localStorage.key(i);
-      if (k?.startsWith(RULES_PREFIX) && !p.rules.includes(k.slice(RULES_PREFIX.length))) localStorage.removeItem(k);
-    }
-    for (const id of p.rules) localStorage.setItem(RULES_PREFIX + id, '1');
-  } catch { /* fine */ }
-}
-
 /** Pull the account's progress, merge it with this device's, and save the union on both sides. */
 export async function syncProgress(): Promise<SyncedProgress | null> {
   const session = await getSession();
@@ -185,7 +163,7 @@ export function startSync() {
   // "reset my progress" in the lessons: overwrite the account's copy instead of merging it back
   document.addEventListener('progress-reset', () => void pushLocal());
   window.addEventListener('pagehide', () => { if (timer) void syncProgress(); });
-  document.addEventListener('shogi-il:game-end', () => void syncGames());
+  document.addEventListener('shogi-il:game-end', () => { void syncGames(); later(); }); // the course counts games played
   void syncProgress();
   void syncGames();
 }

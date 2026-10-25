@@ -1,17 +1,20 @@
 import { describe, expect, test } from 'bun:test';
-import { gameResult, merge, normalize, NICKNAME_RE, RESERVED_RE, stats } from '../src/lib/progress-sync';
+import { emptyProgress, gameResult, merge, normalize, NICKNAME_RE, RESERVED_RE, stats } from '../src/lib/progress-sync';
 
 describe('progress sync', () => {
   test('merge keeps the best score per level and every finished lesson', () => {
     const a = normalize({ learn: { stages: { king: { scores: [3, 1] } } }, rules: ['01'] });
     const b = normalize({ learn: { stages: { king: { scores: [2, 2, 3] }, gold: { scores: [1] } } }, rules: ['02', '01'] });
-    expect(merge(a, b)).toEqual({ learn: { stages: { king: { scores: [3, 2, 3] }, gold: { scores: [1] } } }, rules: ['01', '02'] });
+    const m = merge(a, b);
+    expect(m.learn).toEqual({ stages: { king: { scores: [3, 2, 3] }, gold: { scores: [1] } } });
+    expect(m.rules).toEqual(['01', '02']);
   });
 
   test('normalize survives junk', () => {
-    expect(normalize(null)).toEqual({ learn: { stages: {} }, rules: [] });
-    expect(normalize({ learn: { stages: { x: { scores: [9, -1, 'a', null] }, y: 5 } }, rules: [1, 'a'] }))
-      .toEqual({ learn: { stages: { x: { scores: [3, 0, 0, 0] } } }, rules: ['a'] });
+    expect(normalize(null)).toEqual(emptyProgress());
+    const p = normalize({ learn: { stages: { x: { scores: [9, -1, 'a', null] }, y: 5 } }, rules: [1, 'a'] });
+    expect(p.learn).toEqual({ stages: { x: { scores: [3, 0, 0, 0] } } });
+    expect(p.rules).toEqual(['a']);
   });
 
   test('stats count stars, levels and finished stages', () => {
