@@ -93,6 +93,17 @@ const sections = liveSections();
     </ol>
   </section>
 
+  <section class="wrap block" aria-labelledby="phases">
+    <h2 id="phases">איך נראה משחק: שלושה שלבים</h2>
+    <p class="phases-lead">כמו בשחמט, כל משחק שוגי עובר פתיחה, אמצע המשחק וסוף המשחק. בשיעורים נציין באיזה שלב נמצא כל נושא.</p>
+    <ol class="phases">
+      <li><h3>פתיחה</h3><p>מסדרים את הכלים ובונים מבצר סביב המלך.</p></li>
+      <li><h3>אמצע המשחק</h3><p>תוקפים לפי תוכנית, ומחליפים כלים.</p></li>
+      <li><h3>סוף המשחק</h3><p>ההתקפות הופכות למירוץ למט.</p></li>
+    </ol>
+    <p><a class="small" href="/learn/guide/#phases">הסבר על שלושת השלבים</a></p>
+  </section>
+
   <section class="wrap block" aria-labelledby="course">
     <div class="head-row">
       <h2 id="course">חוקים בסיסיים</h2>
@@ -188,6 +199,14 @@ const sections = liveSections();
     .three { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; border-top: 0; }
     .three li { flex-direction: column; border-top: 2px solid var(--ink); border-bottom: 0; }
   }
+
+  .phases-lead { margin: 0 0 14px; color: var(--ink-2); line-height: 1.6; max-width: 40em; }
+  .phases { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 12px; counter-reset: ph; }
+  .phases li { counter-increment: ph; border: 1px solid var(--rule); border-radius: 8px; padding: 12px 16px; }
+  .phases h3 { margin: 0 0 4px; }
+  .phases h3::before { content: counter(ph) ". "; color: var(--seal); }
+  .phases p { margin: 0; color: var(--ink-2); line-height: 1.55; }
+  @media (min-width: 700px) { .phases { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; } }
 
   .offer { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
   .card { background: var(--washi-2); border: 1px solid var(--rule); border-radius: 8px; padding: 16px 18px 12px; }
