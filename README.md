@@ -14,7 +14,7 @@ MDX components available in lessons: `<Step>` (board beside its text), `<Board s
 The header (desktop bar and phone panel) and the footer site map are drawn from `src/lib/nav.ts`.
 Add a link to the right section there. An internal link shows only once its page exists in `src/pages/`,
 so a slot for a page still being built can wait in the list and appears when the page lands.
-Everything that teaches the game goes under "למד לשחק". A section with a single live link shows as a plain link.
+Sections: "למדו לשחק" (lessons only), "שחקו", "הכירו את השוגי" (background reading), "כלים", "קהילה". Each section's `blurb` and links also draw the "מה יש באתר" cards on the home page. A section with a single live link shows as a plain link in the menu.
 Every page is in `sitemap-index.xml` unless it sets `noindex` on `<Base>`.
 
 ## Design rules (Direction A, "נייר ודיו")

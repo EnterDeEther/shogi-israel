@@ -32,14 +32,9 @@ const choice = answer === 'sente' || answer === 'gote';
   .choices .btn { min-height: 48px; justify-content: center; min-width: 120px; }
   .choices .btn[aria-pressed="true"] { background: var(--ink); color: var(--washi); }
   .task-fb { margin: 10px 0 0; min-height: 1.6em; font-weight: 700; }
-  .task-fb:global(.is-ok) { color: #2F6B2A; }
-  .task-fb:global(.is-no) { color: #8A2A12; }
-  @media (prefers-color-scheme: dark) { .task-fb:global(.is-ok) { color: #8FCB85; } .task-fb:global(.is-no) { color: #F2A48F; } }
+  .task-fb:global(.is-ok) { color: var(--ok-text); }
+  .task-fb:global(.is-no) { color: var(--no-text); }
   .task-fb:empty { margin: 0; min-height: 0; }
-  :global(.task.done) { border-color: #2F6B2A; }
-  :global(.task.done) .task-label { color: #2F6B2A; }
-  @media (prefers-color-scheme: dark) {
-    :global(.task.done) { border-color: #8FCB85; }
-    :global(.task.done) .task-label { color: #8FCB85; }
-  }
+  :global(.task.done) { border-color: var(--ok-text); }
+  :global(.task.done) .task-label { color: var(--ok-text); }
 </style>

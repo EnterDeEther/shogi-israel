@@ -9,6 +9,7 @@ import Step from '../../components/mdx/Step.astro';
 import Piece from '../../components/Piece.astro';
 import { getCollection, render } from 'astro:content';
 import { RULES_COURSE, PRACTICE } from '../../lib/course';
+import { accountsEnabled } from '../../lib/account-config';
 import { pageExists, LISHOGI_TEAM } from '../../lib/live';
 import { stages } from '../../learn/categories';
 import { stageUrl } from '../../learn/urls';
@@ -73,7 +74,13 @@ const practice = (PRACTICE[stub.slug] ?? []).filter((p) => learnPages.has(p.stag
     )}
 
     <p class="complete" data-lesson-complete hidden>
-      <strong>סיימתם את השיעור.</strong> ההתקדמות נשמרה במכשיר הזה.
+      <strong>סיימתם את השיעור.</strong>
+      {accountsEnabled ? (
+        <>
+          <span data-signed-out-only> ההתקדמות נשמרה במכשיר הזה. כדי לשמור אותה בכל מכשיר, <a href="/account/">פתחו חשבון</a> (לא חובה).</span>
+          <span data-signed-in-only> ההתקדמות נשמרה בחשבון שלכם.</span>
+        </>
+      ) : ' ההתקדמות נשמרה במכשיר הזה.'}
     </p>
 
     {practice.length > 0 && (
@@ -139,8 +146,8 @@ const practice = (PRACTICE[stub.slug] ?? []).filter((p) => learnPages.has(p.stag
   .prose :global(td:nth-child(4)) { font-family: var(--f-kanji); font-weight: 800; }
   .prose :global(.term strong) { color: var(--ink); }
 
-  .complete { margin: 32px 0 0; padding: 14px 16px; border-radius: 6px; background: #E3EFD6; color: #1F4A1C; }
-  @media (prefers-color-scheme: dark) { .complete { background: #1F3320; color: #CFE8C6; } }
+  .complete a { color: inherit; }
+  .complete { margin: 32px 0 0; padding: 14px 16px; border-radius: 6px; background: var(--fb-ok-bg); color: var(--fb-ok-fg); }
 
   .practice { margin-top: 40px; padding: 20px; border: 1.5px solid var(--ink); border-radius: 6px; }
   .practice h2 { font-size: 24px; margin: 0 0 6px; }

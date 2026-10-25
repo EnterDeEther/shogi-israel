@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import ThemeSetting from '../components/ThemeSetting.astro';
 import { accountsEnabled } from '../lib/account-config';
 import { stages } from '../learn/categories';
 
@@ -12,6 +13,8 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       <section>
         <h1>החשבון שלי</h1>
         <p class="lead">החשבונות בדרך. בינתיים ההתקדמות שלכם נשמרת בדפדפן הזה, בלי הרשמה.</p>
+        <h2>הגדרות</h2>
+        <div class="setting"><p class="setting-label">מראה האתר</p><ThemeSetting /></div>
       </section>
     )}
 
@@ -109,6 +112,11 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
           <p class="muted" data-no-games>עוד לא שיחקתם. משחקים <a href="/play/">נגד המחשב</a> נשמרים כאן אוטומטית.</p>
 
           <h2>הגדרות</h2>
+          <div class="setting">
+            <p class="setting-label" id="theme-label">מראה האתר</p>
+            <ThemeSetting />
+            <p class="small muted">נשמר במכשיר הזה. אפשר גם להחליף בכל עמוד עם הכפתור בראש העמוד.</p>
+          </div>
           <div class="actions">
             <button type="button" class="btn btn-ghost" data-rename><span>שינוי כינוי</span></button>
             <button type="button" class="btn btn-ghost" data-changepass><span>שינוי סיסמה</span></button>
@@ -367,6 +375,8 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
   .stats div { border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px; background: var(--washi-2); }
   .stats dt { font-size: 14px; color: var(--muted); }
   .stats dd { margin: 2px 0 0; font: 700 26px/1.2 var(--f-display); font-variant-numeric: tabular-nums; }
+  .setting { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+  .setting-label { margin: 0; font-weight: 700; }
   .actions { display: flex; flex-wrap: wrap; gap: 10px; }
   .actions .btn { min-height: 48px; font-size: 16px; }
   .danger { border-top: 1px solid var(--rule); padding-top: 14px; margin-top: 10px; }
