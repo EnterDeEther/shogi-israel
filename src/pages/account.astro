@@ -67,6 +67,15 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
         <section data-view="sent" hidden>
           <h1>בדקו את המייל</h1>
           <p class="lead" data-sent-text></p>
+          <!-- Sign-up only: the code from the email, typed in this tab. The link in the email still works, but it
+               opens in the mail app's browser, which isn't where the visitor's progress is (Instagram's in-app
+               browser, for one). The code keeps the sign-in, and the progress, in this browser. -->
+          <form class="form" data-code-form novalidate hidden>
+            <label for="acc-code">הקוד מהמייל</label>
+            <input id="acc-code" name="code" dir="ltr" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="10" required />
+            <button type="submit" class="btn wide">אישור</button>
+            <p class="err" role="alert" data-err></p>
+          </form>
           <p class="muted small">לא הגיע? בדקו בתיקיית הספאם, או חכו כמה דקות ונסו שוב.</p>
           <p class="small"><button type="button" class="link" data-back>חזרה לכניסה</button></p>
         </section>
@@ -378,13 +387,32 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       if (data.session) return; // email confirmation off: already signed in
       // Supabase hides whether an email is registered: an existing address comes back with no identities.
       if (data.user && data.user.identities?.length === 0) return fail('signin', 'כבר יש חשבון עם המייל הזה. עברו ל"כניסה", או אפסו את הסיסמה.');
-      sent(`שלחנו מייל ל־${email}. לחצו על הקישור שבו כדי לאשר את הכתובת, ותגיעו ישר לבחירת כינוי.`);
+      codeEmail = email;
+      sent(`שלחנו מייל ל־${email} עם קוד אישור. הקלידו אותו כאן, ותגיעו ישר לבחירת כינוי. אפשר גם ללחוץ על הקישור שבמייל.`, true);
     });
 
-    const sent = (text: string) => {
+    // ---------- sign-up code (typed here, so the session lands in this browser) ----------
+    let codeEmail = '';
+    const codeForm = $<HTMLFormElement>('[data-code-form]');
+    codeForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const code = $<HTMLInputElement>('#acc-code').value.replace(/\D/g, '');
+      if (code.length < 6) return fail('sent', 'הקוד הוא 6 ספרות. העתיקו אותו מהמייל ונסו שוב.');
+      busy(codeForm, true);
+      const { error } = await acc.verifySignupCode(codeEmail, code);
+      busy(codeForm, false);
+      if (!error) return; // onAuthStateChange routes on SIGNED_IN
+      if (error.status === 429) return fail('sent', 'יותר מדי ניסיונות. חכו כמה דקות ונסו שוב.');
+      fail('sent', 'הקוד לא נכון, או שעבר זמנו. בדקו שהעתקתם את הקוד מהמייל האחרון.');
+    });
+
+    const sent = (text: string, withCode = false) => {
       const p = $('[data-sent-text]');
       p.textContent = text;
+      codeForm.hidden = !withCode;
+      fail('sent', '');
       show('sent');
+      if (withCode) $<HTMLInputElement>('#acc-code').focus();
     };
 
     // ---------- forgot / new password ----------
