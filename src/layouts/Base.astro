@@ -140,6 +140,7 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
         document.documentElement.setAttribute('data-signed-in', '');
         if (location.pathname !== '/account/') import('../lib/account').then((m) => m.startSync());
         import('../lib/xp-toast').then((m) => m.startXpNotes()); // points and ranks
+        import('../lib/inbox-ui').then((m) => m.startInbox()); // the bell in the header
       } else if (accountsEnabled) {
         import('../lib/xp-toast').then((m) => m.startXpNotes(true)); // a preview of the points an account would keep
       }

@@ -1,12 +1,16 @@
 ---
 // The menu itself lives in src/lib/nav.ts; this file only draws it (desktop bar + phone panel).
 import { ACCOUNT, isCurrent, isLive, isSection, liveNav, withChips, type NavLink } from '../lib/nav';
+import { WEEK_LENGTH } from '../tsume/week';
 
 const path = Astro.url.pathname;
 const items = liveNav();
 const account = isLive(ACCOUNT) ? ACCOUNT : undefined;
 const here = (l: NavLink) => (isCurrent(l, path) ? 'page' : undefined);
 const ext = (l: NavLink) => (l.external ? { rel: 'noopener', target: '_blank' } : {});
+// the bell (signed-in only, src/lib/inbox-ui.ts) needs the size of the weekly-puzzle collection
+const tsume = import.meta.glob<{ default: unknown[] }>('../tsume/data/mate*.json', { eager: true });
+const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length ?? 0;
 ---
 <header class="site-header">
   <div class="wrap bar">
@@ -36,6 +40,21 @@ const ext = (l: NavLink) => (l.external ? { rel: 'noopener', target: '_blank' } 
       ))}
       {account && <a class="account" href={account.href} aria-current={here(account)}><span data-signed-in-only>{account.label}</span><span data-signed-out-only>הרשמה / כניסה</span></a>}
     </nav>
+
+    {account && (
+      <details class="inbox" data-inbox data-signed-in-only data-week-count={weekCount}>
+        <summary>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9z"></path><path d="M10 19a2 2 0 0 0 4 0"></path></svg>
+          <span class="visually-hidden" data-inbox-label>התראות</span>
+          <span class="inbox-count" data-inbox-count aria-hidden="true" hidden></span>
+        </summary>
+        <div class="inbox-panel" data-inbox-panel>
+          <p class="inbox-title">התראות</p>
+          <ul class="inbox-list" data-inbox-list aria-live="polite"></ul>
+          <p class="inbox-foot"><a href="/account/#notifications">הגדרות התראות</a></p>
+        </div>
+      </details>
+    )}
 
     <button type="button" class="theme-btn" data-theme-toggle aria-label="מעבר למצב כהה" aria-pressed="false">
       <svg class="i-moon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg>
@@ -93,6 +112,40 @@ const ext = (l: NavLink) => (l.external ? { rel: 'noopener', target: '_blank' } 
   :global(html[data-theme="dark"]) .theme-btn .i-sun { display: block; }
   :global(html[data-theme="dark"]) .theme-btn .i-moon { display: none; }
 
+  /* ---------- the bell (signed-in visitors): sits just before the light / dark button ---------- */
+  .inbox { position: static; margin-inline-start: auto; flex-shrink: 0; }
+  :global(html[data-signed-in]) .theme-btn { margin-inline-start: 0; }
+  .inbox summary {
+    list-style: none; position: relative; width: 44px; height: 44px; border-radius: 6px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; color: var(--ink);
+  }
+  .inbox summary::-webkit-details-marker { display: none; }
+  .inbox summary:hover, .inbox[open] summary { background: var(--washi-2); }
+  .inbox-count {
+    position: absolute; top: 4px; inset-inline-end: 2px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+    background: var(--seal); color: var(--on-seal); font: 700 11px/18px var(--f-body); text-align: center;
+  }
+  .inbox-panel {
+    position: absolute; top: 100%; inset-inline: 0; z-index: 30; max-height: calc(100dvh - 64px); overflow-y: auto; overscroll-behavior: contain;
+    background: var(--washi); border-top: 1px solid var(--rule); border-bottom: 1.5px solid var(--ink);
+    padding: 12px var(--gutter) 14px; box-shadow: 0 12px 24px -16px rgba(0, 0, 0, 0.5);
+  }
+  .inbox-title { margin: 0 0 6px; font-size: 13px; font-weight: 700; letter-spacing: 0.4px; color: var(--seal); }
+  .inbox-list { list-style: none; margin: 0; padding: 0; }
+  .inbox-list :global(.inbox-item) { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--rule); align-items: flex-start; }
+  .inbox-list :global(.inbox-item p) { margin: 0 0 2px; line-height: 1.5; }
+  .inbox-list :global(.inbox-item a) { color: var(--seal); font-weight: 700; }
+  .inbox-list :global(.inbox-sub) { color: var(--muted); font-size: 14px; }
+  .inbox-list :global(.inbox-kanji) {
+    flex: none; display: grid; place-items: center; min-width: 36px; height: 36px; padding: 0 4px; border-radius: 18px;
+    background: var(--washi-2); border: 1px solid var(--rule); color: var(--ink); font: 700 15px/1 var(--f-kanji);
+  }
+  .inbox-list :global(.inbox-item.new .inbox-kanji) { background: var(--seal); border-color: var(--seal); color: var(--on-seal); }
+  .inbox-list :global(.inbox-item.new p) { font-weight: 700; }
+  .inbox-list :global(.inbox-empty) { padding: 14px 0; color: var(--muted); }
+  .inbox-foot { margin: 10px 0 0; font-size: 15px; }
+  .inbox-foot a { color: var(--ink-2); }
+
   /* ---------- phones: a full-height panel under the bar ---------- */
   .nav-wide { display: none; }
   .nav-narrow summary {
@@ -130,6 +183,11 @@ const ext = (l: NavLink) => (l.external ? { rel: 'noopener', target: '_blank' } 
     .nav-narrow { display: none; }
     .nav-wide { display: flex; align-items: center; gap: 22px; margin-inline-start: auto; }
     .theme-btn { margin-inline-start: 0; }
+    .inbox { position: relative; margin-inline-start: 0; }
+    .inbox-panel {
+      top: calc(100% + 8px); inset-inline: auto -8px; width: 380px; max-height: 70vh; padding: 10px 16px 12px;
+      border: 1.5px solid var(--ink); border-radius: 8px;
+    }
   }
   .nav-wide .top, .nav-group summary {
     color: var(--ink); text-decoration: none; font-weight: 500; padding: 8px 0; border-bottom: 2px solid transparent; white-space: nowrap;

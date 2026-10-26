@@ -3,6 +3,8 @@ import Base from '../layouts/Base.astro';
 import ThemeSetting from '../components/ThemeSetting.astro';
 import { accountsEnabled } from '../lib/account-config';
 import { stages } from '../learn/categories';
+import { GROUP_LABEL } from '../lib/inbox';
+import { INBOX_GROUPS } from '../lib/progress-sync';
 
 // Levels per Learn stage, for the stats (so the page doesn't ship the whole lesson engine).
 const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length]));
@@ -122,6 +124,18 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
           </dl>
           <p class="muted" data-no-games>עוד לא שיחקתם. משחקים <a href="/play/">נגד המחשב</a> נשמרים כאן אוטומטית.</p>
 
+          <h2 id="notifications">התראות</h2>
+          <fieldset class="notify" data-notify>
+            <legend>מה יופיע בפעמון שבראש העמוד</legend>
+            {INBOX_GROUPS.map((g) => (
+              <label class="switch-row" for={`notify-${g}`}>
+                <span><strong>{GROUP_LABEL[g].title}</strong><span class="small muted">{GROUP_LABEL[g].sub}</span></span>
+                <input type="checkbox" class="switch" id={`notify-${g}`} data-notify-group={g} checked />
+              </label>
+            ))}
+          </fieldset>
+          <p class="small muted" data-notify-saved>ההגדרות נשמרות בחשבון ועוברות איתכם לכל מכשיר.</p>
+
           <h2>הגדרות</h2>
           <div class="setting">
             <p class="setting-label" id="theme-label">מראה האתר</p>
@@ -148,7 +162,8 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
 
 <script>
   import { accountsEnabled } from '../lib/account-config';
-  import { stats, type SyncedProgress } from '../lib/progress-sync';
+  import { stats, type InboxGroup, type SyncedProgress } from '../lib/progress-sync';
+  import { updateInbox } from '../lib/progress-local';
   import { KIND_LABEL, nextStep, pathProgress, stepHref, TRACK_INFO } from '../lib/curriculum';
   import { rankFor, xpBreakdown } from '../lib/xp';
 
@@ -199,6 +214,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       $('[data-stat="stages"]').textContent = `${s.stagesDone} / ${s.stages}`;
       $('[data-stat="rules"]').textContent = String(s.rulesDone);
       showCourse(progress);
+      showNotify(progress);
       await acc.syncGames();
       const g = await acc.gameSummary();
       $('[data-games]').hidden = g.played === 0;
@@ -208,6 +224,8 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       $('[data-stat="losses"]').textContent = String(g.losses);
       $('[data-stat="rating"]').textContent = String(profile.rating);
       show('home');
+      // the bell's "הגדרות התראות" link: the panel only appears now, so scroll to it by hand
+      if (location.hash === '#notifications') document.getElementById('notifications')?.scrollIntoView();
     }
 
     // The guided course: where they are on the path, and a button to the next step.
@@ -231,6 +249,18 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       link.href = track && next ? stepHref(next.step, p, levelCounts) : '/course/';
       $('span', link).textContent = track ? 'לצעד הבא' : 'בחרו מאיפה להתחיל';
     }
+
+    // Notification settings: which kinds of notes the bell shows (SyncedProgress.inbox.off, synced).
+    const notifyBoxes = [...root.querySelectorAll<HTMLInputElement>('[data-notify-group]')];
+    function showNotify(p: SyncedProgress) {
+      notifyBoxes.forEach((b) => { b.checked = !p.inbox.off.includes(b.dataset.notifyGroup as InboxGroup); });
+    }
+    notifyBoxes.forEach((b) => b.addEventListener('change', async () => {
+      const off = notifyBoxes.filter((x) => !x.checked).map((x) => x.dataset.notifyGroup as InboxGroup);
+      updateInbox((i) => { i.off = off; i.offAt = new Date().toISOString(); });
+      const ok = await acc.syncProgress();
+      $('[data-notify-saved]').textContent = ok ? 'נשמר. ההגדרות עוברות איתכם לכל מכשיר.' : 'נשמר במכשיר הזה. נעדכן את החשבון בפעם הבאה שתהיו מחוברים.';
+    }));
 
     function askNickname(isNew: boolean) {
       $('[data-nick-title]').textContent = isNew ? 'בחרו כינוי' : 'שינוי כינוי';
@@ -440,6 +470,23 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
   .course-links .btn { min-height: 48px; font-size: 16px; }
   .bar { height: 8px; border-radius: 999px; background: var(--rule); overflow: hidden; }
   .bar span { display: block; height: 100%; width: 0; background: var(--seal); border-radius: inherit; }
+  .notify { border: 1px solid var(--rule); border-radius: 8px; padding: 4px 16px; margin: 0; background: var(--washi-2); }
+  .notify legend { padding: 0 6px; margin-inline-start: -6px; font-weight: 700; }
+  .switch-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 56px; padding: 8px 0; border-bottom: 1px solid var(--rule); cursor: pointer; }
+  .switch-row:last-child { border-bottom: 0; }
+  .switch-row > span { display: flex; flex-direction: column; }
+  .switch {
+    appearance: none; flex: none; width: 44px; height: 26px; border-radius: 13px; margin: 0; cursor: pointer; position: relative;
+    background: var(--rule); border: 1.5px solid var(--ink-2); transition: background 0.15s;
+  }
+  .switch::after {
+    content: ''; position: absolute; top: 2px; inset-inline-start: 2px; width: 19px; height: 19px; border-radius: 50%;
+    background: var(--washi); border: 1px solid var(--ink-2); transition: inset-inline-start 0.15s;
+  }
+  .switch:checked { background: var(--seal); border-color: var(--seal); }
+  .switch:checked::after { inset-inline-start: 19px; border-color: var(--seal); }
+  .switch:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .switch, .switch::after { transition: none; } }
   .setting { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
   .setting-label { margin: 0; font-weight: 700; }
   .actions { display: flex; flex-wrap: wrap; gap: 10px; }
