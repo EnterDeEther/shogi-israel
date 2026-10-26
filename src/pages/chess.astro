@@ -9,6 +9,9 @@ import { pageExists } from '../lib/live';
 // Play here first: the CTA goes to /play/ once it exists, until then to the piece lesson.
 const playLive = pageExists('/play/');
 const guideLive = pageExists('/lishogi/');
+const courseLive = pageExists('/course/');
+const tryLive = pageExists('/try/');
+const ranksLive = pageExists('/ranks/');
 const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>';
 ---
 <Page
@@ -109,6 +112,13 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
       <span class="small muted">אחרי כמה משחקים. כאן מתחיל העומק האסטרטגי.</span>
     </li>
   </ol>
+  {courseLive && (
+    <div class="course-box">
+      <p><strong>רוצים שהאתר יוביל אתכם צעד אחר צעד?</strong> במסלול לימוד אישי כל שלב מחכה לכם בתורו, מהחוקים ועד בעיות מט, וההתקדמות נשמרת בחשבון.{ranksLive && <> הנקודות מעלות דרגת לימוד באתר, לא דרגה רשמית (<a href="/ranks/">מה הן הדרגות בשוגי</a>).</>}</p>
+      <p class="cta"><a class="btn" href="/course/"><span>מסלול לימוד אישי, עם חשבון חינמי</span><Fragment set:html={arrow} /></a> <a href="/account/?mode=signup">פתחו חשבון בחינם</a></p>
+    </div>
+  )}
+  {tryLive && <p class="small muted">רוצים קודם לראות איך זה נראה? <a href="/try/">משחק אחד, מהלך אחרי מהלך</a>.</p>}
 
   <h2 id="traps">חמש טעויות של שחקני שחמט</h2>
   <ul class="traps">
@@ -172,7 +182,9 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
     ) : (
       <a class="btn" href="/rules/02-how-pieces-move/"><span>הכירו את הכלים</span><Fragment set:html={arrow} /></a>
     )}
+    {courseLive && <a class="btn btn-ghost" href="/course/">מסלול לימוד אישי</a>}
   </div>
+  {courseLive && <p class="small muted">המסלול שומר את ההתקדמות בחשבון: <a href="/account/?mode=signup">פתחו חשבון בחינם</a>.</p>}
   <p class="small muted">רוצים יריבים אנושיים? שחקנים ישראלים נפגשים ב<a href="/community/">קהילה שלנו</a>, ומשחקים פומביים וטורנירים מתקיימים {guideLive ? <a href="/lishogi/">בליש׳וגי</a> : 'בליש׳וגי'}.</p>
 
   <details class="more sources">
@@ -191,6 +203,8 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
   .lead { font-size: 19px; color: var(--ink); }
   .cta { display: flex; flex-wrap: wrap; gap: 12px; margin: 22px 0 8px; }
   .cta.end { margin-top: 32px; }
+  .course-box { margin: 20px 0 8px; padding: 16px 18px; border: 1px solid var(--rule); border-radius: 10px; }
+  .course-box .cta { margin: 12px 0 0; align-items: center; }
 
   :global(.prose) .pieces { list-style: none; padding: 0; margin: 0 0 8px; display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; }
   @media (min-width: 640px) { .pieces { grid-template-columns: 1fr 1fr; } }
