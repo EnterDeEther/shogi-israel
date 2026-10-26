@@ -20,6 +20,7 @@ select set_config('request.jwt.claims','{"sub":"00000000-0000-0000-0000-00000000
 insert into results select 'B reads A progress rows', count(*)::text from progress;
 insert into results select 'B reads A games rows', count(*)::text from games;
 insert into results select 'B sees public nicknames', count(*)::text from profiles;
+do $$ begin begin perform created_at from profiles; insert into results values('B reads sign-up times','ALLOWED'); exception when others then insert into results values('B reads sign-up times','blocked: '||sqlstate); end; end $$;
 update progress set data='{}' where user_id='00000000-0000-0000-0000-0000000000a1';
 do $$ begin begin update profiles set nickname='Hacked' where id='00000000-0000-0000-0000-0000000000a1'; exception when others then null; end; end $$;
 -- anon
@@ -27,6 +28,9 @@ reset role; set local role anon;
 select set_config('request.jwt.claims','{"role":"anon"}',true);
 do $$ begin begin perform count(*) from progress; insert into results values('anon reads progress','ALLOWED'); exception when others then insert into results values('anon reads progress','blocked: '||sqlstate); end; end $$;
 do $$ begin begin perform delete_my_account(); insert into results values('anon delete fn','ALLOWED'); exception when others then insert into results values('anon delete fn','blocked: '||sqlstate); end; end $$;
+insert into results select 'anon sees nicknames', count(nickname)::text from profiles;
+do $$ begin begin perform id from profiles; insert into results values('anon reads account ids','ALLOWED'); exception when others then insert into results values('anon reads account ids','blocked: '||sqlstate); end; end $$;
+do $$ begin begin perform created_at from profiles; insert into results values('anon reads sign-up times','ALLOWED'); exception when others then insert into results values('anon reads sign-up times','blocked: '||sqlstate); end; end $$;
 insert into results select 'anon community counts (totals only: 1, 1, 1)', community_counts()::text;
 reset role;
 insert into results select 'A progress after B tamper', data::text from progress where user_id='00000000-0000-0000-0000-0000000000a1';

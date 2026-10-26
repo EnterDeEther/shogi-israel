@@ -11,7 +11,7 @@ export function i18n(key: string): string {
   const k = key.includes(':') ? key.slice(key.indexOf(':') + 1) : key;
   const s = strings[k];
   if (s === undefined) {
-    if (import.meta.env?.DEV) console.warn(`[learn i18n] missing key: ${key}`);
+    if (import.meta.env.DEV) console.warn(`[learn i18n] missing key: ${key}`);
     return k;
   }
   return s;
