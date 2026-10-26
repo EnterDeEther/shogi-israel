@@ -29,7 +29,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
       <h2 id="gate-h">מסלול אישי, נקודות ודרגות</h2>
       {accountsOn ? (
         <>
-          <p>עם חשבון (בחינם) המסלול נהיה שלכם: עונים על שאלה אחת ומקבלים נקודת התחלה, רואים בכל רגע את הצעד הבא, וצוברים נקודות שמעלות אתכם בדרגה, מ־15 קיו ועד דאן. ההתקדמות נשמרת בכל מכשיר.</p>
+          <p>עם חשבון (בחינם) המסלול נהיה שלכם: עונים על שאלה אחת ומקבלים נקודת התחלה, רואים בכל רגע את הצעד הבא, וצוברים נקודות שמעלות אתכם בדרגה, מ־15 קיו ועד דאן (<a href="/ranks/#site">דרגות של לימוד, לא דרגה רשמית</a>). ההתקדמות נשמרת בכל מכשיר.</p>
           <p class="small muted">מה שכבר עשיתם בדפדפן הזה נכנס לחשבון ונספר.</p>
           <p class="gate-cta"><a class="btn" href="/account/?mode=signup"><span>פתחו חשבון בחינם</span></a> <a href="/account/?mode=signin">כבר יש לכם חשבון? כניסה</a></p>
         </>
@@ -72,6 +72,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
         <p class="rank-name" data-rank-name></p>
         <div class="bar" aria-hidden="true"><span data-rank-bar></span></div>
         <p class="small muted" data-rank-text></p>
+        <p class="small"><a href="/ranks/#site">מה הדרגה הזאת אומרת, ומה לא?</a></p>
         <p class="rank-share" data-rank-share></p>
         <details class="rank-how">
           <summary class="small">איך צוברים נקודות?</summary>
@@ -85,7 +86,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
             <li>בונוס על כל צעד שהשלמתם במסלול: {XP.step}</li>
             <li>בונוס על שלב שהשלמתם כולו: {XP.unit}</li>
           </ul>
-          <p class="small muted">כל דבר נספר פעם אחת: חזרה על תרגיל או בעיה שכבר פתרתם לא מוסיפה נקודות, ושיפור מכוכב אחד לשלושה מוסיף רק את ההפרש. צעד שסימנתם "כבר יודעים" לא נותן נקודות. הדרגות נקראות על שם דרגות השוגי, קיו ודאן, אבל מודדות התקדמות בלימוד באתר, לא כוח משחק. יש {RANKS.length} דרגות, מ־{RANKS[0].name} ועד {RANKS[RANKS.length - 1].name}.</p>
+          <p class="small muted">כל דבר נספר פעם אחת: חזרה על תרגיל או בעיה שכבר פתרתם לא מוסיפה נקודות, ושיפור מכוכב אחד לשלושה מוסיף רק את ההפרש. צעד שסימנתם "כבר יודעים" לא נותן נקודות. הדרגות נקראות על שם דרגות השוגי, קיו ודאן, אבל מודדות התקדמות בלימוד באתר, לא כוח משחק (<a href="/ranks/">איך זה עובד בעולם</a>). יש {RANKS.length} דרגות, מ־{RANKS[0].name} ועד {RANKS[RANKS.length - 1].name}.</p>
         </details>
       </div>
     </section>

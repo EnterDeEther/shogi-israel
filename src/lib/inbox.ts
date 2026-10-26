@@ -68,7 +68,7 @@ export function buildInbox(p: SyncedProgress, ctx: InboxContext): InboxNote[] {
   if (rank.index > 0) {
     notes.push({
       id: `rank:${rank.index}`, kind: 'rank', kanji: rank.kanji,
-      text: `עליתם לדרגה ${rank.name}!${next ? ` הדרגה הבאה: ${next.name}.` : ''}`,
+      text: `עליתם לדרגה ${rank.name} במסלול!${next ? ` הדרגה הבאה: ${next.name}.` : ''}`,
       href: '/course/', cta: 'למסלול',
     });
   }
