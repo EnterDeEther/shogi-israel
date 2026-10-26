@@ -19,7 +19,8 @@ export default defineConfig({
   trailingSlash: 'ignore',
   integrations: [
     mdx(),
-    sitemap({ filter: (page) => !isDraftLesson(page) && !/\/account\//.test(page) }),
+    // Pages with noindex stay out too: /account/ and /tsume/week/ (a hop to this week's puzzle).
+    sitemap({ filter: (page) => !isDraftLesson(page) && !/\/(account|tsume\/week)\//.test(page) }),
   ],
   // Stylesheets as files, so the CSP needs no style hashes (hashes would switch 'unsafe-inline' off).
   build: { format: 'directory', inlineStylesheets: 'never' },
