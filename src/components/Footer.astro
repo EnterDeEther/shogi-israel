@@ -37,18 +37,26 @@ const solos = items.filter((i) => !isSection(i));
 </footer>
 
 <script>
-  // The site tour (src/scripts/tour.ts) runs on the home page and loads only when a visitor asks for it.
-  // On the home page a [data-tour-start] link starts it in place; elsewhere it goes to /?tour=site, which starts it here.
-  const start = (from?: HTMLElement) => import('../scripts/tour').then((m) => m.startTour(from));
+  // The site tours (src/scripts/tour.ts) run on the home page and load only when a visitor asks for one.
+  // On the home page a [data-tour-start] link starts its tour in place ("site" unless it names "account");
+  // elsewhere it goes to /?tour=…, which starts it here. The account tour is for signed-in visitors only.
+  type TourId = 'site' | 'account';
+  const isTourId = (v: string | null): v is TourId => v === 'site' || v === 'account';
+  const start = (id: TourId, from?: HTMLElement) => {
+    const ok = id === 'site' || document.documentElement.hasAttribute('data-signed-in');
+    return import('../scripts/tour').then((m) => m.startTour(ok ? id : 'site', from));
+  };
   document.addEventListener('click', (e) => {
     const link = (e.target as HTMLElement).closest<HTMLElement>('[data-tour-start]');
     if (!link || location.pathname !== '/') return;
     e.preventDefault();
-    void start(link);
+    void start(link.dataset.tourStart === 'account' ? 'account' : 'site', link);
   });
-  if (location.pathname === '/' && new URLSearchParams(location.search).get('tour') === 'site') {
+  const asked = new URLSearchParams(location.search).get('tour');
+  if (location.pathname === '/' && isTourId(asked)) {
     history.replaceState(history.state, '', location.pathname + location.hash);
-    requestAnimationFrame(() => void start());
+    // the learner home fills itself in after load; give it a moment so the ring lands on the right place
+    setTimeout(() => void start(asked), asked === 'account' ? 300 : 0);
   }
 </script>
 
