@@ -21,7 +21,7 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
 
     <nav class="nav-wide" aria-label="ראשי">
       {items.map((i) => isSection(i) ? (
-        <details class="nav-group" data-nav-group>
+        <details class="nav-group" data-nav-group data-tour={i.tour}>
           <summary class={i.links.some((l) => isCurrent(l, path)) ? 'current' : undefined}>
             {i.label}
             <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
@@ -38,7 +38,7 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
       ) : (
         <a class="top" href={i.href} aria-current={here(i)} {...ext(i)}>{i.label}</a>
       ))}
-      {account && <a class="account" href={account.href} aria-current={here(account)}><span data-signed-in-only>{account.label}</span><span data-signed-out-only>הרשמה / כניסה</span></a>}
+      {account && <a class="account" data-tour="account" href={account.href} aria-current={here(account)}><span data-signed-in-only>{account.label}</span><span data-signed-out-only>הרשמה / כניסה</span></a>}
     </nav>
 
     {account && (
@@ -68,7 +68,7 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
       </summary>
       <nav class="panel" aria-label="ראשי (נייד)">
         {items.map((i) => isSection(i) ? (
-          <section class="group">
+          <section class="group" data-tour={i.tour}>
             <h2 class="group-title">{i.label}</h2>
             <ul>
               {withChips(i.links).map((l) => Array.isArray(l) ? (
@@ -86,7 +86,7 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
         ) : (
           <a class="solo" href={i.href} aria-current={here(i)} {...ext(i)}>{i.label}</a>
         ))}
-        {account && <a class="solo account" href={account.href} aria-current={here(account)}><span data-signed-in-only>{account.label}</span><span data-signed-out-only>הרשמה / כניסה</span></a>}
+        {account && <a class="solo account" data-tour="account" href={account.href} aria-current={here(account)}><span data-signed-in-only>{account.label}</span><span data-signed-out-only>הרשמה / כניסה</span></a>}
       </nav>
     </details>
   </div>

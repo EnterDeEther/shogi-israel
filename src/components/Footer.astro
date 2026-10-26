@@ -1,5 +1,6 @@
 ---
 import { CONTACT_EMAIL, isSection, liveNav } from '../lib/nav';
+import { TOUR_URL } from '../lib/tour';
 
 const year = new Date().getFullYear();
 const items = liveNav();
@@ -23,6 +24,7 @@ const solos = items.filter((i) => !isSection(i));
       )}
     </nav>
     <nav aria-label="קישורים משפטיים ומידע" class="legal">
+      <a href={TOUR_URL} data-tour-start>סיור באתר</a>
       <a href="/accessibility/">הצהרת נגישות</a>
       <a href="/privacy/">מדיניות פרטיות</a>
       <a href="/about/#credits">קרדיטים</a>
@@ -33,6 +35,22 @@ const solos = items.filter((i) => !isSection(i));
     <p class="small muted">שוגי ישראל · <bdi dir="ltr">shogi.co.il</bdi> · <a href={`mailto:${CONTACT_EMAIL}`}><bdi dir="ltr">{CONTACT_EMAIL}</bdi></a> · {year}</p>
   </div>
 </footer>
+
+<script>
+  // The site tour (src/scripts/tour.ts) runs on the home page and loads only when a visitor asks for it.
+  // On the home page a [data-tour-start] link starts it in place; elsewhere it goes to /?tour=site, which starts it here.
+  const start = (from?: HTMLElement) => import('../scripts/tour').then((m) => m.startTour(from));
+  document.addEventListener('click', (e) => {
+    const link = (e.target as HTMLElement).closest<HTMLElement>('[data-tour-start]');
+    if (!link || location.pathname !== '/') return;
+    e.preventDefault();
+    void start(link);
+  });
+  if (location.pathname === '/' && new URLSearchParams(location.search).get('tour') === 'site') {
+    history.replaceState(history.state, '', location.pathname + location.hash);
+    requestAnimationFrame(() => void start());
+  }
+</script>
 
 <style>
   .site-footer { margin-top: 72px; border-top: 1px solid var(--rule); padding: 32px 0 40px; }

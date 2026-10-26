@@ -7,6 +7,7 @@ import Piece from '../../components/Piece.astro';
 import PieceToggle from '../../components/PieceToggle.astro';
 import { pageExists } from '../../lib/live';
 import { WHATSAPP_URL } from '../../lib/nav';
+import { TOUR_URL } from '../../lib/tour';
 import '../../styles/shogiground.css';
 import '../../styles/learn.css';
 
@@ -101,6 +102,7 @@ const hasPlay = pageExists('/play/');
         <li><a href={WHATSAPP_URL} rel="noopener"><strong>קהילת הוואטסאפ</strong><span>קהילה קטנה ובתחילת הדרך. כתבו "חדש" ואענה לכם אישית.</span><em>להצטרף</em></a></li>
       </ul>
       {hasPlay && <p class="jump"><strong>כבר יודעים לשחק?</strong> אפשר לדלג ו<a href="/play/">לשחק נגד המחשב</a>, מרמה 1.</p>}
+      <p class="tour-offer small muted">רוצים לראות מה עוד יש באתר? <a href={TOUR_URL} data-tour-start>סיור קצר באתר</a></p>
     </section>
     <div class="sr-only" aria-live="polite" data-live></div>
   </div>
@@ -176,4 +178,5 @@ const hasPlay = pageExists('/play/');
   .then__grid em { font-style: normal; color: var(--seal); font-weight: 700; }
   .then__grid a:hover strong { text-decoration: underline; }
   .jump { background: var(--washi-2); border-radius: 6px; padding: 14px 18px; margin: 0; }
+  .tour-offer { margin: 14px 0 0; }
 </style>
