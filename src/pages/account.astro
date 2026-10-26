@@ -6,6 +6,7 @@ import { stages } from '../learn/categories';
 import { GROUP_LABEL } from '../lib/inbox';
 import { INBOX_GROUPS } from '../lib/progress-sync';
 import { CONSENT_TEXT } from '../lib/consent';
+import { ACCOUNT_TOUR_URL } from '../lib/tour';
 
 // Levels per Learn stage, for the stats (so the page doesn't ship the whole lesson engine).
 const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length]));
@@ -109,6 +110,11 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
           <p class="eyebrow">החשבון שלי</p>
           <h1><bdi data-nickname></bdi></h1>
           <p class="muted small">מחוברים בתור <bdi dir="ltr" data-email></bdi></p>
+          <div class="welcome" data-welcome role="region" aria-labelledby="welcome-h" hidden>
+            <h2 id="welcome-h">ברוכים הבאים!</h2>
+            <p>רוצים סיור קצר במה שהחשבון נותן לכם? פחות מדקה, ואתם מחליטים מתי להמשיך.</p>
+            <p class="welcome-cta"><a class="btn" href={ACCOUNT_TOUR_URL}><span>הראו לי</span></a> <button type="button" class="btn btn-ghost" data-welcome-close><span>לא עכשיו</span></button></p>
+          </div>
 
           <h2>מסלול לימוד אישי</h2>
           <div class="course-card" data-course-card>
@@ -170,6 +176,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
             <ThemeSetting />
             <p class="small muted">נשמר במכשיר הזה. אפשר גם להחליף בכל עמוד עם הכפתור בראש העמוד.</p>
           </div>
+          <p><a href={ACCOUNT_TOUR_URL}>הצגת הסיור בחשבון שוב</a></p>
           <div class="actions">
             <button type="button" class="btn btn-ghost" data-rename><span>שינוי כינוי</span></button>
             <button type="button" class="btn btn-ghost" data-changepass><span>שינוי סיסמה</span></button>
@@ -477,9 +484,12 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       if (res === 'taken') return fail('nickname', 'הכינוי הזה כבר תפוס. נסו אחר.');
       if (res === 'reserved') return fail('nickname', 'הכינוי הזה שמור (נראה כמו שם של צוות האתר). בחרו כינוי אחר.');
       if (res === 'error') return fail('nickname', 'השמירה לא הצליחה. נסו שוב בעוד רגע.');
+      // a brand-new account: offer the account tour once, on the page they land on next
+      if (!profile) $('[data-welcome]').hidden = false;
       void route();
     });
     $('[data-nick-cancel] button').addEventListener('click', () => show('home'));
+    $('[data-welcome-close]').addEventListener('click', () => { $('[data-welcome]').hidden = true; });
     $('[data-rename]').addEventListener('click', () => askNickname(false));
 
     // ---------- sign out / delete ----------
@@ -534,6 +544,11 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
   .stats dd { margin: 2px 0 0; font: 700 26px/1.2 var(--f-display); font-variant-numeric: tabular-nums; }
   .course-card { border: 1px solid var(--rule); border-inline-start: 4px solid var(--seal); border-radius: 8px; padding: 14px 16px; background: var(--washi-2); display: flex; flex-direction: column; gap: 6px; }
   .course-card p { margin: 0; }
+  .welcome { border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; margin-top: 16px; background: var(--washi-2); }
+  .welcome h2 { margin: 0 0 4px; }
+  .welcome p { margin: 0; }
+  .welcome-cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px !important; }
+  .welcome-cta .btn { min-height: 48px; font-size: 16px; }
   .course-title { font-weight: 700; font-size: 18px; }
   .course-rank { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
   .course-rank strong { font: 800 22px/1.2 var(--f-display); }

@@ -1,12 +1,12 @@
-// The site tour on the home page: a dimmed page, a ring around one thing at a time, and a card that waits for
-// "הבא" (it never moves on by itself). Steps and copy: src/lib/tour.ts. Loaded only when a visitor starts it
-// (the starters and /?tour=site are wired in src/components/Footer.astro).
+// The site tours on the home page: a dimmed page, a ring around one thing at a time, and a card that waits for
+// "הבא" (it never moves on by itself). Steps and copy: src/lib/tour.ts. Loaded only when a visitor starts one
+// (the starters and /?tour=… are wired in src/components/Footer.astro).
 //
 // Phones get the card as a bottom sheet, and menu steps open the ☰ panel themselves. From 1040px (where the
 // header dropdowns start) the card sits under or over the highlighted item, and dropdowns stay closed.
 // Tapping the highlighted item leaves the tour and does what the tap would have done; a tap on the dimmed page,
 // ✕, Escape or "דלגו על הסיור" closes it.
-import { SITE_TOUR, counter, readTourEnd, stepsFor, writeTourEnd, type TourEnd, type TourStep } from '../lib/tour';
+import { TOURS, counter, readTourEnd, stepsFor, writeTourEnd, type TourEnd, type TourId, type TourStep } from '../lib/tour';
 
 const WIDE = '(min-width: 1040px)';
 const GAP = 14;
@@ -36,13 +36,14 @@ const CLOSE_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" 
 
 let running = false;
 
-export function startTour(from?: HTMLElement | null): void {
+export function startTour(id: TourId, from?: HTMLElement | null): void {
   if (running) return;
-  const steps = stepsFor(SITE_TOUR.steps, (t) => find(t) !== null);
+  const tour = TOURS[id];
+  const steps = stepsFor(tour.steps, (t) => find(t) !== null);
   if (steps.length === 0) return;
   running = true;
   const root = document.documentElement;
-  const firstTime = readTourEnd(store()) === null;
+  const firstTime = readTourEnd(store(), id) === null;
   // -1 is the start card, steps.length the end card
   let at = -1;
   let target: HTMLElement | null = null;
@@ -90,10 +91,16 @@ export function startTour(from?: HTMLElement | null): void {
     if (!wide) return;
     const w = card.offsetWidth, ch = card.offsetHeight;
     let top: number, left: number;
-    if (r) {
+    if (r && r.bottom + GAP + ch <= innerHeight - 12) {
       top = r.bottom + GAP;
-      if (top + ch > innerHeight - 12) top = Math.max(12, r.top - ch - GAP);
       left = r.right - w; // RTL: line up with the item's right edge
+    } else if (r && r.top - GAP - ch >= 12) {
+      top = r.top - GAP - ch;
+      left = r.right - w;
+    } else if (r) {
+      // a tall item: beside it, on the side it reads towards first (left), else on the right
+      top = Math.min(Math.max(12, r.top), innerHeight - ch - 12);
+      left = r.left - GAP - w >= 12 ? r.left - GAP - w : r.right + GAP;
     } else {
       top = (innerHeight - ch) / 2;
       left = (innerWidth - w) / 2;
@@ -108,14 +115,14 @@ export function startTour(from?: HTMLElement | null): void {
     const next = [...document.querySelectorAll<HTMLAnchorElement>('a[data-tour="next"]')].find(visible);
     if (next) return { href: next.href, label: 'לצעד הבא שלי' };
     const first = [...document.querySelectorAll<HTMLAnchorElement>('a[data-tour="try"]')].find(visible);
-    return { href: first?.href ?? '/try/', label: SITE_TOUR.end.primary };
+    return { href: first?.href ?? '/try/', label: tour.end.primary };
   }
 
   function render() {
     card.replaceChildren();
     const head = h('div', { class: 'tour-head' });
     const step: TourStep | undefined = steps[at];
-    head.append(h('p', { class: 'tour-count', id: 'tour-count' }, step ? counter(at + 1, steps.length) : at < 0 ? 'סיור באתר' : 'סוף הסיור'));
+    head.append(h('p', { class: 'tour-count', id: 'tour-count' }, step ? counter(at + 1, steps.length) : at < 0 ? tour.name : 'סוף הסיור'));
     const x = h('button', { type: 'button', class: 'tour-x', 'aria-label': 'סגירת הסיור', 'data-act': 'skip' });
     x.innerHTML = CLOSE_ICON;
     head.append(x);
@@ -123,8 +130,8 @@ export function startTour(from?: HTMLElement | null): void {
 
     const actions = h('div', { class: 'tour-actions' });
     if (at < 0) {
-      card.append(h('h2', { class: 'tour-title', id: 'tour-title' }, SITE_TOUR.intro.title), h('p', { class: 'tour-body', id: 'tour-body' }, SITE_TOUR.intro.body(steps.length)));
-      actions.append(h('button', { type: 'button', class: 'btn btn-ghost', 'data-act': 'skip' }, SITE_TOUR.intro.secondary), h('button', { type: 'button', class: 'btn', 'data-act': 'next' }, SITE_TOUR.intro.primary));
+      card.append(h('h2', { class: 'tour-title', id: 'tour-title' }, tour.intro.title), h('p', { class: 'tour-body', id: 'tour-body' }, tour.intro.body(steps.length)));
+      actions.append(h('button', { type: 'button', class: 'btn btn-ghost', 'data-act': 'skip' }, tour.intro.secondary), h('button', { type: 'button', class: 'btn', 'data-act': 'next' }, tour.intro.primary));
       card.append(actions);
     } else if (step) {
       card.append(h('h2', { class: 'tour-title', id: 'tour-title' }, step.title), h('p', { class: 'tour-body', id: 'tour-body' }, step.body));
@@ -136,8 +143,8 @@ export function startTour(from?: HTMLElement | null): void {
       card.append(actions, h('button', { type: 'button', class: 'tour-skip', 'data-act': 'skip' }, 'דלגו על הסיור'));
     } else {
       const next = nextStepLink();
-      card.append(h('h2', { class: 'tour-title', id: 'tour-title' }, SITE_TOUR.end.title), h('p', { class: 'tour-body', id: 'tour-body' }, SITE_TOUR.end.body));
-      actions.append(h('button', { type: 'button', class: 'btn btn-ghost', 'data-act': 'done' }, SITE_TOUR.end.secondary), h('a', { class: 'btn', href: next.href, 'data-act': 'finish' }, next.label));
+      card.append(h('h2', { class: 'tour-title', id: 'tour-title' }, tour.end.title), h('p', { class: 'tour-body', id: 'tour-body' }, tour.end.body));
+      actions.append(h('button', { type: 'button', class: 'btn btn-ghost', 'data-act': 'done' }, tour.end.secondary), h('a', { class: 'btn', href: next.href, 'data-act': 'finish' }, next.label));
       card.append(actions);
     }
   }
@@ -163,10 +170,10 @@ export function startTour(from?: HTMLElement | null): void {
     catcher.remove(); spot.remove(); card.remove();
     root.classList.remove('tour-on');
     if (!keepMenu) setMenu(false);
-    writeTourEnd(store(), how);
+    writeTourEnd(store(), how, id);
     if (how === 'left') return;
     if (from?.isConnected) from.focus({ preventScroll: true });
-    if (how === 'skipped' && firstTime) note('אפשר לחזור לסיור מהקישור "סיור באתר" בתחתית הדף.');
+    if (how === 'skipped' && firstTime) note(tour.again);
   }
 
   card.addEventListener('click', (e) => {
