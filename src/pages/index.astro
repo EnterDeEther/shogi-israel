@@ -1,12 +1,15 @@
 ---
 import Base from '../layouts/Base.astro';
 import Board from '../components/Board.astro';
+import LearnerHome from '../components/LearnerHome.astro';
 import { getCollection } from 'astro:content';
 import { RULES_COURSE, pad } from '../lib/course';
 import { FIRST_GAME, firstGamePlies } from '../lib/first-game';
 import { pageExists, LISHOGI_TEAM } from '../lib/live';
 import { liveSections, isLive, ACCOUNT } from '../lib/nav';
-import { accountsEnabled } from '../lib/account-config';
+import { accountsEnabled, AUTH_STORAGE_KEY } from '../lib/account-config';
+import { WEEK_LENGTH } from '../tsume/week';
+import { createHash } from 'node:crypto';
 
 const live = new Set((await getCollection('rules')).map((e) => e.id));
 const START = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1';
@@ -20,20 +23,40 @@ const hasPlay = pageExists('/play/');
 const hasAccount = pageExists('/account/');
 const accountsOn = hasAccount && accountsEnabled;
 const sections = liveSections();
-// The guided course is for signed-in visitors: for them the first button goes to their next step.
-const hasCourse = pageExists('/course/') && accountsOn;
+// Learners (signed in, or with progress on this device) get their own home: src/components/LearnerHome.astro.
+const hasCourse = pageExists('/course/');
+const tsume = import.meta.glob<{ default: unknown[] }>('../tsume/data/mate*.json', { eager: true });
+const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length ?? 0;
+// Runs before anything paints, so a learner never sees the newcomer hero first: a quick guess from what this
+// device keeps (src/lib/progress-sync.ts: learn, tsume, rules lessons 'done:'; src/play/record.ts: games).
+// LearnerHome's script checks it properly. Inline, so the CSP needs its hash.
+const LEARNER_GUESS = `try {
+  const ls = localStorage;
+  const auth = document.currentScript.dataset.auth;
+  let on = !!(auth && ls.getItem(auth)) || ['shogi-il.learn.progress', 'shogi-il.tsume.solved', 'shogi-il.play.history'].some((k) => { const v = ls.getItem(k); return !!v && v !== '[]' && v !== '{}'; });
+  for (let i = 0; !on && i < ls.length; i++) on = (ls.key(i) || '').startsWith('done:');
+  if (on) document.documentElement.setAttribute('data-learner', '');
+} catch {}`;
+if (hasCourse) Astro.csp?.insertScriptHash(`sha256-${createHash('sha256').update(LEARNER_GUESS).digest('base64')}`);
 ---
 <Base
   title="שוגי ישראל"
   description="השחמט היפני, בעברית ומאפס. חוקים בסיסיים בשיעורים קצרים ואינטראקטיביים, בחינם ובלי הרשמה, וקהילה ישראלית של שחקני שוגי."
 >
-  <section class="hero wrap">
+  {hasCourse && (
+    <>
+      <script is:inline data-auth={accountsOn ? AUTH_STORAGE_KEY : ''} set:html={LEARNER_GUESS}></script>
+      <LearnerHome weekCount={weekCount} />
+    </>
+  )}
+
+  <section class="hero wrap" data-newcomer>
     <div class="hero-text">
       <p class="eyebrow">הקהילה הישראלית של השוגי, השחמט היפני</p>
       <h1>ברוכים הבאים לשוגי ישראל</h1>
       <p class="lead">הבית של שחקני השוגי בישראל. לומדים את השחמט היפני בעברית ומאפס, משחקים כאן באתר, ופוגשים שחקנים אחרים. הכול בחינם.</p>
       <div class="cta">
-        <a class="btn" href={first} data-hero-start={hasCourse ? '' : undefined}>
+        <a class="btn" href={first}>
           <span data-hero-label>{hasTry ? 'צפו במשחק אחד, מהלך אחרי מהלך' : 'התחילו בחוקים הבסיסיים'}</span>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
         </a>
@@ -69,7 +92,7 @@ const hasCourse = pageExists('/course/') && accountsOn;
     </div>
   </section>
 
-  <section class="wrap block" aria-labelledby="three">
+  <section class="wrap block" aria-labelledby="three" data-newcomer>
     <h2 id="three">שלושה דברים שעושים את השוגי לשוגי</h2>
     <ol class="three">
       <li>
@@ -87,7 +110,7 @@ const hasCourse = pageExists('/course/') && accountsOn;
     </ol>
   </section>
 
-  <section class="wrap block" aria-labelledby="phases">
+  <section class="wrap block" aria-labelledby="phases" data-newcomer>
     <h2 id="phases">איך נראה משחק: שלושה שלבים</h2>
     <p class="phases-lead">כמו בשחמט, כל משחק שוגי עובר פתיחה, אמצע המשחק וסוף המשחק. בשיעורים נציין באיזה שלב נמצא כל נושא.</p>
     <ol class="phases">
@@ -99,7 +122,7 @@ const hasCourse = pageExists('/course/') && accountsOn;
   </section>
 
   {pageExists('/course/') && (
-    <section class="wrap block" aria-labelledby="start-h" data-signed-out-only>
+    <section class="wrap block" aria-labelledby="start-h" data-newcomer>
       <div class="start">
         <h2 id="start-h">לא בטוחים מאיפה להתחיל?</h2>
         <p>במסלול לימוד אישי עונים על שאלה אחת ומקבלים סדר לימוד ברור, מהחוקים ועד בעיות מט. עם חשבון בחינם יש גם נקודות ודרגות לימוד, מ־15 קיו ועד דאן (<a href="/ranks/">מה ההבדל מדרגה אמיתית?</a>).</p>
@@ -111,7 +134,7 @@ const hasCourse = pageExists('/course/') && accountsOn;
     </section>
   )}
 
-  <section class="wrap block" aria-labelledby="course">
+  <section class="wrap block" aria-labelledby="course" data-newcomer>
     <div class="head-row">
       <h2 id="course">חוקים בסיסיים</h2>
       <a class="small" href="/rules/">לכל השיעורים</a>
@@ -138,7 +161,7 @@ const hasCourse = pageExists('/course/') && accountsOn;
   </section>
 
   {hasPlay && (
-    <section id="play" class="wrap block" aria-labelledby="play-h">
+    <section id="play" class="wrap block" aria-labelledby="play-h" data-newcomer>
       <h2 id="play-h">משחקים כאן, באתר</h2>
       <ul class="rows links play">
         <li><a href="/play/"><span class="row-title"><strong>שחקו נגד המחשב</strong></span><span class="small muted">עשר רמות, ממתחילים ועד מתקדמים. ישר בדפדפן, בחינם</span></a></li>
@@ -148,7 +171,7 @@ const hasCourse = pageExists('/course/') && accountsOn;
     </section>
   )}
 
-  <section id="community" class="wrap block" aria-labelledby="community-h">
+  <section id="community" class="wrap block" aria-labelledby="community-h" data-newcomer>
     <div class="community">
       <h2 id="community-h">משחקים עם ישראלים</h2>
       <p>אנחנו קהילה קטנה ומתחילה. בואו להיות מהראשונים.</p>
@@ -199,45 +222,14 @@ const hasCourse = pageExists('/course/') && accountsOn;
   markDone();
   document.addEventListener('progress-synced', markDone);
 
-  // Signed-in visitors: the first button goes to their course (straight to the next step once they picked a start).
-  const start = document.querySelector<HTMLAnchorElement>('[data-hero-start]');
-  if (start && document.documentElement.hasAttribute('data-signed-in')) {
-    const showNext = async () => {
-      const [{ readLocal }, { nextStep, stepHref }, { LEVEL_COUNTS }] = await Promise.all([import('../lib/progress-local'), import('../lib/curriculum'), import('../lib/level-counts')]);
-      const p = readLocal();
-      const next = nextStep(p, LEVEL_COUNTS);
-      const label = start.querySelector('[data-hero-label]')!;
-      // labels about as long as the one they replace, so the hero doesn't jump
-      if (!p.course.track || !next) {
-        start.href = '/course/';
-        label.textContent = 'מסלול לימוד אישי: מאיפה מתחילים?';
-        return;
-      }
-      start.href = stepHref(next.step, p, LEVEL_COUNTS);
-      label.textContent = 'המשיכו במסלול שלכם';
-      start.title = next.step.title;
-    };
-    void showNext();
-    document.addEventListener('progress-synced', () => void showNext());
-  } else if (start) {
-    // Signed-out visitors coming back: the first button picks up the rules course where they stopped.
-    void import('../lib/course').then(({ RULES_COURSE }) => {
-      const done = (slug: string) => { try { return localStorage.getItem(`done:${slug}`) === '1'; } catch { return false; } };
-      if (!RULES_COURSE.some((l) => done(l.slug))) return; // first visit: keep the first step (watch one game)
-      const next = RULES_COURSE.find((l) => !done(l.slug));
-      const label = start.querySelector('[data-hero-label]')!;
-      if (next) {
-        start.href = `/rules/${next.slug}/`;
-        label.textContent = `המשיכו: שיעור ${next.n}, ${next.title}`;
-      } else {
-        start.href = '/learn/';
-        label.textContent = 'המשיכו לתרגול על הלוח';
-      }
-    });
-  }
 </script>
 
 <style>
+  /* who sees what: newcomers the hero, learners their own home (html[data-learner], set above) */
+  :global([data-learner-only]) { display: none; }
+  :global(html[data-learner] [data-learner-only]) { display: revert; }
+  :global(html[data-learner] [data-newcomer]) { display: none; }
+
   .hero { display: grid; gap: 32px; padding-top: 36px; }
   .hero-text { display: flex; flex-direction: column; gap: 16px; }
   .hero h1 { font-size: clamp(36px, 8.5vw, 60px); line-height: 1.1; }

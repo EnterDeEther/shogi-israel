@@ -1,0 +1,303 @@
+---
+// The home page for learners: signed-in visitors, and visitors without an account who already did something
+// the course counts (a lesson, a practice stage, a puzzle, a game). Instead of the newcomer hero it shows where
+// they stopped: the next step on the course path, their learning rank (a rank on this site, not a real one),
+// the path's four parts, and three things for today (the puzzle of the week, a game against the computer, the
+// community). Everything comes from the progress the site already keeps (src/lib/progress-local.ts), so the
+// page stays static; the script below fills it in. index.astro decides who sees it (html[data-learner]).
+import { CURRICULUM } from '../lib/curriculum';
+import { WEEK_LENGTH } from '../tsume/week';
+
+interface Props { weekCount: number }
+const { weekCount } = Astro.props;
+const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
+const PHASES = CURRICULUM.filter((u) => u.phase).length;
+---
+<section class="me wrap" data-learner-only data-me data-week-count={weekCount} aria-labelledby="me-h">
+  <div class="me-top">
+    <div class="me-main">
+      <p class="eyebrow">ברוכים השבים</p>
+      <h1 id="me-h"><span data-me-hello>טוב לראות אתכם שוב</span>.</h1>
+      <p class="lead" data-me-lead>הנה הצעד הבא שלכם.</p>
+
+      <div class="next" aria-labelledby="next-title">
+        <p class="next-where" data-next-where>הצעד הבא במסלול</p>
+        <p class="next-title" id="next-title" data-next-title>המסלול שלכם</p>
+        <p class="next-why" data-next-why></p>
+        <div class="next-progress" data-next-progress hidden>
+          <div class="bar" aria-hidden="true"><span></span></div>
+          <span class="small"></span>
+        </div>
+        <a class="btn next-btn" href="/course/" data-next-link><span data-next-cta>למסלול</span></a>
+      </div>
+    </div>
+
+    <aside class="rank" aria-labelledby="rank-h">
+      <p class="rank-head" id="rank-h">דרגת הלימוד שלכם · במסלול</p>
+      <div class="rank-row">
+        <span class="rank-kanji" lang="ja" aria-hidden="true" data-rank-kanji>十五級</span>
+        <p class="rank-name" data-rank-name>15 קיו</p>
+      </div>
+      <p class="rank-points" data-rank-points>0 נקודות</p>
+      <div class="bar" aria-hidden="true"><span data-rank-bar></span></div>
+      <p class="small rank-text" data-rank-text>נקודות נצברות פעם אחת על כל שיעור, בעיה או משחק.</p>
+      <p class="small rank-guest" data-signed-out-only>הנקודות נשמרות רק בדפדפן הזה. <a href="/account/?mode=signup">פתחו חשבון בחינם</a>, והן יישמרו בכל מכשיר.</p>
+      <p class="small"><a href="/ranks/#site">דרגה של לימוד באתר, לא דרגה רשמית</a></p>
+    </aside>
+  </div>
+
+  <section class="block-sm" aria-labelledby="path-h">
+    <div class="head-row">
+      <h2 id="path-h">המסלול שלכם</h2>
+      <a class="small" href="/course/">למסלול המלא</a>
+    </div>
+    <ol class="units">
+      {CURRICULUM.map((u) => (
+        <li>
+          <a class="unit" href={`/course/#${u.key}`} data-unit={u.key}>
+            <span class="unit-tag small">{u.phase ? `שלב ${u.phase} מתוך ${PHASES}` : 'לפני שמתחילים'}</span>
+            <strong class="unit-title">{u.title}</strong>
+            <span class="unit-goal small">{u.goal}</span>
+            <span class="unit-count small" data-unit-count></span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="block-sm" aria-labelledby="today-h">
+    <h2 id="today-h">להיום</h2>
+    <ul class="today">
+      <li class="today-card">
+        <h3>בעיית השבוע</h3>
+        <p data-week-text>בעיית מט ב־{WEEK_LENGTH} מהלכים, אותה בעיה לכולם. בעיה חדשה בכל יום ראשון.</p>
+        <a class="today-link" href="/tsume/week/" data-week-link><span data-week-cta>לפתור</span> ←</a>
+      </li>
+      <li class="today-card">
+        <h3>שחקו נגד המחשב</h3>
+        <p data-play-text>עשר רמות, ממתחילים ועד מתקדמים. רמה 1 סלחנית, והמטרה רק לסיים משחק שלם.</p>
+        <a class="today-link" href="/play/" data-play-link><span data-play-cta>לשחק</span> ←</a>
+      </li>
+      <li class="today-card">
+        <h3>הקהילה בוואטסאפ</h3>
+        <p>עדכונים, שאלות על שיעורים ובעיות, ומי רוצה לשחק. אנחנו קהילה קטנה ומתחילה.</p>
+        <a class="today-link" href={WHATSAPP} rel="noopener">להצטרף לקבוצה ←</a>
+      </li>
+    </ul>
+  </section>
+
+  <section class="part" aria-labelledby="part-h">
+    <div>
+      <h2 id="part-h">אתם חלק מזה</h2>
+      <p>מצאתם שיעור מבלבל, או מונח שאפשר לומר טוב יותר בעברית? כתבו לי, ואני אתקן. ככה האתר משתפר לכולם.</p>
+    </div>
+    <a class="btn btn-ghost" href="/about/#contact"><span>כתבו לנו</span></a>
+  </section>
+</section>
+
+<script>
+  import { accountsEnabled, hasStoredSession } from '../lib/account-config';
+  import { CURRICULUM, hasAnyProgress, KIND_LABEL, nextStep, pathProgress, stepCount, stepHref, unitProgress } from '../lib/curriculum';
+  import { LEVEL_COUNTS } from '../lib/level-counts';
+  import { readLocal } from '../lib/progress-local';
+  import { rankFor, xpBreakdown } from '../lib/xp';
+  import { weekIndex, weekPuzzle, weekStreak, weeksHe, WEEK_LENGTH } from '../tsume/week';
+
+  const root = document.querySelector<HTMLElement>('[data-me]');
+  const html = document.documentElement;
+  // the same test Base.astro uses for html[data-signed-in], which may not be set yet when this runs
+  const signedIn = () => accountsEnabled && hasStoredSession();
+  const $ = <T extends HTMLElement = HTMLElement>(sel: string, el: ParentNode = root!) => el.querySelector<T>(sel)!;
+  const text = (sel: string, t: string) => { $(sel).textContent = t; };
+  const pct = (a: number, b: number) => `${b ? Math.round((100 * a) / b) : 0}%`;
+
+  function render() {
+    if (!root) return;
+    const p = readLocal();
+    // A visitor without an account sees this only once there's real progress (the inline check in index.astro is a quick guess).
+    if (!signedIn() && !hasAnyProgress(p)) { html.removeAttribute('data-learner'); return; }
+    html.setAttribute('data-learner', '');
+
+    // the next step: signed-in visitors follow the starting point they picked; others follow the path from the start
+    const track = p.course.track;
+    const next = signedIn() && !track ? undefined : nextStep(p, LEVEL_COUNTS);
+    const link = $<HTMLAnchorElement>('[data-next-link]');
+    const prog = $('[data-next-progress]');
+    prog.hidden = true;
+    if (signedIn() && !track) {
+      text('[data-next-where]', 'מסלול לימוד אישי');
+      text('[data-next-title]', 'מאיפה מתחילים?');
+      text('[data-next-why]', 'ענו על שאלה אחת, ותקבלו סדר לימוד ברור: קודם היסודות, ואז פתיחה, אמצע המשחק וסוף המשחק.');
+      text('[data-next-cta]', 'לבחירת נקודת ההתחלה');
+      link.href = '/course/';
+    } else if (!next) {
+      text('[data-next-where]', 'מסלול לימוד אישי');
+      text('[data-next-title]', 'סיימתם את כל המסלול!');
+      text('[data-next-why]', 'מכאן ממשיכים להשתפר: בעיות מט ארוכות יותר, ומשחקים ברמות גבוהות יותר.');
+      text('[data-next-cta]', 'לבעיות המט');
+      link.href = '/tsume/';
+    } else {
+      const { unit, step } = next;
+      const where = unit.phase ? `שלב ${unit.phase}, ${unit.title}` : unit.title;
+      text('[data-next-where]', `הצעד הבא במסלול · ${where} · ${KIND_LABEL[step.kind]}, ${step.minutes} דק׳`);
+      text('[data-next-title]', step.title);
+      text('[data-next-why]', step.why);
+      const started = hasAnyProgress(p);
+      text('[data-next-cta]', started ? 'המשיכו מאיפה שעצרתם' : 'התחילו');
+      link.href = stepHref(step, p, LEVEL_COUNTS);
+      // progress inside the step when it has parts (2 of 5 stages), else inside its unit
+      const inStep = stepCount(step, p, LEVEL_COUNTS);
+      const up = inStep ?? unitProgress(unit, p, LEVEL_COUNTS);
+      if (up.of > 0) {
+        prog.hidden = false;
+        $('.bar span', prog).style.width = pct(up.done, up.of);
+        $('.small', prog).textContent = inStep ? `${up.done} מתוך ${up.of} בצעד הזה` : `${up.done} מתוך ${up.of} צעדים ב${unit.title}`;
+      }
+    }
+    text('[data-me-lead]', next || (signedIn() && !track) ? 'הנה הצעד הבא שלכם.' : 'עשיתם את כל הדרך. כל הכבוד.');
+
+    // the learning rank
+    const xp = xpBreakdown(p, LEVEL_COUNTS).total;
+    const r = rankFor(xp);
+    text('[data-rank-kanji]', r.rank.kanji);
+    text('[data-rank-name]', r.rank.name);
+    text('[data-rank-points]', `${xp.toLocaleString('he-IL')} נקודות`);
+    $('[data-rank-bar]').style.width = r.next ? pct(r.into, r.span) : '100%';
+    text('[data-rank-text]', r.next
+      ? `עוד ${(r.next.min - xp).toLocaleString('he-IL')} נקודות ל־${r.next.name}. נקודות נצברות פעם אחת על כל שיעור, בעיה או משחק.`
+      : 'הגעתם לדרגה הגבוהה ביותר במסלול.');
+
+    // the path's four parts
+    const path = pathProgress(p, LEVEL_COUNTS);
+    for (const u of CURRICULUM) {
+      const a = $<HTMLAnchorElement>(`[data-unit="${u.key}"]`);
+      const up = unitProgress(u, p, LEVEL_COUNTS);
+      $('[data-unit-count]', a).textContent = up.done === up.of && up.of > 0 ? 'הושלם ✓' : up.done > 0 ? `${up.done} מתוך ${up.of} צעדים` : '';
+      a.toggleAttribute('data-current', !!next && next.unit.key === u.key);
+    }
+    root.dataset.pathDone = String(path.done);
+
+    // the puzzle of the week
+    const weekCount = Number(root.dataset.weekCount) || 0;
+    if (weekCount > 0) {
+      const week = weekIndex();
+      const solved = p.tsume[String(WEEK_LENGTH)] ?? [];
+      const id = weekPuzzle(week, weekCount);
+      const streak = weekStreak(solved, weekCount, week);
+      const streakText = streak > 1 ? ` רצף של ${weeksHe(streak)}.` : '';
+      if (solved.includes(id)) {
+        text('[data-week-text]', `פתרתם את בעיית השבוע ✓${streakText} בעיה חדשה מחכה ביום ראשון, ועד אז יש עוד אלפי בעיות.`);
+        text('[data-week-cta]', 'לעוד בעיות מט');
+        $<HTMLAnchorElement>('[data-week-link]').href = '/tsume/';
+      } else {
+        text('[data-week-text]', `בעיית מט ב־${WEEK_LENGTH} מהלכים, אותה בעיה לכולם. בעיה חדשה בכל יום ראשון.${streakText}`);
+        text('[data-week-cta]', streak > 0 ? 'לשמור על הרצף' : 'לפתור');
+        $<HTMLAnchorElement>('[data-week-link]').href = '/tsume/week/';
+      }
+    }
+
+    // a game against the computer, one level up from the last win
+    const { played, won } = p.course;
+    let level = 1;
+    if (won > 0) {
+      level = Math.min(10, won + 1);
+      text('[data-play-text]', won >= 10 ? 'ניצחתם את המחשב ברמה הגבוהה ביותר. נסו לנצח שוב, הפעם עם צבע אחר.' : `ניצחתם את המחשב ברמה ${won}. מוכנים לנסות את רמה ${level}?`);
+    } else if (played > 0) {
+      level = played;
+      text('[data-play-text]', `כבר שיחקתם ברמה ${played}. הפעם נסו לנצח בה: קודם מבצר, אחר כך התקפה.`);
+    }
+    $<HTMLAnchorElement>('[data-play-link]').href = `/play/?level=${level}`;
+    text('[data-play-cta]', `לשחק ברמה ${level}`);
+  }
+
+  // the nickname, for signed-in visitors ("שלום, Dud3Sama")
+  async function hello() {
+    if (!signedIn()) return;
+    try {
+      const { getSession, getProfile } = await import('../lib/account');
+      const s = await getSession();
+      const prof = s && (await getProfile(s.user.id));
+      if (!prof?.nickname) return;
+      const el = $('[data-me-hello]');
+      el.textContent = 'שלום, ';
+      const b = document.createElement('bdi');
+      b.textContent = prof.nickname;
+      el.append(b);
+    } catch { /* keep the plain hello */ }
+  }
+
+  render();
+  void hello();
+  document.addEventListener('progress-synced', render);
+</script>
+
+<style>
+  .me { padding-top: 32px; }
+  .me-top { display: grid; gap: 20px; }
+  .me-main { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .me h1 { font-size: clamp(34px, 7vw, 56px); line-height: 1.1; }
+  .me .lead { margin: 0; font-size: 18px; line-height: 1.6; color: var(--ink-2); }
+
+  .bar { height: 8px; border-radius: 999px; background: var(--rule); overflow: hidden; }
+  .bar span { display: block; height: 100%; width: 0; background: var(--seal); border-radius: inherit; transition: width .3s; }
+
+  /* the next step: the one dark card on the page, so it reads first */
+  .next { background: var(--ink); color: var(--washi); border-radius: 8px; padding: 22px 20px; display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+  .next p { margin: 0; }
+  .next-where { font-size: 14px; font-weight: 700; line-height: 1.5; opacity: .8; }
+  .next-title { font-family: var(--f-display); font-size: clamp(26px, 5vw, 32px); font-weight: 800; line-height: 1.15; }
+  .next-why { font-size: 16.5px; line-height: 1.6; opacity: .88; max-width: 36em; }
+  .next-why:empty { display: none; }
+  .next-progress { display: flex; align-items: center; gap: 12px; }
+  .next-progress .bar { flex: 1; max-width: 280px; background: color-mix(in srgb, var(--washi) 25%, transparent); }
+  .next-btn { align-self: stretch; background: var(--washi); color: var(--ink); border-color: var(--washi); margin-top: 4px; }
+  .next-btn:hover { background: var(--kaya); color: #1C1B19; border-color: var(--kaya); }
+
+  .rank { background: var(--washi-2); border: 1px solid var(--rule); border-radius: 8px; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+  .rank p { margin: 0; }
+  .rank-head { font-size: 14px; font-weight: 700; color: var(--muted); }
+  .rank-row { display: flex; align-items: center; gap: 14px; }
+  .rank-kanji { font-family: var(--f-kanji); font-size: 22px; font-weight: 800; color: var(--on-seal); background: var(--seal); border-radius: 999px; min-width: 56px; height: 56px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; }
+  .rank-name { font-family: var(--f-display); font-size: 44px; font-weight: 800; line-height: 1; }
+  .rank-points { font-size: 16px; color: var(--ink-2); }
+  .rank-text, .rank-guest { color: var(--ink-2); line-height: 1.55; }
+
+  .block-sm { margin-top: 48px; }
+  .block-sm > h2, .head-row { margin-bottom: 16px; }
+  .head-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+
+  .units { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .unit { display: flex; flex-direction: column; gap: 2px; min-height: 44px; padding: 14px 16px; border: 1px solid var(--rule); border-radius: 8px; color: var(--ink); text-decoration: none; background: var(--washi); }
+  .unit:hover { border-color: var(--seal); }
+  .unit[data-current] { background: var(--ink); color: var(--washi); border-color: var(--ink); }
+  .unit-tag { color: var(--seal); font-weight: 700; }
+  .unit[data-current] .unit-tag { color: inherit; opacity: .8; }
+  .unit-title { font-family: var(--f-display); font-size: 21px; }
+  .unit-goal { opacity: .85; }
+  .unit-count { font-weight: 700; }
+  .unit-count:empty { display: none; }
+
+  .today { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .today-card { background: var(--washi-2); border-top: 4px solid var(--seal); border-radius: 4px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
+  .today-card h3 { font-family: var(--f-display); font-size: 22px; font-weight: 800; margin: 0; }
+  .today-card p { margin: 0; color: var(--ink-2); line-height: 1.6; flex: 1; }
+  .today-link { display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; color: var(--seal); text-decoration: none; align-self: flex-start; }
+  .today-link:hover { text-decoration: underline; }
+
+  .part { margin-top: 48px; display: flex; flex-direction: column; gap: 14px; border-top: 1px solid var(--rule); padding-top: 28px; }
+  .part h2 { margin-bottom: 6px; }
+  .part p { margin: 0; color: var(--ink-2); line-height: 1.6; max-width: 40em; }
+
+  @media (min-width: 700px) {
+    .units { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .next-btn { align-self: flex-start; }
+    .part { flex-direction: row; align-items: center; justify-content: space-between; gap: 32px; }
+    .part .btn { flex-shrink: 0; }
+  }
+  @media (min-width: 900px) {
+    .me { padding-top: 56px; }
+    .me-top { grid-template-columns: 2fr 1fr; gap: 32px; align-items: end; }
+    .units { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .today { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+  }
+</style>
