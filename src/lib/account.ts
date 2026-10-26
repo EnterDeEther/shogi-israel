@@ -6,6 +6,7 @@ import { AUTH_STORAGE_KEY, SUPABASE_KEY, SUPABASE_URL } from './account-config';
 import type { GameRecord } from '../play/record';
 import { emptyProgress, gameResult, merge, normalize, same, type SyncedProgress } from './progress-sync';
 import { readLocal, writeLocal } from './progress-local';
+import { CONSENT_VERSION } from './consent';
 
 export { readLocal };
 
@@ -25,8 +26,11 @@ export async function getSession(): Promise<Session | null> {
 // ---------- sign in / out (email + password) ----------
 const redirectTo = () => `${window.location.origin}/account/`;
 
-export async function signUp(email: string, password: string, captchaToken?: string) {
-  return supabase().auth.signUp({ email, password, options: { emailRedirectTo: redirectTo(), captchaToken } });
+/** weeklyEmail: the unticked "send me the puzzle of the week" box on the form. It is applied on the first
+ * sign-in (applySignupConsent), which may be on another device, so it travels with the account. */
+export async function signUp(email: string, password: string, captchaToken?: string, weeklyEmail = false) {
+  const data = weeklyEmail ? { email_week_opt_in: CONSENT_VERSION } : {};
+  return supabase().auth.signUp({ email, password, options: { emailRedirectTo: redirectTo(), captchaToken, data } });
 }
 export async function signIn(email: string, password: string, captchaToken?: string) {
   return supabase().auth.signInWithPassword({ email, password, options: { captchaToken } });
@@ -66,6 +70,34 @@ export async function saveNickname(userId: string, nickname: string, isNew: bool
   if (!error) return 'ok';
   if (error.code === '23505') return 'taken';
   return error.code === '23514' ? 'reserved' : 'error';
+}
+
+// ---------- email nudges (opt-in; supabase/migrations/0005_notifications.sql, sent by api/notify.ts) ----------
+export interface EmailPrefs { email_week: boolean; email_return: boolean; paused_reason: string | null }
+export async function getEmailPrefs(): Promise<EmailPrefs | null> {
+  const session = await getSession();
+  if (!session) return null;
+  const { data, error } = await supabase().from('notification_prefs').select('email_week, email_return, paused_reason').eq('user_id', session.user.id).maybeSingle();
+  if (error) return null;
+  return data ?? { email_week: false, email_return: false, paused_reason: null };
+}
+/** The server records when and where consent was given, and which wording was shown. */
+export async function setEmailPrefs(week: boolean, ret: boolean, source: 'signup' | 'settings'): Promise<boolean> {
+  const { error } = await supabase().rpc('set_email_prefs', { week, ret, source, version: CONSENT_VERSION });
+  return !error;
+}
+/** The box ticked on the sign-up form, saved once the account exists, then cleared from the account. */
+export async function applySignupConsent(session: Session): Promise<void> {
+  if (!session.user.user_metadata?.email_week_opt_in) return;
+  if (await setEmailPrefs(true, false, 'signup')) await supabase().auth.updateUser({ data: { email_week_opt_in: null } });
+}
+/** A signed-in visit, at most once a day: "come back" emails count days away from the last one. */
+export async function touchLastSeen() {
+  const KEY = 'shogi-il.seen-day';
+  const today = new Date().toISOString().slice(0, 10);
+  try { if (localStorage.getItem(KEY) === today) return; } catch { /* no storage: touch anyway */ }
+  const { error } = await supabase().rpc('touch_last_seen');
+  if (!error) try { localStorage.setItem(KEY, today); } catch { /* fine */ }
 }
 
 // ---------- games (written by play vs AI) ----------
@@ -166,4 +198,5 @@ export function startSync() {
   document.addEventListener('shogi-il:game-end', () => { void syncGames(); later(); }); // the course counts games played
   void syncProgress();
   void syncGames();
+  void touchLastSeen();
 }
