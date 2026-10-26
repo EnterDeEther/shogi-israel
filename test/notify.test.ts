@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { TSUME_COUNTS } from '../src/lib/level-counts';
-import { buildEmail, checkUnsubscribe, dueEmail, israelDay, unsubscribeToken, unsubscribeUrl, type PrefsRow } from '../src/lib/notify';
+import { buildEmail, checkUnsubscribe, FROM, dueEmail, israelDay, unsubscribeToken, unsubscribeUrl, type PrefsRow } from '../src/lib/notify';
 import { weekPuzzle } from '../src/tsume/week';
 import { israelWeek } from '../src/lib/notify';
 
@@ -62,6 +62,9 @@ describe('the emails', () => {
     const e = buildEmail({ ...base, kind: 'week', progressData: { course: { track: 'new', trackAt: 'x' } } });
     expect(e.subject).toBe('בעיית השבוע: מט בשלושה מהלכים');
     expect(e.html).toContain('dir="rtl"');
+    expect(FROM).toStartWith('דין משוגי ישראל <');
+    expect(e.html).toContain('דין, שוגי ישראל');
+    expect(e.text).toContain('נתראה על הלוח,');
     expect(e.html).toContain('https://shogi.co.il/tsume/3/?utm_source=email');
     expect(e.html).toContain('/rules/01-board-pieces-setup/');
     expect(e.text).toContain('הפסקת המיילים האלה: https://shogi.co.il/api/unsubscribe');

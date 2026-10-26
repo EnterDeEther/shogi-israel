@@ -19,7 +19,7 @@ export { CONSENT_TEXT, CONSENT_VERSION } from './consent.js';
 
 export type EmailKind = 'week' | 'return';
 export const SITE = 'https://shogi.co.il';
-export const FROM = 'שוגי ישראל <noreply@shogi.co.il>';
+export const FROM = 'דין משוגי ישראל <noreply@shogi.co.il>'; // personal, from Dean (Godin rule)
 export const REPLY_TO = 'contact@shogi.co.il';
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -123,6 +123,7 @@ export function buildEmail(input: EmailInput): Email {
   }
 
   const hello = `שלום ${nickname},`;
+  const signoff = ['נתראה על הלוח,', 'דין, שוגי ישראל', 'אפשר פשוט להשיב למייל הזה.'];
   const settings = `${SITE}/account/#notifications`;
   const footer = `${why} שוגי ישראל, shogi.co.il, ${REPLY_TO}`;
   const html = `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${esc(subject)}</title></head>
@@ -132,10 +133,12 @@ export function buildEmail(input: EmailInput): Email {
 <p style="margin:0 0 16px;">${esc(hello)}</p>
 ${blocks.map((b) => `<p style="margin:0 0 10px;">${esc(b.text)}</p>
 <p style="margin:0 0 22px;"><a href="${esc(utm(b.href, kind))}" style="display:inline-block;background:#B8361F;color:#FFFFFF;text-decoration:none;font-weight:bold;padding:10px 18px;border-radius:6px;">${esc(b.cta)}</a></p>`).join('\n')}
+<p style="margin:0 0 4px;">${signoff.slice(0, 2).map(esc).join('<br>')}</p>
+<p style="margin:0;font-size:15px;color:#6B6256;">${esc(signoff[2])}</p>
 <hr style="border:0;border-top:1px solid #D9CDB5;margin:24px 0 12px;">
 <p style="margin:0;font-size:13px;color:#6B6256;">${esc(footer)}<br><a href="${esc(input.unsubscribeUrl)}" style="color:#6B6256;">הפסקת המיילים האלה</a> · <a href="${esc(settings)}" style="color:#6B6256;">הגדרות התראות</a></p>
 </div></body></html>`;
-  const text = [hello, '', ...blocks.flatMap((b) => [b.text, `${b.cta}: ${utm(b.href, kind)}`, '']), '--', footer, `הפסקת המיילים האלה: ${input.unsubscribeUrl}`, `הגדרות התראות: ${settings}`].join('\n');
+  const text = [hello, '', ...blocks.flatMap((b) => [b.text, `${b.cta}: ${utm(b.href, kind)}`, '']), ...signoff, '', '--', footer, `הפסקת המיילים האלה: ${input.unsubscribeUrl}`, `הגדרות התראות: ${settings}`].join('\n');
   return { subject, html, text };
 }
 
