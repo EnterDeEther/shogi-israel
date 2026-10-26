@@ -35,6 +35,7 @@
   --lost-fg: #7A2414;
   --overlay-play: rgba(246, 241, 231, 0.95);
   --overlay-learn: rgba(246, 241, 231, 0.93);
+  --tour-dim: rgba(28, 27, 25, 0.55);
   --star-off: rgba(255, 255, 255, 0.35);
 
   --f-display: 'Frank Ruhl Libre Variable', 'Frank Ruhl Libre', 'Noto Serif Hebrew', serif;
@@ -77,6 +78,8 @@
     --lost-fg: #F2B9A8;
     --overlay-play: rgba(23, 21, 15, 0.95);
     --overlay-learn: rgba(23, 21, 15, 0.93);
+  --tour-dim: rgba(0, 0, 0, 0.66);
+    --tour-dim: rgba(0, 0, 0, 0.66);
     --star-off: rgba(0, 0, 0, 0.35);
     color-scheme: dark;
   }
@@ -224,3 +227,36 @@ html[data-signed-in] [data-signed-out-only] { display: none; }
 .xp-toast__kanji { font-family: var(--f-kanji); font-size: 26px; line-height: 1; }
 @media (prefers-reduced-motion: reduce) { .xp-toast { transition: none; } }
 .xp-toast__nw { white-space: nowrap; }
+
+/* Site tour (src/scripts/tour.ts): a dimmed page with one ring, and a card that waits for "הבא".
+   Phones: the card is a bottom sheet. From 1040px: a card next to the ring. */
+.tour-catch { position: fixed; inset: 0; z-index: 70; }
+.tour-catch--dim { background: var(--tour-dim); }
+.tour-spot { position: fixed; z-index: 71; border-radius: 8px; pointer-events: none; box-shadow: 0 0 0 3px var(--focus), 0 0 0 200vmax var(--tour-dim); }
+.tour-card {
+  position: fixed; z-index: 72; width: min(340px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); overflow-y: auto;
+  padding: 10px 16px 12px; border: 1px solid var(--rule); border-radius: 12px;
+  background: var(--washi); color: var(--ink); box-shadow: 0 12px 32px rgba(0, 0, 0, .3);
+}
+.tour-card:focus { outline: none; }
+.tour-card--sheet {
+  inset-inline: max(8px, env(safe-area-inset-left, 0px)) max(8px, env(safe-area-inset-right, 0px));
+  bottom: calc(8px + env(safe-area-inset-bottom, 0px)); width: auto; max-height: 45dvh;
+}
+.tour-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tour-count { margin: 0; font-size: 14px; font-weight: 700; color: var(--muted); }
+.tour-x {
+  display: grid; place-items: center; width: 44px; height: 44px; margin-inline-end: -12px;
+  border: 0; border-radius: 8px; background: none; color: var(--ink-2); cursor: pointer;
+}
+.tour-x:hover { background: var(--washi-2); }
+.tour-title { margin: 0 0 6px; font-family: var(--f-display); font-size: 22px; font-weight: 800; line-height: 1.25; }
+.tour-body { margin: 0 0 8px; color: var(--ink-2); line-height: 1.6; }
+.tour-note { margin: 0 0 8px; font-size: 14px; color: var(--muted); }
+.tour-link { display: inline-block; margin-bottom: 8px; font-weight: 700; }
+.tour-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 4px; }
+.tour-actions .btn { min-height: 44px; padding: 8px 18px; font-size: 16px; justify-content: center; }
+.tour-actions .btn[hidden] { display: inline-flex !important; visibility: hidden; }
+.tour-skip { padding: 10px 0 2px; border: 0; background: none; color: var(--muted); font: inherit; font-size: 14px; text-decoration: underline; cursor: pointer; }
+/* room under the last menu item, so the sheet never covers the one in the ring */
+html.tour-on [data-nav-narrow] .panel { padding-bottom: 50dvh; }

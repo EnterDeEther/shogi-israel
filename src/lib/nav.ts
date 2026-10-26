@@ -18,6 +18,8 @@ export interface NavSection {
   label: string;
   /** One line for the card this section gets on the home page. */
   blurb?: string;
+  /** Where the site tour (src/lib/tour.ts) points at this section. */
+  tour?: string;
   links: NavLink[];
 }
 /** A top-level entry: a section (a dropdown on desktop, a heading on phones) or a single link. */
@@ -31,6 +33,7 @@ export { CONTACT_EMAIL } from './contact';
 export const NAV: NavItem[] = [
   {
     label: 'הכירו את השוגי',
+    tour: 'know',
     blurb: 'מאיפה הוא בא, איך עובדות הדרגות, ומה מוכר ומה חדש אם אתם שחקני שחמט.',
     links: [
       { href: '/chess/', label: 'לשחקני שחמט', hint: 'מה כבר מוכר, ומה חדש' },
@@ -40,6 +43,7 @@ export const NAV: NavItem[] = [
   },
   {
     label: 'למדו לשחק',
+    tour: 'learn',
     blurb: 'מסלול מסודר מאפס ועד בעיות מט, בעברית ובחינם.',
     links: [
       { href: '/try/', label: 'צפו במשחק אחד', hint: 'הצעד הראשון: מהלך אחרי מהלך, בלי ידע מוקדם' },
@@ -55,6 +59,7 @@ export const NAV: NavItem[] = [
   },
   {
     label: 'שחקו',
+    tour: 'play',
     blurb: 'נגד המחשב כאן באתר, או מול שחקנים מכל העולם.',
     links: [
       { href: '/play/', label: 'נגד המחשב', hint: 'משחק מלא, ישר בדפדפן' },
@@ -71,6 +76,7 @@ export const NAV: NavItem[] = [
   },
   {
     label: 'קהילה',
+    tour: 'community',
     blurb: 'שחקנים ישראלים: איפה משחקים ומדברים.',
     links: [
       { href: '/community/', label: 'דף הקהילה', hint: 'איפה משחקים ומדברים' },
