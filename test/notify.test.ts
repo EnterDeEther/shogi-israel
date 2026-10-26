@@ -73,7 +73,7 @@ describe('the emails', () => {
 
   test('come back: names the step, and the second one says it is the last', () => {
     const p = { course: { track: 'new', trackAt: 'x' }, rules: ['01-board-pieces-setup'] };
-    expect(buildEmail({ ...base, kind: 'return', progressData: p, returnIndex: 0 }).subject).toContain('המסלול שלכם מחכה');
+    expect(buildEmail({ ...base, kind: 'return', progressData: p, returnIndex: 0 }).subject).toContain('המסלול שלך מחכה');
     expect(buildEmail({ ...base, kind: 'return', progressData: p, returnIndex: 1 }).text).toContain('התזכורת האחרונה');
   });
 
