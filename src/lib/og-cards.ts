@@ -6,6 +6,7 @@ import { categories } from '../learn/categories';
 import { currentPosition } from '../learn/util';
 import { stageSlug } from '../learn/urls';
 import { RULES_COURSE } from './course';
+import { FIRST_GAME, firstGamePlies } from './first-game';
 import { LENGTH_INFO, LENGTHS } from '../tsume/puzzles';
 import mate1 from '../tsume/data/mate1.json';
 import mate3 from '../tsume/data/mate3.json';
@@ -119,6 +120,16 @@ export function ogCards(): OgCard[] {
   }
 
   cards.push(
+    {
+      path: '/try/', seal: '局', eyebrow: 'משחק אחד · מהלך אחרי מהלך', title: 'איך נראה משחק שוגי?',
+      sub: `משחק שלם ב־${FIRST_GAME.length} מהלכים, מהפתיחה ועד המט. לוחצים על כל מהלך ומקבלים הסבר פשוט. בלי הרשמה.`,
+      sfen: firstGamePlies().at(-2)!.sfen,
+    },
+    {
+      path: '/try/pieces/', seal: '試', eyebrow: 'שלוש דקות · שלושה כלים', title: 'עכשיו תנסו בעצמכם',
+      sub: 'צריח, רץ ורגלי: לכידה אחת עם כל כלי. בשוגי כלי שלכדתם לא נעלם, הוא נשאר ביד שלכם.',
+      sfen: '9/4p4/9/9/9/9/4R4/9/9 b - 1', highlight: '52',
+    },
     {
       path: '/play/', seal: '対', eyebrow: 'שחקו עכשיו', title: 'משחק נגד המחשב',
       sub: 'עשר רמות, מהצעד הראשון ועד מנוע חזק. החזרת מהלך, שעון, ובלי הרשמה.', sfen: START,
