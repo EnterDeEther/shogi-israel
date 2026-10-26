@@ -13,7 +13,7 @@ export const LENGTHS = [1, 3, 5, 7] as const;
 export type Length = (typeof LENGTHS)[number];
 
 export const LENGTH_INFO: Record<Length, { title: string; sub: string }> = {
-  1: { title: 'מט במהלך אחד', sub: 'מהלך אחד, ישר למט. מתחילים כאן.' },
+  1: { title: 'מט במהלך אחד', sub: 'מהלך אחד, ישר למט. התחל כאן.' },
   3: { title: 'מט ב־3 מהלכים', sub: 'שח, תשובה של המגן, ומט.' },
   5: { title: 'מט ב־5 מהלכים', sub: 'כאן מתחילות ההקרבות.' },
   7: { title: 'מט ב־7 מהלכים', sub: 'לשחקנים עם ניסיון.' },

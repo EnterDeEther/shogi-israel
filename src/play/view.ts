@@ -68,7 +68,7 @@ export function mount(root: HTMLElement): { board: HTMLElement } {
           el('div', { class: 'play__overlay', 'data-overlay': true, hidden: true }),
         ),
       ),
-      el('p', { class: 'sr-only', id: 'play-kbd-help' }, 'משחקים במקלדת: חצים להזזת הסמן, Enter לבחירה ולמהלך, D לכלי מהיד, סימן שאלה לעזרה.'),
+      el('p', { class: 'sr-only', id: 'play-kbd-help' }, 'משחק במקלדת: חצים להזזת הסמן, Enter לבחירה ולמהלך, D לכלי מהיד, סימן שאלה לעזרה.'),
       el('div', { class: 'sr-only', 'aria-live': 'polite', 'data-live': true }),
     ),
     el('div', { class: 'play__table', 'data-table': true }),
@@ -92,15 +92,15 @@ export function clockText(ctrl: PlayCtrl, color: Color): string {
 function endText(ctrl: PlayCtrl, end: GameEnd): { title: string; text: string } {
   const won = end.winner === ctrl.playerColor;
   const draw = !end.winner;
-  const title = draw ? 'תיקו' : won ? 'ניצחתם!' : 'המחשב ניצח';
+  const title = draw ? 'תיקו' : won ? 'ניצחת!' : 'המחשב ניצח';
   const text = {
-    mate: won ? 'מט. המלך של המחשב לא יכול לברוח.' : 'מט. המלך שלכם לא יכול לברוח.',
-    stalemate: won ? 'למחשב לא נשאר אף מהלך חוקי, ובשוגי זה הפסד.' : 'לא נשאר לכם אף מהלך חוקי, ובשוגי זה הפסד.',
-    resign: won ? 'המחשב נכנע.' : 'נכנעתם.',
-    time: won ? 'הזמן של המחשב נגמר (טיימאאוט).' : 'הזמן שלכם נגמר (טיימאאוט).',
+    mate: won ? 'מט. המלך של המחשב לא יכול לברוח.' : 'מט. המלך שלך לא יכול לברוח.',
+    stalemate: won ? 'למחשב לא נשאר אף מהלך חוקי, ובשוגי זה הפסד.' : 'לא נשאר לך אף מהלך חוקי, ובשוגי זה הפסד.',
+    resign: won ? 'המחשב נכנע.' : 'נכנעת.',
+    time: won ? 'הזמן של המחשב נגמר (טיימאאוט).' : 'הזמן שלך נגמר (טיימאאוט).',
     repetition: 'אותה עמדה חזרה ארבע פעמים (חזרה מרובעת).',
-    perpetual: won ? 'המחשב נתן שח נצחי, ומי שנותן שח נצחי מפסיד.' : 'נתתם שח נצחי, ומי שנותן שח נצחי מפסיד.',
-    impasse: won ? 'הכרזתם על ניצחון בנקודות (מבוי סתום).' : 'המחשב הכריז על ניצחון בנקודות (מבוי סתום).',
+    perpetual: won ? 'המחשב נתן שח נצחי, ומי שנותן שח נצחי מפסיד.' : 'נתת שח נצחי, ומי שנותן שח נצחי מפסיד.',
+    impasse: won ? 'הכרזת על ניצחון בנקודות (מבוי סתום).' : 'המחשב הכריז על ניצחון בנקודות (מבוי סתום).',
     draw: 'לאף צד לא נשארו מספיק כלים.',
   }[end.reason];
   return { title, text };
@@ -114,13 +114,13 @@ function playerRow(ctrl: PlayCtrl, color: Color): HTMLElement {
   return el('div', { class: `ruser${isAi ? ' ai' : ' me'}${running ? ' running' : ''}` },
     el('span', { class: 'mark', 'aria-hidden': 'true' }, MARK[color]),
     el('span', { class: 'who' },
-      el('strong', {}, isAi ? `המחשב · רמה ${level.level}` : 'אתם'),
+      el('strong', {}, isAi ? `המחשב · רמה ${level.level}` : 'אתה'),
       el('span', { class: 'small muted' }, isAi ? `${SIDE[color]} · ${engineLabel[level.engine]}` : SIDE[color]),
     ),
     ctrl.clock
       ? el('span', {
         class: `rclock${t && t.main <= 0 ? ' byo' : ''}`, dir: 'ltr', 'data-clock': color,
-        'aria-label': `${isAi ? 'השעון של המחשב' : 'השעון שלכם'}`,
+        'aria-label': `${isAi ? 'השעון של המחשב' : 'השעון שלך'}`,
       }, clockText(ctrl, color))
       : null,
   );
@@ -203,7 +203,7 @@ function kifButtons(ctrl: PlayCtrl): HTMLElement {
     b('ניתוח ב־Lishogi', async (btn) => {
       // Lishogi's import page takes the KIF pasted into its box: copy first, then open it.
       const ok = await copyText(kifText(ctrl));
-      flash(btn, ok ? 'הועתק, הדביקו בחלון שנפתח' : 'ההעתקה נכשלה');
+      flash(btn, ok ? 'הועתק, הדבק בחלון שנפתח' : 'ההעתקה נכשלה');
       window.open(LISHOGI_IMPORT_URL, '_blank', 'noopener');
     }),
     el('a', { href: '/kif/', class: 'small' }, 'מה זה?'),
@@ -220,7 +220,7 @@ function status(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void): HTM
     return el('div', { class: `result ${end.winner ? (won ? 'won' : 'lost') : 'draw'}`, role: 'status' },
       el('strong', {}, title),
       el('p', {}, text),
-      ctrl.record.takebacks ? el('p', { class: 'small muted' }, `החזרתם ${ctrl.record.takebacks === 1 ? 'מהלך אחד' : `${ctrl.record.takebacks} מהלכים`} במשחק הזה.`) : null,
+      ctrl.record.takebacks ? el('p', { class: 'small muted' }, `החזרת ${ctrl.record.takebacks === 1 ? 'מהלך אחד' : `${ctrl.record.takebacks} מהלכים`} במשחק הזה.`) : null,
       el('div', { class: 'buttons' },
         next
           ? el('button', { type: 'button', class: 'btn primary', 'data-fid': 'next-level', onclick: go(() => ctrl.newGame({ ...ctrl.settings, level: ctrl.level.level + 1 })) }, `לרמה ${ctrl.level.level + 1}`)
@@ -231,7 +231,7 @@ function status(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void): HTM
       kifButtons(ctrl),
       // signed-out only (global.css hides it once html[data-signed-in] is set)
       el('p', { class: 'small', 'data-signed-out-only': '' },
-        won ? 'כל הכבוד! ' : '', el('a', { href: '/account/?mode=signup' }, 'פתחו חשבון בחינם'), ' כדי לשמור את המשחקים שלכם ולהתקדם במסלול, בכל מכשיר.'),
+        won ? 'כל הכבוד! ' : '', el('a', { href: '/account/?mode=signup' }, 'פתח חשבון בחינם'), ' כדי לשמור את המשחקים שלך ולהתקדם במסלול, בכל מכשיר.'),
       won ? shareButton({ title: `ניצחתי את המחשב ברמה ${ctrl.level.level}`, sub: 'שוגי, השחמט היפני. משחקים בעברית ובחינם', kanji: '勝', path: '/play/' }, 'shogi-israel-win.png', 'btn share') : null,
       nextInCourse(),
     );
@@ -246,7 +246,7 @@ function status(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void): HTM
   const text = ctrl.thinking
     ? 'המחשב חושב…'
     : pos.turn === ctrl.playerColor
-      ? pos.isCheck() ? 'שח! תורכם.' : 'תורכם.'
+      ? pos.isCheck() ? 'שח! תורך.' : 'תורך.'
       : '';
   return el('div', { class: `status-line${ctrl.thinking ? ' thinking' : ''}`, 'aria-live': 'polite' },
     text,
@@ -276,9 +276,9 @@ function setupScreen(ctrl: PlayCtrl, draft: PlaySettings, go: (fn: () => void) =
     }, 'levels'),
     el('p', { class: 'level-hint' },
       el('strong', {}, `רמה ${lv.level}: `), levelHint[lv.level],
-      beaten ? el('span', { class: 'small muted beaten' }, ` · הרמה הגבוהה שניצחתם: ${beaten}`) : null),
-    seg<PlaySettings['color']>('אתם משחקים', [
-      { label: 'פותח', value: 'sente', sub: 'אתם מתחילים' },
+      beaten ? el('span', { class: 'small muted beaten' }, ` · הרמה הגבוהה שניצחת: ${beaten}`) : null),
+    seg<PlaySettings['color']>('אתה משחק', [
+      { label: 'פותח', value: 'sente', sub: 'אתה מתחיל' },
       { label: 'אקראי', value: 'random' },
       { label: 'משיב', value: 'gote', sub: 'המחשב מתחיל' },
     ], draft.color, (v) => (draft.color = v)),
@@ -296,7 +296,7 @@ function setupScreen(ctrl: PlayCtrl, draft: PlaySettings, go: (fn: () => void) =
 function copyLink(): HTMLElement {
   const btn = el('button', { type: 'button', class: 'btn' }, 'העתקת הקישור לדף');
   btn.addEventListener('click', () => {
-    navigator.clipboard?.writeText(location.href).then(() => { btn.textContent = 'הקישור הועתק. הדביקו אותו בדפדפן'; }, () => {});
+    navigator.clipboard?.writeText(location.href).then(() => { btn.textContent = 'הקישור הועתק. הדבק אותו בדפדפן'; }, () => {});
   });
   return btn;
 }
@@ -305,8 +305,8 @@ function unsupported(reason: 'isolation' | 'wasm'): HTMLElement {
   return el('div', { class: 'screen' },
     el('h2', {}, 'הדפדפן הזה לא מריץ את המחשב'),
     el('p', {}, reason === 'wasm'
-      ? 'המחשב רץ אצלכם בדפדפן ודורש דפדפן עדכני. נסו גרסה עדכנית של Chrome, Firefox, Edge או Safari.'
-      : 'הדף נפתח בתוך אפליקציה שחוסמת את מה שהמחשב צריך. פתחו את הקישור בדפדפן הרגיל (Chrome או Safari).'),
+      ? 'המחשב רץ אצלך בדפדפן ודורש דפדפן עדכני. נסה גרסה עדכנית של Chrome, Firefox, Edge או Safari.'
+      : 'הדף נפתח בתוך אפליקציה שחוסמת את מה שהמחשב צריך. פתח את הקישור בדפדפן הרגיל (Chrome או Safari).'),
     el('p', {}, 'בינתיים אפשר להתאמן כאן גם בדפדפן הזה: ',
       el('a', { href: '/learn/' }, 'שיעורים אינטראקטיביים'), ' או ', el('a', { href: '/tsume/' }, 'בעיות מט'), '.'),
     reason === 'isolation' ? copyLink() : null,
@@ -323,7 +323,7 @@ function clockHelp(): HTMLElement {
     el('summary', {}, 'איך משחק על זמן עובד?'),
     el('p', {},
       'לכל צד יש זמן ראשי. כשהוא נגמר מתחילה ', el('strong', {}, 'ספירת שניות'),
-      ': כל מהלך צריך להיעשות בתוך מספר השניות שבחרתם, והספירה מתחילה מחדש אחרי כל מהלך. מי שהספירה שלו מגיעה לאפס מפסיד (טיימאאוט). ',
+      ': כל מהלך צריך להיעשות בתוך מספר השניות שבחרת, והספירה מתחילה מחדש אחרי כל מהלך. מי שהספירה שלו מגיעה לאפס מפסיד (טיימאאוט). ',
       'השעון של כל צד רץ רק בתורו. למשל ', el('bdi', {}, '10 דק׳ + 30 שנ׳'), ': עשר דקות לכל המשחק, ואחריהן 30 שניות לכל מהלך.'),
     el('a', { href: CLOCK_INFO_URL }, 'ההסבר המלא על משחק על זמן'),
   );

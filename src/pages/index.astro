@@ -53,15 +53,15 @@ if (hasCourse) Astro.csp?.insertScriptHash(`sha256-${createHash('sha256').update
   <section class="hero wrap" data-newcomer>
     <div class="hero-text">
       <p class="eyebrow">הקהילה הישראלית של השוגי, השחמט היפני</p>
-      <h1>ברוכים הבאים לשוגי ישראל</h1>
+      <h1>ברוך הבא לשוגי ישראל</h1>
       <p class="lead">הבית של שחקני השוגי בישראל. לומדים את השחמט היפני בעברית ומאפס, משחקים כאן באתר, ופוגשים שחקנים אחרים. הכול בחינם.</p>
       <div class="cta">
         <a class="btn" href={first} data-tour="try">
-          <span data-hero-label>{hasTry ? 'צפו במשחק אחד, מהלך אחרי מהלך' : 'התחילו בחוקים הבסיסיים'}</span>
+          <span data-hero-label>{hasTry ? 'צפה במשחק אחד, מהלך אחרי מהלך' : 'התחל בחוקים הבסיסיים'}</span>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
         </a>
-        {hasPlay && <a class="btn btn-ghost" href="/play/">כבר יודעים לשחק? שחקו נגד המחשב</a>}
-        {pageExists('/chess/') && <a class="btn btn-ghost" href="/chess/">שחקני שחמט? התחילו כאן</a>}
+        {hasPlay && <a class="btn btn-ghost" href="/play/">כבר יודע לשחק? שחק נגד המחשב</a>}
+        {pageExists('/chess/') && <a class="btn btn-ghost" href="/chess/">שחקני שחמט? התחל כאן</a>}
         <a class="btn btn-ghost" href="#offer" data-tour-start>
           <span>מה יש באתר? סיור קצר</span>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"></path></svg>
@@ -72,9 +72,9 @@ if (hasCourse) Astro.csp?.insertScriptHash(`sha256-${createHash('sha256').update
             {accountsOn ? (
               <>
                 <span data-signed-out-only>ההתקדמות נשמרת במכשיר, ועם <a href="/account/?mode=signup">חשבון</a> (לא חובה) גם בין מכשירים</span>
-                <span data-signed-in-only>ההתקדמות נשמרת בחשבון שלכם, בכל מכשיר</span>
+                <span data-signed-in-only>ההתקדמות נשמרת בחשבון שלך, בכל מכשיר</span>
               </>
-            ) : 'ההתקדמות נשמרת במכשיר שלכם'}
+            ) : 'ההתקדמות נשמרת במכשיר שלך'}
           </p>
         )}
       </div>
@@ -84,7 +84,7 @@ if (hasCourse) Astro.csp?.insertScriptHash(`sha256-${createHash('sha256').update
         <>
           <p class="hero-board-head"><strong>הפותח בתור: מט בעוד מהלך אחד</strong><span class="small muted">משחק של {FIRST_GAME.length} מהלכים</span></p>
           <Board sfen={ONE_TO_MATE} />
-          <p class="hero-board-cap"><a href="/try/"><strong>איך הגענו לכאן?</strong></a> לחצו, ונראה את כל המשחק מההתחלה, מהלך אחרי מהלך.</p>
+          <p class="hero-board-cap"><a href="/try/"><strong>איך הגענו לכאן?</strong></a> לחץ, ונראה את כל המשחק מההתחלה, מהלך אחרי מהלך.</p>
         </>
       ) : (
         <Board sfen={START} />
@@ -101,7 +101,7 @@ if (hasCourse) Astro.csp?.insertScriptHash(`sha256-${createHash('sha256').update
       </li>
       <li>
         <span class="num" lang="ja" aria-hidden="true">二</span>
-        <div><h3>הצנחה</h3><p>כלי שנלכד עובר לידיים שלכם. בתורכם אפשר להניח אותו כמעט בכל משבצת פנויה.</p></div>
+        <div><h3>הצנחה</h3><p>כלי שנלכד עובר לידיים שלך. בתורך אפשר להניח אותו כמעט בכל משבצת פנויה.</p></div>
       </li>
       <li>
         <span class="num" lang="ja" aria-hidden="true">三</span>
@@ -124,11 +124,11 @@ if (hasCourse) Astro.csp?.insertScriptHash(`sha256-${createHash('sha256').update
   {pageExists('/course/') && (
     <section class="wrap block" aria-labelledby="start-h" data-newcomer>
       <div class="start">
-        <h2 id="start-h">לא בטוחים מאיפה להתחיל?</h2>
+        <h2 id="start-h">לא בטוח מאיפה להתחיל?</h2>
         <p>במסלול לימוד אישי עונים על שאלה אחת ומקבלים סדר לימוד ברור, מהחוקים ועד בעיות מט. עם חשבון בחינם יש גם נקודות ודרגות לימוד, מ־15 קיו ועד דאן (<a href="/ranks/">מה ההבדל מדרגה אמיתית?</a>).</p>
         <div class="start-cta">
-          <a class="btn" href="/course/"><span>ראו את המסלול</span></a>
-          {accountsOn && <a class="btn btn-ghost" href="/account/?mode=signup"><span>פתחו חשבון בחינם</span></a>}
+          <a class="btn" href="/course/"><span>ראה את המסלול</span></a>
+          {accountsOn && <a class="btn btn-ghost" href="/account/?mode=signup"><span>פתח חשבון בחינם</span></a>}
         </div>
       </div>
     </section>
@@ -146,7 +146,7 @@ if (hasCourse) Astro.csp?.insertScriptHash(`sha256-${createHash('sha256').update
             <a href={`/rules/${l.slug}/`} data-progress={l.slug}>
               <span class="row-num">{pad(l.n)}</span>
               <span class="row-title">{l.title}</span>
-              <span class="row-tag" data-tag>{i === 0 ? 'התחילו כאן' : ''}</span>
+              <span class="row-tag" data-tag>{i === 0 ? 'התחל כאן' : ''}</span>
             </a>
           ) : (
             <span class="row">
@@ -164,8 +164,8 @@ if (hasCourse) Astro.csp?.insertScriptHash(`sha256-${createHash('sha256').update
     <section id="play" class="wrap block" aria-labelledby="play-h" data-newcomer>
       <h2 id="play-h">משחקים כאן, באתר</h2>
       <ul class="rows links play">
-        <li><a href="/play/"><span class="row-title"><strong>שחקו נגד המחשב</strong></span><span class="small muted">עשר רמות, ממתחילים ועד מתקדמים. ישר בדפדפן, בחינם</span></a></li>
-        {hasAccount && <li><a href="/account/?mode=signup"><span class="row-title"><strong>פתחו חשבון בשוגי ישראל</strong></span><span class="small muted">ההתקדמות והמשחקים שלכם נשמרים בכל מכשיר</span></a></li>}
+        <li><a href="/play/"><span class="row-title"><strong>שחק נגד המחשב</strong></span><span class="small muted">עשר רמות, ממתחילים ועד מתקדמים. ישר בדפדפן, בחינם</span></a></li>
+        {hasAccount && <li><a href="/account/?mode=signup"><span class="row-title"><strong>פתח חשבון בשוגי ישראל</strong></span><span class="small muted">ההתקדמות והמשחקים שלך נשמרים בכל מכשיר</span></a></li>}
         <li><span class="row"><span class="row-title"><strong>משחק מול חבר</strong></span><span class="small muted">בקרוב: שולחים קישור הזמנה ומשחקים</span></span></li>
       </ul>
     </section>
@@ -174,7 +174,7 @@ if (hasCourse) Astro.csp?.insertScriptHash(`sha256-${createHash('sha256').update
   <section id="community" class="wrap block" aria-labelledby="community-h" data-newcomer>
     <div class="community">
       <h2 id="community-h">משחקים עם ישראלים</h2>
-      <p>אנחנו קהילה קטנה ומתחילה. בואו להיות מהראשונים.</p>
+      <p>אנחנו קהילה קטנה ומתחילה. בוא להיות מהראשונים.</p>
       <ul class="rows links">
         <li><a href="https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien" rel="noopener"><span class="row-title"><strong>קהילת הוואטסאפ</strong></span><span class="small muted">עדכונים, שאלות, ומי רוצה לשחק</span></a></li>
         <li><a href="https://www.instagram.com/shogi.israel/" rel="noopener"><span class="row-title"><strong>אינסטגרם</strong></span><bdi dir="ltr" class="small muted">@shogi.israel</bdi></a></li>

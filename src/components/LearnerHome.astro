@@ -16,13 +16,13 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
 <section class="me wrap" data-learner-only data-me data-week-count={weekCount} aria-labelledby="me-h">
   <div class="me-top">
     <div class="me-main">
-      <p class="eyebrow">ברוכים השבים</p>
-      <h1 id="me-h"><span data-me-hello>טוב לראות אתכם שוב</span>.</h1>
-      <p class="lead" data-me-lead>הנה הצעד הבא שלכם.</p>
+      <p class="eyebrow">ברוך השב</p>
+      <h1 id="me-h"><span data-me-hello>טוב לראות אותך שוב</span>.</h1>
+      <p class="lead" data-me-lead>הנה הצעד הבא שלך.</p>
 
       <div class="next" aria-labelledby="next-title">
         <p class="next-where" data-next-where>הצעד הבא במסלול</p>
-        <p class="next-title" id="next-title" data-next-title>המסלול שלכם</p>
+        <p class="next-title" id="next-title" data-next-title>המסלול שלך</p>
         <p class="next-why" data-next-why></p>
         <div class="next-progress" data-next-progress hidden>
           <div class="bar" aria-hidden="true"><span></span></div>
@@ -33,7 +33,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
     </div>
 
     <aside class="rank" aria-labelledby="rank-h" data-tour="rank">
-      <p class="rank-head" id="rank-h">דרגת הלימוד שלכם · במסלול</p>
+      <p class="rank-head" id="rank-h">דרגת הלימוד שלך · במסלול</p>
       <div class="rank-row">
         <span class="rank-kanji" lang="ja" aria-hidden="true" data-rank-kanji>十五級</span>
         <p class="rank-name" data-rank-name>15 קיו</p>
@@ -41,14 +41,14 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
       <p class="rank-points" data-rank-points>0 נקודות</p>
       <div class="bar" aria-hidden="true"><span data-rank-bar></span></div>
       <p class="small rank-text" data-rank-text>נקודות נצברות פעם אחת על כל שיעור, בעיה או משחק.</p>
-      <p class="small rank-guest" data-signed-out-only>הנקודות נשמרות רק בדפדפן הזה. <a href="/account/?mode=signup">פתחו חשבון בחינם</a>, והן יישמרו בכל מכשיר.</p>
+      <p class="small rank-guest" data-signed-out-only>הנקודות נשמרות רק בדפדפן הזה. <a href="/account/?mode=signup">פתח חשבון בחינם</a>, והן יישמרו בכל מכשיר.</p>
       <p class="small"><a href="/ranks/#site">דרגה של לימוד באתר, לא דרגה רשמית</a></p>
     </aside>
   </div>
 
   <section class="block-sm" aria-labelledby="path-h">
     <div class="head-row">
-      <h2 id="path-h">המסלול שלכם</h2>
+      <h2 id="path-h">המסלול שלך</h2>
       <a class="small" href="/course/">למסלול המלא</a>
     </div>
     <ol class="units">
@@ -74,7 +74,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
         <a class="today-link" href="/tsume/week/" data-week-link><span data-week-cta>לפתור</span> ←</a>
       </li>
       <li class="today-card">
-        <h3>שחקו נגד המחשב</h3>
+        <h3>שחק נגד המחשב</h3>
         <p data-play-text>עשר רמות, ממתחילים ועד מתקדמים. רמה 1 סלחנית, והמטרה רק לסיים משחק שלם.</p>
         <a class="today-link" href="/play/" data-play-link><span data-play-cta>לשחק</span> ←</a>
       </li>
@@ -88,10 +88,10 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
 
   <section class="part" aria-labelledby="part-h">
     <div>
-      <h2 id="part-h">אתם חלק מזה</h2>
-      <p>מצאתם שיעור מבלבל, או מונח שאפשר לומר טוב יותר בעברית? כתבו לי, ואני אתקן. ככה האתר משתפר לכולם.</p>
+      <h2 id="part-h">אתה חלק מזה</h2>
+      <p>מצאת שיעור מבלבל, או מונח שאפשר לומר טוב יותר בעברית? כתוב לי, ואני אתקן. ככה האתר משתפר לכולם.</p>
     </div>
-    <a class="btn btn-ghost" href="/about/#contact"><span>כתבו לנו</span></a>
+    <a class="btn btn-ghost" href="/about/#contact"><span>כתוב לנו</span></a>
   </section>
 </section>
 
@@ -127,12 +127,12 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
     if (signedIn() && !track) {
       text('[data-next-where]', 'מסלול לימוד אישי');
       text('[data-next-title]', 'מאיפה מתחילים?');
-      text('[data-next-why]', 'ענו על שאלה אחת, ותקבלו סדר לימוד ברור: קודם היסודות, ואז פתיחה, אמצע המשחק וסוף המשחק.');
+      text('[data-next-why]', 'ענה על שאלה אחת, ותקבל סדר לימוד ברור: קודם היסודות, ואז פתיחה, אמצע המשחק וסוף המשחק.');
       text('[data-next-cta]', 'לבחירת נקודת ההתחלה');
       link.href = '/course/';
     } else if (!next) {
       text('[data-next-where]', 'מסלול לימוד אישי');
-      text('[data-next-title]', 'סיימתם את כל המסלול!');
+      text('[data-next-title]', 'סיימת את כל המסלול!');
       text('[data-next-why]', 'מכאן ממשיכים להשתפר: בעיות מט ארוכות יותר, ומשחקים ברמות גבוהות יותר.');
       text('[data-next-cta]', 'לבעיות המט');
       link.href = '/tsume/';
@@ -143,7 +143,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
       text('[data-next-title]', step.title);
       text('[data-next-why]', step.why);
       const started = hasAnyProgress(p);
-      text('[data-next-cta]', started ? 'המשיכו מאיפה שעצרתם' : 'התחילו');
+      text('[data-next-cta]', started ? 'המשך מאיפה שעצרת' : 'התחל');
       link.href = stepHref(step, p, LEVEL_COUNTS);
       // progress inside the step when it has parts (2 of 5 stages), else inside its unit
       const inStep = stepCount(step, p, LEVEL_COUNTS);
@@ -154,7 +154,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
         $('.small', prog).textContent = inStep ? `${up.done} מתוך ${up.of} בצעד הזה` : `${up.done} מתוך ${up.of} צעדים ב${unit.title}`;
       }
     }
-    text('[data-me-lead]', next || (signedIn() && !track) ? 'הנה הצעד הבא שלכם.' : 'עשיתם את כל הדרך. כל הכבוד.');
+    text('[data-me-lead]', next || (signedIn() && !track) ? 'הנה הצעד הבא שלך.' : 'עשית את כל הדרך. כל הכבוד.');
 
     // the learning rank
     const xp = xpBreakdown(p, LEVEL_COUNTS).total;
@@ -165,7 +165,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
     $('[data-rank-bar]').style.width = r.next ? pct(r.into, r.span) : '100%';
     text('[data-rank-text]', r.next
       ? `עוד ${(r.next.min - xp).toLocaleString('he-IL')} נקודות ל־${r.next.name}. נקודות נצברות פעם אחת על כל שיעור, בעיה או משחק.`
-      : 'הגעתם לדרגה הגבוהה ביותר במסלול.');
+      : 'הגעת לדרגה הגבוהה ביותר במסלול.');
 
     // the path's four parts
     const path = pathProgress(p, LEVEL_COUNTS);
@@ -186,7 +186,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
       const streak = weekStreak(solved, weekCount, week);
       const streakText = streak > 1 ? ` רצף של ${weeksHe(streak)}.` : '';
       if (solved.includes(id)) {
-        text('[data-week-text]', `פתרתם את בעיית השבוע ✓${streakText} בעיה חדשה מחכה ביום ראשון, ועד אז יש עוד אלפי בעיות.`);
+        text('[data-week-text]', `פתרת את בעיית השבוע ✓${streakText} בעיה חדשה מחכה ביום ראשון, ועד אז יש עוד אלפי בעיות.`);
         text('[data-week-cta]', 'לעוד בעיות מט');
         $<HTMLAnchorElement>('[data-week-link]').href = '/tsume/';
       } else {
@@ -201,10 +201,10 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
     let level = 1;
     if (won > 0) {
       level = Math.min(10, won + 1);
-      text('[data-play-text]', won >= 10 ? 'ניצחתם את המחשב ברמה הגבוהה ביותר. נסו לנצח שוב, הפעם עם צבע אחר.' : `ניצחתם את המחשב ברמה ${won}. מוכנים לנסות את רמה ${level}?`);
+      text('[data-play-text]', won >= 10 ? 'ניצחת את המחשב ברמה הגבוהה ביותר. נסה לנצח שוב, הפעם עם צבע אחר.' : `ניצחת את המחשב ברמה ${won}. מוכן לנסות את רמה ${level}?`);
     } else if (played > 0) {
       level = played;
-      text('[data-play-text]', `כבר שיחקתם ברמה ${played}. הפעם נסו לנצח בה: קודם מבצר, אחר כך התקפה.`);
+      text('[data-play-text]', `כבר שיחקת ברמה ${played}. הפעם נסה לנצח בה: קודם מבצר, אחר כך התקפה.`);
     }
     $<HTMLAnchorElement>('[data-play-link]').href = `/play/?level=${level}`;
     text('[data-play-cta]', `לשחק ברמה ${level}`);

@@ -34,11 +34,11 @@ const hasPlay = pageExists('/play/');
   <h2 id="contact">צור קשר</h2>
   {CONTACT_FORM_LIVE ? (
     <>
-      <p>מצאתם טעות בשיעור, משהו לא עובד באתר, או סתם רוצים לשאול? כתבו לנו כאן ונענה במייל.</p>
+      <p>מצאת טעות בשיעור, משהו לא עובד באתר, או סתם רוצה לשאול? כתוב לנו כאן ונענה במייל.</p>
       <ContactForm />
       <p>אפשר גם לכתוב ישירות ל־<a href={`mailto:${CONTACT_EMAIL}`}><bdi dir="ltr">{CONTACT_EMAIL}</bdi></a>, או בהודעה פרטית באינסטגרם, <a href={INSTAGRAM_URL} rel="noopener"><bdi dir="ltr">@shogi.israel</bdi></a>.</p>
     </>
   ) : (
-    <p>מצאתם טעות בשיעור, משהו לא עובד באתר, או סתם רוצים לשאול? כתבו לנו במייל, <a href={`mailto:${CONTACT_EMAIL}`}><bdi dir="ltr">{CONTACT_EMAIL}</bdi></a>, או בהודעה פרטית באינסטגרם, <a href={INSTAGRAM_URL} rel="noopener"><bdi dir="ltr">@shogi.israel</bdi></a>.</p>
+    <p>מצאת טעות בשיעור, משהו לא עובד באתר, או סתם רוצה לשאול? כתוב לנו במייל, <a href={`mailto:${CONTACT_EMAIL}`}><bdi dir="ltr">{CONTACT_EMAIL}</bdi></a>, או בהודעה פרטית באינסטגרם, <a href={INSTAGRAM_URL} rel="noopener"><bdi dir="ltr">@shogi.israel</bdi></a>.</p>
   )}
 </Page>

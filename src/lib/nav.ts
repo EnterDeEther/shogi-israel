@@ -3,7 +3,7 @@
 // Adding a page: add a link to the right section below. An internal link only shows once its page
 // exists in src/pages/ (see isLive), so a slot for a page that is still being built can sit here
 // already and appears by itself when the page lands. Links with a #hash are always shown.
-// Only lessons go under "למדו לשחק" (the newcomers' first step, /try/, first, then the guided course, /course/, which orders all the rest); background reading goes under "הכירו את השוגי", utilities under "כלים".
+// Only lessons go under "למד לשחק" (the newcomers' first step, /try/, first, then the guided course, /course/, which orders all the rest); background reading goes under "הכר את השוגי", utilities under "כלים".
 
 export interface NavLink {
   href: string;
@@ -32,21 +32,21 @@ export { CONTACT_EMAIL } from './contact';
 
 export const NAV: NavItem[] = [
   {
-    label: 'הכירו את השוגי',
+    label: 'הכר את השוגי',
     tour: 'know',
-    blurb: 'מאיפה הוא בא, איך עובדות הדרגות, ומה מוכר ומה חדש אם אתם שחקני שחמט.',
+    blurb: 'מאיפה הוא בא, איך עובדות הדרגות, ומה מוכר ומה חדש אם אתה שחקן שחמט.',
     links: [
       { href: '/chess/', label: 'לשחקני שחמט', hint: 'מה כבר מוכר, ומה חדש' },
       { href: '/history/', label: 'ההיסטוריה של השוגי', hint: 'מ־1058 ועד היום' },
-      { href: '/ranks/', label: 'דרגות בשוגי', hint: 'קיו ודאן בעולם, ומה הדרגה שלכם כאן' },
+      { href: '/ranks/', label: 'דרגות בשוגי', hint: 'קיו ודאן בעולם, ומה הדרגה שלך כאן' },
     ],
   },
   {
-    label: 'למדו לשחק',
+    label: 'למד לשחק',
     tour: 'learn',
     blurb: 'מסלול מסודר מאפס ועד בעיות מט, בעברית ובחינם.',
     links: [
-      { href: '/try/', label: 'צפו במשחק אחד', hint: 'הצעד הראשון: מהלך אחרי מהלך, בלי ידע מוקדם' },
+      { href: '/try/', label: 'צפה במשחק אחד', hint: 'הצעד הראשון: מהלך אחרי מהלך, בלי ידע מוקדם' },
       { href: '/course/', label: 'מסלול לימוד אישי', hint: 'מאיפה מתחילים, ומה הצעד הבא' },
       { href: '/rules/', label: 'חוקים בסיסיים', hint: 'מאפס, צעד אחר צעד' },
       { href: '/learn/', label: 'שיעורים אינטראקטיביים', hint: 'תרגול על הלוח' },
@@ -58,12 +58,12 @@ export const NAV: NavItem[] = [
     ],
   },
   {
-    label: 'שחקו',
+    label: 'שחק',
     tour: 'play',
     blurb: 'נגד המחשב כאן באתר, או מול שחקנים מכל העולם.',
     links: [
       { href: '/play/', label: 'נגד המחשב', hint: 'משחק מלא, ישר בדפדפן' },
-      { href: '/lishogi/', label: 'שחקו אונליין בליש׳וגי', hint: 'מדריך: משחקים מול כל העולם' },
+      { href: '/lishogi/', label: 'שחק אונליין בליש׳וגי', hint: 'מדריך: משחקים מול כל העולם' },
     ],
   },
   {
@@ -103,7 +103,7 @@ export const isLive = (l: NavLink): boolean => l.external || l.href.includes('#'
 /**
  * The menu as it should show right now. Links whose page does not exist yet drop out, a section
  * left empty drops out, and a section left with one link becomes that link under the section's
- * name (so "שחקו" is a plain link until it has a second page).
+ * name (so "שחק" is a plain link until it has a second page).
  */
 export const liveNav = (): NavItem[] =>
   NAV.flatMap((i): NavItem[] => {

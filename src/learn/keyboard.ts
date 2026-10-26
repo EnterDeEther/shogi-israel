@@ -78,7 +78,7 @@ export function attachKeyboard(ctrl: KeyboardHost, boardEl: HTMLElement, cursorE
     const s = sg().state;
     const parts = [squareName(k)];
     const p = s.pieces.get(k);
-    if (p) parts.push(`${pieceName(p.role)} ${p.color === myColor() ? 'שלכם' : 'של היריב'}`);
+    if (p) parts.push(`${pieceName(p.role)} ${p.color === myColor() ? 'שלך' : 'של היריב'}`);
     else if (s.drawable.squares?.some((h) => h.key === k && h.className?.includes('star'))) parts.push('כוכב');
     else parts.push('ריקה');
     const dests = s.selected

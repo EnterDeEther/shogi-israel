@@ -45,7 +45,7 @@ function guestNote(gain: number) {
     sessionStorage.setItem(GUEST_LAST, String(Date.now()));
   } catch { /* no storage: show it */ }
   const total = current();
-  show(`<span><strong><bdi dir="ltr">+${gain}</bdi> נקודות</strong> (<bdi dir="ltr">${total}</bdi> בסך הכול). <a href="/account/?mode=signup">פתחו חשבון בחינם</a> והן ייספרו לדרגה שלכם.</span>`, false, true);
+  show(`<span><strong><bdi dir="ltr">+${gain}</bdi> נקודות</strong> (<bdi dir="ltr">${total}</bdi> בסך הכול). <a href="/account/?mode=signup">פתח חשבון בחינם</a> והן ייספרו לדרגה שלך.</span>`, false, true);
 }
 
 function check(guest: boolean) {
@@ -57,7 +57,7 @@ function check(guest: boolean) {
   const before = rankFor(seen).rank;
   const now = rankFor(xp).rank;
   if (now.index > before.index) {
-    show(`<span class="xp-toast__kanji" lang="ja" aria-hidden="true">${now.kanji}</span><span><strong>עליתם דרגה: <span class="xp-toast__nw">${now.name}</span>!</strong> <a href="/course/">למסלול הלימוד האישי</a> · <a href="/ranks/#site">מה זה אומר?</a></span>`, true);
+    show(`<span class="xp-toast__kanji" lang="ja" aria-hidden="true">${now.kanji}</span><span><strong>עלית דרגה: <span class="xp-toast__nw">${now.name}</span>!</strong> <a href="/course/">למסלול הלימוד האישי</a> · <a href="/ranks/#site">מה זה אומר?</a></span>`, true);
   } else {
     show(`<strong><bdi dir="ltr">+${xp - seen}</bdi></strong> נקודות`, false);
   }

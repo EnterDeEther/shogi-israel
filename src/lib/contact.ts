@@ -56,7 +56,7 @@ export function contactEmail(input: ContactInput, to: string, from: string) {
     to: [to],
     reply_to: input.email,
     subject: `פנייה מהאתר: ${input.name}`,
-    text: `${input.message}\n\n---\nמאת: ${input.name} <${input.email}>\nנשלח מטופס יצירת הקשר ב־shogi.co.il. כדי לענות, השיבו למייל הזה.`,
+    text: `${input.message}\n\n---\nמאת: ${input.name} <${input.email}>\nנשלח מטופס יצירת הקשר ב־shogi.co.il. כדי לענות, השב למייל הזה.`,
   };
 }
 
