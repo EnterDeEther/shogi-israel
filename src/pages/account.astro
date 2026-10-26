@@ -288,7 +288,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
     const emailBox = (k: string) => emailBoxes.find((b) => b.dataset.emailKind === k)!;
     async function showEmail() {
       const prefs = await acc.getEmailPrefs();
-      $('[data-email-prefs]').hidden = !prefs; // the table isn't there yet (migration 0003 not run): hide, don't break
+      $('[data-email-prefs]').hidden = !prefs; // the table isn't there yet (migration 0005 not run): hide, don't break
       if (!prefs) return;
       emailBox('week').checked = prefs.email_week;
       emailBox('return').checked = prefs.email_return;

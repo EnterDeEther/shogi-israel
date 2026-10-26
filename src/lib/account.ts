@@ -72,7 +72,7 @@ export async function saveNickname(userId: string, nickname: string, isNew: bool
   return error.code === '23514' ? 'reserved' : 'error';
 }
 
-// ---------- email nudges (opt-in; supabase/migrations/0003_notifications.sql, sent by api/notify.ts) ----------
+// ---------- email nudges (opt-in; supabase/migrations/0005_notifications.sql, sent by api/notify.ts) ----------
 export interface EmailPrefs { email_week: boolean; email_return: boolean; paused_reason: string | null }
 export async function getEmailPrefs(): Promise<EmailPrefs | null> {
   const session = await getSession();
