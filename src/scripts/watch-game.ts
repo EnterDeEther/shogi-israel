@@ -4,6 +4,7 @@
 import { Shogiground } from 'shogiground/shogiground';
 import { makeSquareName, parseUsi } from 'shogiops/util';
 import { FIRST_GAME, PHASES, TAG_LABEL, firstGamePlies } from '../lib/first-game';
+import { markSeen } from '../lib/progress-local';
 
 export function bootWatchGame(root: HTMLElement): void {
   const q = <T extends HTMLElement = HTMLElement>(s: string) => root.querySelector<T>(s)!;
@@ -55,6 +56,7 @@ export function bootWatchGame(root: HTMLElement): void {
     panes.move.hidden = step === 0 || step > N;
     panes.summary.hidden = step <= N;
     root.dataset.step = step === 0 ? 'intro' : step > N ? 'summary' : 'move';
+    if (step === SUMMARY) markSeen('try-game'); // the course step (src/lib/curriculum.ts)
 
     if (step >= 1 && step <= N) {
       const m = FIRST_GAME[step - 1];

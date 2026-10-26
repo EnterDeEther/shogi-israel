@@ -71,6 +71,12 @@ export function updateCourse(change: (c: CourseState) => void, opts: { overwrite
   return p;
 }
 
+/** A course step that is done once seen (a guide section, a first-step page): mark it on this device. */
+export function markSeen(id: string): void {
+  if (readLocal().course.seen.includes(id)) return;
+  updateCourse((c) => { c.seen = [...c.seen, id].sort(); });
+}
+
 /** Change the inbox part on this device (notes read, settings) and tell the account sync about it. */
 export function updateInbox(change: (i: InboxState) => void): SyncedProgress {
   const p = readLocal();

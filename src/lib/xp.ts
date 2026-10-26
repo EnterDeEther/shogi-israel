@@ -46,6 +46,7 @@ export function xpBreakdown(p: SyncedProgress, levelCounts: Record<string, numbe
 /** The most points a step can give when finished (its content plus the step bonus), for "עד +N" on /course/. */
 export function stepXp(s: Step, levelCounts: Record<string, number>): number {
   const content = {
+    try: 0, // a first-step page (/try/): only the step bonus
     rules: XP.rules,
     learn: (s.learn ?? []).reduce((t, k) => t + (levelCounts[k] ?? 0) * 3 * XP.star, 0),
     read: XP.read,
