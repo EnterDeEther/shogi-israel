@@ -34,6 +34,12 @@
   padding: 62px 20px 46px 6px; /* top: pieces in hand + files · right: ranks · bottom: your hand */
   touch-action: none;
 }
+/* phones: the board runs edge to edge like Lishogi's, out of the page gutter; the right edge keeps just
+   enough room for the rank numbers. The /play/ and /tsume/ frame does the same in play.css. */
+@media (max-width: 600px) {
+  .learn__board { max-width: none; margin-inline: calc(-1 * var(--gutter)); padding-left: 2px; padding-right: 15px; }
+  :is(.learn, .play) .sg-wrap coords.ranks { right: -14px; width: 12px; }
+}
 .learn__sg.sg-wrap {
   border: 2px solid var(--grid);
   border-radius: 2px;

@@ -1,5 +1,6 @@
 // Progress that follows a signed-in account: the Learn scores, the Rules lessons marked done,
-// the tsume puzzles solved, and the guided course (/course/: starting point, steps read or skipped, games played).
+// the tsume puzzles solved, the guided course (/course/: starting point, steps read or skipped, games played),
+// and the inbox (src/lib/inbox.ts: which notes were read, which kinds are turned off).
 // Pure functions only (tested in test/progress-sync.test.ts); src/lib/progress-local.ts and src/lib/account.ts do the I/O.
 
 export interface LearnProgress { stages: Record<string, { scores: number[] }> }
@@ -17,22 +18,38 @@ export interface CourseState {
   played: number;
   won: number;
 }
+/** Kinds of on-site notes, each one switch in the account's notification settings. */
+export type InboxGroup = 'path' | 'week' | 'rank' | 'news';
+export const INBOX_GROUPS: InboxGroup[] = ['path', 'week', 'rank', 'news'];
+export interface InboxState {
+  /** Ids of the notes already seen (src/lib/inbox.ts), newest last, at most INBOX_READ_MAX. */
+  read: string[];
+  /** Kinds turned off in the settings. */
+  off: InboxGroup[];
+  /** When the settings last changed (ISO), so the newer choice wins between devices. */
+  offAt: string;
+}
+export const INBOX_READ_MAX = 200;
+
 export interface SyncedProgress {
   learn: LearnProgress;
   rules: string[];
   /** Tsume puzzle numbers solved, per length ("1", "3", "5", "7"). */
   tsume: Record<string, number[]>;
   course: CourseState;
+  inbox: InboxState;
 }
 
 export const LEARN_KEY = 'shogi-il.learn.progress';
 export const RULES_PREFIX = 'done:';
 export const TSUME_KEY = 'shogi-il.tsume.solved';
 export const COURSE_KEY = 'shogi-il.course';
+export const INBOX_KEY = 'shogi-il.inbox';
 export const TRACKS: Track[] = ['new', 'chess', 'shogi'];
 
 export const emptyCourse = (): CourseState => ({ track: null, trackAt: '', seen: [], skipped: [], played: 0, won: 0 });
-export const emptyProgress = (): SyncedProgress => ({ learn: { stages: {} }, rules: [], tsume: {}, course: emptyCourse() });
+export const emptyInbox = (): InboxState => ({ read: [], off: [], offAt: '' });
+export const emptyProgress = (): SyncedProgress => ({ learn: { stages: {} }, rules: [], tsume: {}, course: emptyCourse(), inbox: emptyInbox() });
 
 const strings = (v: unknown): string[] =>
   Array.isArray(v) ? [...new Set(v.filter((s: unknown): s is string => typeof s === 'string'))].sort() : [];
@@ -68,6 +85,13 @@ export function normalize(raw: unknown): SyncedProgress {
     won: level(c.won),
   };
   if (!out.course.track) out.course.trackAt = '';
+  const ib = (r.inbox && typeof r.inbox === 'object' ? r.inbox : {}) as Record<string, unknown>;
+  const read = Array.isArray(ib.read) ? ib.read.filter((s: unknown): s is string => typeof s === 'string' && s.length <= 64) : [];
+  out.inbox = {
+    read: [...new Set(read)].slice(-INBOX_READ_MAX),
+    off: INBOX_GROUPS.filter((g) => Array.isArray(ib.off) && ib.off.includes(g)),
+    offAt: typeof ib.offAt === 'string' ? ib.offAt : '',
+  };
   return out;
 }
 
@@ -92,6 +116,13 @@ export function merge(a: SyncedProgress, b: SyncedProgress): SyncedProgress {
     skipped: [...new Set([...a.course.skipped, ...b.course.skipped])].sort(),
     played: Math.max(a.course.played, b.course.played),
     won: Math.max(a.course.won, b.course.won),
+  };
+  // read notes: both lists (keeping the order, newest last); settings: the newer change wins
+  const settings = b.inbox.offAt > a.inbox.offAt ? b.inbox : a.inbox;
+  out.inbox = {
+    read: [...new Set([...a.inbox.read, ...b.inbox.read])].slice(-INBOX_READ_MAX),
+    off: [...settings.off],
+    offAt: settings.offAt,
   };
   return out;
 }
