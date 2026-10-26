@@ -137,6 +137,10 @@ export function ogCards(): OgCard[] {
       sub: 'ממשחק הודי עתיק, דרך אלופי השוגון, ועד המחשב שניצח את המייג׳ין.', sfen: START, kanji: true,
     },
     {
+      path: '/ranks/', seal: '段', eyebrow: 'קיו ודאן', title: 'דרגות בשוגי',
+      sub: 'איך עובדות דרגות בעולם, איך משיגים דרגה אמיתית, ומה הדרגה שלכם במסלול הלימוד.', sfen: START, kanji: true,
+    },
+    {
       path: '/clock/', seal: '時', eyebrow: 'שעון בשוגי', title: 'איך משחק על זמן עובד?',
       sub: 'זמן ראשי, ספירת שניות, תוספת זמן וזמן קבוע, ואיך משחקים המקצוענים.',
       sfen: 'lnsgkgsnl/1r5b1/pppppp1pp/6p2/9/2P6/PP1PPPPPP/1B5R1/LNSGKGSNL b - 3',

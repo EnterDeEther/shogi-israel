@@ -57,7 +57,7 @@ function check(guest: boolean) {
   const before = rankFor(seen).rank;
   const now = rankFor(xp).rank;
   if (now.index > before.index) {
-    show(`<span class="xp-toast__kanji" lang="ja" aria-hidden="true">${now.kanji}</span><span><strong>עליתם דרגה: <span class="xp-toast__nw">${now.name}</span>!</strong> <a href="/course/">למסלול הלימוד האישי</a></span>`, true);
+    show(`<span class="xp-toast__kanji" lang="ja" aria-hidden="true">${now.kanji}</span><span><strong>עליתם דרגה: <span class="xp-toast__nw">${now.name}</span>!</strong> <a href="/course/">למסלול הלימוד האישי</a> · <a href="/ranks/#site">מה זה אומר?</a></span>`, true);
   } else {
     show(`<strong><bdi dir="ltr">+${xp - seen}</bdi></strong> נקודות`, false);
   }
