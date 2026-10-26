@@ -8,6 +8,7 @@ import type TsumeCtrl from './ctrl';
 import { solvedList } from './puzzles';
 import { weekIndex, weekPuzzle, weekStreak, weeksHe, WEEK_LENGTH } from './week';
 import { shareButton } from '../lib/share-card';
+import { tipEl } from '../lib/info-tip-dom';
 
 const MARK: Record<Color, string> = { sente: '☗', gote: '☖' };
 
@@ -197,7 +198,7 @@ export function render(ctrl: TsumeCtrl, root: HTMLElement, openSettings: () => v
       tools(ctrl, go, openSettings),
       moveList(ctrl, go),
     ),
-    el('div', { class: 'pieces-switch' }, pieceSetSwitch()),
+    el('div', { class: 'pieces-switch' }, pieceSetSwitch(), tipEl('pieces')),
   );
   const box = table.querySelector<HTMLElement>('[data-moves]');
   if (box) box.scrollTop = box.scrollHeight;

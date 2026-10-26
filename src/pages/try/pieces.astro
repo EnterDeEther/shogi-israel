@@ -65,7 +65,7 @@ const hasPlay = pageExists('/play/');
         </div>
       </div>
       <div class="trypc__boardcol">
-        <div class="trypc__tools"><span class="small" data-board-label>תורך</span><PieceToggle /></div>
+        <div class="trypc__tools"><span class="small" data-board-label>תורך</span><PieceToggle tip /></div>
         <div class="learn trypc__learn">
           <div class="learn__board" dir="ltr" aria-roledescription="לוח שוגי" aria-label="לוח התרגול. הכלים שבידך מופיעים מתחת ללוח" data-board>
             <div class="learn__sgbox"><div class="learn__sg" data-sg></div></div>
@@ -136,7 +136,8 @@ const hasPlay = pageExists('/play/');
     /* the side panel starts level with the board's top edge: tools row (44px) + files row (30px) */
     .trypc__side { margin-top: 74px; }
   }
-  .trypc__tools { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; }
+  /* above the board's empty hand strip (z-index 2), which would otherwise cover the lower half of the switch */
+  .trypc__tools { position: relative; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; }
   .trypc__learn { margin: 0; }
   .trypc__learn .learn__board { padding-top: 30px; }
   .trypc__side, .trypc__side [data-pane] { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
