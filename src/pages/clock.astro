@@ -11,7 +11,6 @@ const toc = [
   { id: 'clock', label: 'שעון שוגי' },
   { id: 'types', label: 'ארבעת סוגי השעון' },
   { id: 'compare', label: 'השוואה מהירה' },
-  { id: 'try', label: 'נסו בעצמכם' },
   { id: 'pros', label: 'שעון אצל המקצוענים' },
   { id: 'online', label: 'שעון בליש׳וגי' },
   { id: 'flag', label: 'כשהזמן נגמר' },
@@ -21,7 +20,7 @@ const toc = [
 <Page
   title="איך משחק על זמן עובד?"
   eyebrow="כלים"
-  updated="25 באוקטובר 2026"
+  updated="26 באוקטובר 2026"
   description="איך עובד שעון בשוגי: זמן ראשי, ספירת שניות, תוספת זמן וזמן קבוע, איך משחקים המקצוענים, איך קוראים את השעון בליש׳וגי, ואיך השעון עובד במשחק נגד המחשב באתר."
 >
   <p>במשחק שוגי רציני לכל שחקן יש זמן מוגבל לחשוב. השעון שומר שאף אחד לא ייתקע על מהלך אחד שעה, ושהיריב לא יחכה לנצח. רוב המשחקים בשוגי משוחקים עם שעון, מהמשחק הכי מהיר באינטרנט ועד אליפויות שנמשכות יומיים.</p>
@@ -79,25 +78,6 @@ const toc = [
     </table>
   </div>
 
-  <h2 id="try">נסו בעצמכם</h2>
-  <p>שעון קטן לתרגול, עם זמנים קצרים מאוד כדי שתראו מהר מה קורה. בחרו סוג, לחצו ״התחלה״, ואז ״עשיתי מהלך״ בכל פעם שאתם (או היריב הדמיוני) משחקים.</p>
-  <div class="demo" id="clock-demo">
-    <div class="demo-modes" role="radiogroup" aria-label="סוג השעון">
-      <button type="button" role="radio" aria-checked="true" data-mode="byo">ספירת שניות <bdi dir="ltr">0:15|5</bdi></button>
-      <button type="button" role="radio" aria-checked="false" data-mode="sd">זמן קבוע <bdi dir="ltr">0:30</bdi></button>
-      <button type="button" role="radio" aria-checked="false" data-mode="fis">תוספת זמן <bdi dir="ltr">0:15+5</bdi></button>
-    </div>
-    <div class="demo-faces">
-      <div class="face" data-side="0"><span class="who">פותח</span><span class="time" dir="ltr">0:15</span><span class="state small"></span></div>
-      <div class="face" data-side="1"><span class="who">משיב</span><span class="time" dir="ltr">0:15</span><span class="state small"></span></div>
-    </div>
-    <div class="demo-actions">
-      <button type="button" class="dbtn" data-act="start">התחלה</button>
-      <button type="button" class="dbtn dbtn--seal" data-act="move" disabled>עשיתי מהלך</button>
-    </div>
-    <p class="demo-msg small" aria-live="polite">כשהזמן הראשי נגמר, השעון נצבע באדום ומתחילה ספירת השניות.</p>
-  </div>
-
   <h2 id="pros">שעון אצל המקצוענים</h2>
   <p>במשחקי האליפות (התארים) של איגוד השוגי היפני, כל שחקן מקבל בין 4 ל־9 שעות. בסדרת המייג׳ין (名人戦), הוותיקה מכולן, יש 9 שעות לכל צד, וכל משחק נמשך יומיים. אחרי שהשעות נגמרות, נשארת דקה אחת לכל מהלך, וכך נגמרים רוב המשחקים: שני השחקנים הכי טובים ביפן, בספירת שניות של דקה.</p>
   <p>יש גם פרט מעניין על השעון עצמו. בשיטה המסורתית, שנקראת ״שיטת שעון העצר״, הרושם מודד כל מהלך וסופר רק דקות שלמות: מהלך שלקח 40 שניות לא נספר בכלל, ומהלך של דקה ו־50 שניות נספר כדקה אחת. במשחקים קצרים יותר משתמשים בשעון שוגי רגיל, שסופר כל שנייה.</p>
@@ -144,104 +124,6 @@ const toc = [
   <p>עצה: שחקו כמה משחקים בלי שעון עד שהחוקים יושבים טוב, ואז עברו ל־<strong>10 דק׳ + 30 שנ׳</strong>. ככה תהיו מוכנים למשחק הראשון בליש׳וגי.</p>
 </Page>
 
-<script>
-  // The practice clock: two faces, three modes, tiny times so each phase shows up within seconds.
-  type Mode = 'byo' | 'sd' | 'fis';
-  const MODES: Record<Mode, { main: number; byo: number; inc: number }> = {
-    byo: { main: 15_000, byo: 5_000, inc: 0 },
-    sd: { main: 30_000, byo: 0, inc: 0 },
-    fis: { main: 15_000, byo: 0, inc: 5_000 },
-  };
-  const root = document.getElementById('clock-demo');
-  if (root) {
-    const faces = [...root.querySelectorAll<HTMLElement>('.face')];
-    const msg = root.querySelector<HTMLElement>('.demo-msg')!;
-    const startBtn = root.querySelector<HTMLButtonElement>('[data-act="start"]')!;
-    const moveBtn = root.querySelector<HTMLButtonElement>('[data-act="move"]')!;
-    let mode: Mode = 'byo';
-    let main = [0, 0];
-    let turn = 0;
-    let since = 0;
-    let timer: number | undefined;
-    let over = false;
-
-    const fmt = (ms: number) => {
-      const s = Math.ceil(Math.max(0, ms) / 1000);
-      return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-    };
-    const left = (side: number) => {
-      const m = MODES[mode];
-      const el = timer !== undefined && side === turn ? performance.now() - since : 0;
-      const rest = main[side] - el;
-      return rest > 0 ? { main: rest, byo: m.byo } : { main: 0, byo: Math.max(0, m.byo + rest) };
-    };
-    const draw = () => {
-      faces.forEach((f, side) => {
-        const t = left(side);
-        const inByo = mode === 'byo' && t.main <= 0;
-        f.querySelector('.time')!.textContent = inByo ? fmt(t.byo) : fmt(t.main);
-        f.classList.toggle('running', timer !== undefined && side === turn);
-        f.classList.toggle('byo', inByo);
-        f.querySelector('.state')!.textContent = inByo ? 'ספירת שניות' : '';
-      });
-    };
-    const reset = () => {
-      window.clearInterval(timer);
-      timer = undefined;
-      over = false;
-      main = [MODES[mode].main, MODES[mode].main];
-      turn = 0;
-      faces.forEach((f) => f.classList.remove('lost'));
-      startBtn.textContent = 'התחלה';
-      moveBtn.disabled = true;
-      draw();
-    };
-    const tick = () => {
-      const t = left(turn);
-      if (t.main <= 0 && t.byo <= 0) {
-        window.clearInterval(timer);
-        timer = undefined;
-        over = true;
-        faces[turn].classList.add('lost');
-        moveBtn.disabled = true;
-        startBtn.textContent = 'שוב';
-        msg.textContent = `${turn === 0 ? 'לפותח' : 'למשיב'} נגמר הזמן: טיימאאוט.`;
-      }
-      draw();
-    };
-
-    root.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach((b) =>
-      b.addEventListener('click', () => {
-        mode = b.dataset.mode as Mode;
-        root.querySelectorAll('[data-mode]').forEach((o) => o.setAttribute('aria-checked', String(o === b)));
-        msg.textContent = {
-          byo: 'כשהזמן הראשי נגמר, השעון נצבע באדום ומתחילה ספירת השניות.',
-          sd: 'אין ספירת שניות: כשהזמן נגמר, המשחק נגמר.',
-          fis: 'כל מהלך מוסיף 5 שניות. שחקו מהר וראו איך הזמן גדל.',
-        }[mode];
-        reset();
-      }),
-    );
-    startBtn.addEventListener('click', () => {
-      if (timer !== undefined || over) return reset();
-      since = performance.now();
-      timer = window.setInterval(tick, 100);
-      startBtn.textContent = 'איפוס';
-      moveBtn.disabled = false;
-      draw();
-    });
-    moveBtn.addEventListener('click', () => {
-      if (timer === undefined) return;
-      const t = left(turn);
-      main[turn] = Math.max(0, t.main) + MODES[mode].inc;
-      turn = 1 - turn;
-      since = performance.now();
-      draw();
-    });
-    reset();
-  }
-</script>
-
 <style>
   .toc { margin: 20px 0 8px; padding: 14px 18px; border: 1.5px solid var(--rule); border-radius: 8px; }
   .toc ol { margin: 0; padding-inline-start: 22px; columns: 2; column-gap: 28px; }
@@ -259,30 +141,4 @@ const toc = [
   td.opt { font-weight: 700; white-space: nowrap; color: var(--ink); }
 
   .why { font-size: 15px; padding-inline-start: 12px; border-inline-start: 3px solid var(--rule); }
-  .demo { margin: 16px 0 24px; padding: 16px; border: 1.5px solid var(--rule); border-radius: 10px; background: var(--washi-2); }
-  .demo-modes { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
-  .demo-modes button {
-    font: inherit; font-size: 15px; padding: 6px 12px; border-radius: 999px; cursor: pointer;
-    border: 1.5px solid var(--rule); background: var(--washi); color: var(--ink-2);
-  }
-  .demo-modes button[aria-checked='true'] { border-color: var(--seal); color: var(--seal); font-weight: 700; }
-  .demo-faces { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .face {
-    display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 8px;
-    border: 2px solid var(--rule); border-radius: 8px; background: var(--washi); transition: border-color .15s;
-  }
-  .face .who { font-weight: 700; color: var(--ink-2); }
-  .face .time { font-size: clamp(34px, 9vw, 48px); font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink); line-height: 1.1; }
-  .face .state { min-height: 1.4em; color: var(--seal); font-weight: 700; }
-  .face.running { border-color: var(--ink); }
-  .face.byo .time, .face.lost .time { color: var(--seal); }
-  .face.lost { border-color: var(--seal); }
-  .demo-actions { display: flex; gap: 10px; margin-top: 14px; }
-  .demo-actions .dbtn {
-    font: inherit; font-weight: 700; padding: 10px 18px; border-radius: 8px; cursor: pointer;
-    border: 1.5px solid var(--ink-2); background: var(--washi); color: var(--ink);
-  }
-  .demo-actions .dbtn--seal { flex: 1; background: var(--seal); border-color: var(--seal); color: var(--on-seal); }
-  .demo-actions .dbtn:disabled { opacity: .45; cursor: default; }
-  .demo-msg { margin: 12px 0 0 !important; color: var(--muted) !important; }
 </style>
