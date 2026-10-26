@@ -10,6 +10,7 @@ import { loadPrefs } from '../learn/prefs';
 import { arrow } from '../learn/shapes';
 import { illegalShogigroundMoveDests } from '../learn/shogi';
 import { play, setSoundEnabled } from '../learn/sound';
+import { markSeen } from '../lib/progress-local';
 
 interface Exercise {
   name: string;
@@ -203,6 +204,7 @@ export function bootTryPieces(root: HTMLElement): void {
       play_.hidden = true;
       end.hidden = false;
       root.dataset.state = 'end';
+      markSeen('try-pieces'); // the course step (src/lib/curriculum.ts)
       play('end');
       end.querySelector<HTMLElement>('h2')?.focus();
       end.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });

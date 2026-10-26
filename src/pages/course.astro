@@ -143,7 +143,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
 
 <script>
   import { CURRICULUM, TRACK_INFO, ALL_STEPS, KIND_LABEL, hasAnyProgress, isOptional, nextStep, pathProgress, stepCount, stepHref, stepState, stepsFor, unitProgress } from '../lib/curriculum';
-  import { readLocal, updateCourse } from '../lib/progress-local';
+  import { markSeen, readLocal, updateCourse } from '../lib/progress-local';
   import type { SyncedProgress, Track } from '../lib/progress-sync';
   import { accountsEnabled, hasStoredSession } from '../lib/account-config';
   import { LEVEL_COUNTS as levelCounts } from '../lib/level-counts';
@@ -263,13 +263,11 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
       }, { overwrite: was }));
       return;
     }
-    // Reading steps count as done once opened from here.
+    // Reading and first-step pages count as done once opened from here.
     const link = t.closest<HTMLAnchorElement>('[data-step-link]');
     const id = link?.dataset.stepLink || link?.closest<HTMLElement>('[data-step]')?.dataset.step;
     const step = id && ALL_STEPS.find((s) => s.id === id);
-    if (step && step.kind === 'read' && !readLocal().course.seen.includes(step.id)) {
-      updateCourse((c) => { c.seen = [...c.seen, step.id].sort(); });
-    }
+    if (step && (step.kind === 'read' || step.kind === 'try')) markSeen(step.id);
   });
 
   if (signedIn) {

@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+import { existsSync } from 'node:fs';
 import { categories } from '../src/learn/categories';
 import { RULES_COURSE } from '../src/lib/course';
 import { ALL_STEPS, CURRICULUM, nextStep, pathProgress, stepHref, stepState, stepsFor, unitProgress } from '../src/lib/curriculum';
@@ -19,6 +20,10 @@ describe('curriculum data', () => {
       if (s.kind === 'learn') for (const k of s.learn!) expect(levelCounts[k]).toBeGreaterThan(0);
       if (s.kind === 'tsume') expect([1, 3, 5, 7]).toContain(s.tsume!);
       if (s.kind === 'play') expect(s.play!).toBeGreaterThanOrEqual(1);
+      if (s.kind === 'try' || s.kind === 'read') {
+        const page = `src/pages${s.href!.replace(/#.*/, '').replace(/\/$/, '')}`;
+        expect(existsSync(`${page}.astro`) || existsSync(`${page}/index.astro`)).toBe(true);
+      }
     }
   });
 
@@ -40,8 +45,18 @@ describe('curriculum data', () => {
 });
 
 describe('next step', () => {
-  test('a new player starts at rules lesson 1', () => {
-    expect(nextStep(prog({ course: { track: 'new', trackAt: 'x' } }), levelCounts)?.step.id).toBe('rules-01');
+  test('a new player starts by watching one game, then three pieces, then rules lesson 1', () => {
+    expect(nextStep(prog({ course: { track: 'new', trackAt: 'x' } }), levelCounts)?.step.id).toBe('try-game');
+    expect(nextStep(prog({ course: { track: 'new', trackAt: 'x', seen: ['try-game'] } }), levelCounts)?.step.id).toBe('try-pieces');
+    expect(nextStep(prog({ course: { track: 'new', trackAt: 'x', seen: ['try-game', 'try-pieces'] } }), levelCounts)?.step.id).toBe('rules-01');
+  });
+  test('the first-step pages are only on the newcomer path', () => {
+    const basics = CURRICULUM[0];
+    for (const t of ['chess', 'shogi'] as const) expect(stepsFor(basics, t).some((s) => s.kind === 'try')).toBe(false);
+    const p = prog({ course: { track: 'new', trackAt: 'x', seen: ['try-pieces'] } });
+    const step = ALL_STEPS.find((s) => s.id === 'try-pieces')!;
+    expect(stepState(step, p, levelCounts)).toBe('done');
+    expect(stepHref(step, p, levelCounts)).toBe('/try/pieces/');
   });
   test('a chess player skips the board intro and the chess-like pieces', () => {
     expect(nextStep(prog({ course: { track: 'chess', trackAt: 'x' } }), levelCounts)?.step.id).toBe('rules-02');
@@ -58,6 +73,8 @@ describe('next step', () => {
       course: { track: 'new', trackAt: 'x' },
     });
     expect(stepState(ALL_STEPS.find((s) => s.id === 'learn-intro')!, p, levelCounts)).toBe('done');
+    // rules lesson 1 already done: the first-step pages count as passed, so nobody is sent back to them
+    expect(stepState(ALL_STEPS.find((s) => s.id === 'try-game')!, p, levelCounts)).toBe('done');
     expect(nextStep(p, levelCounts)?.step.id).toBe('rules-02');
   });
   test('a learn step with several stages is done only when all are, and links to the first unfinished one', () => {

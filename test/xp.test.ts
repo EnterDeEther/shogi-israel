@@ -27,7 +27,7 @@ describe('xp', () => {
     expect(x.tsume).toBe(2 * XP.tsume[1] + XP.tsume[3]);
     expect(x.games).toBe(2 * XP.played + XP.won);
     expect(x.read).toBe(XP.read);
-    expect(x.course).toBe(4 * XP.step); // rules-01, read-opening, play-first, play-opening
+    expect(x.course).toBe(6 * XP.step); // rules-01 (and with it the two first-step pages), read-opening, play-first, play-opening
     // the same progress merged twice (another device, a replay) changes nothing
     expect(xpBreakdown(normalize({ ...p, rules: [...p.rules, ...p.rules] }), LEVEL_COUNTS).total).toBe(x.total);
   });
@@ -47,7 +47,7 @@ describe('xp', () => {
     });
     const x = xpBreakdown(p, LEVEL_COUNTS);
     expect(x.course % XP.step).toBe(XP.unit % XP.step);
-    expect(x.course).toBe(12 * XP.step + XP.unit);
+    expect(x.course).toBe(14 * XP.step + XP.unit);
   });
 
   test('ranks go from 15 קיו to 5 דאן and every step can earn something', () => {
@@ -60,6 +60,9 @@ describe('xp', () => {
     expect(rankFor(RANKS[3].min).rank.index).toBe(3);
     expect(rankFor(RANKS[3].min - 1).rank.index).toBe(2);
     expect(rankFor(10 ** 6).next).toBeUndefined();
-    for (const s of ALL_STEPS) expect(stepXp(s, LEVEL_COUNTS)).toBeGreaterThan(XP.step);
+    for (const s of ALL_STEPS) {
+      if (s.kind === 'try') expect(stepXp(s, LEVEL_COUNTS)).toBe(XP.step); // a first-step page: only the step bonus
+      else expect(stepXp(s, LEVEL_COUNTS)).toBeGreaterThan(XP.step);
+    }
   });
 });

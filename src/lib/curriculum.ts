@@ -7,7 +7,7 @@
 import { stageUrl } from '../learn/urls.js'; // .js: api/notify.ts runs this file on Node (ESM needs the extension)
 import type { SyncedProgress, Track } from './progress-sync';
 
-export type StepKind = 'rules' | 'learn' | 'read' | 'tsume' | 'play';
+export type StepKind = 'try' | 'rules' | 'learn' | 'read' | 'tsume' | 'play';
 
 export interface Step {
   id: string;
@@ -16,7 +16,7 @@ export interface Step {
   /** Why this step, in one line: shown under the title. */
   why: string;
   minutes: number;
-  /** rules: lesson slug. learn: stage keys (done when all are done). read: a page (#section). tsume: length. play: level. */
+  /** rules: lesson slug. learn: stage keys (done when all are done). read, try: a page (#section). tsume: length. play: level. */
   rules?: string;
   learn?: string[];
   href?: string;
@@ -46,7 +46,7 @@ export const TRACK_INFO: Record<Track, { label: string; sub: string; start: stri
   new: {
     label: 'חדשים לגמרי',
     sub: 'עוד לא שיחקתם שוגי, וגם לא שחמט',
-    start: 'נתחיל מהלוח והכלים, צעד אחר צעד. אין צורך בשום ידע קודם.',
+    start: 'נתחיל בצפייה במשחק אחד, ואז הלוח והכלים, צעד אחר צעד. אין צורך בשום ידע קודם.',
   },
   chess: {
     label: 'משחקים שחמט',
@@ -69,6 +69,11 @@ export const CURRICULUM: Unit[] = [
     goal: 'לפני המשחק הראשון',
     why: 'לפני שמדברים על שלבי המשחק צריך לדעת לשחק: הלוח, איך כל כלי זז, ושני הדברים שאין בשחמט, הכתרה והצנחה. בסוף משחקים משחק ראשון.',
     steps: [
+      // The first step from the home page (/try/), so newcomers who start here see a whole game before any rule.
+      // Done once opened from the course, once finished on the page itself (markSeen in src/lib/progress-local.ts),
+      // or once rules lesson 1 is done: a learner who already started the rules isn't sent back to a first look.
+      { id: 'try-game', kind: 'try', href: '/try/', title: 'צפו במשחק אחד, מהלך אחרי מהלך', why: 'משחק שלם עם הסבר לכל מהלך: איך נראים פתיחה, אמצע המשחק וסוף המשחק, עוד לפני החוקים.', minutes: 10, only: ['new'] },
+      { id: 'try-pieces', kind: 'try', href: '/try/pieces/', title: 'שלוש דקות, שלושה כלים', why: 'צריח, רץ ורגלי: לוכדים כלי עם כל אחד, ורואים שכלי שנלכד עובר ליד שלכם.', minutes: 3, only: ['new'] },
       { id: 'rules-01', kind: 'rules', rules: '01-board-pieces-setup', title: 'הלוח, הכלים והעמדה הפותחת', why: 'הלוח של 9×9, עשרים הכלים של כל צד, ואיך מסדרים אותם.', minutes: 10, optional: ALL_BUT_NEW },
       { id: 'learn-intro', kind: 'learn', learn: ['introduction'], title: 'תרגול: מזיזים כלי ראשון', why: 'איך מזיזים כלים על הלוח באתר, לפני כל השאר.', minutes: 3, optional: ALL_BUT_NEW },
       { id: 'rules-02', kind: 'rules', rules: '02-how-pieces-move', title: 'איך כל כלי זז', why: 'כל שמונת הכלים, עם הסבר למה כל אחד בנוי כך.', minutes: 15, optional: ['shogi'] },
@@ -156,6 +161,7 @@ function isComplete(s: Step, p: SyncedProgress, levelCounts: Record<string, numb
   switch (s.kind) {
     case 'rules': return p.rules.includes(s.rules!);
     case 'learn': return s.learn!.every((k) => stageDone(k, p, levelCounts));
+    case 'try': return p.course.seen.includes(s.id) || p.rules.includes('01-board-pieces-setup');
     case 'read': return p.course.seen.includes(s.id);
     case 'tsume': return (p.tsume[String(s.tsume)]?.length ?? 0) >= (s.target ?? 1);
     case 'play': return (s.win ? p.course.won : p.course.played) >= s.play!;
@@ -180,6 +186,7 @@ export function stepHref(s: Step, p: SyncedProgress, levelCounts: Record<string,
   switch (s.kind) {
     case 'rules': return `/rules/${s.rules}/`;
     case 'learn': return stageUrl(s.learn!.find((k) => !stageDone(k, p, levelCounts)) ?? s.learn![0]);
+    case 'try':
     case 'read': return s.href!;
     case 'tsume': return `/tsume/${s.tsume}/`;
     case 'play': return `/play/?level=${s.play}`;
@@ -212,6 +219,7 @@ export const hasAnyProgress = (p: SyncedProgress): boolean =>
   p.rules.length > 0 || Object.keys(p.learn.stages).length > 0 || Object.keys(p.tsume).length > 0 || p.course.played > 0;
 
 export const KIND_LABEL: Record<StepKind, string> = {
+  try: 'היכרות',
   rules: 'שיעור',
   learn: 'תרגול על הלוח',
   read: 'קריאה',
