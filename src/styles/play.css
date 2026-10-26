@@ -11,6 +11,8 @@
 @media (min-width: 860px) {
   /* RTL grid: the board is the first column, on the right */
   .play { grid-template-columns: minmax(0, 600px) minmax(280px, 340px); column-gap: 28px; align-items: start; }
+  /* the panel starts level with the board's top edge, not with the hand row above it (.play__board padding-top) */
+  .play__table { margin-top: 62px; }
 }
 
 /* ---------- board frame: room for coordinates (top, right) and hands (above, below) ---------- */

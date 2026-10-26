@@ -25,6 +25,10 @@
 @media (min-width: 1180px) {
   .learn--run { grid-template-columns: 220px minmax(0, 560px) minmax(260px, 320px); grid-template-areas: "side main table"; }
 }
+/* The panels start level with the board's top edge: below the hand row (.learn__board padding-top, 62px)
+   and, between 860 and 1179px, the back link above the board (.learn__back-narrow, 44px + 4px). */
+@media (min-width: 860px) and (max-width: 1179.98px) { .learn--run .learn__table { margin-top: 110px; } }
+@media (min-width: 1180px) { .learn--run :is(.learn__table, .learn__side) { margin-top: 62px; } }
 .sr-only { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
 /* ---------- board frame: room for coordinates (top, right) and hands (above, below) ---------- */

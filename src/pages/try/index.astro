@@ -109,8 +109,10 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
   .watch__grid { display: grid; gap: 16px 40px; grid-template-columns: minmax(0, 1fr); }
   @media (min-width: 900px) {
     .watch__grid { grid-template-columns: minmax(0, 520px) minmax(280px, 1fr); align-items: start; }
+    /* the side panel starts level with the board's top edge: tools row (8px + 44px) + hand row (64px) */
+    .watch__side { margin-top: 116px; }
   }
-  .watch__tools { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; }
+  .watch__tools { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; min-height: 44px; }
   .watch__learn { margin: 0; }
   .watch__learn .learn__board { padding-top: 64px; }
   .watch__nav { display: flex; flex-wrap: wrap; gap: 8px; max-width: 520px; }
