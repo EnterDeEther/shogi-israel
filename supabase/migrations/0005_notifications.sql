@@ -1,6 +1,6 @@
 -- Notifications for shogi.co.il: site news for the bell in the header, and the opt-in email settings with proof
 -- of consent (חוק התקשורת, section 30A: no email nudges without the player's explicit, prior consent).
--- Run once in the Supabase SQL editor, after 0002. The on-site notes themselves are worked out in the browser
+-- Run once in the Supabase SQL editor, any time after 0001. The on-site notes themselves are worked out in the browser
 -- from the progress the account already keeps (src/lib/inbox.ts); read marks ride along in progress.data.
 
 -- ---------- notices: site news, shown in everyone's bell ----------
