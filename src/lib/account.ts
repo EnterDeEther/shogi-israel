@@ -7,6 +7,7 @@ import type { GameRecord } from '../play/record';
 import { emptyProgress, gameResult, merge, normalize, same, type SyncedProgress } from './progress-sync';
 import { readLocal, writeLocal } from './progress-local';
 import { CONSENT_VERSION } from './consent';
+import { adSource } from './ad-source';
 
 export { readLocal };
 
@@ -27,9 +28,11 @@ export async function getSession(): Promise<Session | null> {
 const redirectTo = () => `${window.location.origin}/account/`;
 
 /** weeklyEmail: the unticked "send me the puzzle of the week" box on the form. It is applied on the first
- * sign-in (applySignupConsent), which may be on another device, so it travels with the account. */
+ * sign-in (applySignupConsent), which may be on another device, so it travels with the account.
+ * ad_source: the ad this tab arrived from, if any (src/lib/ad-source.ts), kept on the account. */
 export async function signUp(email: string, password: string, captchaToken?: string, weeklyEmail = false) {
-  const data = weeklyEmail ? { email_week_opt_in: CONSENT_VERSION } : {};
+  const ad = adSource();
+  const data = { ...(weeklyEmail ? { email_week_opt_in: CONSENT_VERSION } : {}), ...(ad ? { ad_source: ad } : {}) };
   return supabase().auth.signUp({ email, password, options: { emailRedirectTo: redirectTo(), captchaToken, data } });
 }
 export async function signIn(email: string, password: string, captchaToken?: string) {

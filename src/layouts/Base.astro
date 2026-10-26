@@ -73,6 +73,11 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
     <Footer />
     <Analytics />
     <script>
+      // Arrived from one of our ads? Keep which one for this tab, so a new account can record it.
+      import { rememberAdSource } from '../lib/ad-source';
+      rememberAdSource();
+    </script>
+    <script>
       // One listener for every letters/kanji switch on the page.
       const root = document.documentElement;
       const sync = () => {
