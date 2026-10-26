@@ -4,7 +4,7 @@
 // are part of the path and which are optional. Progress comes from what the lessons, tsume and play already
 // save (src/lib/progress-sync.ts); nothing here is stored twice.
 // Pure data and functions (tested in test/curriculum.test.ts).
-import { stageUrl } from '../learn/urls';
+import { stageUrl } from '../learn/urls.js'; // .js: api/notify.ts runs this file on Node (ESM needs the extension)
 import type { SyncedProgress, Track } from './progress-sync';
 
 export type StepKind = 'rules' | 'learn' | 'read' | 'tsume' | 'play';
