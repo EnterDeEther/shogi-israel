@@ -3,13 +3,18 @@ import Base from '../layouts/Base.astro';
 import Board from '../components/Board.astro';
 import { getCollection } from 'astro:content';
 import { RULES_COURSE, pad } from '../lib/course';
+import { FIRST_GAME, firstGamePlies } from '../lib/first-game';
 import { pageExists, LISHOGI_TEAM } from '../lib/live';
 import { liveSections, isLive, ACCOUNT } from '../lib/nav';
 import { accountsEnabled } from '../lib/account-config';
 
 const live = new Set((await getCollection('rules')).map((e) => e.id));
 const START = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1';
-const first = `/rules/${RULES_COURSE[0].slug}/`;
+// The hero board: the first game (/try/) one move before its mate. Newcomers start by watching that game.
+const plies = firstGamePlies();
+const ONE_TO_MATE = plies[plies.length - 2].sfen;
+const hasTry = pageExists('/try/');
+const first = hasTry ? '/try/' : `/rules/${RULES_COURSE[0].slug}/`;
 // Playing happens here first; Lishogi is for public games and tournaments.
 const hasPlay = pageExists('/play/');
 const hasAccount = pageExists('/account/');
@@ -29,27 +34,38 @@ const hasCourse = pageExists('/course/') && accountsOn;
       <p class="lead">הבית של שחקני השוגי בישראל. לומדים את השחמט היפני בעברית ומאפס, משחקים כאן באתר, ופוגשים שחקנים אחרים. הכול בחינם.</p>
       <div class="cta">
         <a class="btn" href={first} data-hero-start={hasCourse ? '' : undefined}>
-          <span data-hero-label>התחילו בחוקים הבסיסיים</span>
+          <span data-hero-label>{hasTry ? 'צפו במשחק אחד, מהלך אחרי מהלך' : 'התחילו בחוקים הבסיסיים'}</span>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
         </a>
         {hasPlay && <a class="btn btn-ghost" href="/play/">כבר יודעים לשחק? שחקו נגד המחשב</a>}
+        {pageExists('/chess/') && <a class="btn btn-ghost" href="/chess/">שחקני שחמט? התחילו כאן</a>}
         <a class="btn btn-ghost" href="#offer">
           <span>מה יש באתר? סקירה קצרה</span>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"></path></svg>
         </a>
-        <p class="small muted">
-          8 שיעורים קצרים · בלי הרשמה ·
-          {accountsOn ? (
-            <>
-              <span data-signed-out-only>ההתקדמות נשמרת במכשיר, ועם <a href="/account/?mode=signup">חשבון</a> (לא חובה) גם בין מכשירים</span>
-              <span data-signed-in-only>ההתקדמות נשמרת בחשבון שלכם, בכל מכשיר</span>
-            </>
-          ) : 'ההתקדמות נשמרת במכשיר שלכם'}
-        </p>
+        {hasTry ? <p class="small muted">בלי הרשמה · בחינם · בעברית</p> : (
+          <p class="small muted">
+            8 שיעורים קצרים · בלי הרשמה ·
+            {accountsOn ? (
+              <>
+                <span data-signed-out-only>ההתקדמות נשמרת במכשיר, ועם <a href="/account/?mode=signup">חשבון</a> (לא חובה) גם בין מכשירים</span>
+                <span data-signed-in-only>ההתקדמות נשמרת בחשבון שלכם, בכל מכשיר</span>
+              </>
+            ) : 'ההתקדמות נשמרת במכשיר שלכם'}
+          </p>
+        )}
       </div>
     </div>
     <div class="hero-board">
-      <Board sfen={START} />
+      {hasTry ? (
+        <>
+          <p class="hero-board-head"><strong>הפותח בתור: מט בעוד מהלך אחד</strong><span class="small muted">משחק של {FIRST_GAME.length} מהלכים</span></p>
+          <Board sfen={ONE_TO_MATE} />
+          <p class="hero-board-cap"><a href="/try/"><strong>איך הגענו לכאן?</strong></a> לחצו, ונראה את כל המשחק מההתחלה, מהלך אחרי מהלך.</p>
+        </>
+      ) : (
+        <Board sfen={START} />
+      )}
     </div>
   </section>
 
@@ -207,7 +223,7 @@ const hasCourse = pageExists('/course/') && accountsOn;
     // Signed-out visitors coming back: the first button picks up the rules course where they stopped.
     void import('../lib/course').then(({ RULES_COURSE }) => {
       const done = (slug: string) => { try { return localStorage.getItem(`done:${slug}`) === '1'; } catch { return false; } };
-      if (!RULES_COURSE.some((l) => done(l.slug))) return; // first visit: keep "התחילו בחוקים הבסיסיים"
+      if (!RULES_COURSE.some((l) => done(l.slug))) return; // first visit: keep the first step (watch one game)
       const next = RULES_COURSE.find((l) => !done(l.slug));
       const label = start.querySelector('[data-hero-label]')!;
       if (next) {
@@ -230,6 +246,8 @@ const hasCourse = pageExists('/course/') && accountsOn;
   .cta .btn { align-self: stretch; }
   .cta p { margin: 0; text-align: center; }
   .hero-board :global(.board-fig) { margin: 0; }
+  .hero-board-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; margin: 0 0 8px; }
+  .hero-board-cap { margin: 10px 0 0; color: var(--ink-2); line-height: 1.6; }
   @media (min-width: 900px) {
     .hero { grid-template-columns: 1.1fr 1fr; align-items: center; gap: 64px; padding-top: 72px; }
     .cta .btn { align-self: flex-start; min-width: 340px; }

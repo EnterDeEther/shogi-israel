@@ -3,7 +3,7 @@
 // Adding a page: add a link to the right section below. An internal link only shows once its page
 // exists in src/pages/ (see isLive), so a slot for a page that is still being built can sit here
 // already and appears by itself when the page lands. Links with a #hash are always shown.
-// Only lessons go under "למדו לשחק" (the guided course, /course/, first: it orders all the rest); background reading goes under "הכירו את השוגי", utilities under "כלים".
+// Only lessons go under "למדו לשחק" (the newcomers' first step, /try/, first, then the guided course, /course/, which orders all the rest); background reading goes under "הכירו את השוגי", utilities under "כלים".
 
 export interface NavLink {
   href: string;
@@ -42,6 +42,7 @@ export const NAV: NavItem[] = [
     label: 'למדו לשחק',
     blurb: 'מסלול מסודר מאפס ועד בעיות מט, בעברית ובחינם.',
     links: [
+      { href: '/try/', label: 'צפו במשחק אחד', hint: 'הצעד הראשון: מהלך אחרי מהלך, בלי ידע מוקדם' },
       { href: '/course/', label: 'מסלול לימוד אישי', hint: 'מאיפה מתחילים, ומה הצעד הבא' },
       { href: '/rules/', label: 'חוקים בסיסיים', hint: 'מאפס, צעד אחר צעד' },
       { href: '/learn/', label: 'שיעורים אינטראקטיביים', hint: 'תרגול על הלוח' },
