@@ -75,6 +75,12 @@ const senteHand = handOf('sente');
 <style>
   .board-fig { margin: 24px 0; max-width: 520px; }
   .board-fig.compact { max-width: 420px; }
+  /* Phones: the board runs edge to edge like Lishogi's, out of the page gutter and any box it sits in
+     (they are all centred on a phone), leaving just enough room on the right for the rank numbers. */
+  @media (max-width: 600px) {
+    .board-fig, .board-fig.compact { max-width: none; }
+    .bw { width: 100vw; margin-inline: calc(50% - 50vw); padding-left: 2px; grid-template-columns: 1fr 13px; gap: 1px; }
+  }
   .board-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
   .bw { display: grid; grid-template-columns: 1fr 18px; grid-template-rows: 18px auto; gap: 2px; }
   .files { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); font: 500 11px/18px var(--f-body); color: var(--muted); text-align: center; }

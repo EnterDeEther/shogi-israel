@@ -2,7 +2,7 @@
 // worked out from the progress the account already keeps (src/lib/progress-sync.ts), so nothing is stored
 // twice and nothing needs a server job: a new rank, the next step on the course path, the puzzle of the week,
 // a weekly streak about to break, a lesson started and not finished, a game left open on this device.
-// Only site news comes from the server (the `notices` table, supabase/migrations/0003_notifications.sql).
+// Only site news comes from the server (the `notices` table, supabase/migrations/0005_notifications.sql).
 // Each note has a stable id, so "read" survives reloads and follows the account (SyncedProgress.inbox).
 // Pure functions (tested in test/inbox.test.ts); src/lib/inbox-ui.ts draws the bell and the list.
 import { stageUrl } from '../learn/urls';
