@@ -1,0 +1,10 @@
+---
+// A small (?) that opens a one-line explanation: <InfoTip id="rank" /> right after the word it explains.
+// The text is in lib/info-tips.ts and the opening is in scripts/info-tips.ts (loaded by Base.astro).
+// Not inside a link, a button or a <summary>.
+import { tipMarkup, type TipId } from '../lib/info-tips';
+
+interface Props { id: TipId }
+const { id } = Astro.props;
+---
+<Fragment set:html={tipMarkup(id)} />

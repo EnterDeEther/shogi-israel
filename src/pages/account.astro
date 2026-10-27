@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import ThemeSetting from '../components/ThemeSetting.astro';
+import InfoTip from '../components/InfoTip.astro';
 import { accountsEnabled } from '../lib/account-config';
 import { stages } from '../learn/categories';
 import { GROUP_LABEL } from '../lib/inbox';
@@ -11,7 +12,7 @@ import { ACCOUNT_TOUR_URL } from '../lib/tour';
 // Levels per Learn stage, for the stats (so the page doesn't ship the whole lesson engine).
 const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length]));
 ---
-<Base title="החשבון שלי" description="כניסה לחשבון בשוגי ישראל: ההתקדמות בשיעורים נשמרת בכל מכשיר, וכינוי לטבלאות הדירוג." noindex>
+<Base title="החשבון שלי" description="כניסה לחשבון בשוגי ישראל: ההתקדמות בשיעורים ובמסלול נשמרת בכל מכשיר." noindex>
   <div class="wrap page" data-account data-level-counts={JSON.stringify(levelCounts)}>
     {!accountsEnabled && (
       <section>
@@ -95,7 +96,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
 
         <section data-view="nickname" hidden>
           <h1 data-nick-title>בחר כינוי</h1>
-          <p class="lead">הכינוי יופיע בטבלאות הדירוג ובמשחקים מול חברים. כל אחד יכול לראות אותו, אז עדיף לא את השם המלא.</p>
+          <p class="lead">הכינוי גלוי לכולם, ובהמשך יופיע גם במשחקים מול חברים. עדיף לא להשתמש בשם המלא.</p>
           <form class="form" data-nick-form novalidate>
             <label for="acc-nick">כינוי</label>
             <input id="acc-nick" name="nickname" autocomplete="nickname" minlength="3" maxlength="16" required aria-describedby="acc-nick-help" />
@@ -119,7 +120,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
           <h2>מסלול לימוד אישי</h2>
           <div class="course-card" data-course-card>
             <p class="small muted" data-course-where></p>
-            <p class="course-rank"><span class="course-kanji" lang="ja" aria-hidden="true" data-course-kanji></span> <strong data-course-rank></strong> <span class="small muted" data-course-xp></span></p>
+            <p class="course-rank"><span class="course-kanji" lang="ja" aria-hidden="true" data-course-kanji></span> <span><strong data-course-rank></strong><InfoTip id="rank" /></span> <span><span class="small muted" data-course-xp></span><InfoTip id="points" /></span></p>
             <p class="small"><a href="/ranks/#site">דרגה של לימוד באתר, לא דרגה רשמית</a></p>
             <p class="course-title" data-course-title></p>
             <div class="bar" aria-hidden="true"><span data-course-bar></span></div>
@@ -136,12 +137,11 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
           </dl>
           <p class="small muted" data-synced>ההתקדמות נשמרת בחשבון ומתעדכנת בכל מכשיר שבו אתה מחובר.</p>
 
-          <h2>משחקים ודירוג</h2>
+          <h2>משחקים</h2>
           <dl class="stats" data-games hidden>
             <div><dt>משחקים</dt><dd data-stat="played"></dd></div>
             <div><dt>ניצחונות</dt><dd data-stat="wins"></dd></div>
             <div><dt>הפסדים</dt><dd data-stat="losses"></dd></div>
-            <div><dt>דירוג</dt><dd data-stat="rating"></dd></div>
           </dl>
           <p class="muted" data-no-games>עוד לא שיחקת. משחקים <a href="/play/">נגד המחשב</a> נשמרים כאן אוטומטית.</p>
 
@@ -260,7 +260,6 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       $('[data-stat="played"]').textContent = String(g.played);
       $('[data-stat="wins"]').textContent = String(g.wins);
       $('[data-stat="losses"]').textContent = String(g.losses);
-      $('[data-stat="rating"]').textContent = String(profile.rating);
       show('home');
       // the bell's "הגדרות התראות" link: the panel only appears now, so scroll to it by hand
       if (location.hash === '#notifications') document.getElementById('notifications')?.scrollIntoView();
@@ -539,6 +538,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
   [data-account] { min-height: 100vh; min-height: 100svh; }
   .show-pass { align-self: flex-start; min-height: 24px; font-size: 14px; }
   .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 0; }
+  .stats[data-games] { grid-template-columns: repeat(3, 1fr); }
   .stats div { border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px; background: var(--washi-2); }
   .stats dt { font-size: 14px; color: var(--muted); }
   .stats dd { margin: 2px 0 0; font: 700 26px/1.2 var(--f-display); font-variant-numeric: tabular-nums; }

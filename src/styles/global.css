@@ -260,3 +260,54 @@ html[data-signed-in] [data-signed-out-only] { display: none; }
 .tour-skip { padding: 10px 0 2px; border: 0; background: none; color: var(--muted); font: inherit; font-size: 14px; text-decoration: underline; cursor: pointer; }
 /* room under the last menu item, so the sheet never covers the one in the ring */
 html.tour-on [data-nav-narrow] .panel { padding-bottom: 50dvh; }
+
+/* Quick info tips (lib/info-tips.ts, scripts/info-tips.ts): a small (?) after a word, and a bubble with a
+   one-line answer. A phone taps, a computer points. The bubble is the browser's popover (top layer, closes on
+   Esc and on a click elsewhere); .is-open is the same for a browser that has none. The inverted colours (ink
+   bubble, paper text) read as a note on both the light and the dark page, like the points toast above.
+   Rules are split where a selector may be unknown to an old browser (:popover-open), so one never drops the other. */
+.info-tip { display: inline; white-space: nowrap; }
+/* a word joiner keeps the (?) on the line of the word before it */
+.info-tip::before { content: "\2060"; }
+.info-tip__btn {
+  appearance: none; position: relative; display: inline-grid; place-items: center;
+  width: 20px; height: 20px; margin-inline-start: 6px; padding: 0;
+  border: 1.5px solid var(--muted); border-radius: 50%; background: transparent; color: var(--muted);
+  font: 700 12px/1 var(--f-body); vertical-align: 0.12em; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+/* the circle is small, the tap target is 44px */
+.info-tip__btn::before { content: ""; position: absolute; inset: -12px; }
+.info-tip__btn:hover, .info-tip__btn[aria-expanded="true"] { border-color: var(--seal); color: var(--seal); }
+
+.info-tip__pop {
+  display: none; position: fixed; z-index: 80; inset: auto; margin: 0;
+  width: max-content; max-width: min(300px, calc(100vw - 24px)); padding-block: 12px; padding-inline: 14px 36px;
+  border: 0; border-radius: 10px; background: var(--ink); color: var(--washi); overflow: visible;
+  font: 400 15px/1.55 var(--f-body); text-align: start; white-space: normal; text-wrap: pretty;
+  box-shadow: 0 12px 28px -10px rgba(0, 0, 0, .5);
+}
+.info-tip__pop:popover-open { display: block; }
+.info-tip__pop.is-open { display: block; }
+.info-tip__text { display: block; }
+.info-tip__more { display: inline-block; margin-top: 8px; color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.info-tip__more:hover { color: inherit; text-decoration-thickness: 2px; }
+.info-tip__pop :focus-visible { outline-color: currentColor; }
+.info-tip__x {
+  appearance: none; position: absolute; top: 4px; inset-inline-end: 4px; display: grid; place-items: center;
+  width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit;
+  opacity: .75; cursor: pointer;
+}
+.info-tip__x:hover { opacity: 1; background: color-mix(in srgb, currentColor 16%, transparent); }
+.info-tip__arrow { position: absolute; width: 12px; height: 12px; border-radius: 2px; background: var(--ink); transform: rotate(45deg); }
+.info-tip__pop[data-side="below"] .info-tip__arrow { top: -5px; }
+.info-tip__pop[data-side="above"] .info-tip__arrow { bottom: -5px; }
+@media (prefers-reduced-motion: no-preference) {
+  .info-tip__pop:popover-open { animation: info-tip-in .12s ease-out; }
+  .info-tip__pop.is-open { animation: info-tip-in .12s ease-out; }
+}
+@keyframes info-tip-in { from { opacity: 0; transform: translateY(3px); } }
+@media (forced-colors: active) {
+  .info-tip__pop { border: 1px solid CanvasText; }
+  .info-tip__btn { border-color: ButtonText; color: ButtonText; }
+}
+@media print { .info-tip { display: none; } }

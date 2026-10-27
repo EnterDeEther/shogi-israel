@@ -5,6 +5,8 @@
 // AGPL-3.0-or-later, like the rest of this site.
 import { el, icon, nextInCourse, pieceSetSwitch } from '../learn/view';
 import { shareButton } from '../lib/share-card';
+import { tipEl } from '../lib/info-tip-dom';
+import type { TipId } from '../lib/info-tips';
 import { copyText, downloadKif, kifFileName, LISHOGI_IMPORT_URL } from '../lib/kif';
 import type PlayCtrl from './ctrl';
 import type { PlaySettings } from './ctrl';
@@ -197,7 +199,7 @@ function kifButtons(ctrl: PlayCtrl): HTMLElement {
     return btn;
   };
   return el('div', { class: 'kif-export', 'data-hook': 'export' },
-    el('span', { class: 'small' }, 'רישום המשחק (KIF):'),
+    el('span', { class: 'small' }, 'רישום המשחק (KIF):', tipEl('kif')),
     b('הורדה', () => downloadKif(kifText(ctrl), kifFileName({ date: new Date(ctrl.record!.startedAt) }))),
     b('העתקה', async (btn) => flash(btn, (await copyText(kifText(ctrl))) ? 'הועתק ✓' : 'ההעתקה נכשלה')),
     b('ניתוח ב־Lishogi', async (btn) => {
@@ -206,7 +208,6 @@ function kifButtons(ctrl: PlayCtrl): HTMLElement {
       flash(btn, ok ? 'הועתק, הדבק בחלון שנפתח' : 'ההעתקה נכשלה');
       window.open(LISHOGI_IMPORT_URL, '_blank', 'noopener');
     }),
-    el('a', { href: '/kif/', class: 'small' }, 'מה זה?'),
   );
 }
 
@@ -260,9 +261,9 @@ function status(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void): HTM
 function setupScreen(ctrl: PlayCtrl, draft: PlaySettings, go: (fn: () => void) => (e: Event) => void, rerender: () => void): HTMLElement {
   const beaten = highestBeaten();
   const lv = getLevel(draft.level);
-  const seg = <T>(label: string, options: { label: string; value: T; sub?: string }[], cur: T, pick: (v: T) => void, cls = '') =>
+  const seg = <T>(label: string, options: { label: string; value: T; sub?: string }[], cur: T, pick: (v: T) => void, cls = '', tip?: TipId) =>
     el('fieldset', { class: `setup-field ${cls}` },
-      el('legend', {}, label),
+      el('legend', {}, label, tip ? tipEl(tip) : null),
       el('div', { class: 'choices' }, ...options.map((o) => el('button', {
         type: 'button', class: 'choice', 'aria-pressed': String(JSON.stringify(o.value) === JSON.stringify(cur)),
         onclick: (e: Event) => { e.preventDefault(); pick(o.value); rerender(); },
@@ -281,7 +282,7 @@ function setupScreen(ctrl: PlayCtrl, draft: PlaySettings, go: (fn: () => void) =
       { label: 'פותח', value: 'sente', sub: 'אתה מתחיל' },
       { label: 'אקראי', value: 'random' },
       { label: 'משיב', value: 'gote', sub: 'המחשב מתחיל' },
-    ], draft.color, (v) => (draft.color = v)),
+    ], draft.color, (v) => (draft.color = v), '', 'sides'),
     seg('שעון', CLOCKS.map((c) => ({ label: c.label, value: c.value })), draft.clock, (v) => (draft.clock = v), 'clocks'),
     clockHelp(),
     el('div', { class: 'buttons' },
@@ -368,7 +369,7 @@ export function render(ctrl: PlayCtrl, root: HTMLElement, openSettings: () => vo
       controls(ctrl, go, openSettings),
       playerRow(ctrl, bottom),
     ),
-    el('div', { class: 'pieces-switch' }, pieceSetSwitch()),
+    el('div', { class: 'pieces-switch' }, pieceSetSwitch(), tipEl('pieces')),
   );
   // keep the latest move in view
   const box = table.querySelector<HTMLElement>('[data-moves]');
