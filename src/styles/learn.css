@@ -199,6 +199,9 @@ html[data-pieces="kanji"] :is(.learn, .play) piece::after { content: var(--k); f
 .learn__overlay p { margin: 0 0 16px; color: var(--ink-2); line-height: 1.7; }
 .learn__overlay .buttons { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
 .learn__overlay .stars { font-size: 38px; display: block; margin-bottom: 4px; }
+.learn__overlay .chess-note { font-size: 15px; text-align: start; border-inline-start: 3px solid var(--seal); padding-inline-start: 10px; }
+.learn__overlay .route-switch { margin-top: -8px; }
+.learn__overlay .route-switch .linkish { background: none; border: 0; padding: 4px; color: var(--ink-2); text-decoration: underline; font: inherit; cursor: pointer; }
 @media (max-width: 480px) { .learn__overlay p { font-size: 15px; line-height: 1.55; } .learn__overlay .stage-img { display: none; } }
 
 /* ---------- stage pictures ---------- */

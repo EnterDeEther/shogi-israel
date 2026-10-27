@@ -262,6 +262,7 @@ const CHECK = [
     const before = readLocal().course;
     changing = false;
     // a device-only switch from the lessons ("?route=…") must not override the answer just given
+    // same key as ROUTE_KEY in src/learn/route.ts (not imported here: that module pulls in all the lesson strings)
     try { localStorage.removeItem('learnRoute'); } catch { /* storage blocked: nothing to clear */ }
     render(updateCourse((c) => { c.route = route; c.start = start; c.placedAt = new Date().toISOString(); },
       { overwrite: !!before.route && (before.route !== route || before.start !== start) }), why);
