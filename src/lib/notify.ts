@@ -100,9 +100,9 @@ export function buildEmail(input: EmailInput): Email {
   const week = israelWeek(now);
   const solved = p.tsume[String(WEEK_LENGTH)] ?? [];
   const streak = weekStreak(solved, weekCount, week);
-  const next = p.course.track ? nextStep(p, LEVEL_COUNTS) : undefined;
-  const nextLine = !p.course.track
-    ? { text: 'עוד לא בחרת מאיפה להתחיל. שאלה אחת, ⟦ותקבל|ותקבלי⟧ מסלול לימוד אישי.', href: '/course/', cta: 'למסלול הלימוד' }
+  const next = p.course.route ? nextStep(p, LEVEL_COUNTS) : undefined;
+  const nextLine = !p.course.route
+    ? { text: 'עוד לא בחרת מאיפה להתחיל. שתי שאלות קצרות, ⟦ותקבל|ותקבלי⟧ מסלול לימוד אישי.', href: '/course/', cta: 'למסלול הלימוד' }
     : next
       ? { text: `הצעד הבא במסלול שלך: ${next.step.title.replace(/^תרגול: /, '')} (${KIND_LABEL[next.step.kind]}, בערך ${next.step.minutes} דקות).`, href: stepHref(next.step, p, LEVEL_COUNTS), cta: 'לצעד הבא' }
       : { text: 'סיימת את כל המסלול! ⟦שחק|שחקי⟧ נגד המחשב ברמה גבוהה יותר.', href: '/play/', cta: 'למשחק' };

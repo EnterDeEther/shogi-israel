@@ -7,7 +7,7 @@
 import { categories, nextStage } from './categories';
 import type LearnCtrl from './ctrl';
 import { i18n, i18nFormat } from './i18n';
-import type { Stage } from './interfaces';
+import type { CourseLevel, Stage } from './interfaces';
 import { stageUrl } from './urls';
 import { average } from './util';
 import { courseNext } from '../lib/next-step';
@@ -51,7 +51,8 @@ const GUIDE: Record<string, { anchor: string; text: string }> = {
 
 // The game phase a lesson belongs to (opening, middle game, endgame), shown as a chip that links to the explanation.
 const PHASE_BY_CATEGORY: Record<string, string> = { openings: 'il_phaseOpening', castles: 'il_phaseCastles', strategy: 'il_phaseMiddle' };
-const PHASE_BY_STAGE: Record<string, string> = { whatIf: 'il_phaseOpening', checkmate1: 'il_phaseEnd' };
+const PHASE_BY_STAGE: Record<string, string> = { whatIf: 'il_phaseOpening', checkmate1: 'il_phaseEnd', value: 'il_phaseMiddle' };
+const LEVEL_KEY: Record<CourseLevel, string> = { beginner: 'il_courseBeginner', intermediate: 'il_courseIntermediate', advanced: 'il_courseAdvanced' };
 const phaseOf = (categoryKey: string, stageKey?: string): string | undefined => (stageKey && PHASE_BY_STAGE[stageKey]) || PHASE_BY_CATEGORY[categoryKey];
 const phaseChip = (phase: string | undefined, stop = false) =>
   phase && el('p', { class: 'phase' }, el('a', { href: '/learn/guide/#phases', onclick: stop ? (e: Event) => e.stopPropagation() : undefined }, i18n(phase)));
@@ -86,7 +87,7 @@ const pieceStages: Record<string, string> = {
 };
 const sealStages: Record<string, string> = {
   introduction: '始', capture: '取', drop: '打', protection: '守', check1: '手',
-  outOfCheck: '逃', checkmate1: '詰', value: '価',
+  outOfCheck: '逃', checkmate1: '詰', setup: '並', repetition: '千', value: '価',
   staticRook: '居', rangingRook: '振',
   fourthFileRook: '四', centralRook: '中', thirdFileRook: '三', yagura: '矢', bishopExchange: '角', ishida: '石',
   quickIshida: '罠', opposingRook: '向', doubleRangingRook: '相', sidePawn: '横', twistingRook: '捻',
@@ -230,7 +231,10 @@ function renderHome(ctrl: LearnCtrl, _root: HTMLElement, q: Q, go: Go, stageLink
       sealImg(seal), el('span', { class: 'text' }, el('h3', {}, title), el('span', { class: 'subtitle' }, subtitle)));
 
   q('[data-map]').replaceChildren(
-    ...categories.map((c) =>
+    ...categories.flatMap((c, i) => [
+      // Dean, 2026-10-27: the map is split into three course levels, each one starting with its own heading
+      c.level !== categories[i - 1]?.level ? el('p', { class: 'course-level', id: `level-${c.level}` },
+        el('span', {}, i18n('il_courseLevelNote')), i18n(LEVEL_KEY[c.level])) : null,
       el('section', { class: 'categ', 'aria-labelledby': `cat-${c.key}` },
         el('h2', { id: `cat-${c.key}` }, c.name),
         phaseChip(phaseOf(c.key)),
@@ -251,7 +255,7 @@ function renderHome(ctrl: LearnCtrl, _root: HTMLElement, q: Q, go: Go, stageLink
           }),
         ),
       ),
-    ),
+    ]).filter((n): n is HTMLElement => !!n),
     el('section', { class: 'categ what-next', 'aria-labelledby': 'cat-next' },
       el('h2', { id: 'cat-next' }, i18n('whatNext')),
       el('p', {}, i18n('youKnowHowToPlayShogi')),

@@ -95,9 +95,9 @@ export function buildInbox(p: SyncedProgress, ctx: InboxContext): InboxNote[] {
     }
   }
 
-  const step = p.course.track ? nextStep(p, ctx.levelCounts)?.step : undefined;
-  if (!p.course.track) {
-    notes.push({ id: 'next:start', kind: 'next', kanji: '歩', text: 'עוד לא בחרת מאיפה להתחיל. שאלה אחת, ⟦ותקבל|ותקבלי⟧ מסלול לימוד אישי.', href: '/course/', cta: '⟦בחר|בחרי⟧ נקודת התחלה' });
+  const step = p.course.route ? nextStep(p, ctx.levelCounts)?.step : undefined;
+  if (!p.course.route) {
+    notes.push({ id: 'next:start', kind: 'next', kanji: '歩', text: 'עוד לא בחרת מאיפה להתחיל. שתי שאלות קצרות, ⟦ותקבל|ותקבלי⟧ מסלול לימוד אישי.', href: '/course/', cta: '⟦בחר|בחרי⟧ נקודת התחלה' });
   } else if (step) {
     notes.push({
       id: `next:${step.id}`, kind: 'next', kanji: '歩',

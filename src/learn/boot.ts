@@ -11,11 +11,11 @@ import { el, icon, mount, pieceSetSwitch, render } from './view';
 
 const slugFromPath = (): string | undefined => window.location.pathname.match(/^\/learn\/([^/]+)\/?$/)?.[1];
 
-// The site menu links straight to a category of the stage map (/learn/#cat-openings). The map is drawn
+// The site menu links straight to a level or category of the stage map (/learn/#level-beginner, #cat-openings). The map is drawn
 // here, after the page loaded, so the browser cannot scroll to it by itself.
 const scrollToCategory = (): void => {
   const id = window.location.hash.slice(1);
-  if (id.startsWith('cat-')) document.getElementById(id)?.scrollIntoView();
+  if (id.startsWith('cat-') || id.startsWith('level-')) document.getElementById(id)?.scrollIntoView();
 };
 
 export function bootLearn(root: HTMLElement): LearnCtrl {

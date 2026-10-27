@@ -1,36 +1,61 @@
 ---
-// /course/: the guided course. A short "where do you start?" question, then one ordered path through the
-// rules, the interactive lessons, the guide, tsume and play, grouped as the basics and the three game phases.
-// The path is drawn here at build time, so everyone can see it. The personal part (the start question, next step,
-// progress marks, points and rank) is for signed-in visitors only; others get a sign-up card.
+// /course/: the guided course. Since the redesign (Dean, 2026-10-27) it follows Lishogi's course map: the same
+// categories in the same order, one stage per step, under three levels (מתחילים, בינוניים, מתקדמים), then our
+// openings, castles, strategy and tsume. The path is drawn here at build time, so everyone can see it.
+// The personal part is for signed-in visitors only: two questions (shogi experience, chess yes or no), an optional
+// three-position board check, or a manual pick, set the route and the starting level; then the next step, progress
+// marks, points and rank. Others get a sign-up card.
 import Base from '../layouts/Base.astro';
+import Board from '../components/Board.astro';
 import InfoTip from '../components/InfoTip.astro';
-import { CURRICULUM, KIND_LABEL, TRACK_INFO, stepHref } from '../lib/curriculum';
+import { CURRICULUM, KIND_LABEL, LEVELS, LEVEL_INFO, ROUTE_INFO, stepHref, unitsOf } from '../lib/curriculum';
 import { LEVEL_COUNTS as levelCounts } from '../lib/level-counts';
 import { RANKS, stepXp, XP } from '../lib/xp';
-import { emptyProgress, TRACKS } from '../lib/progress-sync';
+import { emptyProgress } from '../lib/progress-sync';
 import { accountsEnabled } from '../lib/account-config';
 import { pageExists } from '../lib/live';
 import { WHATSAPP_URL } from '../lib/nav';
 
 const empty = emptyProgress();
 const accountsOn = accountsEnabled && pageExists('/account/');
-const PHASES = CURRICULUM.filter((u) => u.phase).length;
+
+// The board check: three positions, each checked with shogiops in test/curriculum.test.ts.
+const CHECK = [
+  {
+    sfen: '4k4/9/9/9/9/9/4P4/9/4K4 b P 1', highlight: '54',
+    q: 'יש לך רגלי ביד. מותר להצניח אותו על המשבצת המסומנת?',
+    options: [['yes', 'כן'], ['no', 'לא']], answer: 'no',
+    why: 'אסור: כבר יש לך רגלי לא מוכתר באותו טור. שני רגלים בטור אחד הם מהלך לא חוקי.',
+  },
+  {
+    sfen: '4k4/9/4P4/9/9/9/9/9/4K4 b G 1', highlight: '',
+    q: 'יש לך גנרל זהב ביד. לאן ⟦תצניח|תצניחי⟧ אותו כדי לתת מט?',
+    options: [['5b', 'ישר מול המלך, צמוד אליו'], ['4b', 'באלכסון, ליד המלך'], ['4a', 'בשורה של המלך, משבצת לצדו']], answer: '5b',
+    why: 'ישר מול המלך: הרגלי שומר על הגנרל, והגנרל סוגר את כל המשבצות שהמלך יכול לברוח אליהן.',
+  },
+  {
+    sfen: 'lnsgkgsnl/5r1b1/ppppp2pp/5pp2/7P1/2P6/PP1PPPP1P/1B5R1/LNSGKGSNL b - 7', highlight: '',
+    q: 'אחרי כמה מהלכי פתיחה: מי משחק כאן צריח נודד?',
+    options: [['gote', 'המשיב (למעלה)'], ['sente', 'הפותח (למטה)'], ['both', 'שניהם']], answer: 'gote',
+    why: 'הצריח של המשיב עבר מהצד הימני שלו לטור 4. הצריח של הפותח נשאר במקומו: צריח קבוע.',
+  },
+];
 ---
 <Base
   title="מסלול לימוד אישי: מאיפה מתחילים"
-  description="מסלול לימוד שוגי מסודר, בעברית ובחינם: עונים על שאלה אחת, ומקבלים את הצעד הבא, מהחוקים הבסיסיים דרך פתיחה ואמצע המשחק ועד בעיות מט."
+  description="מסלול לימוד שוגי בעברית ובחינם, בשלוש רמות: מתחילים, בינוניים ומתקדמים. כל כלי וכל כלל מוסבר לפני שמשתמשים בו, ויש גם מסלול לשחקני שחמט."
 >
   <div class="wrap page" data-course>
     <p class="eyebrow">⟦למד|למדי⟧ לשחק</p>
     <h1>מסלול לימוד אישי</h1>
-    <p class="lead">כל מה שיש באתר ללמוד, בסדר אחד: קודם היסודות, ואז שלושת שלבי המשחק, פתיחה, אמצע המשחק וסוף המשחק. בכל צעד כתוב למה הוא שם, ותמיד ⟦תדע|תדעי⟧ מה הצעד הבא.</p>
+    <p class="lead">כל מה שיש באתר ללמוד, בסדר אחד ובשלוש רמות: מתחילים, בינוניים ומתקדמים. כל כלי וכל כלל מוסבר לפני שמשתמשים בו, כך שאפשר להתחיל בלי לדעת כלום, גם לא שחמט.</p>
+    <p class="phases-note small muted">בכל שיעור כתוב לאיזה משלושת שלבי המשחק הוא שייך: פתיחה, אמצע המשחק או סוף המשחק.<InfoTip id="phases" /></p>
 
     <section class="gate card" data-gate aria-labelledby="gate-h">
       <h2 id="gate-h">מסלול אישי, נקודות ודרגות</h2>
       {accountsOn ? (
         <>
-          <p>עם חשבון (בחינם) המסלול נהיה שלך: ⟦אתה|את⟧ עונה על שאלה אחת ⟦ומקבל|ומקבלת⟧ נקודת התחלה, רואה בכל רגע את הצעד הבא, ⟦וצובר|וצוברת⟧ נקודות שמעלות אותך בדרגה, מ־15 קיו ועד דאן (<a href="/ranks/#site">דרגות של לימוד, לא דרגה רשמית</a>). ההתקדמות נשמרת בכל מכשיר.</p>
+          <p>עם חשבון (בחינם) המסלול נהיה שלך: ⟦אתה|את⟧ עונה על שתי שאלות ⟦ומקבל|ומקבלת⟧ נקודת התחלה, רואה בכל רגע את הצעד הבא, ⟦וצובר|וצוברת⟧ נקודות שמעלות אותך בדרגה, מ־15 קיו ועד דאן (<a href="/ranks/#site">דרגות של לימוד, לא דרגה רשמית</a>). ההתקדמות נשמרת בכל מכשיר.</p>
           <p class="small muted">מה שכבר עשית בדפדפן הזה נכנס לחשבון ונספר.</p>
           <p class="gate-cta"><a class="btn" href="/account/?mode=signup"><span>⟦פתח|פתחי⟧ חשבון בחינם</span></a> <a href="/account/?mode=signin">כבר יש לך חשבון? כניסה</a></p>
         </>
@@ -40,22 +65,66 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
       <p class="small muted">כל השיעורים פתוחים גם בלי חשבון. הנה המסלול המלא:</p>
     </section>
 
-    <section class="placement" data-placement hidden aria-labelledby="place-h">
-      <h2 id="place-h">מאיפה מתחילים? ⟦ספר|ספרי⟧ לנו מה ⟦אתה|את⟧ כבר ⟦יודע|יודעת⟧</h2>
-      <div class="tracks" role="group" aria-labelledby="place-h">
-        {TRACKS.map((t) => (
-          <button type="button" class="track" data-track={t} aria-pressed="false">
-            <strong>{TRACK_INFO[t].label}</strong>
-            <span class="small muted">{TRACK_INFO[t].sub}</span>
-          </button>
-        ))}
+    <section class="placement card" data-placement hidden aria-labelledby="place-h">
+      <h2 id="place-h">מאיפה מתחילים?</h2>
+      <div data-place-step="questions">
+        <fieldset class="q">
+          <legend>כמה שוגי ⟦שיחקת|שיחקת⟧?</legend>
+          <div class="opts" role="group">
+            <button type="button" class="opt" data-exp="none" aria-pressed="false"><strong>אף פעם</strong><span class="small muted">או רק ראיתי פעם</span></button>
+            <button type="button" class="opt" data-exp="rules" aria-pressed="false"><strong>אני ⟦מכיר|מכירה⟧ את החוקים</strong><span class="small muted">יודע איך הכלים זזים</span></button>
+            <button type="button" class="opt" data-exp="plays" aria-pressed="false"><strong>אני ⟦משחק|משחקת⟧</strong><span class="small muted">שיחקתי לא מעט משחקים</span></button>
+          </div>
+        </fieldset>
+        <fieldset class="q">
+          <legend>⟦משחק|משחקת⟧ שחמט?</legend>
+          <div class="opts two" role="group">
+            <button type="button" class="opt" data-chess="yes" aria-pressed="false"><strong>כן</strong><span class="small muted">ההסברים ישוו לשחמט</span></button>
+            <button type="button" class="opt" data-chess="no" aria-pressed="false"><strong>לא</strong><span class="small muted">הכול יוסבר מההתחלה</span></button>
+          </div>
+        </fieldset>
+        <div class="place-actions" data-place-actions hidden>
+          <button type="button" class="btn" data-place-go><span>זהו, ⟦הראה|הראי⟧ לי מאיפה להתחיל</span></button>
+          <button type="button" class="btn btn-ghost" data-check-start hidden><span>בדיקה קצרה על הלוח (רשות, שתי דקות)</span></button>
+        </div>
+        <p class="small muted"><button type="button" class="link" data-manual>⟦אבחר|אבחר⟧ רמה בעצמי</button> · אפשר לשנות את זה בכל רגע, וכל השיעורים נשארים פתוחים.</p>
       </div>
-      <p class="small muted">אפשר לשנות את זה בכל רגע. התשובה רק קובעת מאיפה המסלול מתחיל, וכל הצעדים נשארים פתוחים.</p>
+
+      <div data-place-step="check" hidden>
+        <p class="small muted" data-check-count></p>
+        {CHECK.map((c, i) => (
+          <div class="check" data-check={i} data-answer={c.answer} hidden>
+            <Board sfen={c.sfen} highlight={c.highlight} toggle={false} size="compact" />
+            <p class="check-q"><strong>{c.q}</strong></p>
+            <div class="opts" role="group">
+              {c.options.map(([v, label]) => <button type="button" class="opt" data-check-answer={v}><strong>{label}</strong></button>)}
+            </div>
+            <p class="check-why small" data-check-why hidden>{c.why}</p>
+            <button type="button" class="btn" data-check-next hidden><span>{i < CHECK.length - 1 ? 'לשאלה הבאה' : 'לתוצאה'}</span></button>
+          </div>
+        ))}
+        <p class="small"><button type="button" class="link" data-check-skip>⟦דלג|דלגי⟧ על הבדיקה</button></p>
+      </div>
+
+      <div data-place-step="manual" hidden>
+        <p>⟦בחר|בחרי⟧ רמה. אפשר לשנות בכל רגע.</p>
+        <div class="opts">
+          {LEVELS.map((l) => (
+            <button type="button" class="opt" data-pick={l}>
+              <strong>{LEVEL_INFO[l].title}</strong>
+              <span class="small">{LEVEL_INFO[l].goal}</span>
+              <span class="small muted">{LEVEL_INFO[l].why}</span>
+            </button>
+          ))}
+        </div>
+        <label class="chess-box small"><input type="checkbox" data-pick-chess /> ⟦אני משחק|אני משחקת⟧ שחמט: ההסברים ישוו לשחמט</label>
+        <p class="small"><button type="button" class="link" data-back-questions>חזרה לשאלות</button></p>
+      </div>
     </section>
 
     <section class="chosen" data-chosen hidden>
       <p><span class="muted">נקודת ההתחלה:</span> <strong data-chosen-label></strong> · <button type="button" class="link" data-change>שינוי</button></p>
-      <p class="small muted" data-chosen-start></p>
+      <p class="small muted" data-chosen-why></p>
     </section>
 
     <section class="next card" data-next hidden aria-labelledby="next-h">
@@ -63,7 +132,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
       <p class="next-where small muted" data-next-where></p>
       <h2 data-next-title></h2>
       <p data-next-why></p>
-      <a class="btn" data-next-link href="/rules/01-board-pieces-setup/"><span>⟦התחל|התחילי⟧</span></a>
+      <a class="btn" data-next-link href="/learn/introduction/"><span>⟦התחל|התחילי⟧</span></a>
     </section>
 
     <section class="rank card" data-rank hidden aria-labelledby="rank-h">
@@ -85,16 +154,16 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
             <li>ניצחון ראשון בכל רמה: {XP.won} כפול מספר הרמה</li>
             <li>קריאת פרק במדריך מתוך המסלול: {XP.read}</li>
             <li>בונוס על כל צעד שהשלמת במסלול: {XP.step}</li>
-            <li>בונוס על שלב שהשלמת כולו: {XP.unit}</li>
+            <li>בונוס על חלק שהשלמת כולו (למשל "כלי השוגי"): {XP.unit}</li>
           </ul>
-          <p class="small muted">כל דבר נספר פעם אחת: חזרה על תרגיל או בעיה שכבר פתרת לא מוסיפה נקודות, ושיפור מכוכב אחד לשלושה מוסיף רק את ההפרש. צעד שסימנת "כבר ⟦יודע|יודעת⟧" לא נותן נקודות. הדרגות נקראות על שם דרגות השוגי, קיו ודאן, אבל מודדות התקדמות בלימוד באתר, לא כוח משחק (<a href="/ranks/">איך זה עובד בעולם</a>). יש {RANKS.length} דרגות, מ־{RANKS[0].name} ועד {RANKS[RANKS.length - 1].name}.</p>
+          <p class="small muted">כל דבר נספר פעם אחת: חזרה על תרגיל או בעיה שכבר פתרת לא מוסיפה נקודות, ושיפור מכוכב אחד לשלושה מוסיף רק את ההפרש. צעד שסומן "כבר מוכר" לא נותן נקודות עד ⟦שתעשה|שתעשי⟧ אותו. הדרגות נקראות על שם דרגות השוגי, קיו ודאן, אבל מודדות התקדמות בלימוד באתר, לא כוח משחק (<a href="/ranks/">איך זה עובד בעולם</a>). יש {RANKS.length} דרגות, מ־{RANKS[0].name} ועד {RANKS[RANKS.length - 1].name}.</p>
         </details>
       </div>
     </section>
 
     <section class="done-all card" data-done-all hidden>
       <h2>סיימת את המסלול!</h2>
-      <p>עברת את כל שלושת השלבים. מכאן ⟦המשך|המשיכי⟧ לשחק: נגד המחשב ברמות גבוהות יותר, עם ישראלים בקהילה, ומול שחקנים מכל העולם.</p>
+      <p>עברת את כל שלוש הרמות. מכאן ⟦המשך|המשיכי⟧ לשחק: נגד המחשב ברמות גבוהות יותר, עם ישראלים בקהילה, ומול שחקנים מכל העולם.</p>
       <p><a href="/play/?level=5">נגד המחשב, מרמה 5 והלאה</a> · <a href="/tsume/7/">בעיות מט ב־7 מהלכים</a> · <a href={WHATSAPP_URL} rel="noopener">קהילת הוואטסאפ</a> · <a href="/lishogi/">יריבים מכל העולם בליש׳וגי</a></p>
     </section>
 
@@ -105,47 +174,61 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
 
     {accountsOn && <p class="small muted save-note" data-signed-in-only>ההתקדמות נשמרת בחשבון שלך, בכל מכשיר.</p>}
 
-    {CURRICULUM.map((u) => (
-      <section class="unit" id={u.key} data-unit={u.key} aria-labelledby={`${u.key}-h`}>
-        <header class="unit-head">
-          <p class="unit-tag">{u.phase ? `שלב ${u.phase} מתוך ${PHASES}` : 'לפני שמתחילים'}{u.phase && <InfoTip id="phases" />}</p>
-          <h2 id={`${u.key}-h`}>{u.title}</h2>
-          <p class="unit-goal"><strong>המטרה: {u.goal}.</strong> {u.why}</p>
-          <div class="unit-progress" data-unit-progress hidden>
-            <div class="bar" aria-hidden="true"><span></span></div>
-            <span class="small muted"></span>
-          </div>
+    <nav class="level-nav small" aria-label="שלוש הרמות">
+      {LEVELS.map((l, i) => <a href={`#${l}`}>{i + 1}. {LEVEL_INFO[l].title}</a>)}
+    </nav>
+
+    {LEVELS.map((l, i) => (
+      <section class="level" id={l} data-level={l} aria-labelledby={`${l}-h`}>
+        <header class="level-head">
+          <p class="level-tag">רמה {i + 1} מתוך {LEVELS.length} · בערך {LEVEL_INFO[l].ranks} בדרגות הלימוד<InfoTip id="rank" /></p>
+          <h2 id={`${l}-h`}>{LEVEL_INFO[l].title}</h2>
+          <p class="level-goal"><strong>המטרה: {LEVEL_INFO[l].goal}.</strong> {LEVEL_INFO[l].why}</p>
+          <p class="level-known small" data-level-known hidden>כבר מוכר לך, לפי נקודת ההתחלה. הכול נשאר פתוח לחזרה, וצעד ⟦שתעשה|שתעשי⟧ ייספר.</p>
         </header>
-        <ol class="steps">
-          {u.steps.map((s) => (
-            <li class="step" data-step={s.id} data-kind={s.kind} data-only={s.only?.join(' ')} data-optional={s.optional?.join(' ')} hidden={!!s.only && !s.only.includes('new')}>
-              <span class="mark" aria-hidden="true"></span>
-              <div class="step-body">
-                <a class="step-title" href={stepHref(s, empty, levelCounts)} data-step-link>{s.title}</a>
-                <p class="step-meta small muted">
-                  <span>{KIND_LABEL[s.kind]}</span> · <span>{s.minutes} דק׳</span>
-                  <span class="opt" data-opt-tag hidden> · רשות</span>
-                  <span class="count" data-count></span>
-                  <span class="xp" data-xp hidden> · עד +{stepXp(s, levelCounts)} נק׳</span>
-                  <span class="sr-only" data-state-sr></span>
-                </p>
-                <p class="step-why">{s.why}</p>
+        {unitsOf(l).map((u) => (
+          <section class="unit" id={u.key} data-unit={u.key} aria-labelledby={`${u.key}-h`}>
+            <header class="unit-head">
+              <h3 id={`${u.key}-h`}>{u.title}</h3>
+              <p class="unit-goal">{u.why}</p>
+              <div class="unit-progress" data-unit-progress hidden>
+                <div class="bar" aria-hidden="true"><span></span></div>
+                <span class="small muted"></span>
               </div>
-              <button type="button" class="step-skip small" data-skip hidden>כבר ⟦יודע|יודעת⟧</button>
-            </li>
-          ))}
-        </ol>
+            </header>
+            <ol class="steps">
+              {u.steps.map((s) => (
+                <li class="step" data-step={s.id} data-kind={s.kind} hidden={!!s.only && !s.only.includes('main')}>
+                  <span class="mark" aria-hidden="true"></span>
+                  <div class="step-body">
+                    <a class="step-title" href={stepHref(s, empty, levelCounts)} data-step-link>{s.title}</a>
+                    <p class="step-meta small muted">
+                      <span>{KIND_LABEL[s.kind]}</span> · <span>{s.minutes} דק׳</span>
+                      <span class="opt-tag" data-opt-tag hidden> · רשות</span>
+                      <span class="opt-tag" data-known-tag hidden> · כבר מוכר</span>
+                      <span class="count" data-count></span>
+                      <span class="xp" data-xp hidden> · עד +{stepXp(s, levelCounts)} נק׳</span>
+                      <span class="sr-only" data-state-sr></span>
+                    </p>
+                    <p class="step-why">{s.why}</p>
+                  </div>
+                  <button type="button" class="step-skip small" data-skip hidden>כבר ⟦יודע|יודעת⟧</button>
+                </li>
+              ))}
+            </ol>
+          </section>
+        ))}
       </section>
     ))}
 
-    <p class="small muted foot">עוד באתר: <a href="/learn/guide/">פתיחות, מבצרים ואסטרטגיה</a> · <a href="/learn/">כל השיעורים האינטראקטיביים</a> · <a href="/rules/">חוקים בסיסיים</a> · <a href="/tsume/">בעיות מט</a></p>
+    <p class="small muted foot">עוד באתר: <a href="/learn/">מפת השיעורים האינטראקטיביים</a> · <a href="/learn/guide/">פתיחות, מבצרים ואסטרטגיה</a> · <a href="/rules/">חוקים בסיסיים</a> · <a href="/tsume/">בעיות מט</a></p>
   </div>
 </Base>
 
 <script>
-  import { CURRICULUM, TRACK_INFO, ALL_STEPS, KIND_LABEL, hasAnyProgress, isOptional, nextStep, pathProgress, stepCount, stepHref, stepState, stepsFor, unitProgress } from '../lib/curriculum';
+  import { ALL_STEPS, CURRICULUM, KIND_LABEL, LEVELS, LEVEL_INFO, ROUTE_INFO, hasAnyProgress, isKnown, isOptional, isSkipped, legacyOf, nextStep, pathProgress, placeFrom, placeLabel, stepCount, stepHref, stepState, stepsFor, unitProgress, unitsOf, whereLabel, type Experience } from '../lib/curriculum';
   import { markSeen, readLocal, updateCourse } from '../lib/progress-local';
-  import type { SyncedProgress, Track } from '../lib/progress-sync';
+  import type { CourseLevel, Route, SyncedProgress } from '../lib/progress-sync';
   import { accountsEnabled, hasStoredSession } from '../lib/account-config';
   import { LEVEL_COUNTS as levelCounts } from '../lib/level-counts';
   import { rankFor, xpBreakdown } from '../lib/xp';
@@ -155,12 +238,96 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
   // The personal course is for signed-in visitors; everyone else keeps the static path and the sign-up card.
   const signedIn = accountsEnabled && hasStoredSession();
   const $ = <T extends HTMLElement>(sel: string, scope: ParentNode = root) => scope.querySelector<T>(sel)!;
+  const $$ = <T extends HTMLElement>(sel: string, scope: ParentNode = root) => [...scope.querySelectorAll<T>(sel)];
   let changing = false;
 
   const STATE_SR = { done: 'הושלם', skipped: 'סומן כמוכר', todo: '' } as const;
 
-  function render(p: SyncedProgress = readLocal()) {
-    const track = p.course.track;
+  // ---------- placement ----------
+  let exp: Experience | null = null;
+  // /course/?route=chess (the /chess/ page's buttons) answers the chess question in advance
+  let chess: boolean | null = new URLSearchParams(location.search).get('route') === 'chess' ? true : null;
+  let score = 0;
+
+  function showStep(name: 'questions' | 'check' | 'manual') {
+    $$('[data-place-step]').forEach((el) => { el.hidden = el.dataset.placeStep !== name; });
+  }
+  function syncQuestions() {
+    $$<HTMLButtonElement>('[data-exp]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.exp === exp)));
+    $$<HTMLButtonElement>('[data-chess]').forEach((b) => b.setAttribute('aria-pressed', String(chess !== null && (b.dataset.chess === 'yes') === chess)));
+    $('[data-place-actions]').hidden = exp === null || chess === null;
+    $('[data-check-start]').hidden = exp === null || exp === 'none';
+  }
+  function save(route: Route, start: CourseLevel, why: string) {
+    const before = readLocal().course;
+    changing = false;
+    // a device-only switch from the lessons ("?route=…") must not override the answer just given
+    try { localStorage.removeItem('learnRoute'); } catch { /* storage blocked: nothing to clear */ }
+    render(updateCourse((c) => { c.route = route; c.start = start; c.placedAt = new Date().toISOString(); },
+      { overwrite: !!before.route && (before.route !== route || before.start !== start) }), why);
+    $('[data-chosen]').scrollIntoView({ block: 'nearest' });
+  }
+  const whyFor = (start: CourseLevel, checked: boolean) =>
+    checked
+      ? `ענית נכון על ${score} מתוך 3 בבדיקה, ולכן ${LEVEL_INFO[start].title}.`
+      : start === 'beginner' ? 'מתחילים מההתחלה: כל כלי וכל כלל, אחד אחרי השני.' : 'החוקים כבר מוכרים לך, אז מתחילים בבינוניים. רמת המתחילים נשארת פתוחה לרענון.';
+
+  $$<HTMLButtonElement>('[data-exp]').forEach((b) => b.addEventListener('click', () => { exp = b.dataset.exp as Experience; syncQuestions(); }));
+  $$<HTMLButtonElement>('[data-chess]').forEach((b) => b.addEventListener('click', () => { chess = b.dataset.chess === 'yes'; syncQuestions(); }));
+  $('[data-place-go]').addEventListener('click', () => {
+    if (exp === null || chess === null) return;
+    const pl = placeFrom(exp, chess);
+    save(pl.route, pl.start, whyFor(pl.start, false));
+  });
+
+  // the board check: three positions, one at a time, each answer explained before the next
+  const checks = $$('[data-check]');
+  function showCheck(i: number) {
+    checks.forEach((c, j) => { c.hidden = j !== i; });
+    $('[data-check-count]').textContent = `שאלה ${i + 1} מתוך ${checks.length}`;
+    $$<HTMLButtonElement>('[data-check-answer]', checks[i])[0]?.focus();
+  }
+  $('[data-check-start]').addEventListener('click', () => { score = 0; showStep('check'); showCheck(0); });
+  checks.forEach((c, i) => {
+    $$<HTMLButtonElement>('[data-check-answer]', c).forEach((b) => b.addEventListener('click', () => {
+      const right = b.dataset.checkAnswer === c.dataset.answer;
+      if (right) score++;
+      $$<HTMLButtonElement>('[data-check-answer]', c).forEach((x) => {
+        x.disabled = true;
+        if (x.dataset.checkAnswer === c.dataset.answer) x.dataset.result = 'right';
+        else if (x === b) x.dataset.result = 'wrong';
+      });
+      const why = $('[data-check-why]', c);
+      why.hidden = false;
+      why.prepend(right ? 'נכון. ' : 'לא בדיוק. ');
+      const next = $<HTMLButtonElement>('[data-check-next]', c);
+      next.hidden = false;
+      next.focus();
+    }));
+    $('[data-check-next]', c).addEventListener('click', () => {
+      if (i < checks.length - 1) return showCheck(i + 1);
+      const pl = placeFrom(exp ?? 'rules', !!chess, score);
+      save(pl.route, pl.start, whyFor(pl.start, true));
+    });
+  });
+  $('[data-check-skip]').addEventListener('click', () => {
+    const pl = placeFrom(exp ?? 'rules', !!chess);
+    save(pl.route, pl.start, whyFor(pl.start, false));
+  });
+
+  $('[data-manual]').addEventListener('click', () => {
+    $<HTMLInputElement>('[data-pick-chess]').checked = chess ?? readLocal().course.route === 'chess';
+    showStep('manual');
+  });
+  $('[data-back-questions]').addEventListener('click', () => showStep('questions'));
+  $$<HTMLButtonElement>('[data-pick]').forEach((b) => b.addEventListener('click', () => {
+    const start = b.dataset.pick as CourseLevel;
+    save($<HTMLInputElement>('[data-pick-chess]').checked ? 'chess' : 'main', start, `בחרת להתחיל ב${LEVEL_INFO[start].title}.`);
+  }));
+
+  // ---------- the path ----------
+  function render(p: SyncedProgress = readLocal(), why?: string) {
+    const placed = !!p.course.route;
     $('[data-gate]').hidden = true;
     const xp = xpBreakdown(p, levelCounts).total;
     const r = rankFor(xp);
@@ -172,24 +339,23 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
     $('[data-rank-text]').textContent = r.next
       ? `${xp.toLocaleString('he-IL')} נקודות · עוד ${(r.next.min - xp).toLocaleString('he-IL')} לדרגה ${r.next.name}`
       : `${xp.toLocaleString('he-IL')} נקודות · הדרגה הגבוהה ביותר באתר`;
-    const picking = !track || changing;
+    const picking = !placed || changing;
     $('[data-placement]').hidden = !picking;
-    root.querySelectorAll<HTMLButtonElement>('[data-track]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.track === track)));
     $('[data-chosen]').hidden = picking;
-    if (track) {
-      $('[data-chosen-label]').textContent = TRACK_INFO[track].label;
-      $('[data-chosen-start]').textContent = TRACK_INFO[track].start;
+    if (placed) {
+      $('[data-chosen-label]').textContent = placeLabel(p.course);
+      $('[data-chosen-why]').textContent = why ?? (p.course.route === 'chess' ? ROUTE_INFO.chess.sub : ROUTE_INFO.main.sub);
     }
 
-    // Next step: once a track is chosen, or for anyone who already started somewhere on the site.
+    // Next step: once a starting point is chosen, or for anyone who already started somewhere on the site.
     const next = nextStep(p, levelCounts);
-    const showNext = (!!track || hasAnyProgress(p)) && !picking;
+    const showNext = (placed || hasAnyProgress(p)) && !picking;
     $('[data-next]').hidden = !showNext || !next;
     $('[data-done-all]').hidden = !showNext || !!next;
     if (next) {
       const { unit, step } = next;
       const c = stepCount(step, p, levelCounts);
-      $('[data-next-where]').textContent = `${unit.phase ? `שלב ${unit.phase}: ` : ''}${unit.title} · ${KIND_LABEL[step.kind]} · ${step.minutes} דק׳${c && c.done ? ` · ${c.done} מתוך ${c.of}` : ''}`;
+      $('[data-next-where]').textContent = `${whereLabel(unit)} · ${KIND_LABEL[step.kind]} · ${step.minutes} דק׳${c && c.done ? ` · ${c.done} מתוך ${c.of}` : ''}`;
       $('[data-next-title]').textContent = step.title;
       $('[data-next-why]').textContent = step.why;
       const link = $<HTMLAnchorElement>('[data-next-link]');
@@ -203,9 +369,13 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
     $('[data-overall-bar]').style.width = `${total.of ? Math.round((100 * total.done) / total.of) : 0}%`;
     $('[data-overall-text]').textContent = `${total.done} מתוך ${total.of} צעדים במסלול`;
 
+    for (const l of LEVELS) {
+      const known = unitsOf(l).every((u) => stepsFor(u, p.course).every((s) => isKnown(s, p.course)));
+      $('[data-level-known]', $(`[data-level="${l}"]`)).hidden = !(placed && known);
+    }
     for (const u of CURRICULUM) {
       const sec = $(`[data-unit="${u.key}"]`);
-      const visible = new Set(stepsFor(u, track).map((s) => s.id));
+      const visible = new Set(stepsFor(u, p.course).map((s) => s.id));
       for (const s of u.steps) {
         const li = $(`[data-step="${s.id}"]`, sec);
         li.hidden = !visible.has(s.id);
@@ -213,19 +383,21 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
         li.dataset.state = state;
         li.classList.toggle('is-next', next?.step.id === s.id && showNext);
         $<HTMLAnchorElement>('[data-step-link]', li).href = stepHref(s, p, levelCounts);
-        $('[data-opt-tag]', li).hidden = !isOptional(s, track);
+        const known = placed && isKnown(s, p.course);
+        $('[data-known-tag]', li).hidden = !known || state === 'done';
+        $('[data-opt-tag]', li).hidden = known || !isOptional(s, p.course);
         const c = stepCount(s, p, levelCounts);
         $('[data-count]', li).textContent = c && c.done && state === 'todo' ? ` · ${c.done} מתוך ${c.of}` : '';
         $('[data-state-sr]', li).textContent = STATE_SR[state] ? ` · ${STATE_SR[state]}` : '';
         $('[data-xp]', li).hidden = state !== 'todo';
         const skip = $<HTMLButtonElement>('[data-skip]', li);
-        skip.hidden = state === 'done';
+        skip.hidden = state === 'done' || known;
         skip.textContent = state === 'skipped' ? '⟦בטל|בטלי⟧ סימון' : 'כבר ⟦יודע|יודעת⟧';
         skip.setAttribute('aria-label', `${state === 'skipped' ? '⟦בטל|בטלי⟧ סימון' : 'כבר ⟦יודע|יודעת⟧'}: ${s.title}`);
       }
       const up = unitProgress(u, p, levelCounts);
       const bar = $('[data-unit-progress]', sec);
-      bar.hidden = !showNext;
+      bar.hidden = !showNext || up.of === 0;
       $<HTMLElement>('.bar span', bar).style.width = `${up.of ? Math.round((100 * up.done) / up.of) : 0}%`;
       $('.small', bar).textContent = up.done === up.of ? 'הושלם ✓' : `${up.done} מתוך ${up.of}`;
     }
@@ -239,18 +411,15 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
     return false;
   }
 
-  root.querySelectorAll<HTMLButtonElement>('[data-track]').forEach((b) =>
-    b.addEventListener('click', () => {
-      const t = b.dataset.track as Track;
-      const before = readLocal().course.track;
-      changing = false;
-      render(updateCourse((c) => { c.track = t; c.trackAt = new Date().toISOString(); }, { overwrite: !!before && before !== t }));
-      $('[data-chosen]').scrollIntoView({ block: 'nearest' });
-    }));
   $('[data-change]').addEventListener('click', () => {
     changing = true;
+    const c = readLocal().course;
+    chess = c.route === 'chess';
+    exp = null;
+    showStep('questions');
+    syncQuestions();
     render();
-    $<HTMLButtonElement>('[data-track][aria-pressed="true"]')?.focus();
+    $<HTMLButtonElement>('[data-exp]').focus();
   });
 
   root.addEventListener('click', (e) => {
@@ -258,9 +427,10 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
     const skip = t.closest<HTMLButtonElement>('[data-skip]');
     if (skip) {
       const id = skip.closest<HTMLElement>('[data-step]')!.dataset.step!;
-      const was = readLocal().course.skipped.includes(id);
+      const was = isSkipped(id, readLocal().course.skipped);
+      const old = legacyOf(id); // a mark from before the redesign is stored under the old, grouped step
       render(updateCourse((c) => {
-        c.skipped = was ? c.skipped.filter((x) => x !== id) : [...c.skipped, id].sort();
+        c.skipped = was ? c.skipped.filter((x) => x !== id && x !== old) : [...c.skipped, id].sort();
       }, { overwrite: was }));
       return;
     }
@@ -272,6 +442,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
   });
 
   if (signedIn) {
+    syncQuestions();
     render();
     document.addEventListener('progress-synced', () => render());
     // Coming back with the browser's back button after a lesson: show the new progress.
@@ -283,6 +454,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
   .page { padding-top: 36px; max-width: 760px; }
   [hidden] { display: none !important; }
   h1 { margin: 6px 0 8px; }
+  .phases-note { margin: -12px 0 24px; display: flex; align-items: center; }
   .lead { margin: 0 0 24px; font-size: 18px; line-height: 1.7; color: var(--ink-2); }
   .link { appearance: none; background: none; border: 0; padding: 0; font: inherit; color: var(--seal); text-decoration: underline; cursor: pointer; }
   .card { background: var(--washi-2); border: 1px solid var(--rule); border-radius: 10px; padding: 18px 20px; }
@@ -306,18 +478,32 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
   .rank-how li { margin-bottom: 4px; }
   .xp { color: var(--seal); }
 
-  .placement h2 { font-size: 22px; margin: 0 0 12px; }
-  .tracks { display: grid; gap: 10px; margin-bottom: 10px; }
-  @media (min-width: 700px) { .tracks { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-  .track {
+  .placement { margin: 0 0 16px; display: flex; flex-direction: column; gap: 4px; border-inline-start: 4px solid var(--seal); }
+  .placement h2 { font-size: 22px; margin: 0 0 8px; }
+  .placement p { margin: 0; }
+  [data-place-step] { display: flex; flex-direction: column; gap: 14px; }
+  .q { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .q legend { font-weight: 700; font-size: 18px; margin-bottom: 8px; padding: 0; }
+  .opts { display: grid; gap: 10px; }
+  @media (min-width: 700px) { .opts { grid-template-columns: repeat(3, minmax(0, 1fr)); } .opts.two { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .opt {
     appearance: none; text-align: start; font: inherit; color: var(--ink); cursor: pointer;
-    display: flex; flex-direction: column; gap: 4px; min-height: 76px; padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 4px; min-height: 64px; padding: 12px 16px;
     background: var(--washi); border: 1.5px solid var(--ink); border-radius: 10px;
   }
-  .track strong { font-size: 18px; }
-  .track:hover { background: var(--washi-2); }
-  .track[aria-pressed="true"] { border-color: var(--seal); box-shadow: inset 0 0 0 1.5px var(--seal); }
-  .placement > p { margin: 0 0 20px; }
+  .opt strong { font-size: 17px; }
+  .opt:hover:not(:disabled) { background: var(--washi-2); }
+  .opt[aria-pressed="true"] { border-color: var(--seal); box-shadow: inset 0 0 0 1.5px var(--seal); }
+  .opt:disabled { cursor: default; opacity: .7; }
+  .opt[data-result="right"] { border-color: var(--ok-text); box-shadow: inset 0 0 0 1.5px var(--ok-text); opacity: 1; }
+  .opt[data-result="wrong"] { border-style: dashed; opacity: 1; }
+  .place-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .check { display: flex; flex-direction: column; gap: 12px; }
+  .check-q { font-size: 18px; }
+  .check-why { color: var(--ink-2); line-height: 1.6; }
+  .check .btn { align-self: flex-start; }
+  .chess-box { display: flex; align-items: center; gap: 8px; }
+  .chess-box input { width: 20px; height: 20px; accent-color: var(--seal); }
 
   .chosen p { margin: 0 0 4px; }
   .chosen { margin-bottom: 16px; }
@@ -337,9 +523,15 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
   .overall p { margin: 6px 0 0; }
   .save-note { margin: 0 0 8px; }
 
-  .unit { margin-top: 40px; scroll-margin-top: 16px; }
-  .unit-tag { margin: 0; font-size: 14px; font-weight: 700; color: var(--seal); }
-  .unit-head h2 { margin: 2px 0 6px; font-size: clamp(26px, 5vw, 32px); }
+  .level-nav { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 24px 0 0; }
+  .level { margin-top: 48px; scroll-margin-top: 16px; }
+  .level-head { border-bottom: 3px solid var(--ink); padding-bottom: 12px; }
+  .level-tag { margin: 0; font-size: 14px; font-weight: 700; color: var(--seal); display: flex; align-items: center; }
+  .level-head h2 { margin: 2px 0 6px; font-size: clamp(30px, 6vw, 38px); }
+  .level-goal { margin: 0; color: var(--ink-2); line-height: 1.65; }
+  .level-known { margin: 8px 0 0; color: var(--muted); }
+  .unit { margin-top: 28px; scroll-margin-top: 16px; }
+  .unit-head h3 { margin: 0 0 4px; font-size: 22px; }
   .unit-goal { margin: 0 0 10px; color: var(--ink-2); line-height: 1.65; }
   .unit-progress { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   .unit-progress .bar { flex: 1; max-width: 240px; }
