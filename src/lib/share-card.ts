@@ -148,17 +148,17 @@ export async function shareCard(card: Card, fileName = 'shogi-israel.png'): Prom
   return 'saved';
 }
 
-/** A ready button: "שתפו" that makes and shares the card. */
+/** A ready button: "שתף" that makes and shares the card. */
 export function shareButton(card: Card, fileName?: string, className = 'btn'): HTMLButtonElement {
   const b = document.createElement('button');
   b.type = 'button';
   b.className = `${className} share-btn`;
-  b.textContent = 'שתפו';
+  b.textContent = 'שתף';
   b.addEventListener('click', async () => {
     b.disabled = true;
     const r = await shareCard(card, fileName);
     b.disabled = false;
-    if (r === 'saved') b.textContent = 'התמונה נשמרה. שתפו אותה';
+    if (r === 'saved') b.textContent = 'התמונה נשמרה. שתף אותה';
   });
   return b;
 }

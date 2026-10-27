@@ -47,9 +47,9 @@ export const GROUP_OF: Record<InboxKind, InboxGroup> = {
 };
 
 export const GROUP_LABEL: Record<InboxGroup, { title: string; sub: string }> = {
-  path: { title: 'המסלול שלי', sub: 'הצעד הבא, שיעור שהתחלתם ומשחק פתוח' },
+  path: { title: 'המסלול שלי', sub: 'הצעד הבא, שיעור שהתחלת ומשחק פתוח' },
   week: { title: 'בעיית השבוע', sub: 'בעיה חדשה בכל יום ראשון, ותזכורת כשהרצף בסכנה' },
-  rank: { title: 'דרגות', sub: 'כשאתם עולים דרגה' },
+  rank: { title: 'דרגות', sub: 'כשאתה עולה דרגה' },
   news: { title: 'חדשות האתר', sub: 'שיעורים וכלים חדשים' },
 };
 
@@ -68,7 +68,7 @@ export function buildInbox(p: SyncedProgress, ctx: InboxContext): InboxNote[] {
   if (rank.index > 0) {
     notes.push({
       id: `rank:${rank.index}`, kind: 'rank', kanji: rank.kanji,
-      text: `עליתם לדרגה ${rank.name} במסלול!${next ? ` הדרגה הבאה: ${next.name}.` : ''}`,
+      text: `עלית לדרגה ${rank.name} במסלול!${next ? ` הדרגה הבאה: ${next.name}.` : ''}`,
       href: '/course/', cta: 'למסלול',
     });
   }
@@ -82,13 +82,13 @@ export function buildInbox(p: SyncedProgress, ctx: InboxContext): InboxNote[] {
       if (streak >= 2 && now.getDay() >= STREAK_WARN_DAY) {
         notes.push({
           id: `streak:${week}`, kind: 'streak', kanji: '続',
-          text: `פתרתם את בעיית השבוע ${weeksHe(streak)} ברצף. השבוע נגמר בשבת: פתרו את הבעיה כדי לשמור על הרצף.`,
+          text: `פתרת את בעיית השבוע ${weeksHe(streak)} ברצף. השבוע נגמר בשבת: פתור את הבעיה כדי לשמור על הרצף.`,
           href: '/tsume/3/', cta: 'לבעיית השבוע',
         });
       } else {
         notes.push({
           id: `week:${week}`, kind: 'week', kanji: '詰',
-          text: 'בעיית השבוע החדשה מחכה לכם: מט בשלושה מהלכים.',
+          text: 'בעיית השבוע החדשה מחכה לך: מט בשלושה מהלכים.',
           href: '/tsume/3/', cta: 'לבעיית השבוע',
         });
       }
@@ -97,12 +97,12 @@ export function buildInbox(p: SyncedProgress, ctx: InboxContext): InboxNote[] {
 
   const step = p.course.track ? nextStep(p, ctx.levelCounts)?.step : undefined;
   if (!p.course.track) {
-    notes.push({ id: 'next:start', kind: 'next', kanji: '歩', text: 'עוד לא בחרתם מאיפה להתחיל. שאלה אחת, ומקבלים מסלול לימוד אישי.', href: '/course/', cta: 'בחרו נקודת התחלה' });
+    notes.push({ id: 'next:start', kind: 'next', kanji: '歩', text: 'עוד לא בחרת מאיפה להתחיל. שאלה אחת, ותקבל מסלול לימוד אישי.', href: '/course/', cta: 'בחר נקודת התחלה' });
   } else if (step) {
     notes.push({
       id: `next:${step.id}`, kind: 'next', kanji: '歩',
-      text: `הצעד הבא במסלול שלכם: ${step.title.replace(/^תרגול: /, '')} (${KIND_LABEL[step.kind]}).`,
-      href: stepHref(step, p, ctx.levelCounts), cta: 'המשיכו',
+      text: `הצעד הבא במסלול שלך: ${step.title.replace(/^תרגול: /, '')} (${KIND_LABEL[step.kind]}).`,
+      href: stepHref(step, p, ctx.levelCounts), cta: 'המשך',
     });
   }
 
@@ -111,15 +111,15 @@ export function buildInbox(p: SyncedProgress, ctx: InboxContext): InboxNote[] {
   if (half) {
     notes.push({
       id: `stage:${half.key}`, kind: 'stage', kanji: '習',
-      text: `התחלתם ולא סיימתם: ${half.title}. נשארו ${half.left === 1 ? 'תרגיל אחד' : `${half.left} תרגילים`}.`,
-      href: stageUrl(half.key), cta: 'המשיכו מאיפה שעצרתם',
+      text: `התחלת ולא סיימת: ${half.title}. נשארו ${half.left === 1 ? 'תרגיל אחד' : `${half.left} תרגילים`}.`,
+      href: stageUrl(half.key), cta: 'המשך מאיפה שעצרת',
     });
   }
 
   if (ctx.openGame && ctx.openGame.moves > 0) {
     notes.push({
       id: `game:${ctx.openGame.id}`, kind: 'game', kanji: '対',
-      text: `יש לכם משחק פתוח נגד המחשב (רמה ${ctx.openGame.level}, אחרי ${ctx.openGame.moves} מהלכים).`,
+      text: `יש לך משחק פתוח נגד המחשב (רמה ${ctx.openGame.level}, אחרי ${ctx.openGame.moves} מהלכים).`,
       href: '/play/', cta: 'חזרה למשחק', sub: 'במכשיר הזה',
     });
   }

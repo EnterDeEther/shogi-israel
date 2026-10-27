@@ -5,7 +5,7 @@
 // Phones get the card as a bottom sheet, and menu steps open the ☰ panel themselves. From 1040px (where the
 // header dropdowns start) the card sits under or over the highlighted item, and dropdowns stay closed.
 // Tapping the highlighted item leaves the tour and does what the tap would have done; a tap on the dimmed page,
-// ✕, Escape or "דלגו על הסיור" closes it.
+// ✕, Escape or "דלג על הסיור" closes it.
 import { TOURS, counter, readTourEnd, stepsFor, writeTourEnd, type TourEnd, type TourId, type TourStep } from '../lib/tour';
 
 const WIDE = '(min-width: 1040px)';
@@ -140,7 +140,7 @@ export function startTour(id: TourId, from?: HTMLElement | null): void {
       const back = h('button', { type: 'button', class: 'btn btn-ghost', 'data-act': 'back' }, 'הקודם');
       if (at === 0) back.hidden = true;
       actions.append(back, h('button', { type: 'button', class: 'btn', 'data-act': 'next' }, 'הבא'));
-      card.append(actions, h('button', { type: 'button', class: 'tour-skip', 'data-act': 'skip' }, 'דלגו על הסיור'));
+      card.append(actions, h('button', { type: 'button', class: 'tour-skip', 'data-act': 'skip' }, 'דלג על הסיור'));
     } else {
       const next = nextStepLink();
       card.append(h('h2', { class: 'tour-title', id: 'tour-title' }, tour.end.title), h('p', { class: 'tour-body', id: 'tour-body' }, tour.end.body));

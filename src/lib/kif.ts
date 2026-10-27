@@ -147,7 +147,7 @@ const END_WORDS: [RegExp, (mover: Color) => KifEnd][] = [
 ];
 
 const ERR = {
-  empty: 'לא הודבק כלום. הדביקו את תוכן קובץ ה־KIF או בחרו קובץ.',
+  empty: 'לא הודבק כלום. הדבק את תוכן קובץ ה־KIF או בחר קובץ.',
   header: 'לא הצלחנו לקרוא את עמדת הפתיחה בקובץ.',
   move: (n: number, m: string) => `מהלך ${n} (${m}) לא נקרא. אולי הקובץ לא בפורמט KIF?`,
   illegal: (n: number, m: string) => `מהלך ${n} (${m}) לא חוקי בעמדה הזאת.`,

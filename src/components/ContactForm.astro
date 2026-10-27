@@ -21,7 +21,7 @@ import { LIMITS, TURNSTILE_SITE_KEY } from '../lib/contact';
     <input id="contact-website" name="website" type="text" tabindex="-1" autocomplete="off" />
   </div>
   <input type="hidden" name="startedAt" value="" />
-  <p class="small muted">נשתמש בשם ובמייל רק כדי לענות לכם. <a href="/privacy/#contact-form">מדיניות פרטיות</a></p>
+  <p class="small muted">נשתמש בשם ובמייל רק כדי לענות לך. <a href="/privacy/#contact-form">מדיניות פרטיות</a></p>
   <div class="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} data-language="he" data-theme="auto" data-size="flexible"></div>
   <button type="submit" class="btn">שליחה</button>
   <p class="contact__status" role="status" data-status></p>
@@ -31,12 +31,12 @@ import { LIMITS, TURNSTILE_SITE_KEY } from '../lib/contact';
 <script>
   type WithTurnstile = Window & { turnstile?: { reset: (el?: Element) => void } };
   const messages = {
-    sent: 'ההודעה נשלחה. תודה! נענה לכם במייל.',
-    name: 'כתבו את השם שלכם.',
-    email: 'בדקו את כתובת המייל.',
-    message: 'ההודעה קצרה מדי. כתבו לפחות כמה מילים.',
-    captcha: 'רגע, Cloudflare עדיין בודק שאתם לא רובוט. חכו שהבדיקה תסתיים ונסו שוב, או כתבו לנו ישירות במייל.',
-    error: 'משהו השתבש והשליחה לא הצליחה. נסו שוב, או כתבו לנו ישירות במייל.',
+    sent: 'ההודעה נשלחה. תודה! נענה לך במייל.',
+    name: 'כתוב את השם שלך.',
+    email: 'בדוק את כתובת המייל.',
+    message: 'ההודעה קצרה מדי. כתוב לפחות כמה מילים.',
+    captcha: 'רגע, Cloudflare עדיין בודק שאתה לא רובוט. חכה שהבדיקה תסתיים ונסה שוב, או כתוב לנו ישירות במייל.',
+    error: 'משהו השתבש והשליחה לא הצליחה. נסה שוב, או כתוב לנו ישירות במייל.',
     sending: 'שולחים…',
   } as const;
 

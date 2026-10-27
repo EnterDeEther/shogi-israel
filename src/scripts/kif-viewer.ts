@@ -138,19 +138,19 @@ export function bootKifViewer(root: HTMLElement): void {
   });
   q('[data-download]').addEventListener('click', () => {
     downloadKif(currentKif(), kifFileName({ date: game.date }));
-    say('הקובץ ירד למכשיר שלכם.');
+    say('הקובץ ירד למכשיר שלך.');
   });
   q('[data-copy]').addEventListener('click', async () => {
     const ok = await copyText(currentKif());
     if (!ok) input.value = currentKif();
-    say(ok ? 'רישום המשחק הועתק. אפשר להדביק אותו בכל מקום.' : 'ההעתקה לא הצליחה. הטקסט נמצא בתיבה למטה: סמנו אותו והעתיקו.', ok ? 'ok' : 'error');
+    say(ok ? 'רישום המשחק הועתק. אפשר להדביק אותו בכל מקום.' : 'ההעתקה לא הצליחה. הטקסט נמצא בתיבה למטה: סמן אותו והעתק.', ok ? 'ok' : 'error');
   });
   q('[data-lishogi]').addEventListener('click', async () => {
     const ok = await copyText(currentKif());
     window.open(LISHOGI_IMPORT_URL, '_blank', 'noopener');
     say(ok
-      ? 'רישום המשחק הועתק. בליש׳וגי הדביקו אותו בתיבה (Ctrl+V) ולחצו IMPORT GAME.'
-      : 'פתחנו את ליש׳וגי. העתיקו את הטקסט מהתיבה למטה והדביקו שם.');
+      ? 'רישום המשחק הועתק. בליש׳וגי הדבק אותו בתיבה (Ctrl+V) ולחץ IMPORT GAME.'
+      : 'פתחנו את ליש׳וגי. העתק את הטקסט מהתיבה למטה והדבק שם.');
     if (!ok) input.value = currentKif();
   });
 

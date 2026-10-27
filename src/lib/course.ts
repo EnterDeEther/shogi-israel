@@ -40,7 +40,7 @@ export const PRACTICE: Record<string, { stage: string; title: string }[]> = {
     { stage: 'checkmate1', title: 'מט במהלך אחד' },
   ],
   '06-illegal-moves-endings': [
-    { stage: 'il_illegal', title: 'מצאו את המהלך הלא חוקי' },
+    { stage: 'il_illegal', title: 'מצא את המהלך הלא חוקי' },
     { stage: 'il_impasse', title: 'הכרזת 27 נקודות' },
   ],
   '07-reading-pieces': [{ stage: 'il_kanji', title: 'זיהוי כלים בקאנג׳י' }],

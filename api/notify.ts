@@ -65,7 +65,7 @@ export async function GET(request: Request): Promise<Response> {
     if (!to || !u.user?.email_confirmed_at) continue;
     const unsub = await unsubscribeUrl(secret, user, kind);
     const email = buildEmail({
-      kind, nickname: nicknames.get(user) ?? 'שחקנים', progressData: progress.get(user)?.data, weekCount, now,
+      kind, nickname: nicknames.get(user) ?? 'שחקן', progressData: progress.get(user)?.data, weekCount, now,
       returnIndex: row.return_sent, unsubscribeUrl: unsub,
     });
     const res = await fetch('https://api.resend.com/emails', {
