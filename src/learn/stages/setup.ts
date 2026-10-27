@@ -2,7 +2,7 @@
 // Source: https://github.com/WandererXII/lila/blob/89aea5f6f24c5e941c7cac8434a6e9e1acc15e94/ui/learn/src/stages/setup.ts
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
-// Modified by Shogi Israel (shogi.co.il), 2026-10-27: i18n import points to our Hebrew shim; positions, goals and key names unchanged. Brought back for the course redesign (Dean, 2026-10-27), after being left out on 2026-10-24.
+// Modified by Shogi Israel (shogi.co.il), 2026-10-27: i18n import points to our Hebrew shim; positions, goals and key names unchanged. Recap per level (level.recap). Brought back for the course redesign (Dean, 2026-10-27), after being left out on 2026-10-24.
 
 import { i18n } from '../i18n';
 import { pieceOn, scenarioFailure, scenarioSuccess } from '../assert';
@@ -14,12 +14,14 @@ import { createScenario } from '../util';
 const levels: IncompleteLevel[] = [
   {
     goal: i18n('learn:thisIsTheInitialPosition'),
+    recap: i18n('il_b_setup1Recap'),
     sfen: 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1',
     nbMoves: 1,
     success: () => true,
   },
   {
     goal: i18n('learn:firstPlaceTheKing'),
+    recap: i18n('il_b_setup2Recap'),
     sfen: '4k4/9/9/9/9/9/9/6K2/9 b RB2G2S2N2L9Prb2g2s2n2l9p 1',
     nbMoves: 2,
     success: pieceOn({ role: 'king', color: 'sente' }, '5i'),
@@ -27,6 +29,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:dropAGold'),
+    recap: i18n('il_b_setup3Recap'),
     sfen: '4k4/9/9/9/9/9/9/9/4K4 b RB2G2S2N2L9Prb2g2s2n2l9p 1',
     nbMoves: 2,
     success: scenarioSuccess,
@@ -36,6 +39,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:thenPlaceASilver'),
+    recap: i18n('il_b_setup4Recap'),
     sfen: '3gkg3/9/9/9/9/9/9/9/3GKG3 b RB2S2N2L9Prb2s2n2l9p 1',
     nbMoves: 2,
     success: scenarioSuccess,
@@ -45,6 +49,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:dropTheKnights'),
+    recap: i18n('il_b_setup5Recap'),
     sfen: '2sgkgs2/9/9/9/9/9/9/9/2SGKGS2 b RB2N2L9Prb2n2l9p 1',
     nbMoves: 2,
     success: scenarioSuccess,
@@ -53,6 +58,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:dropTheLances'),
+    recap: i18n('il_b_setup6Recap'),
     sfen: '1nsgkgsn1/9/9/9/9/9/9/9/1NSGKGSN1 b RB2L9Prb2l9p 1',
     nbMoves: 2,
     success: scenarioSuccess,
@@ -61,6 +67,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:placeTheBishopThenRook'),
+    recap: i18n('il_b_setup7Recap'),
     sfen: '1nsgkgsn1/9/7pp/9/9/9/9/9/LNSGKGSNL b RB9Prb2l7p 1',
     nbMoves: 2,
     success: scenarioSuccess,
@@ -69,6 +76,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:placeThePawns'),
+    recap: i18n('il_b_setup8Recap'),
     sfen: '1nsgkgsn1/9/5pppp/9/9/9/9/1B5R1/LNSGKGSNL b 9Prb2l5p 1',
     nbMoves: 17,
     success: scenarioSuccess,
@@ -111,6 +119,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:pushingThe3rdPawn'),
+    recap: i18n('il_b_setup9Recap'),
     sfen: 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1',
     nbMoves: 2,
     success: scenarioSuccess,

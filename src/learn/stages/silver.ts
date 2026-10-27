@@ -2,7 +2,7 @@
 // Source: https://github.com/WandererXII/lila/blob/89aea5f6f24c5e941c7cac8434a6e9e1acc15e94/ui/learn/src/stages/silver.ts
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
-// Modified by Shogi Israel (shogi.co.il), 2026-10-24: i18n import points to our Hebrew shim; positions, goals and key names unchanged.
+// Modified by Shogi Israel (shogi.co.il), 2026-10-24: i18n import points to our Hebrew shim; positions unchanged. 2026-10-27: a recap per level (level.recap) and beginner goals written so nothing is used before it is taught.
 
 import { i18n } from '../i18n';
 import { obstaclesCaptured } from '../assert';
@@ -13,7 +13,8 @@ import { toPiece } from '../util';
 
 const levels: IncompleteLevel[] = [
   {
-    goal: i18n('learn:grabAllTheStars'),
+    goal: i18n('il_b_silver1Goal'),
+    recap: i18n('il_b_silver1Recap'),
     sfen: '9/9/9/9/9/4S4/9/9/9 b -',
     nbMoves: 4,
     success: obstaclesCaptured,
@@ -26,14 +27,16 @@ const levels: IncompleteLevel[] = [
     ]),
   },
   {
-    goal: i18n('learn:grabAllTheStars'),
+    goal: i18n('il_b_silver2Goal'),
+    recap: i18n('il_b_silver2Recap'),
     sfen: '9/9/9/4S4/9/9/9/9/9 b -',
     nbMoves: 5,
     success: obstaclesCaptured,
     obstacles: ['4e', '5f', '6g', '5h', '4i'],
   },
   {
-    goal: i18n('learn:theFewerMoves'),
+    goal: i18n('il_b_silver3Goal'),
+    recap: i18n('il_b_silver3Recap'),
     sfen: '9/9/9/9/3S5/6S2/9/9/9 b -',
     nbMoves: 5,
     success: obstaclesCaptured,
@@ -41,6 +44,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:silverPromotion'),
+    recap: i18n('il_b_silver4Recap'),
     sfen: '9/9/9/6S2/9/9/9/9/9 b -',
     nbMoves: 3,
     success: obstaclesCaptured,
@@ -48,6 +52,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:silverSummary'),
+    recap: i18n('il_b_silver5Recap'),
     sfen: '9/9/9/9/9/4S4/9/9/9 b -',
     nbMoves: 2,
     success: obstaclesCaptured,
@@ -56,6 +61,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:psilverSummary'),
+    recap: i18n('il_b_silver6Recap'),
     sfen: '9/9/9/9/9/4+S4/9/9/9 b -',
     nbMoves: 2,
     success: obstaclesCaptured,

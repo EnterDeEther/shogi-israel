@@ -126,7 +126,7 @@ test('42 stages, 195 levels', () => {
 test('no string falls back to its key', () => {
   const strings = he as Record<string, string>;
   for (const s of stages) {
-    for (const t of [s.title, s.subtitle, s.intro, s.complete, ...s.levels.flatMap((l) => [l.goal, l.text ?? '', ...(l.why ?? []), ...(l.replies ?? [])])])
+    for (const t of [s.title, s.subtitle, s.intro, s.complete, ...s.levels.flatMap((l) => [l.goal, l.text ?? '', l.recap ?? '', ...(l.why ?? []), ...(l.replies ?? [])])])
       expect(Object.keys(strings).includes(t), `untranslated: ${t}`).toBe(false);
   }
 });

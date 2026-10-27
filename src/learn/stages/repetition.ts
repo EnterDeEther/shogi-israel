@@ -2,7 +2,7 @@
 // Source: https://github.com/WandererXII/lila/blob/89aea5f6f24c5e941c7cac8434a6e9e1acc15e94/ui/learn/src/stages/repetition.ts
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
-// Modified by Shogi Israel (shogi.co.il), 2026-10-27: i18n import points to our Hebrew shim; positions, goals and key names unchanged. Brought back for the course redesign (Dean, 2026-10-27), after being left out on 2026-10-24.
+// Modified by Shogi Israel (shogi.co.il), 2026-10-27: i18n import points to our Hebrew shim; positions, goals and key names unchanged. Recap per level (level.recap). Brought back for the course redesign (Dean, 2026-10-27), after being left out on 2026-10-24.
 
 import { i18n } from '../i18n';
 import { scenarioFailure, scenarioSuccess } from '../assert';
@@ -21,6 +21,7 @@ const digits = {
 const levels: IncompleteLevel[] = [
   {
     goal: i18n('learn:ifTheSamePositionOccurs'),
+    recap: i18n('il_b_rep1Recap'),
     sfen: '9/9/9/9/k8/9/+p8/3+p5/K8 b - 1',
     nbMoves: 12,
     success: scenarioSuccess,
@@ -52,6 +53,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:perpetualCheckIsALoss'),
+    recap: i18n('il_b_rep2Recap'),
     sfen: '3k5/9/1s+P+P+P4/9/P2+b5/KP7/1+b7/9/9 b -',
     nbMoves: 12,
     success: scenarioSuccess,
@@ -77,6 +79,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:boardFlippedFindBestMove'),
+    recap: i18n('il_b_rep3Recap'),
     sfen: '3k5/9/1s+P+P+P4/9/P2+b5/KP+b6/9/9/9 w -',
     nbMoves: 3,
     success: scenarioSuccess,

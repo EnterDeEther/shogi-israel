@@ -2,7 +2,7 @@
 // Source: https://github.com/WandererXII/lila/blob/89aea5f6f24c5e941c7cac8434a6e9e1acc15e94/ui/learn/src/stages/intro.ts
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
-// Modified by Shogi Israel (shogi.co.il), 2026-10-24: i18n import points to our Hebrew shim; positions, goals and key names unchanged.
+// Modified by Shogi Israel (shogi.co.il), 2026-10-24: i18n import points to our Hebrew shim; positions unchanged. 2026-10-27: a recap per level (level.recap) and beginner goals written so nothing is used before it is taught.
 
 import { i18n } from '../i18n';
 import type { SquareHighlight } from 'shogiground/draw';
@@ -13,6 +13,7 @@ import { arrow, initial } from '../shapes';
 const levels: IncompleteLevel[] = [
   {
     goal: i18n('learn:choosePieceDesign'),
+    recap: i18n('il_b_intro1Recap'),
     sfen: '9/9/9/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b -',
     nbMoves: 1,
     success: () => true,
@@ -20,6 +21,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:promotionZone'),
+    recap: i18n('il_b_intro2Recap'),
     sfen: '9/9/9/4P4/9/9/9/9/9 b -',
     nbMoves: 1,
     success: () => true,
@@ -59,6 +61,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:senteGoesFirst'),
+    recap: i18n('il_b_intro3Recap'),
     sfen: '9/9/9/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b -',
     nbMoves: 1,
     success: () => true,

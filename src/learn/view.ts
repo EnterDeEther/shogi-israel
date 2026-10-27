@@ -8,6 +8,7 @@ import { categories, nextStage } from './categories';
 import type LearnCtrl from './ctrl';
 import { i18n, i18nFormat } from './i18n';
 import type { CourseLevel, Stage } from './interfaces';
+import { READ_MORE } from './read-more';
 import { stageUrl } from './urls';
 import { average } from './util';
 import { courseNext } from '../lib/next-step';
@@ -339,6 +340,7 @@ function renderLesson(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go, stageLin
         el('h2', { id: 'learn-ov-title' }, stage.title),
         phaseChip(phaseOf(vm.category.key, stage.key), true),
         el('p', {}, rich(stage.intro)),
+        READ_MORE[stage.key] && el('p', { class: 'guide-link' }, el('a', { href: `/${READ_MORE[stage.key]}/`, onclick: (e: Event) => e.stopPropagation() }, i18n('il_b_readMore'))),
         GUIDE[vm.category.key] && el('p', { class: 'guide-link' }, el('a', { href: `/learn/guide/#${GUIDE[vm.category.key].anchor}`, onclick: (e: Event) => e.stopPropagation() }, i18n('il_guideRead'))),
         el('button', { type: 'button', class: 'btn primary', onclick: start, 'data-autofocus': true, 'data-fid': 'letsgo' }, i18n('letsGo')),
       ),
@@ -656,7 +658,9 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
             level.replies?.[i] && level.replyNames?.[i] && i < lastIdx
               ? el('span', { class: 'rep' }, ' ', el('bdi', { dir: 'ltr', class: 'mv opp' }, level.replyNames[i]), ' ', rich(level.replies[i]))
               : null))))
-      : el('p', { class: 'lead' }, el('span', { class: 'muted' }, i18n('il_doneWith')), ' ', rich(level.goal.replace(/ המהלכים.*$/, '')));
+      : level.recap
+        ? el('div', { class: 'recap' }, el('p', { class: 'eyebrow' }, i18n('il_recapTitle')), el('p', { class: 'lead' }, rich(level.recap)))
+        : el('p', { class: 'lead' }, el('span', { class: 'muted' }, i18n('il_doneWith')), ' ', rich(level.goal.replace(/ המהלכים.*$/, '')));
     body = [
       lastReply ? reply(lastIdx) : null,
       el('h2', {}, congratsFor(`${stage.key}${level.id}`), ' ', stars(vm.score ?? 0)),
