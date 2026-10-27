@@ -27,6 +27,10 @@ export interface Position {
 export const LETTER: Record<PieceType, string> = { K: 'K', R: 'R', B: 'B', G: 'G', S: 'S', N: 'N', L: 'L', P: 'P' };
 
 const KANJI: Record<PieceType, string> = { K: '王', R: '飛', B: '角', G: '金', S: '銀', N: '桂', L: '香', P: '歩' };
+// The Hebrew set (the site default): first letters of the glossary names, as Dean picked them (2026-10-27).
+// The bishop keeps both letters (רץ) so it never reads as the pawn (ר). Promoted pieces add + after the letter.
+const HEBREW: Record<PieceType, string> = { K: 'מ', R: 'צ', B: 'רץ', G: 'ז', S: 'כ', N: 'פ', L: 'ח', P: 'ר' };
+const HEBREW_PROMOTED: Partial<Record<PieceType, string>> = { R: 'ד', B: 'ס', S: 'כ+', N: 'פ+', L: 'ח+', P: 'ר+' };
 const KANJI_PROMOTED: Partial<Record<PieceType, string>> = { R: '龍', B: '馬', S: '全', N: '圭', L: '杏', P: 'と' };
 
 const NAME_HE: Record<PieceType, string> = {
@@ -43,6 +47,10 @@ export const SIDE_HE: Record<Side, string> = { sente: 'הפותח', gote: 'המ�
 
 export function letterOf(p: Piece): string {
   return (p.promoted ? '+' : '') + LETTER[p.type];
+}
+
+export function hebrewOf(p: Piece): string {
+  return p.promoted ? (HEBREW_PROMOTED[p.type] ?? HEBREW[p.type]) : HEBREW[p.type];
 }
 
 export function kanjiOf(p: Piece): string {

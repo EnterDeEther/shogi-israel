@@ -3,6 +3,7 @@
 // AGPL-3.0-or-later, like the rest of src/learn/.
 import LearnCtrl from './ctrl';
 import { i18n } from './i18n';
+import { currentPieceSet } from '../lib/piece-set';
 import { attachKeyboard } from './keyboard';
 import { type LearnPrefs, loadPrefs, savePrefs } from './prefs';
 import { setSoundEnabled } from './sound';
@@ -101,11 +102,11 @@ export function bootLearn(root: HTMLElement): LearnCtrl {
       dialog.setAttribute('open', '');
     }
   };
-  // the dialog's own letters/kanji switch is static: keep its pressed state in sync
+  // the dialog's own piece-set switch is static: keep its pressed state in sync
   document.addEventListener('pieces-changed', () => {
-    const kanji = document.documentElement.dataset.pieces === 'kanji';
+    const set = currentPieceSet();
     dialog.querySelectorAll<HTMLButtonElement>('[data-pieces-set]').forEach((b) =>
-      b.setAttribute('aria-pressed', String((b.dataset.piecesSet === 'kanji') === kanji)));
+      b.setAttribute('aria-pressed', String(b.dataset.piecesSet === set)));
   });
 
   ctrl = new LearnCtrl({ pref: prefs }, redraw, root.dataset.stage || slugFromPath());
