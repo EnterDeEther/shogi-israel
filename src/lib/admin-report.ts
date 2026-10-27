@@ -28,6 +28,15 @@ export interface PlayerInput {
   last_game_at: string | null;
   last_seen_at: string | null;
   email_week: boolean;
+  ad?: string | null;       // the ad that brought them (user_metadata.ad_source), as adLabel() gives it
+}
+
+/** "google / display / anime_segment" from user_metadata.ad_source (src/lib/ad-source.ts), or null. */
+export function adLabel(ad: unknown): string | null {
+  if (!ad || typeof ad !== 'object') return null;
+  const a = ad as Record<string, unknown>;
+  const parts = [a.source, a.medium, a.campaign].filter((v): v is string => typeof v === 'string' && v.length > 0);
+  return parts.length ? parts.join(' / ') : null;
 }
 
 export function totals(p: PlayerInput): Totals {
@@ -134,6 +143,11 @@ function insights(r: Report, players: PlayerInput[], now: Date): string[] {
   const tracks = new Map<string, number>();
   for (const l of all) if (l.track) tracks.set(l.track, (tracks.get(l.track) ?? 0) + 1);
   if (tracks.size) out.push(`נקודת התחלה במסלול: ${[...tracks].sort((a, b) => b[1] - a[1]).map(([t, n]) => `${t} ${n}`).join(', ')}.`);
+  if (r.kind === 'weekly' && r.newCount) {
+    const camp = new Map<string, number>();
+    for (const p of players) if (r.active.some((l) => l.id === p.id && l.isNew)) camp.set(p.ad ?? 'בלי מודעה', (camp.get(p.ad ?? 'בלי מודעה') ?? 0) + 1);
+    out.push(`נרשמו לפי קמפיין: ${[...camp].sort((a, b) => b[1] - a[1]).map(([c, n]) => `${c} ${n}`).join(', ')}.`);
+  }
   const optIn = all.filter((l) => l.emailWeek).length;
   out.push(`${optIn} מתוך ${r.total} ביקשו את המייל השבועי.`);
   if (r.unconfirmed) out.push(`${r.unconfirmed} נרשמו ועוד לא אישרו את המייל.`);
@@ -199,14 +213,15 @@ export function reportEmail(r: Report): Email {
   return { subject, html, text };
 }
 
-export interface SignupInput { nickname: string; created_at: string; total: number; email_week: boolean }
+export interface SignupInput { nickname: string; created_at: string; total: number; email_week: boolean; ad?: string | null }
 export function signupEmail(list: SignupInput[]): Email {
   const names = list.map((s) => s.nickname).join(', ');
   const total = Math.max(...list.map((s) => s.total));
   const subject = list.length === 1 ? `נרשם חדש בשוגי ישראל: ${names}` : `${list.length} נרשמים חדשים בשוגי ישראל: ${names}`;
-  const items = list.map((s) => `<li><b>${esc(s.nickname)}</b>, ${fmtWhen(s.created_at)}${s.email_week ? ', ביקש את המייל השבועי' : ''}</li>`).join('');
+  const extra = (s: SignupInput) => `${s.email_week ? ', ביקש את המייל השבועי' : ''}${s.ad ? `, הגיע ממודעה: ${s.ad}` : ''}`;
+  const items = list.map((s) => `<li><b>${esc(s.nickname)}</b>, ${fmtWhen(s.created_at)}${esc(extra(s))}</li>`).join('');
   const html = wrap(subject, `<ul style="padding-inline-start:20px">${items}</ul><p>עכשיו יש ${total} חשבונות באתר. מה הם עושים יופיע בדוח היומי.</p>`);
-  const text = [subject, '', ...list.map((s) => `- ${s.nickname}, ${fmtWhen(s.created_at)}${s.email_week ? ', ביקש את המייל השבועי' : ''}`), '', `עכשיו יש ${total} חשבונות באתר.`].join('\n');
+  const text = [subject, '', ...list.map((s) => `- ${s.nickname}, ${fmtWhen(s.created_at)}${extra(s)}`), '', `עכשיו יש ${total} חשבונות באתר.`].join('\n');
   return { subject, html, text };
 }
 
