@@ -69,19 +69,19 @@
    The two blocks must carry the same values. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
-    --washi: #16140F;
-    --washi-2: #24211A;
-    --surface: #1F1C16;
+    --washi: #221A14;
+    --washi-2: #30251C;
+    --surface: #2A2018;
     --ink: #EFE7D7;
     --ink-2: #D6CCB8;
-    --muted: #B0A48E;
-    --rule: #3A3429;
+    --muted: #BBAA92;
+    --rule: #4A3B2E;
     --seal: #DE6A4F;
     --seal-hover: #F28A70;
-    --on-seal: #16140F;
+    --on-seal: #221A14;
     --focus: #F28A70;
     --btn-hover: #fff;
-    --btn-hover-ink: #16140F;
+    --btn-hover-ink: #221A14;
     --ok-text: #8FCB85;
     --no-text: #F2A48F;
     --fb-ok-bg: #1F3320;
@@ -93,11 +93,11 @@
     --won-fg: #CFE3B8;
     --lost-bg: #3A1E17;
     --lost-fg: #F2B9A8;
-    --overlay-play: rgba(22, 20, 15, 0.95);
-    --overlay-learn: rgba(22, 20, 15, 0.93);
-    --glass: rgba(22, 20, 15, 0.72);
+    --overlay-play: rgba(34, 26, 20, 0.95);
+    --overlay-learn: rgba(34, 26, 20, 0.93);
+    --glass: rgba(34, 26, 20, 0.74);
     --glass-edge: rgba(255, 255, 255, 0.07);
-    --glass-hi: rgba(42, 38, 30, 0.78);
+    --glass-hi: rgba(52, 41, 32, 0.8);
     --shadow-glass: 0 1px 0 var(--glass-edge) inset, 0 8px 20px -6px rgba(0, 0, 0, 0.5), 0 24px 56px -20px rgba(0, 0, 0, 0.8);
     --tour-dim: rgba(0, 0, 0, 0.66);
     --star-off: rgba(0, 0, 0, 0.35);
@@ -109,19 +109,19 @@
   }
 }
 :root[data-theme="dark"] {
-  --washi: #16140F;
-  --washi-2: #24211A;
-  --surface: #1F1C16;
+  --washi: #221A14;
+  --washi-2: #30251C;
+  --surface: #2A2018;
   --ink: #EFE7D7;
   --ink-2: #D6CCB8;
-  --muted: #B0A48E;
-  --rule: #3A3429;
+  --muted: #BBAA92;
+  --rule: #4A3B2E;
   --seal: #DE6A4F;
   --seal-hover: #F28A70;
-  --on-seal: #16140F;
+  --on-seal: #221A14;
   --focus: #F28A70;
   --btn-hover: #fff;
-  --btn-hover-ink: #16140F;
+  --btn-hover-ink: #221A14;
   --ok-text: #8FCB85;
   --no-text: #F2A48F;
   --fb-ok-bg: #1F3320;
@@ -133,11 +133,11 @@
   --won-fg: #CFE3B8;
   --lost-bg: #3A1E17;
   --lost-fg: #F2B9A8;
-  --overlay-play: rgba(22, 20, 15, 0.95);
-  --overlay-learn: rgba(22, 20, 15, 0.93);
-  --glass: rgba(22, 20, 15, 0.72);
+  --overlay-play: rgba(34, 26, 20, 0.95);
+  --overlay-learn: rgba(34, 26, 20, 0.93);
+  --glass: rgba(34, 26, 20, 0.74);
   --glass-edge: rgba(255, 255, 255, 0.07);
-  --glass-hi: rgba(42, 38, 30, 0.78);
+  --glass-hi: rgba(52, 41, 32, 0.8);
   --shadow-glass: 0 1px 0 var(--glass-edge) inset, 0 8px 20px -6px rgba(0, 0, 0, 0.5), 0 24px 56px -20px rgba(0, 0, 0, 0.8);
   --star-off: rgba(0, 0, 0, 0.35);
   --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.45);
@@ -159,6 +159,11 @@ body {
   font-size: 17px;
   line-height: 1.7;
   text-rendering: optimizeLegibility;
+}
+
+/* Dark is black wood (Dean, 27 Oct): warm ebony brown-black, with a faint long grain on the page itself. */
+html[data-theme="dark"] body {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.004 0.22' numOctaves='3' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0.55 0 0 0 0 0.4 0 0 0 0 0.28 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
 }
 
 a { color: var(--seal); text-underline-offset: 3px; }
