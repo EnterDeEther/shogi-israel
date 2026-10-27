@@ -8,6 +8,7 @@ import { emptyProgress, gameResult, merge, normalize, same, type SyncedProgress 
 import { readLocal, writeLocal } from './progress-local';
 import { CONSENT_VERSION } from './consent';
 import { adSource } from './ad-source';
+import { applyGender, savedGender, type Gender } from './gender';
 
 export { readLocal };
 
@@ -29,10 +30,11 @@ const redirectTo = () => `${window.location.origin}/account/`;
 
 /** weeklyEmail: the unticked "send me the puzzle of the week" box on the form. It is applied on the first
  * sign-in (applySignupConsent), which may be on another device, so it travels with the account.
+ * gender: how the site speaks to them (lib/gender.ts), chosen on the form.
  * ad_source: the ad this tab arrived from, if any (src/lib/ad-source.ts), kept on the account. */
-export async function signUp(email: string, password: string, captchaToken?: string, weeklyEmail = false) {
+export async function signUp(email: string, password: string, captchaToken?: string, weeklyEmail = false, gender?: Gender) {
   const ad = adSource();
-  const data = { ...(weeklyEmail ? { email_week_opt_in: CONSENT_VERSION } : {}), ...(ad ? { ad_source: ad } : {}) };
+  const data = { ...(weeklyEmail ? { email_week_opt_in: CONSENT_VERSION } : {}), ...(gender ? { gender } : {}), ...(ad ? { ad_source: ad } : {}) };
   return supabase().auth.signUp({ email, password, options: { emailRedirectTo: redirectTo(), captchaToken, data } });
 }
 export async function signIn(email: string, password: string, captchaToken?: string) {
@@ -49,10 +51,12 @@ export async function sendPasswordReset(email: string, captchaToken?: string) {
 export async function setPassword(password: string) {
   return supabase().auth.updateUser({ password });
 }
-/** Signing out also clears this device's progress, so the next person on a shared device starts fresh. */
+/** Signing out also clears this device's progress (and how the site speaks to them), so the next person on a
+ * shared device starts fresh. */
 export async function signOut() {
   await supabase().auth.signOut();
   writeLocal(emptyProgress());
+  applyGender(null);
   clearLocalGames();
 }
 export async function deleteAccount() {
@@ -60,6 +64,24 @@ export async function deleteAccount() {
   if (error) return { error };
   await signOut();
   return { error: null };
+}
+
+// ---------- masculine / feminine (lib/gender.ts) ----------
+// Kept in the account's user_metadata, not in profiles: profiles are public, this is no one else's business.
+export const accountGender = (session: Session): Gender | null => {
+  const v = session.user.user_metadata?.gender;
+  return v === 'm' || v === 'f' ? v : null;
+};
+export async function saveGender(v: Gender): Promise<boolean> {
+  const { error } = await supabase().auth.updateUser({ data: { gender: v } });
+  return !error;
+}
+/** On every signed-in page: the account's choice wins; a choice made on this device first goes to the account. */
+export async function syncGender(session: Session): Promise<void> {
+  const v = accountGender(session);
+  if (v) { if (v !== savedGender()) applyGender(v); return; }
+  const local = savedGender();
+  if (local) await saveGender(local);
 }
 
 // ---------- nickname ----------
@@ -206,4 +228,5 @@ export function startSync() {
   void syncProgress();
   void syncGames();
   void touchLastSeen();
+  void getSession().then((s) => s && syncGender(s));
 }

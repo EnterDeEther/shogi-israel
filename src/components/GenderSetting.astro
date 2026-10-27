@@ -1,0 +1,10 @@
+---
+// How the site speaks to the reader: masculine or feminine (src/lib/gender.ts). Every instance drives one
+// site-wide setting; the listener is in src/scripts/gender.ts, which also saves it to the account when signed in.
+interface Props { label: string }
+const { label } = Astro.props;
+---
+<div class="seg" role="group" aria-label={label}>
+  <button type="button" data-gender-set="m" aria-pressed="false">בלשון זכר</button>
+  <button type="button" data-gender-set="f" aria-pressed="false">בלשון נקבה</button>
+</div>

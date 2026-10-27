@@ -114,7 +114,7 @@ function playerRow(ctrl: PlayCtrl, color: Color): HTMLElement {
   return el('div', { class: `ruser${isAi ? ' ai' : ' me'}${running ? ' running' : ''}` },
     el('span', { class: 'mark', 'aria-hidden': 'true' }, MARK[color]),
     el('span', { class: 'who' },
-      el('strong', {}, isAi ? `המחשב · רמה ${level.level}` : 'אתה'),
+      el('strong', {}, isAi ? `המחשב · רמה ${level.level}` : '⟦אתה|את⟧'),
       el('span', { class: 'small muted' }, isAi ? `${SIDE[color]} · ${engineLabel[level.engine]}` : SIDE[color]),
     ),
     ctrl.clock
@@ -203,7 +203,7 @@ function kifButtons(ctrl: PlayCtrl): HTMLElement {
     b('ניתוח ב־Lishogi', async (btn) => {
       // Lishogi's import page takes the KIF pasted into its box: copy first, then open it.
       const ok = await copyText(kifText(ctrl));
-      flash(btn, ok ? 'הועתק, הדבק בחלון שנפתח' : 'ההעתקה נכשלה');
+      flash(btn, ok ? 'הועתק, ⟦הדבק|הדביקי⟧ בחלון שנפתח' : 'ההעתקה נכשלה');
       window.open(LISHOGI_IMPORT_URL, '_blank', 'noopener');
     }),
     el('a', { href: '/kif/', class: 'small' }, 'מה זה?'),
@@ -231,7 +231,7 @@ function status(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void): HTM
       kifButtons(ctrl),
       // signed-out only (global.css hides it once html[data-signed-in] is set)
       el('p', { class: 'small', 'data-signed-out-only': '' },
-        won ? 'כל הכבוד! ' : '', el('a', { href: '/account/?mode=signup' }, 'פתח חשבון בחינם'), ' כדי לשמור את המשחקים שלך ולהתקדם במסלול, בכל מכשיר.'),
+        won ? 'כל הכבוד! ' : '', el('a', { href: '/account/?mode=signup' }, '⟦פתח|פתחי⟧ חשבון בחינם'), ' כדי לשמור את המשחקים שלך ולהתקדם במסלול, בכל מכשיר.'),
       won ? shareButton({ title: `ניצחתי את המחשב ברמה ${ctrl.level.level}`, sub: 'שוגי, השחמט היפני. משחקים בעברית ובחינם', kanji: '勝', path: '/play/' }, 'shogi-israel-win.png', 'btn share') : null,
       nextInCourse(),
     );
@@ -277,8 +277,8 @@ function setupScreen(ctrl: PlayCtrl, draft: PlaySettings, go: (fn: () => void) =
     el('p', { class: 'level-hint' },
       el('strong', {}, `רמה ${lv.level}: `), levelHint[lv.level],
       beaten ? el('span', { class: 'small muted beaten' }, ` · הרמה הגבוהה שניצחת: ${beaten}`) : null),
-    seg<PlaySettings['color']>('אתה משחק', [
-      { label: 'פותח', value: 'sente', sub: 'אתה מתחיל' },
+    seg<PlaySettings['color']>('⟦אתה|את⟧ ⟦משחק|משחקת⟧', [
+      { label: 'פותח', value: 'sente', sub: '⟦אתה|את⟧ ⟦מתחיל|מתחילה⟧' },
       { label: 'אקראי', value: 'random' },
       { label: 'משיב', value: 'gote', sub: 'המחשב מתחיל' },
     ], draft.color, (v) => (draft.color = v)),
@@ -296,7 +296,7 @@ function setupScreen(ctrl: PlayCtrl, draft: PlaySettings, go: (fn: () => void) =
 function copyLink(): HTMLElement {
   const btn = el('button', { type: 'button', class: 'btn' }, 'העתקת הקישור לדף');
   btn.addEventListener('click', () => {
-    navigator.clipboard?.writeText(location.href).then(() => { btn.textContent = 'הקישור הועתק. הדבק אותו בדפדפן'; }, () => {});
+    navigator.clipboard?.writeText(location.href).then(() => { btn.textContent = 'הקישור הועתק. ⟦הדבק|הדביקי⟧ אותו בדפדפן'; }, () => {});
   });
   return btn;
 }
@@ -305,8 +305,8 @@ function unsupported(reason: 'isolation' | 'wasm'): HTMLElement {
   return el('div', { class: 'screen' },
     el('h2', {}, 'הדפדפן הזה לא מריץ את המחשב'),
     el('p', {}, reason === 'wasm'
-      ? 'המחשב רץ אצלך בדפדפן ודורש דפדפן עדכני. נסה גרסה עדכנית של Chrome, Firefox, Edge או Safari.'
-      : 'הדף נפתח בתוך אפליקציה שחוסמת את מה שהמחשב צריך. פתח את הקישור בדפדפן הרגיל (Chrome או Safari).'),
+      ? 'המחשב רץ אצלך בדפדפן ודורש דפדפן עדכני. ⟦נסה|נסי⟧ גרסה עדכנית של Chrome, Firefox, Edge או Safari.'
+      : 'הדף נפתח בתוך אפליקציה שחוסמת את מה שהמחשב צריך. ⟦פתח|פתחי⟧ את הקישור בדפדפן הרגיל (Chrome או Safari).'),
     el('p', {}, 'בינתיים אפשר להתאמן כאן גם בדפדפן הזה: ',
       el('a', { href: '/learn/' }, 'שיעורים אינטראקטיביים'), ' או ', el('a', { href: '/tsume/' }, 'בעיות מט'), '.'),
     reason === 'isolation' ? copyLink() : null,

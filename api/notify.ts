@@ -6,6 +6,7 @@
 // ?user=<uuid> sends that one player their email now (for a test), ignoring the schedule but not their settings.
 import { createClient } from '@supabase/supabase-js';
 import { buildEmail, dueEmail, FROM, REPLY_TO, unsubscribeUrl, type EmailKind, type PrefsRow } from '../src/lib/notify.js';
+import { asGender } from '../src/lib/gender.js';
 import { TSUME_COUNTS } from '../src/lib/level-counts.js';
 import { WEEK_LENGTH } from '../src/tsume/week.js';
 
@@ -64,8 +65,9 @@ export async function GET(request: Request): Promise<Response> {
     const to = u?.user?.email;
     if (!to || !u.user?.email_confirmed_at) continue;
     const unsub = await unsubscribeUrl(secret, user, kind);
+    const gender = asGender(u.user.user_metadata?.gender);
     const email = buildEmail({
-      kind, nickname: nicknames.get(user) ?? 'שחקן', progressData: progress.get(user)?.data, weekCount, now,
+      kind, gender, nickname: nicknames.get(user) ?? (gender === 'f' ? 'שחקנית' : 'שחקן'), progressData: progress.get(user)?.data, weekCount, now,
       returnIndex: row.return_sent, unsubscribeUrl: unsub,
     });
     const res = await fetch('https://api.resend.com/emails', {

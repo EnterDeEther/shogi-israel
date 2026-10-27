@@ -14,6 +14,8 @@ export interface Card {
   path?: string;
 }
 
+import { g } from './gender';
+
 const SIZE = 1080;
 const C = { washi: '#F6F1E7', washi2: '#EFE7D7', ink: '#1C1B19', ink2: '#4A463F', seal: '#B8361F', white: '#FFFFFF' };
 const F = {
@@ -123,7 +125,9 @@ export async function drawCard(card: Card): Promise<HTMLCanvasElement> {
  * Share the card: the share sheet with the image where the browser can (phones), otherwise a download.
  * Returns what happened, for the button's label.
  */
-export async function shareCard(card: Card, fileName = 'shogi-israel.png'): Promise<'shared' | 'saved' | 'cancelled'> {
+export async function shareCard(tokens: Card, fileName = 'shogi-israel.png'): Promise<'shared' | 'saved' | 'cancelled'> {
+  // cards are written with gender tokens (lib/gender.ts); the image and the share text take the reader's form
+  const card = { ...tokens, title: g(tokens.title), sub: tokens.sub && g(tokens.sub) };
   const cv = await drawCard(card);
   const blob = await new Promise<Blob | null>((res) => cv.toBlob(res, 'image/png'));
   if (!blob) return 'cancelled';
@@ -153,12 +157,12 @@ export function shareButton(card: Card, fileName?: string, className = 'btn'): H
   const b = document.createElement('button');
   b.type = 'button';
   b.className = `${className} share-btn`;
-  b.textContent = 'שתף';
+  b.textContent = '⟦שתף|שתפי⟧';
   b.addEventListener('click', async () => {
     b.disabled = true;
     const r = await shareCard(card, fileName);
     b.disabled = false;
-    if (r === 'saved') b.textContent = 'התמונה נשמרה. שתף אותה';
+    if (r === 'saved') b.textContent = 'התמונה נשמרה. ⟦שתף|שתפי⟧ אותה';
   });
   return b;
 }

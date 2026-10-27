@@ -67,8 +67,8 @@ function coach(ctrl: TsumeCtrl, go: Go): HTMLElement {
   const body: (HTMLElement | string | null)[] = [];
   switch (f.kind) {
     case 'intro':
-      title = `תורך. מצא ${mateIn(ctrl.n)}.`;
-      body.push(el('p', {}, 'אתה התוקף (☗, למטה). כל מהלך שלך חייב להיות ', el('strong', {}, 'שח'),
+      title = `תורך. ⟦מצא|מצאי⟧ ${mateIn(ctrl.n)}.`;
+      body.push(el('p', {}, '⟦אתה|את⟧ ⟦התוקף|התוקפת⟧ (☗, למטה). כל מהלך שלך חייב להיות ', el('strong', {}, 'שח'),
         '. המגן (☖) עונה בהגנה הכי טובה, ובידו כל הכלים שלא נמצאים על הלוח או בידך.'));
       break;
     case 'good':
@@ -82,7 +82,7 @@ function coach(ctrl: TsumeCtrl, go: Go): HTMLElement {
       cls = 'bad';
       title = 'זה לא שח';
       body.push(el('p', {}, 'בבעיית מט כל מהלך של התוקף חייב לתת שח. מהלך בלי שח נותן למגן זמן לברוח או להתגונן.'));
-      body.push(el('div', { class: 'buttons' }, btn('נסה שוב', () => ctrl.retry(), true, 'retry')));
+      body.push(el('div', { class: 'buttons' }, btn('⟦נסה|נסי⟧ שוב', () => ctrl.retry(), true, 'retry')));
       break;
     case 'escape': {
       cls = 'bad';
@@ -93,8 +93,8 @@ function coach(ctrl: TsumeCtrl, go: Go): HTMLElement {
         : f.reply
           ? el('span', {}, 'המגן ענה ', el('bdi', { dir: 'ltr', class: 'mv-name' }, f.reply),
             lastMove ? ' ויצא מהשח.' : ', ומכאן כבר אין מט בזמן.')
-          : 'למגן יש דרך לצאת מזה. נסה מהלך אחר.'));
-      body.push(el('div', { class: 'buttons' }, btn('נסה שוב', () => ctrl.retry(), true, 'retry')));
+          : 'למגן יש דרך לצאת מזה. ⟦נסה|נסי⟧ מהלך אחר.'));
+      body.push(el('div', { class: 'buttons' }, btn('⟦נסה|נסי⟧ שוב', () => ctrl.retry(), true, 'retry')));
       break;
     }
     case 'solved':
@@ -102,26 +102,26 @@ function coach(ctrl: TsumeCtrl, go: Go): HTMLElement {
       title = 'מט! ✓';
       body.push(el('p', {}, f.clean
         ? `פתרת את בעיה ${ctrl.id}.`
-        : 'הגעת למט. הבעיה תסומן כפתורה כשתפתור אותה בלי טעויות ובלי רמז.'));
+        : 'הגעת למט. הבעיה תסומן כפתורה ⟦כשתפתור|כשתפתרי⟧ אותה בלי טעויות ובלי רמז.'));
       body.push(recap(ctrl));
       body.push(el('div', { class: 'buttons' },
         ctrl.id < ctrl.count ? btn('לבעיה הבאה', () => location.assign(`#${ctrl.id + 1}`), true, 'next') : null,
         btn('שוב', () => ctrl.load(ctrl.id), false, 'again')));
       // signed-out only (global.css hides it once html[data-signed-in] is set)
       if (f.clean) body.push(el('p', { class: 'small', 'data-signed-out-only': '' },
-        el('a', { href: '/account/?mode=signup' }, 'פתח חשבון בחינם'), ' והבעיות שפתרת יישמרו בכל מכשיר, ויספרו לנקודות ולדרגה שלך.'));
+        el('a', { href: '/account/?mode=signup' }, '⟦פתח|פתחי⟧ חשבון בחינם'), ' והבעיות שפתרת יישמרו בכל מכשיר, ויספרו לנקודות ולדרגה שלך.'));
       if (f.clean && ctrl.n === WEEK_LENGTH && ctrl.id === weekPuzzle(weekIndex(), ctrl.count)) {
         const streak = weekStreak(solvedList(WEEK_LENGTH), ctrl.count);
         const text = `פתרתי את בעיית השבוע בשוגי ישראל${streak > 1 ? `, ${weeksHe(streak)} ברצף` : ''}`;
         body.push(el('p', { class: 'week-done' }, el('strong', {}, 'זו בעיית השבוע ✓'), streak > 1 ? ` רצף של ${weeksHe(streak)}.` : ' בעיה חדשה תעלה ביום ראשון.'));
-        body.push(shareButton({ title: text, sub: 'בעיית מט אחת בכל שבוע. נסה גם אתה', kanji: '詰', path: '/tsume/week/' }, 'shogi-israel-tsume.png'));
+        body.push(shareButton({ title: text, sub: 'בעיית מט אחת בכל שבוע. ⟦נסה|נסי⟧ גם ⟦אתה|את⟧', kanji: '詰', path: '/tsume/week/' }, 'shogi-israel-tsume.png'));
       }
       if (f.clean) { const next = nextInCourse(); if (next) body.push(next); }
       break;
     case 'shown':
       cls = 'shown';
       title = 'הפתרון';
-      body.push(el('p', {}, 'עבור על המהלכים עם החצים או ברשימה. כדאי לחזור לבעיה הזאת שוב בעוד כמה ימים.'));
+      body.push(el('p', {}, '⟦עבור|עברי⟧ על המהלכים עם החצים או ברשימה. כדאי לחזור לבעיה הזאת שוב בעוד כמה ימים.'));
       body.push(recap(ctrl));
       body.push(el('div', { class: 'buttons' },
         ctrl.id < ctrl.count ? btn('לבעיה הבאה', () => location.assign(`#${ctrl.id + 1}`), true, 'next') : null,
@@ -132,7 +132,7 @@ function coach(ctrl: TsumeCtrl, go: Go): HTMLElement {
   return el('div', { class: `tsume-coach ${cls}`, role: 'status', 'aria-live': 'polite' },
     el('strong', { class: 'title' }, title),
     ...body,
-    hint ? el('p', { class: 'hint small' }, `רמז: ${hint.drop ? 'הצב מהיד את ' : 'הזז את '}${ROLE[hint.role] ?? 'הכלי'} המסומן.`) : null,
+    hint ? el('p', { class: 'hint small' }, `רמז: ${hint.drop ? '⟦הצב|הציבי⟧ מהיד את ' : '⟦הזז|הזיזי⟧ את '}${ROLE[hint.role] ?? 'הכלי'} המסומן.`) : null,
   );
 }
 

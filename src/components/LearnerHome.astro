@@ -16,7 +16,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
 <section class="me wrap" data-learner-only data-me data-week-count={weekCount} aria-labelledby="me-h">
   <div class="me-top">
     <div class="me-main">
-      <p class="eyebrow">ברוך השב</p>
+      <p class="eyebrow">⟦ברוך השב|ברוכה השבה⟧</p>
       <h1 id="me-h"><span data-me-hello>טוב לראות אותך שוב</span>.</h1>
       <p class="lead" data-me-lead>הנה הצעד הבא שלך.</p>
 
@@ -41,7 +41,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
       <p class="rank-points" data-rank-points>0 נקודות</p>
       <div class="bar" aria-hidden="true"><span data-rank-bar></span></div>
       <p class="small rank-text" data-rank-text>נקודות נצברות פעם אחת על כל שיעור, בעיה או משחק.</p>
-      <p class="small rank-guest" data-signed-out-only>הנקודות נשמרות רק בדפדפן הזה. <a href="/account/?mode=signup">פתח חשבון בחינם</a>, והן יישמרו בכל מכשיר.</p>
+      <p class="small rank-guest" data-signed-out-only>הנקודות נשמרות רק בדפדפן הזה. <a href="/account/?mode=signup">⟦פתח|פתחי⟧ חשבון בחינם</a>, והן יישמרו בכל מכשיר.</p>
       <p class="small"><a href="/ranks/#site">דרגה של לימוד באתר, לא דרגה רשמית</a></p>
     </aside>
   </div>
@@ -74,7 +74,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
         <a class="today-link" href="/tsume/week/" data-week-link><span data-week-cta>לפתור</span> ←</a>
       </li>
       <li class="today-card">
-        <h3>שחק נגד המחשב</h3>
+        <h3>⟦שחק|שחקי⟧ נגד המחשב</h3>
         <p data-play-text>עשר רמות, ממתחילים ועד מתקדמים. רמה 1 סלחנית, והמטרה רק לסיים משחק שלם.</p>
         <a class="today-link" href="/play/" data-play-link><span data-play-cta>לשחק</span> ←</a>
       </li>
@@ -88,10 +88,10 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
 
   <section class="part" aria-labelledby="part-h">
     <div>
-      <h2 id="part-h">אתה חלק מזה</h2>
-      <p>מצאת שיעור מבלבל, או מונח שאפשר לומר טוב יותר בעברית? כתוב לי, ואני אתקן. ככה האתר משתפר לכולם.</p>
+      <h2 id="part-h">⟦אתה|את⟧ חלק מזה</h2>
+      <p>מצאת שיעור מבלבל, או מונח שאפשר לומר טוב יותר בעברית? ⟦כתוב|כתבי⟧ לי, ואני אתקן. ככה האתר משתפר לכולם.</p>
     </div>
-    <a class="btn btn-ghost" href="/about/#contact"><span>כתוב לנו</span></a>
+    <a class="btn btn-ghost" href="/about/#contact"><span>⟦כתוב|כתבי⟧ לנו</span></a>
   </section>
 </section>
 
@@ -127,7 +127,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
     if (signedIn() && !track) {
       text('[data-next-where]', 'מסלול לימוד אישי');
       text('[data-next-title]', 'מאיפה מתחילים?');
-      text('[data-next-why]', 'ענה על שאלה אחת, ותקבל סדר לימוד ברור: קודם היסודות, ואז פתיחה, אמצע המשחק וסוף המשחק.');
+      text('[data-next-why]', '⟦ענה|עני⟧ על שאלה אחת, ⟦ותקבל|ותקבלי⟧ סדר לימוד ברור: קודם היסודות, ואז פתיחה, אמצע המשחק וסוף המשחק.');
       text('[data-next-cta]', 'לבחירת נקודת ההתחלה');
       link.href = '/course/';
     } else if (!next) {
@@ -143,7 +143,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
       text('[data-next-title]', step.title);
       text('[data-next-why]', step.why);
       const started = hasAnyProgress(p);
-      text('[data-next-cta]', started ? 'המשך מאיפה שעצרת' : 'התחל');
+      text('[data-next-cta]', started ? '⟦המשך|המשיכי⟧ מאיפה שעצרת' : '⟦התחל|התחילי⟧');
       link.href = stepHref(step, p, LEVEL_COUNTS);
       // progress inside the step when it has parts (2 of 5 stages), else inside its unit
       const inStep = stepCount(step, p, LEVEL_COUNTS);
@@ -201,10 +201,10 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
     let level = 1;
     if (won > 0) {
       level = Math.min(10, won + 1);
-      text('[data-play-text]', won >= 10 ? 'ניצחת את המחשב ברמה הגבוהה ביותר. נסה לנצח שוב, הפעם עם צבע אחר.' : `ניצחת את המחשב ברמה ${won}. מוכן לנסות את רמה ${level}?`);
+      text('[data-play-text]', won >= 10 ? 'ניצחת את המחשב ברמה הגבוהה ביותר. ⟦נסה|נסי⟧ לנצח שוב, הפעם עם צבע אחר.' : `ניצחת את המחשב ברמה ${won}. ⟦מוכן|מוכנה⟧ לנסות את רמה ${level}?`);
     } else if (played > 0) {
       level = played;
-      text('[data-play-text]', `כבר שיחקת ברמה ${played}. הפעם נסה לנצח בה: קודם מבצר, אחר כך התקפה.`);
+      text('[data-play-text]', `כבר שיחקת ברמה ${played}. הפעם ⟦נסה|נסי⟧ לנצח בה: קודם מבצר, אחר כך התקפה.`);
     }
     $<HTMLAnchorElement>('[data-play-link]').href = `/play/?level=${level}`;
     text('[data-play-cta]', `לשחק ברמה ${level}`);

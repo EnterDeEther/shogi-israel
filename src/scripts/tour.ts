@@ -140,7 +140,7 @@ export function startTour(id: TourId, from?: HTMLElement | null): void {
       const back = h('button', { type: 'button', class: 'btn btn-ghost', 'data-act': 'back' }, 'הקודם');
       if (at === 0) back.hidden = true;
       actions.append(back, h('button', { type: 'button', class: 'btn', 'data-act': 'next' }, 'הבא'));
-      card.append(actions, h('button', { type: 'button', class: 'tour-skip', 'data-act': 'skip' }, 'דלג על הסיור'));
+      card.append(actions, h('button', { type: 'button', class: 'tour-skip', 'data-act': 'skip' }, '⟦דלג|דלגי⟧ על הסיור'));
     } else {
       const next = nextStepLink();
       card.append(h('h2', { class: 'tour-title', id: 'tour-title' }, tour.end.title), h('p', { class: 'tour-body', id: 'tour-body' }, tour.end.body));

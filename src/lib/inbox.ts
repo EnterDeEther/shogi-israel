@@ -49,7 +49,7 @@ export const GROUP_OF: Record<InboxKind, InboxGroup> = {
 export const GROUP_LABEL: Record<InboxGroup, { title: string; sub: string }> = {
   path: { title: 'המסלול שלי', sub: 'הצעד הבא, שיעור שהתחלת ומשחק פתוח' },
   week: { title: 'בעיית השבוע', sub: 'בעיה חדשה בכל יום ראשון, ותזכורת כשהרצף בסכנה' },
-  rank: { title: 'דרגות', sub: 'כשאתה עולה דרגה' },
+  rank: { title: 'דרגות', sub: '⟦כשאתה|כשאת⟧ עולה דרגה' },
   news: { title: 'חדשות האתר', sub: 'שיעורים וכלים חדשים' },
 };
 
@@ -82,7 +82,7 @@ export function buildInbox(p: SyncedProgress, ctx: InboxContext): InboxNote[] {
       if (streak >= 2 && now.getDay() >= STREAK_WARN_DAY) {
         notes.push({
           id: `streak:${week}`, kind: 'streak', kanji: '続',
-          text: `פתרת את בעיית השבוע ${weeksHe(streak)} ברצף. השבוע נגמר בשבת: פתור את הבעיה כדי לשמור על הרצף.`,
+          text: `פתרת את בעיית השבוע ${weeksHe(streak)} ברצף. השבוע נגמר בשבת: ⟦פתור|פתרי⟧ את הבעיה כדי לשמור על הרצף.`,
           href: '/tsume/3/', cta: 'לבעיית השבוע',
         });
       } else {
@@ -97,12 +97,12 @@ export function buildInbox(p: SyncedProgress, ctx: InboxContext): InboxNote[] {
 
   const step = p.course.track ? nextStep(p, ctx.levelCounts)?.step : undefined;
   if (!p.course.track) {
-    notes.push({ id: 'next:start', kind: 'next', kanji: '歩', text: 'עוד לא בחרת מאיפה להתחיל. שאלה אחת, ותקבל מסלול לימוד אישי.', href: '/course/', cta: 'בחר נקודת התחלה' });
+    notes.push({ id: 'next:start', kind: 'next', kanji: '歩', text: 'עוד לא בחרת מאיפה להתחיל. שאלה אחת, ⟦ותקבל|ותקבלי⟧ מסלול לימוד אישי.', href: '/course/', cta: '⟦בחר|בחרי⟧ נקודת התחלה' });
   } else if (step) {
     notes.push({
       id: `next:${step.id}`, kind: 'next', kanji: '歩',
       text: `הצעד הבא במסלול שלך: ${step.title.replace(/^תרגול: /, '')} (${KIND_LABEL[step.kind]}).`,
-      href: stepHref(step, p, ctx.levelCounts), cta: 'המשך',
+      href: stepHref(step, p, ctx.levelCounts), cta: '⟦המשך|המשיכי⟧',
     });
   }
 
@@ -112,7 +112,7 @@ export function buildInbox(p: SyncedProgress, ctx: InboxContext): InboxNote[] {
     notes.push({
       id: `stage:${half.key}`, kind: 'stage', kanji: '習',
       text: `התחלת ולא סיימת: ${half.title}. נשארו ${half.left === 1 ? 'תרגיל אחד' : `${half.left} תרגילים`}.`,
-      href: stageUrl(half.key), cta: 'המשך מאיפה שעצרת',
+      href: stageUrl(half.key), cta: '⟦המשך|המשיכי⟧ מאיפה שעצרת',
     });
   }
 

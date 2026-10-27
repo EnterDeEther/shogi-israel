@@ -114,7 +114,7 @@ function setupBoardTask(task: HTMLElement, answer: string) {
     } else {
       misses++;
       mark(s, 'no', '✗');
-      say('is-no', `לא. זו משבצת ${sq} (${what}). נסה שוב.` + (hint && misses >= 2 ? ` רמז: ${hint}` : ''));
+      say('is-no', `לא. זו משבצת ${sq} (${what}). ⟦נסה|נסי⟧ שוב.` + (hint && misses >= 2 ? ` רמז: ${hint}` : ''));
     }
   };
 

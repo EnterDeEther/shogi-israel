@@ -260,3 +260,8 @@ html[data-signed-in] [data-signed-out-only] { display: none; }
 .tour-skip { padding: 10px 0 2px; border: 0; background: none; color: var(--muted); font: inherit; font-size: 14px; text-decoration: underline; cursor: pointer; }
 /* room under the last menu item, so the sheet never covers the one in the ring */
 html.tour-on [data-nav-narrow] .panel { padding-bottom: 50dvh; }
+
+/* Form of address (lib/gender.ts): every gendered word ships in both forms; show the reader's. */
+.gf { display: none; }
+html[data-gender="f"] .gm { display: none; }
+html[data-gender="f"] .gf { display: revert; }
