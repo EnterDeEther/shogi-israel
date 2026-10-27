@@ -3,9 +3,9 @@
 // screens drawn by script use tipEl('rank') (lib/info-tip-dom.ts), and scripts/info-tips.ts does the opening.
 //
 // Writing one: the first sentence says what the thing is, in everyday words, and works if the reader stops there.
-// One idea, about 30 words at most. Glossary terms as locked. The reader is one man, spoken to in the singular
-// (אתה, שלך, "בחר"); no plural to dodge gender, and no impersonal plural ("בוחרים", "מקבלים") where אתה fits. The
-// site's footer carries the one disclaimer about that, so a tip needs none. The link is the question the reader
+// One idea, about 30 words at most. Glossary terms as locked. The reader is one person, spoken to in the singular,
+// with each gendered word as a token in both forms (⟦אתה|את⟧ ⟦בוחר|בוחרת⟧, lib/gender.ts); no plural to dodge
+// gender, and no impersonal plural ("בוחרים", "מקבלים") where אתה fits. The link is the question the reader
 // asks next, and it goes to the page that answers it in full. In the interface a tip is a "הסבר קצר", never "טיפ":
 // "טיפים" is the name of the coach bubble in the lessons.
 
@@ -19,12 +19,12 @@ export interface TipDef {
 export const TIPS = {
   rank: {
     label: 'הדרגה שלך',
-    text: 'זו הדרגה שלך בלימוד באתר. היא עולה עם שיעורים, בעיות ומשחקים, ולא מודדת כמה חזק אתה משחק. כמו בג׳ודו, הספירה היא לאחור: 15 קיו היא ההתחלה, ואחרי 1 קיו אתה מגיע לדאן.',
+    text: 'זו הדרגה שלך בלימוד באתר. היא עולה עם שיעורים, בעיות ומשחקים, ולא מודדת כמה חזק ⟦אתה|את⟧ ⟦משחק|משחקת⟧. כמו בג׳ודו, הספירה היא לאחור: 15 קיו היא ההתחלה, ואחרי 1 קיו ⟦אתה|את⟧ ⟦מגיע|מגיעה⟧ לדאן.',
     more: { href: '/ranks/#site', text: 'מה ההבדל מדרגה אמיתית?' },
   },
   points: {
     label: 'נקודות',
-    text: 'הנקודות מעלות את הדרגה שלך. אתה מקבל אותן על שיעורים, בעיות מט ומשחקים נגד המחשב. כל דבר נספר פעם אחת, ולכן חזרה על בעיה שכבר פתרת לא מוסיפה נקודות.',
+    text: 'הנקודות מעלות את הדרגה שלך. ⟦אתה|את⟧ ⟦מקבל|מקבלת⟧ אותן על שיעורים, בעיות מט ומשחקים נגד המחשב. כל דבר נספר פעם אחת, ולכן חזרה על בעיה שכבר פתרת לא מוסיפה נקודות.',
     more: { href: '/ranks/#site', text: 'איך אפשר לצבור נקודות?' },
   },
   mate: {
@@ -34,12 +34,12 @@ export const TIPS = {
   },
   pieces: {
     label: 'סימון הכלים',
-    text: 'כאן אתה בוחר איך הכלים מסומנים על הלוח: באותיות (K למלך, R לצריח…) או בקאנג׳י, הסימנים היפניים שעל כלי שוגי אמיתיים. הבחירה חלה על כל האתר.',
+    text: 'כאן ⟦אתה|את⟧ ⟦בוחר|בוחרת⟧ איך הכלים מסומנים על הלוח: באותיות (K למלך, R לצריח…) או בקאנג׳י, הסימנים היפניים שעל כלי שוגי אמיתיים. הבחירה חלה על כל האתר.',
     more: { href: '/rules/07-reading-pieces/', text: 'איך אפשר לקרוא את הכלים?' },
   },
   sides: {
     label: 'פותח ומשיב',
-    text: 'הפותח (☗) הוא מי שמשחק ראשון, והמשיב (☖) משחק אחריו. כלי כל צד פונים אל הצד השני, וכך אתה רואה של מי כל כלי.',
+    text: 'הפותח (☗) הוא מי שמשחק ראשון, והמשיב (☖) משחק אחריו. כלי כל צד פונים אל הצד השני, וכך ⟦אתה|את⟧ רואה של מי כל כלי.',
     more: { href: '/rules/01-board-pieces-setup/', text: 'איך אפשר לסדר את הלוח?' },
   },
   kif: {
@@ -49,7 +49,7 @@ export const TIPS = {
   },
   phases: {
     label: 'שלבי המשחק',
-    text: 'למשחק שוגי שלושה שלבים: פתיחה (להתארגן), אמצע המשחק (לפרוץ) וסוף המשחק (להכריע). במסלול אתה לומד אותם לפי הסדר.',
+    text: 'למשחק שוגי שלושה שלבים: פתיחה (להתארגן), אמצע המשחק (לפרוץ) וסוף המשחק (להכריע). במסלול ⟦אתה|את⟧ ⟦לומד|לומדת⟧ אותם לפי הסדר.',
     more: { href: '/learn/guide/#phases', text: 'מה קורה בכל שלב?' },
   },
 } satisfies Record<string, TipDef>;

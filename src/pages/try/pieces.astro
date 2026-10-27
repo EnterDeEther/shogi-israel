@@ -17,14 +17,14 @@ const hasCourse = pageExists('/course/');
 const hasPlay = pageExists('/play/');
 ---
 <Base
-  title="שלוש דקות, שלושה כלים: נסה שוגי בעצמך"
-  description="הצעד השני בשוגי: הזז צריח, רץ ורגלי, ולכוד עם כל אחד מהם כלי של היריב. בשוגי כלי שלכדת לא נעלם, הוא נשאר ביד שלך. בלי הרשמה."
+  title="שלוש דקות, שלושה כלים: ⟦נסה|נסי⟧ שוגי בעצמך"
+  description="הצעד השני בשוגי: ⟦הזז|הזיזי⟧ צריח, רץ ורגלי, ⟦ולכוד|ולכדי⟧ עם כל אחד מהם כלי של היריב. בשוגי כלי שלכדת לא נעלם, הוא נשאר ביד שלך. בלי הרשמה."
 >
   <div class="wrap trypc" data-try data-state="ask">
     <header class="trypc__head">
-      <p class="eyebrow">ועכשיו אתה · שלוש דקות · שלושה כלים · בלי הרשמה</p>
-      <h1>עכשיו תנסה בעצמך.</h1>
-      <p class="lead trypc__lead">ראית משחק שלם. עכשיו נתחיל בכלי אחד: תראה איך הוא זז ותלכוד איתו, ואז נעבור לכלי הבא. בסך הכול שלושה כלים, ואתה מחליט מתי להמשיך.</p>
+      <p class="eyebrow">ועכשיו ⟦אתה|את⟧ · שלוש דקות · שלושה כלים · בלי הרשמה</p>
+      <h1>עכשיו ⟦תנסה|תנסי⟧ בעצמך.</h1>
+      <p class="lead trypc__lead">ראית משחק שלם. עכשיו נתחיל בכלי אחד: ⟦תראה|תראי⟧ איך הוא זז ⟦ותלכוד|ותלכדי⟧ איתו, ואז נעבור לכלי הבא. בסך הכול שלושה כלים, ⟦ואתה|ואת⟧ ⟦מחליט|מחליטה⟧ מתי להמשיך.</p>
       <ol class="trypc__chips" aria-label="שלושת הכלים">
         {names.map((n, i) => <li data-chip><span class="n">{i + 1} · </span>{n}</li>)}
       </ol>
@@ -44,7 +44,7 @@ const hasPlay = pageExists('/play/');
           <p class="feedback" data-feedback role="status" hidden></p>
           <div class="row">
             <button type="button" class="btn btn-ghost" data-hint>רמז</button>
-            <button type="button" class="btn btn-ghost" data-show>הראה לי</button>
+            <button type="button" class="btn btn-ghost" data-show>⟦הראה|הראי⟧ לי</button>
             <button type="button" class="btn btn-ghost" data-restart>מההתחלה</button>
           </div>
         </div>
@@ -61,7 +61,7 @@ const hasPlay = pageExists('/play/');
             <button type="button" class="btn" data-next><span data-next-label></span><Fragment set:html={arrow} /></button>
             <button type="button" class="btn btn-ghost" data-again>עוד פעם</button>
           </div>
-          <p class="small muted">אין מעבר אוטומטי. המשך כשאתה מוכן.</p>
+          <p class="small muted">אין מעבר אוטומטי. ⟦המשך|המשיכי⟧ ⟦כשאתה|כשאת⟧ ⟦מוכן|מוכנה⟧.</p>
         </div>
       </div>
       <div class="trypc__boardcol">
@@ -95,13 +95,13 @@ const hasPlay = pageExists('/play/');
         </div>
       </div>
 
-      <h2 class="then">ואחר כך? אתה מחליט</h2>
+      <h2 class="then">ואחר כך? ⟦אתה|את⟧ ⟦מחליט|מחליטה⟧</h2>
       <ul class="then__grid">
         <li><a href="/rules/"><strong>שאר הכלים</strong><span>חוקים בסיסיים: איך כל כלי זז, בשיעורים קצרים שמסבירים גם למה.</span><em>לשיעורים</em></a></li>
-        {hasCourse && <li><a href="/course/"><strong>מסלול לימוד אישי</strong><span>מתאים את עצמו למי שאתה ועובר על פתיחה, אמצע המשחק וסוף המשחק. ההרשמה היא רק כדי לשמור התקדמות.</span><em>לפתוח את המסלול</em></a></li>}
-        <li><a href={WHATSAPP_URL} rel="noopener"><strong>קהילת הוואטסאפ</strong><span>קהילה קטנה ובתחילת הדרך. כתוב "חדש" ואענה לך אישית.</span><em>להצטרף</em></a></li>
+        {hasCourse && <li><a href="/course/"><strong>מסלול לימוד אישי</strong><span>מתאים את עצמו למי ⟦שאתה|שאת⟧ ועובר על פתיחה, אמצע המשחק וסוף המשחק. ההרשמה היא רק כדי לשמור התקדמות.</span><em>לפתוח את המסלול</em></a></li>}
+        <li><a href={WHATSAPP_URL} rel="noopener"><strong>קהילת הוואטסאפ</strong><span>קהילה קטנה ובתחילת הדרך. ⟦כתוב|כתבי⟧ "חדש" ואענה לך אישית.</span><em>להצטרף</em></a></li>
       </ul>
-      {hasPlay && <p class="jump"><strong>כבר יודע לשחק?</strong> אפשר לדלג ו<a href="/play/">לשחק נגד המחשב</a>, מרמה 1.</p>}
+      {hasPlay && <p class="jump"><strong>כבר ⟦יודע|יודעת⟧ לשחק?</strong> אפשר לדלג ו<a href="/play/">לשחק נגד המחשב</a>, מרמה 1.</p>}
       <p class="tour-offer small muted">רוצה לראות מה עוד יש באתר? <a href={TOUR_URL} data-tour-start>סיור קצר באתר</a></p>
     </section>
     <div class="sr-only" aria-live="polite" data-live></div>

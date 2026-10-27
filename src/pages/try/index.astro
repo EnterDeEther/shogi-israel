@@ -18,7 +18,7 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
     <header class="watch__head">
       <p class="eyebrow">משחק אחד · מהלך אחרי מהלך · בלי להכיר כלום</p>
       <h1>איך נראה משחק שוגי?</h1>
-      <p class="lead watch__lead">לא צריך לדעת כלום. בכל לחיצה נראה מהלך אחד, ונסביר מה קרה ולמה. אתה קובע את הקצב: שום דבר לא זז לבד.</p>
+      <p class="lead watch__lead">לא צריך לדעת כלום. בכל לחיצה נראה מהלך אחד, ונסביר מה קרה ולמה. ⟦אתה|את⟧ ⟦קובע|קובעת⟧ את הקצב: שום דבר לא זז לבד.</p>
       <ol class="watch__phases" aria-label="שלבי המשחק">
         {PHASES.map((p, i) => <li data-phase-chip><span class="n">{i + 1}</span> {p.name}</li>)}
       </ol>
@@ -64,19 +64,19 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
             <p data-text></p>
             <p class="why" data-why><strong>למה? </strong><span data-why-text></span></p>
           </article>
-          <p class="small muted">שום דבר לא זז לבד. המשך כשאתה מוכן.</p>
+          <p class="small muted">שום דבר לא זז לבד. ⟦המשך|המשיכי⟧ ⟦כשאתה|כשאת⟧ ⟦מוכן|מוכנה⟧.</p>
         </div>
 
         <div data-pane="summary" hidden>
           <div class="box box--done">
             <h2>זה היה משחק שלם.</h2>
-            <p>פתיחה, אמצע המשחק וסוף המשחק, ובסוף מט. עכשיו אתה יודע איך משחק שוגי נראה מההתחלה ועד הסוף.</p>
+            <p>פתיחה, אמצע המשחק וסוף המשחק, ובסוף מט. עכשיו ⟦אתה|את⟧ ⟦יודע|יודעת⟧ איך משחק שוגי נראה מההתחלה ועד הסוף.</p>
           </div>
           <ol class="recap">
             {PHASES.map((p) => <li><strong>{p.name}</strong><span>{p.recap}</span></li>)}
           </ol>
           <p class="manners">ובמשחק אמיתי? לפני המשחק אומרים ליריב "בבקשה, תשמור עליי", ובסופו המפסיד אומר "הפסדתי" עוד לפני המט, והמנצח אומר תודה.</p>
-          <a class="btn watch__try" href="/try/pieces/"><span>עכשיו תנסה בעצמך: שלושה כלים</span><Fragment set:html={arrow} /></a>
+          <a class="btn watch__try" href="/try/pieces/"><span>עכשיו ⟦תנסה|תנסי⟧ בעצמך: שלושה כלים</span><Fragment set:html={arrow} /></a>
           <p class="small muted">בדקנו את המשחק עם מנוע מחשב: כל המהלכים חוקיים והמט אמיתי. זה לא משחק מושלם. בחרנו אותו כי הוא מראה את שלושת השלבים.</p>
         </div>
       </div>

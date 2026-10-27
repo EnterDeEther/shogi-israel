@@ -143,14 +143,14 @@ export function bootKifViewer(root: HTMLElement): void {
   q('[data-copy]').addEventListener('click', async () => {
     const ok = await copyText(currentKif());
     if (!ok) input.value = currentKif();
-    say(ok ? 'רישום המשחק הועתק. אפשר להדביק אותו בכל מקום.' : 'ההעתקה לא הצליחה. הטקסט נמצא בתיבה למטה: סמן אותו והעתק.', ok ? 'ok' : 'error');
+    say(ok ? 'רישום המשחק הועתק. אפשר להדביק אותו בכל מקום.' : 'ההעתקה לא הצליחה. הטקסט נמצא בתיבה למטה: ⟦סמן|סמני⟧ אותו ⟦והעתק|והעתיקי⟧.', ok ? 'ok' : 'error');
   });
   q('[data-lishogi]').addEventListener('click', async () => {
     const ok = await copyText(currentKif());
     window.open(LISHOGI_IMPORT_URL, '_blank', 'noopener');
     say(ok
-      ? 'רישום המשחק הועתק. בליש׳וגי הדבק אותו בתיבה (Ctrl+V) ולחץ IMPORT GAME.'
-      : 'פתחנו את ליש׳וגי. העתק את הטקסט מהתיבה למטה והדבק שם.');
+      ? 'רישום המשחק הועתק. בליש׳וגי ⟦הדבק|הדביקי⟧ אותו בתיבה (Ctrl+V) ⟦ולחץ|ולחצי⟧ IMPORT GAME.'
+      : 'פתחנו את ליש׳וגי. ⟦העתק|העתיקי⟧ את הטקסט מהתיבה למטה ⟦והדבק|והדביקי⟧ שם.');
     if (!ok) input.value = currentKif();
   });
 

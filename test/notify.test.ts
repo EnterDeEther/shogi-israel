@@ -77,6 +77,16 @@ describe('the emails', () => {
     expect(buildEmail({ ...base, kind: 'return', progressData: p, returnIndex: 1 }).text).toContain('התזכורת האחרונה');
   });
 
+  test('speaks in the reader\'s form, with the disclaimer only for masculine', () => {
+    const m = buildEmail({ ...base, kind: 'return', progressData: {}, returnIndex: 1 });
+    const f = buildEmail({ ...base, kind: 'return', progressData: {}, returnIndex: 1, gender: 'f' });
+    for (const e of [m, f]) expect(`${e.subject}${e.html}${e.text}`).not.toMatch(/[⟦⟧]/);
+    expect(m.text).toContain('המשך:');
+    expect(f.text).toContain('המשיכי:');
+    expect(m.text).toContain('בלשון זכר מטעמי נוחות');
+    expect(f.text).not.toContain('בלשון זכר');
+  });
+
   test('names are escaped', () => {
     expect(buildEmail({ ...base, kind: 'week', progressData: {}, nickname: '<b>x' }).html).not.toContain('<b>x');
   });

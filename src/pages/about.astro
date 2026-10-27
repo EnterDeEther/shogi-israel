@@ -31,14 +31,14 @@ const hasPlay = pageExists('/play/');
     <li><strong>הלוחות והכלים באתר</strong>: עיצוב מקורי של שוגי ישראל. קוד האתר פתוח ברישיון AGPL-3.0.</li>
   </ul>
 
-  <h2 id="contact">צור קשר</h2>
+  <h2 id="contact">⟦צור|צרי⟧ קשר</h2>
   {CONTACT_FORM_LIVE ? (
     <>
-      <p>מצאת טעות בשיעור, משהו לא עובד באתר, או סתם רוצה לשאול? כתוב לנו כאן ונענה במייל.</p>
+      <p>מצאת טעות בשיעור, משהו לא עובד באתר, או סתם רוצה לשאול? ⟦כתוב|כתבי⟧ לנו כאן ונענה במייל.</p>
       <ContactForm />
       <p>אפשר גם לכתוב ישירות ל־<a href={`mailto:${CONTACT_EMAIL}`}><bdi dir="ltr">{CONTACT_EMAIL}</bdi></a>, או בהודעה פרטית באינסטגרם, <a href={INSTAGRAM_URL} rel="noopener"><bdi dir="ltr">@shogi.israel</bdi></a>.</p>
     </>
   ) : (
-    <p>מצאת טעות בשיעור, משהו לא עובד באתר, או סתם רוצה לשאול? כתוב לנו במייל, <a href={`mailto:${CONTACT_EMAIL}`}><bdi dir="ltr">{CONTACT_EMAIL}</bdi></a>, או בהודעה פרטית באינסטגרם, <a href={INSTAGRAM_URL} rel="noopener"><bdi dir="ltr">@shogi.israel</bdi></a>.</p>
+    <p>מצאת טעות בשיעור, משהו לא עובד באתר, או סתם רוצה לשאול? ⟦כתוב|כתבי⟧ לנו במייל, <a href={`mailto:${CONTACT_EMAIL}`}><bdi dir="ltr">{CONTACT_EMAIL}</bdi></a>, או בהודעה פרטית באינסטגרם, <a href={INSTAGRAM_URL} rel="noopener"><bdi dir="ltr">@shogi.israel</bdi></a>.</p>
   )}
 </Page>

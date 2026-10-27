@@ -1,6 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
 import ThemeSetting from '../components/ThemeSetting.astro';
+import PasswordField from '../components/PasswordField.astro';
+import GenderSetting from '../components/GenderSetting.astro';
 import InfoTip from '../components/InfoTip.astro';
 import { accountsEnabled } from '../lib/account-config';
 import { stages } from '../learn/categories';
@@ -8,6 +10,13 @@ import { GROUP_LABEL } from '../lib/inbox';
 import { INBOX_GROUPS } from '../lib/progress-sync';
 import { CONSENT_TEXT } from '../lib/consent';
 import { ACCOUNT_TOUR_URL } from '../lib/tour';
+
+// The password rules, shown before typing and ticked off live (the same checks run on submit).
+const PASS_RULES = [
+  ['len', 'לפחות 8 תווים'],
+  ['letter', 'לפחות אות אחת, בעברית או באנגלית'],
+  ['digit', 'לפחות ספרה אחת'],
+];
 
 // Levels per Learn stage, for the stats (so the page doesn't ship the whole lesson engine).
 const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length]));
@@ -20,6 +29,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
         <p class="lead">החשבונות בדרך. בינתיים ההתקדמות שלך נשמרת בדפדפן הזה, בלי הרשמה.</p>
         <h2>הגדרות</h2>
         <div class="setting"><p class="setting-label">מראה האתר</p><ThemeSetting /></div>
+        <div class="setting"><p class="setting-label">איך לפנות אליי באתר</p><GenderSetting label="איך לפנות אליי באתר" /></div>
       </section>
     )}
 
@@ -29,7 +39,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
 
         <section data-view="signin" hidden>
           <h1 data-signin-title>כניסה לחשבון</h1>
-          <p class="lead">עם חשבון (בחינם), ההתקדמות בשיעורים, בבעיות המט ובמסלול שלך נשמרת ועוברת איתך לכל מכשיר. תקבל מסלול לימוד אישי, תצבור נקודות ודרגות, והמשחקים שלך נגד המחשב יישמרו.</p>
+          <p class="lead">עם חשבון (בחינם), ההתקדמות בשיעורים, בבעיות המט ובמסלול שלך נשמרת ועוברת איתך לכל מכשיר. ⟦תקבל|תקבלי⟧ מסלול לימוד אישי, ⟦תצבור|תצברי⟧ נקודות ודרגות, והמשחקים שלך נגד המחשב יישמרו.</p>
           <div class="seg tabs" role="group" aria-label="כניסה או הרשמה">
             <button type="button" data-mode="signin" aria-pressed="true">כניסה</button>
             <button type="button" data-mode="signup" aria-pressed="false">הרשמה</button>
@@ -38,9 +48,17 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
             <label for="acc-email">כתובת מייל</label>
             <input id="acc-email" name="email" type="email" dir="ltr" autocomplete="email" inputmode="email" required />
             <label for="acc-pass">סיסמה</label>
-            <input id="acc-pass" name="password" type="password" dir="ltr" autocomplete="current-password" minlength="8" required aria-describedby="acc-pass-help" />
-            <button type="button" class="link show-pass" data-show-pass aria-controls="acc-pass" aria-pressed="false">הצגת הסיסמה</button>
-            <p id="acc-pass-help" class="small muted" data-signup-only hidden>לפחות 8 תווים, אותיות וספרות. עדיף משפט קצר שקל לך לזכור.</p>
+            <PasswordField id="acc-pass" autocomplete="current-password" describedby="acc-pass-help" />
+            <div id="acc-pass-help" class="rules" data-signup-only hidden>
+              <ul data-rules-for="acc-pass">
+                {PASS_RULES.map(([k, t]) => <li data-rule={k}>{t}</li>)}
+              </ul>
+              <p class="small muted">מותר כל תו, גם רווח וסימנים. משפט קצר ⟦שתזכור|שתזכרי⟧ בקלות הוא סיסמה טובה.</p>
+            </div>
+            <div class="gender-pick" data-signup-only hidden>
+              <p class="setting-label">איך לפנות אליך באתר?</p>
+              <GenderSetting label="איך לפנות אליך באתר?" />
+            </div>
             <label class="check" for="acc-weekly" data-signup-only hidden>
               <input type="checkbox" id="acc-weekly" />
               <span>{CONSENT_TEXT.week}. אפשר להפסיק בכל רגע.</span>
@@ -50,24 +68,24 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
             <p class="err" role="alert" data-err></p>
           </form>
           <p class="small" data-signin-only><button type="button" class="link" data-forgot>שכחת סיסמה?</button></p>
-          <p class="small muted">מה שכבר עשית בדפדפן הזה יישמר בחשבון. בהרשמה אתה מסכים ל<a href="/privacy/">מדיניות הפרטיות</a>. אנחנו שומרים רק את המייל, הכינוי וההתקדמות שלך.</p>
+          <p class="small muted">מה שכבר עשית בדפדפן הזה יישמר בחשבון. בהרשמה ⟦אתה|את⟧ ⟦מסכים|מסכימה⟧ ל<a href="/privacy/">מדיניות הפרטיות</a>. אנחנו שומרים רק את המייל, הכינוי, איך לפנות אליך וההתקדמות שלך.</p>
         </section>
 
         <section data-view="forgot" hidden>
           <h1>איפוס סיסמה</h1>
-          <p class="lead">הכנס את המייל של החשבון, ונשלח לך קישור לבחירת סיסמה חדשה.</p>
+          <p class="lead">⟦הכנס|הכניסי⟧ את המייל של החשבון, ונשלח לך קישור לבחירת סיסמה חדשה.</p>
           <form class="form" data-forgot-form novalidate>
             <label for="acc-forgot-email">כתובת מייל</label>
             <input id="acc-forgot-email" name="email" type="email" dir="ltr" autocomplete="email" inputmode="email" required />
             <div class="captcha" data-captcha></div>
-            <button type="submit" class="btn wide"><span>שלח לי קישור</span></button>
+            <button type="submit" class="btn wide"><span>⟦שלח|שלחי⟧ לי קישור</span></button>
             <p class="err" role="alert" data-err></p>
           </form>
           <p class="small"><button type="button" class="link" data-back>חזרה לכניסה</button></p>
         </section>
 
         <section data-view="sent" hidden>
-          <h1>בדוק את המייל</h1>
+          <h1>⟦בדוק|בדקי⟧ את המייל</h1>
           <p class="lead" data-sent-text></p>
           <!-- Sign-up only: the code from the email, typed in this tab. The link in the email still works, but it
                opens in the mail app's browser, which isn't where the visitor's progress is (Instagram's in-app
@@ -78,7 +96,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
             <button type="submit" class="btn wide">אישור</button>
             <p class="err" role="alert" data-err></p>
           </form>
-          <p class="muted small">לא הגיע? בדוק בתיקיית הספאם, או חכה כמה דקות ונסה שוב.</p>
+          <p class="muted small">לא הגיע? ⟦בדוק|בדקי⟧ בתיקיית הספאם, או ⟦חכה|חכי⟧ כמה דקות ⟦ונסה|ונסי⟧ שוב.</p>
           <p class="small"><button type="button" class="link" data-back>חזרה לכניסה</button></p>
         </section>
 
@@ -86,16 +104,41 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
           <h1>סיסמה חדשה</h1>
           <form class="form" data-newpass-form novalidate>
             <label for="acc-newpass">הסיסמה החדשה</label>
-            <input id="acc-newpass" name="password" type="password" dir="ltr" autocomplete="new-password" minlength="8" required aria-describedby="acc-newpass-help" />
-            <p id="acc-newpass-help" class="small muted">לפחות 8 תווים.</p>
-            <button type="submit" class="btn wide"><span>שמירה</span></button>
+            <PasswordField id="acc-newpass" autocomplete="new-password" describedby="acc-newpass-help" />
+            <div id="acc-newpass-help" class="rules">
+              <ul data-rules-for="acc-newpass">
+                {PASS_RULES.map(([k, t]) => <li data-rule={k}>{t}</li>)}
+              </ul>
+              <p class="small muted">מותר כל תו, גם רווח וסימנים. משפט קצר ⟦שתזכור|שתזכרי⟧ בקלות הוא סיסמה טובה.</p>
+            </div>
+            <!-- Only when Supabase asks to confirm it's really them (a sign-in older than a day): a code by email. -->
+            <div class="form" data-nonce hidden>
+              <label for="acc-nonce">הקוד ששלחנו למייל</label>
+              <p class="small muted">כדי לשנות סיסמה בחשבון שנכנסת אליו לפני יותר מיום, שלחנו לך מייל עם קוד. ⟦הקלד|הקלידי⟧ אותו כאן.</p>
+              <input id="acc-nonce" name="nonce" dir="ltr" inputmode="numeric" autocomplete="one-time-code" maxlength="10" />
+            </div>
+            <button type="submit" class="btn wide"><span data-label="שמירה">שמירה</span></button>
             <p class="err" role="alert" data-err></p>
           </form>
           <p class="small" data-newpass-cancel hidden><button type="button" class="link">ביטול</button></p>
         </section>
 
+        <section data-view="email" hidden>
+          <h1>שינוי כתובת המייל</h1>
+          <p class="lead">הכתובת הנוכחית: <bdi dir="ltr" data-email></bdi></p>
+          <form class="form" data-email-form novalidate>
+            <label for="acc-newemail">הכתובת החדשה</label>
+            <input id="acc-newemail" name="email" type="email" dir="ltr" autocomplete="email" inputmode="email" required aria-describedby="acc-newemail-help" />
+            <p id="acc-newemail-help" class="small muted">נשלח קישור אישור לכתובת החדשה (ואולי גם לישנה). הכתובת תתעדכן רק אחרי ⟦שתלחץ|שתלחצי⟧ על הקישור, באותו דפדפן.</p>
+            <button type="submit" class="btn wide"><span data-label="שליחת קישור אישור">שליחת קישור אישור</span></button>
+            <p class="err" role="alert" data-err></p>
+            <p class="ok" role="status" data-ok></p>
+          </form>
+          <p class="small"><button type="button" class="link" data-to-home>חזרה לחשבון</button></p>
+        </section>
+
         <section data-view="nickname" hidden>
-          <h1 data-nick-title>בחר כינוי</h1>
+          <h1 data-nick-title>⟦בחר|בחרי⟧ כינוי</h1>
           <p class="lead">הכינוי גלוי לכולם, ובהמשך יופיע גם במשחקים מול חברים. עדיף לא להשתמש בשם המלא.</p>
           <form class="form" data-nick-form novalidate>
             <label for="acc-nick">כינוי</label>
@@ -110,11 +153,12 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
         <section data-view="home" hidden>
           <p class="eyebrow">החשבון שלי</p>
           <h1><bdi data-nickname></bdi></h1>
-          <p class="muted small">מחובר בתור <bdi dir="ltr" data-email></bdi></p>
+          <p class="muted small">⟦מחובר|מחוברת⟧ בתור <bdi dir="ltr" data-email></bdi></p>
+          <p class="ok" role="status" data-home-ok></p>
           <div class="welcome" data-welcome role="region" aria-labelledby="welcome-h" hidden>
-            <h2 id="welcome-h">ברוך הבא!</h2>
-            <p>רוצה סיור קצר במה שהחשבון נותן לך? פחות מדקה, ואתה מחליט מתי להמשיך.</p>
-            <p class="welcome-cta"><a class="btn" href={ACCOUNT_TOUR_URL}><span>הראה לי</span></a> <button type="button" class="btn btn-ghost" data-welcome-close><span>לא עכשיו</span></button></p>
+            <h2 id="welcome-h">⟦ברוך הבא|ברוכה הבאה⟧!</h2>
+            <p>רוצה סיור קצר במה שהחשבון נותן לך? פחות מדקה, ⟦ואתה|ואת⟧ ⟦מחליט|מחליטה⟧ מתי להמשיך.</p>
+            <p class="welcome-cta"><a class="btn" href={ACCOUNT_TOUR_URL}><span>⟦הראה|הראי⟧ לי</span></a> <button type="button" class="btn btn-ghost" data-welcome-close><span>לא עכשיו</span></button></p>
           </div>
 
           <h2>מסלול לימוד אישי</h2>
@@ -135,7 +179,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
             <div><dt>שלבים שהשלמת</dt><dd><bdi dir="ltr" data-stat="stages"></bdi></dd></div>
             <div><dt>שיעורים בחוקים בסיסיים</dt><dd><bdi dir="ltr" data-stat="rules"></bdi></dd></div>
           </dl>
-          <p class="small muted" data-synced>ההתקדמות נשמרת בחשבון ומתעדכנת בכל מכשיר שבו אתה מחובר.</p>
+          <p class="small muted" data-synced>ההתקדמות נשמרת בחשבון ומתעדכנת בכל מכשיר שבו ⟦אתה|את⟧ ⟦מחובר|מחוברת⟧.</p>
 
           <h2>משחקים</h2>
           <dl class="stats" data-games hidden>
@@ -157,7 +201,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
           </fieldset>
           <p class="small muted" data-notify-saved>ההגדרות נשמרות בחשבון ועוברות איתך לכל מכשיר.</p>
           <fieldset class="notify" data-email-prefs>
-            <legend>מיילים (רק אם תבקש)</legend>
+            <legend>מיילים (רק אם ⟦תבקש|תבקשי⟧)</legend>
             <label class="switch-row" for="email-week">
               <span><strong>בעיית השבוע במייל</strong><span class="small muted">{CONSENT_TEXT.week}</span></span>
               <input type="checkbox" class="switch" id="email-week" data-email-kind="week" />
@@ -167,8 +211,8 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
               <input type="checkbox" class="switch" id="email-return" data-email-kind="return" />
             </label>
           </fieldset>
-          <p class="small err" data-email-paused hidden>המיילים הושהו כי המייל האחרון לא הגיע אליך (או סומן כספאם). הדלק שוב כדי לחדש.</p>
-          <p class="small muted" data-email-note>לכל היותר מייל אחד בשבוע, אף פעם לא בשישי ובשבת, ובכל מייל יש קישור להפסקה בלחיצה אחת. מיילי החשבון (אישור כתובת, איפוס סיסמה) נשלחים רק כשאתה מבקש. פרטים ב<a href="/privacy/#emails">מדיניות הפרטיות</a>.</p>
+          <p class="small err" data-email-paused hidden>המיילים הושהו כי המייל האחרון לא הגיע אליך (או סומן כספאם). ⟦הדלק|הדליקי⟧ שוב כדי לחדש.</p>
+          <p class="small muted" data-email-note>לכל היותר מייל אחד בשבוע, אף פעם לא בשישי ובשבת, ובכל מייל יש קישור להפסקה בלחיצה אחת. מיילי החשבון (אישור כתובת, איפוס סיסמה) נשלחים רק ⟦כשאתה|כשאת⟧ ⟦מבקש|מבקשת⟧. פרטים ב<a href="/privacy/#emails">מדיניות הפרטיות</a>.</p>
 
           <h2>הגדרות</h2>
           <div class="setting">
@@ -176,17 +220,27 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
             <ThemeSetting />
             <p class="small muted">נשמר במכשיר הזה. אפשר גם להחליף בכל עמוד עם הכפתור בראש העמוד.</p>
           </div>
+          <div class="setting">
+            <p class="setting-label">איך לפנות אליי באתר ובמיילים</p>
+            <GenderSetting label="איך לפנות אליי באתר ובמיילים" />
+            <p class="small muted" data-gender-note>נשמר בחשבון ועובר איתך לכל מכשיר.</p>
+          </div>
           <p><a href={ACCOUNT_TOUR_URL}>הצגת הסיור בחשבון שוב</a></p>
+
+          <h2>פרטי החשבון</h2>
+          <dl class="details">
+            <div><dt>כינוי</dt><dd><bdi data-nickname></bdi></dd><button type="button" class="link" data-rename>שינוי כינוי</button></div>
+            <div><dt>מייל</dt><dd><bdi dir="ltr" data-email></bdi></dd><button type="button" class="link" data-change-email>שינוי מייל</button></div>
+            <div><dt>סיסמה</dt><dd aria-label="מוסתרת">••••••••</dd><button type="button" class="link" data-changepass>שינוי סיסמה</button></div>
+          </dl>
           <div class="actions">
-            <button type="button" class="btn btn-ghost" data-rename><span>שינוי כינוי</span></button>
-            <button type="button" class="btn btn-ghost" data-changepass><span>שינוי סיסמה</span></button>
             <button type="button" class="btn btn-ghost" data-signout><span>יציאה</span></button>
           </div>
           <p class="small muted">ביציאה, ההתקדמות נמחקת מהדפדפן הזה ונשארת שמורה בחשבון.</p>
           <details class="danger">
             <summary>מחיקת החשבון</summary>
             <p>המחיקה סופית: הכינוי, ההתקדמות וכל המשחקים יימחקו מהשרת ולא יהיה אפשר לשחזר אותם.</p>
-            <button type="button" class="btn danger-btn" data-delete><span>מחק את החשבון שלי</span></button>
+            <button type="button" class="btn danger-btn" data-delete><span>⟦מחק|מחקי⟧ את החשבון שלי</span></button>
             <p class="err" role="alert" data-err></p>
           </details>
         </section>
@@ -201,6 +255,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
   import { updateInbox } from '../lib/progress-local';
   import { KIND_LABEL, nextStep, pathProgress, stepHref, TRACK_INFO } from '../lib/curriculum';
   import { rankFor, xpBreakdown } from '../lib/xp';
+  import { savedGender } from '../lib/gender';
 
   const root = document.querySelector<HTMLElement>('[data-account]')!;
   if (accountsEnabled) void start();
@@ -222,28 +277,39 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
     };
     const fail = (view: string, msg: string) => { $(`[data-view="${view}"] [data-err]`).textContent = msg; };
     const busy = (form: HTMLElement, on: boolean) => form.querySelector<HTMLButtonElement>('button[type=submit], [data-delete]')!.disabled = on;
+    // Like busy, and the button says what's happening, so a slow save never looks like a dead button.
+    const saving = (form: HTMLElement, on: boolean, text = 'שומר…') => {
+      busy(form, on);
+      const label = form.querySelector<HTMLElement>('button[type=submit] [data-label]');
+      if (label) label.textContent = on ? text : label.dataset.label!;
+    };
     let profile: Awaited<ReturnType<typeof acc.getProfile>> = null;
 
     // Arriving from a confirmation or reset link: let the client finish the sign-in first.
     let recovering = false;
-    const { data: { subscription } } = acc.supabase().auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = acc.supabase().auth.onAuthStateChange((event, session) => {
       // the callback must not await Supabase calls itself: defer the work
       if (event === 'PASSWORD_RECOVERY') { recovering = true; setTimeout(() => askNewPassword(true)); }
       else if (event === 'SIGNED_IN' && !recovering) setTimeout(() => void route());
+      else if (event === 'USER_UPDATED' && session?.user.email) {
+        const email = session.user.email;
+        setTimeout(() => root.querySelectorAll('[data-email]').forEach((e) => { e.textContent = email; }));
+      }
     });
     window.addEventListener('pagehide', () => subscription.unsubscribe());
 
     async function route() {
-      recovering = false;
       const session = await acc.getSession();
       if (!session) return show('signin');
+      // Arrived from a reset link: the new-password form stays up until it's saved (then route runs again).
+      if (recovering) return;
       try { localStorage.setItem('shogi-il.account.seen', '1'); } catch {}
       root.querySelectorAll('[data-email]').forEach((e) => { e.textContent = session.user.email ?? ''; });
       profile = await acc.getProfile(session.user.id);
       const progress = (await acc.syncProgress()) ?? acc.readLocal();
       if (!profile) return askNickname(true);
       const s = stats(progress, levelCounts);
-      $('[data-nickname]').textContent = profile.nickname;
+      root.querySelectorAll('[data-nickname]').forEach((e) => { e.textContent = profile!.nickname; });
       $('[data-stat="stars"]').textContent = `${s.stars} / ${s.maxStars}`;
       $('[data-stat="levels"]').textContent = `${s.levelsDone} / ${s.levels}`;
       $('[data-stat="stages"]').textContent = `${s.stagesDone} / ${s.stages}`;
@@ -251,6 +317,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       showCourse(progress);
       showNotify(progress);
       await acc.applySignupConsent(session);
+      await acc.syncGender(session);
       void acc.touchLastSeen();
       void showEmail();
       await acc.syncGames();
@@ -260,6 +327,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       $('[data-stat="played"]').textContent = String(g.played);
       $('[data-stat="wins"]').textContent = String(g.wins);
       $('[data-stat="losses"]').textContent = String(g.losses);
+      if (recovering) return;
       show('home');
       // the bell's "הגדרות התראות" link: the panel only appears now, so scroll to it by hand
       if (location.hash === '#notifications') document.getElementById('notifications')?.scrollIntoView();
@@ -284,7 +352,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       const link = $<HTMLAnchorElement>('[data-course-next]');
       link.hidden = !next;
       link.href = track && next ? stepHref(next.step, p, levelCounts) : '/course/';
-      $('span', link).textContent = track ? 'לצעד הבא' : 'בחר מאיפה להתחיל';
+      $('span', link).textContent = track ? 'לצעד הבא' : '⟦בחר|בחרי⟧ מאיפה להתחיל';
     }
 
     // Notification settings: which kinds of notes the bell shows (SyncedProgress.inbox.off, synced).
@@ -296,7 +364,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       const off = notifyBoxes.filter((x) => !x.checked).map((x) => x.dataset.notifyGroup as InboxGroup);
       updateInbox((i) => { i.off = off; i.offAt = new Date().toISOString(); });
       const ok = await acc.syncProgress();
-      $('[data-notify-saved]').textContent = ok ? 'נשמר. ההגדרות עוברות איתך לכל מכשיר.' : 'נשמר במכשיר הזה. נעדכן את החשבון בפעם הבאה שתהיה מחובר.';
+      $('[data-notify-saved]').textContent = ok ? 'נשמר. ההגדרות עוברות איתך לכל מכשיר.' : 'נשמר במכשיר הזה. נעדכן את החשבון בפעם הבאה ⟦שתהיה מחובר|שתהיי מחוברת⟧.';
     }));
 
     // Email nudges: off until turned on here (or ticked at sign-up). The server keeps when and how consent was given.
@@ -316,13 +384,13 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       emailBoxes.forEach((x) => { x.disabled = false; });
       $('[data-email-note]').textContent = ok
         ? (emailBox('week').checked || emailBox('return').checked ? 'נשמר. אפשר להפסיק בכל רגע, כאן או מהקישור שבתחתית כל מייל.' : 'נשמר. לא נשלח לך מיילים כאלה.')
-        : 'השמירה לא הצליחה. נסה שוב בעוד רגע.';
+        : 'השמירה לא הצליחה. ⟦נסה|נסי⟧ שוב בעוד רגע.';
       if (!ok) b.checked = !b.checked;
       else $('[data-email-paused]').hidden = true;
     }));
 
     function askNickname(isNew: boolean) {
-      $('[data-nick-title]').textContent = isNew ? 'בחר כינוי' : 'שינוי כינוי';
+      $('[data-nick-title]').textContent = isNew ? '⟦בחר|בחרי⟧ כינוי' : 'שינוי כינוי';
       $<HTMLInputElement>('#acc-nick').value = profile?.nickname ?? '';
       $('[data-nick-cancel]').hidden = isNew;
       fail('nickname', '');
@@ -341,6 +409,10 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       $<HTMLInputElement>('#acc-pass').autocomplete = m === 'signin' ? 'current-password' : 'new-password';
       fail('signin', '');
     };
+    const NO_GENDER = 'נשאר לבחור איך לפנות אליך: בלשון זכר או בלשון נקבה.';
+    document.addEventListener('gender-changed', () => {
+      if ($('[data-view="signin"] [data-err]').textContent === NO_GENDER) fail('signin', '');
+    });
     root.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach((b) =>
       b.addEventListener('click', () => setMode(b.dataset.mode as typeof mode)));
     // Newcomers come to sign up: open on הרשמה when asked (?mode=signup, from the sign-up prompts) or when
@@ -350,14 +422,48 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
     try { seen = localStorage.getItem(SEEN) === '1'; } catch {}
     const asked = new URLSearchParams(location.search).get('mode');
     if (asked === 'signup' || (asked !== 'signin' && !seen)) setMode('signup');
-    const passInput = $<HTMLInputElement>('#acc-pass');
-    const showPass = $<HTMLButtonElement>('[data-show-pass]');
-    showPass.addEventListener('click', () => {
-      const show = passInput.type === 'password';
-      passInput.type = show ? 'text' : 'password';
-      showPass.textContent = show ? 'הסתרת הסיסמה' : 'הצגת הסיסמה';
-      showPass.setAttribute('aria-pressed', String(show));
+    // ---------- password fields: the eye, and the rules ticked off while typing ----------
+    root.querySelectorAll<HTMLButtonElement>('[data-eye]').forEach((eye) => {
+      const input = document.getElementById(eye.getAttribute('aria-controls')!) as HTMLInputElement;
+      eye.addEventListener('click', () => {
+        const reveal = input.type === 'password';
+        input.type = reveal ? 'text' : 'password';
+        const label = reveal ? 'הסתרת הסיסמה' : 'הצגת הסיסמה';
+        eye.setAttribute('aria-pressed', String(reveal));
+        eye.setAttribute('aria-label', label);
+        eye.title = label;
+        input.focus();
+      });
     });
+    const hidePasswords = () => root.querySelectorAll<HTMLButtonElement>('[data-eye][aria-pressed="true"]').forEach((e) => e.click());
+    // bcrypt, under Supabase, reads 72 bytes: a Hebrew letter takes two
+    const tooLong = (p: string) => new TextEncoder().encode(p).length > 72;
+    const RULES: Record<string, (p: string) => boolean> = {
+      len: (p) => p.length >= 8,
+      letter: (p) => /[A-Za-z\u05D0-\u05EA]/.test(p),
+      digit: (p) => /\d/.test(p),
+    };
+    const ruleItems = (id: string) => [...root.querySelectorAll<HTMLElement>(`[data-rules-for="${id}"] [data-rule]`)];
+    /** Ticks the rules for the field; with strict, the unmet ones turn red. Returns whether all are met. */
+    const checkRules = (id: string, strict = false) => {
+      const p = $<HTMLInputElement>(`#${id}`).value;
+      let ok = true;
+      ruleItems(id).forEach((li) => {
+        const met = RULES[li.dataset.rule!](p);
+        ok &&= met;
+        li.classList.toggle('met', met);
+        li.classList.toggle('miss', strict && !met);
+      });
+      return ok;
+    };
+    const RULES_MISSING = 'הסיסמה עוד לא עומדת בכללים שמתחת לשדה (מסומנים באדום).';
+    for (const [id, view] of [['acc-pass', 'signin'], ['acc-newpass', 'newpass']]) {
+      $(`#${id}`).addEventListener('input', () => {
+        const strict = ruleItems(id).some((li) => li.classList.contains('miss'));
+        if (checkRules(id, strict) && $(`[data-view="${view}"] [data-err]`).textContent === RULES_MISSING) fail(view, '');
+      });
+    }
+    const TOO_LONG = 'הסיסמה ארוכה מדי: עד 72 תווים באנגלית, או 36 בעברית.';
 
     const validEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
     const authForm = $<HTMLFormElement>('[data-auth-form]');
@@ -365,10 +471,13 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       e.preventDefault();
       const email = $<HTMLInputElement>('#acc-email').value.trim();
       const password = $<HTMLInputElement>('#acc-pass').value;
-      if (!validEmail(email)) return fail('signin', 'הכתובת לא נראית תקינה. בדוק אותה ונסה שוב.');
-      if (password.length < 8) return fail('signin', 'הסיסמה צריכה לפחות 8 תווים.');
-      if (mode === 'signup' && !(/[A-Za-z\u05D0-\u05EA]/.test(password) && /\d/.test(password))) return fail('signin', 'הסיסמה צריכה לכלול גם אותיות וגם ספרות.');
-      if (needCaptcha(authCaptcha)) return fail('signin', 'רגע, עוד לא סיימנו לבדוק שאתה לא רובוט. נסה שוב בעוד שנייה.');
+      if (!validEmail(email)) return fail('signin', 'הכתובת לא נראית תקינה. ⟦בדוק|בדקי⟧ אותה ⟦ונסה|ונסי⟧ שוב.');
+      if (mode === 'signin' && password.length < 8) return fail('signin', 'הסיסמה צריכה לפחות 8 תווים.');
+      if (mode === 'signup' && !checkRules('acc-pass', true)) return fail('signin', RULES_MISSING);
+      if (mode === 'signup' && tooLong(password)) return fail('signin', TOO_LONG);
+      const gender = savedGender();
+      if (mode === 'signup' && !gender) return fail('signin', NO_GENDER);
+      if (needCaptcha(authCaptcha)) return fail('signin', 'רגע, עוד לא סיימנו לבדוק ⟦שאתה|שאת⟧ לא רובוט. ⟦נסה|נסי⟧ שוב בעוד שנייה.');
       const captchaToken = authCaptcha.token();
       busy(authForm, true);
       if (mode === 'signin') {
@@ -376,26 +485,26 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
         authCaptcha.reset();
         busy(authForm, false);
         if (!error) return; // onAuthStateChange routes on SIGNED_IN
-        if (error.code === 'captcha_failed') return fail('signin', 'בדיקת הרובוט נכשלה. רענן את העמוד ונסה שוב.');
-        if (error.code === 'email_not_confirmed') return fail('signin', 'עוד לא אישרת את המייל. חפש אצלך מייל מאיתנו ולחץ על הקישור שבו.');
-        if (error.status === 429) return fail('signin', 'יותר מדי ניסיונות. חכה כמה דקות ונסה שוב.');
+        if (error.code === 'captcha_failed') return fail('signin', 'בדיקת הרובוט נכשלה. ⟦רענן|רענני⟧ את העמוד ⟦ונסה|ונסי⟧ שוב.');
+        if (error.code === 'email_not_confirmed') return fail('signin', 'עוד לא אישרת את המייל. ⟦חפש|חפשי⟧ אצלך מייל מאיתנו ⟦ולחץ|ולחצי⟧ על הקישור שבו.');
+        if (error.status === 429) return fail('signin', 'יותר מדי ניסיונות. ⟦חכה|חכי⟧ כמה דקות ⟦ונסה|ונסי⟧ שוב.');
         return fail('signin', 'המייל או הסיסמה לא נכונים.');
       }
-      const { data, error } = await acc.signUp(email, password, captchaToken, $<HTMLInputElement>('#acc-weekly').checked);
+      const { data, error } = await acc.signUp(email, password, captchaToken, $<HTMLInputElement>('#acc-weekly').checked, gender ?? undefined);
       authCaptcha.reset();
       busy(authForm, false);
       if (error) {
-        if (error.code === 'captcha_failed') return fail('signin', 'בדיקת הרובוט נכשלה. רענן את העמוד ונסה שוב.');
-        if (error.code === 'weak_password') return fail('signin', 'הסיסמה חלשה מדי. נסה סיסמה ארוכה יותר.');
-        if (error.code === 'user_already_exists' || error.code === 'email_exists') return fail('signin', 'כבר יש חשבון עם המייל הזה. עבור ל"כניסה", או אפס את הסיסמה.');
-        if (error.status === 429) return fail('signin', 'נשלחו יותר מדי מיילים. חכה כמה דקות ונסה שוב.');
-        return fail('signin', 'ההרשמה לא הצליחה. נסה שוב בעוד רגע.');
+        if (error.code === 'captcha_failed') return fail('signin', 'בדיקת הרובוט נכשלה. ⟦רענן|רענני⟧ את העמוד ⟦ונסה|ונסי⟧ שוב.');
+        if (error.code === 'weak_password') return fail('signin', weakMessage(error));
+        if (error.code === 'user_already_exists' || error.code === 'email_exists') return fail('signin', 'כבר יש חשבון עם המייל הזה. ⟦עבור|עברי⟧ ל"כניסה", או ⟦אפס|אפסי⟧ את הסיסמה.');
+        if (error.status === 429) return fail('signin', 'נשלחו יותר מדי מיילים. ⟦חכה|חכי⟧ כמה דקות ⟦ונסה|ונסי⟧ שוב.');
+        return fail('signin', 'ההרשמה לא הצליחה. ⟦נסה|נסי⟧ שוב בעוד רגע.');
       }
       if (data.session) return; // email confirmation off: already signed in
       // Supabase hides whether an email is registered: an existing address comes back with no identities.
-      if (data.user && data.user.identities?.length === 0) return fail('signin', 'כבר יש חשבון עם המייל הזה. עבור ל"כניסה", או אפס את הסיסמה.');
+      if (data.user && data.user.identities?.length === 0) return fail('signin', 'כבר יש חשבון עם המייל הזה. ⟦עבור|עברי⟧ ל"כניסה", או ⟦אפס|אפסי⟧ את הסיסמה.');
       codeEmail = email;
-      sent(`שלחנו מייל ל־${email} עם קוד אישור. הקלד אותו כאן, ותגיע ישר לבחירת כינוי. אפשר גם ללחוץ על הקישור שבמייל.`, true);
+      sent(`שלחנו מייל ל־${email} עם קוד אישור. ⟦הקלד|הקלידי⟧ אותו כאן, ⟦ותגיע|ותגיעי⟧ ישר לבחירת כינוי. אפשר גם ללחוץ על הקישור שבמייל.`, true);
     });
 
     // ---------- sign-up code (typed here, so the session lands in this browser) ----------
@@ -404,13 +513,13 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
     codeForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const code = $<HTMLInputElement>('#acc-code').value.replace(/\D/g, '');
-      if (code.length < 6) return fail('sent', 'הקוד הוא 6 ספרות. העתק אותו מהמייל ונסה שוב.');
+      if (code.length < 6) return fail('sent', 'הקוד הוא 6 ספרות. ⟦העתק|העתיקי⟧ אותו מהמייל ⟦ונסה|ונסי⟧ שוב.');
       busy(codeForm, true);
       const { error } = await acc.verifySignupCode(codeEmail, code);
       busy(codeForm, false);
       if (!error) return; // onAuthStateChange routes on SIGNED_IN
-      if (error.status === 429) return fail('sent', 'יותר מדי ניסיונות. חכה כמה דקות ונסה שוב.');
-      fail('sent', 'הקוד לא נכון, או שעבר זמנו. בדוק שהעתקת את הקוד מהמייל האחרון.');
+      if (error.status === 429) return fail('sent', 'יותר מדי ניסיונות. ⟦חכה|חכי⟧ כמה דקות ⟦ונסה|ונסי⟧ שוב.');
+      fail('sent', 'הקוד לא נכון, או שעבר זמנו. ⟦בדוק|בדקי⟧ שהעתקת את הקוד מהמייל האחרון.');
     });
 
     const sent = (text: string, withCode = false) => {
@@ -432,40 +541,118 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
     forgotForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = $<HTMLInputElement>('#acc-forgot-email').value.trim();
-      if (!validEmail(email)) return fail('forgot', 'הכתובת לא נראית תקינה. בדוק אותה ונסה שוב.');
-      if (needCaptcha(forgotCaptcha)) return fail('forgot', 'רגע, עוד לא סיימנו לבדוק שאתה לא רובוט. נסה שוב בעוד שנייה.');
+      if (!validEmail(email)) return fail('forgot', 'הכתובת לא נראית תקינה. ⟦בדוק|בדקי⟧ אותה ⟦ונסה|ונסי⟧ שוב.');
+      if (needCaptcha(forgotCaptcha)) return fail('forgot', 'רגע, עוד לא סיימנו לבדוק ⟦שאתה|שאת⟧ לא רובוט. ⟦נסה|נסי⟧ שוב בעוד שנייה.');
       busy(forgotForm, true);
       const { error } = await acc.sendPasswordReset(email, forgotCaptcha.token());
       forgotCaptcha.reset();
       busy(forgotForm, false);
-      if (error) return fail('forgot', error.status === 429 ? 'נשלחו יותר מדי מיילים. חכה כמה דקות ונסה שוב.' : 'השליחה לא הצליחה. נסה שוב בעוד רגע.');
+      if (error) return fail('forgot', error.status === 429 ? 'נשלחו יותר מדי מיילים. ⟦חכה|חכי⟧ כמה דקות ⟦ונסה|ונסי⟧ שוב.' : 'השליחה לא הצליחה. ⟦נסה|נסי⟧ שוב בעוד רגע.');
       sent(`אם יש חשבון עם ${email}, שלחנו אליו קישור לבחירת סיסמה חדשה.`);
     });
     root.querySelectorAll('[data-back]').forEach((b) => b.addEventListener('click', () => { setMode('signin'); show('signin'); }));
 
     const askNewPassword = (fromRecovery: boolean) => {
       $<HTMLInputElement>('#acc-newpass').value = '';
+      $<HTMLInputElement>('#acc-nonce').value = '';
+      $('[data-nonce]').hidden = true;
       $('[data-newpass-cancel]').hidden = fromRecovery;
+      hidePasswords();
+      checkRules('acc-newpass');
       fail('newpass', '');
       show('newpass');
     };
+    /** Supabase's own password rules (set in its dashboard) can be stricter than the ones shown: say which. */
+    function weakMessage(error: { message?: string; reasons?: string[] }) {
+      const reasons = error.reasons ?? [];
+      if (reasons.includes('pwned')) return 'הסיסמה הזאת הופיעה בדליפת מידע ידועה, ולכן לא בטוחה. ⟦בחר|בחרי⟧ סיסמה אחרת.';
+      if (reasons.includes('characters')) return 'השרת דורש גם אותיות באנגלית (a-z, A-Z) וגם ספרות. ⟦הוסף|הוסיפי⟧ אות באנגלית ⟦ונסה|ונסי⟧ שוב.';
+      if (reasons.includes('length')) return 'הסיסמה קצרה מדי. ⟦נסה|נסי⟧ סיסמה ארוכה יותר.';
+      return 'הסיסמה חלשה מדי. ⟦נסה|נסי⟧ סיסמה ארוכה יותר.';
+    }
+    /** What went wrong on a save, in words, with the code in brackets so a screenshot says what happened. */
+    function saveError(error: unknown, what: string) {
+      const e = error as { code?: string; status?: number; name?: string; message?: string };
+      console.error(what, error);
+      if (e?.message === 'timeout') return 'השרת לא ענה. ⟦בדוק|בדקי⟧ את החיבור לאינטרנט, ⟦רענן|רענני⟧ את העמוד ⟦ונסה|ונסי⟧ שוב.';
+      if (e?.name === 'AuthRetryableFetchError' || e?.status === 0) return 'אין חיבור לשרת כרגע. ⟦בדוק|בדקי⟧ את החיבור לאינטרנט ⟦ונסה|ונסי⟧ שוב.';
+      if (e?.status === 429) return 'יותר מדי ניסיונות. ⟦חכה|חכי⟧ כמה דקות ⟦ונסה|ונסי⟧ שוב.';
+      return `${what} לא הצליחה (${e?.code || e?.status || e?.name || 'שגיאה'}). ⟦נסה|נסי⟧ שוב בעוד רגע, או ⟦כתוב|כתבי⟧ לנו.`;
+    }
+    const sessionGone = (e: { code?: string; name?: string; status?: number }) =>
+      e.name === 'AuthSessionMissingError' || e.code === 'session_not_found' || e.code === 'session_expired' || e.code === 'bad_jwt' || e.status === 401;
+    const homeNote = (text: string) => { $('[data-home-ok]').textContent = text; };
+
     const newpassForm = $<HTMLFormElement>('[data-newpass-form]');
     newpassForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const password = $<HTMLInputElement>('#acc-newpass').value;
-      if (password.length < 8) return fail('newpass', 'הסיסמה צריכה לפחות 8 תווים.');
-      busy(newpassForm, true);
-      const { error } = await acc.setPassword(password);
-      busy(newpassForm, false);
+      if (!checkRules('acc-newpass', true)) return fail('newpass', RULES_MISSING);
+      if (tooLong(password)) return fail('newpass', TOO_LONG);
+      const asking = !$('[data-nonce]').hidden;
+      const nonce = $<HTMLInputElement>('#acc-nonce').value.replace(/\s/g, '');
+      if (asking && !nonce) return fail('newpass', 'חסר הקוד ששלחנו למייל.');
+      fail('newpass', '');
+      saving(newpassForm, true);
+      let error;
+      try { ({ error } = await acc.setPassword(password, asking ? nonce : undefined)); } catch (err) { error = err as Error; }
+      saving(newpassForm, false);
       if (error) {
-        if (error.code === 'same_password') return fail('newpass', 'זו הסיסמה הנוכחית. בחר סיסמה אחרת.');
-        if (error.code === 'weak_password') return fail('newpass', 'הסיסמה חלשה מדי. נסה סיסמה ארוכה יותר.');
-        return fail('newpass', 'השמירה לא הצליחה. נסה שוב, או בקש קישור איפוס חדש.');
+        const code = (error as { code?: string }).code;
+        if (code === 'same_password') return fail('newpass', 'זו הסיסמה הנוכחית. ⟦בחר|בחרי⟧ סיסמה אחרת.');
+        if (code === 'weak_password') return fail('newpass', weakMessage(error as { reasons?: string[] }));
+        if (code === 'reauthentication_needed' || code === 'reauthentication_not_valid') {
+          if (code === 'reauthentication_not_valid') return fail('newpass', 'הקוד לא נכון, או שעבר זמנו. ⟦בדוק|בדקי⟧ את המייל האחרון מאיתנו.');
+          const { error: sendError } = await acc.reauthenticate().catch((err) => ({ error: err as Error }));
+          if (sendError) return fail('newpass', saveError(sendError, 'שליחת הקוד'));
+          $('[data-nonce]').hidden = false;
+          $<HTMLInputElement>('#acc-nonce').focus();
+          return fail('newpass', 'שלחנו לך מייל עם קוד. ⟦הקלד|הקלידי⟧ אותו ⟦ולחץ|ולחצי⟧ שוב "שמירה".');
+        }
+        if (sessionGone(error as { code?: string })) return fail('newpass', 'הקישור לאיפוס כבר לא בתוקף. ⟦בקש|בקשי⟧ קישור חדש דרך "שכחת סיסמה?" במסך הכניסה.');
+        return fail('newpass', saveError(error, 'שמירת הסיסמה'));
       }
+      recovering = false;
+      hidePasswords();
+      homeNote('הסיסמה החדשה נשמרה.');
       void route();
     });
     $('[data-newpass-cancel] button').addEventListener('click', () => show('home'));
-    $('[data-changepass]').addEventListener('click', () => askNewPassword(false));
+    $('[data-changepass]').addEventListener('click', () => { homeNote(''); askNewPassword(false); });
+
+    // ---------- email address ----------
+    const emailForm = $<HTMLFormElement>('[data-email-form]');
+    $('[data-change-email]').addEventListener('click', () => {
+      homeNote('');
+      $<HTMLInputElement>('#acc-newemail').value = '';
+      fail('email', '');
+      $('[data-view="email"] [data-ok]').textContent = '';
+      show('email');
+    });
+    emailForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = $<HTMLInputElement>('#acc-newemail').value.trim();
+      const ok = $('[data-view="email"] [data-ok]');
+      ok.textContent = '';
+      if (!validEmail(email)) return fail('email', 'הכתובת לא נראית תקינה. ⟦בדוק|בדקי⟧ אותה ⟦ונסה|ונסי⟧ שוב.');
+      const session = await acc.getSession();
+      if (!session) return show('signin');
+      if (email.toLowerCase() === session.user.email?.toLowerCase()) return fail('email', 'זו הכתובת הנוכחית.');
+      fail('email', '');
+      saving(emailForm, true, 'שולח…');
+      let error;
+      try { ({ error } = await acc.changeEmail(email)); } catch (err) { error = err as Error; }
+      saving(emailForm, false);
+      if (error) {
+        const code = (error as { code?: string }).code;
+        if (code === 'email_exists' || code === 'user_already_exists') return fail('email', 'יש כבר חשבון עם הכתובת הזאת.');
+        if (code === 'email_address_invalid') return fail('email', 'אי אפשר להשתמש בכתובת הזאת. ⟦נסה|נסי⟧ כתובת אחרת.');
+        if (sessionGone(error as { code?: string })) return show('signin');
+        return fail('email', saveError(error, 'שליחת הקישור'));
+      }
+      ok.textContent = `שלחנו קישור אישור ל־\u2068${email}\u2069. ⟦פתח|פתחי⟧ אותו בדפדפן הזה, והכתובת תתעדכן. אם הגיע מייל גם לכתובת הישנה, צריך לאשר גם אותו.`;
+    });
+    $('[data-to-home]').addEventListener('click', () => show('home'));
 
     // ---------- nickname ----------
     const nickForm = $<HTMLFormElement>('[data-nick-form]');
@@ -474,22 +661,23 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       const nickname = $<HTMLInputElement>('#acc-nick').value.trim();
       const { NICKNAME_RE, RESERVED_RE } = await import('../lib/progress-sync');
       if (!NICKNAME_RE.test(nickname)) return fail('nickname', 'הכינוי צריך 3 עד 16 תווים: אותיות, ספרות, _ או -, בלי רווחים.');
-      if (RESERVED_RE.test(nickname)) return fail('nickname', 'הכינוי הזה שמור (נראה כמו שם של צוות האתר). בחר כינוי אחר.');
+      if (RESERVED_RE.test(nickname)) return fail('nickname', 'הכינוי הזה שמור (נראה כמו שם של צוות האתר). ⟦בחר|בחרי⟧ כינוי אחר.');
       const session = await acc.getSession();
       if (!session) return show('signin');
       busy(nickForm, true);
       const res = await acc.saveNickname(session.user.id, nickname, !profile);
       busy(nickForm, false);
-      if (res === 'taken') return fail('nickname', 'הכינוי הזה כבר תפוס. נסה אחר.');
-      if (res === 'reserved') return fail('nickname', 'הכינוי הזה שמור (נראה כמו שם של צוות האתר). בחר כינוי אחר.');
-      if (res === 'error') return fail('nickname', 'השמירה לא הצליחה. נסה שוב בעוד רגע.');
+      if (res === 'taken') return fail('nickname', 'הכינוי הזה כבר תפוס. ⟦נסה|נסי⟧ אחר.');
+      if (res === 'reserved') return fail('nickname', 'הכינוי הזה שמור (נראה כמו שם של צוות האתר). ⟦בחר|בחרי⟧ כינוי אחר.');
+      if (res === 'error') return fail('nickname', 'השמירה לא הצליחה. ⟦נסה|נסי⟧ שוב בעוד רגע.');
       // a brand-new account: offer the account tour once, on the page they land on next
       if (!profile) $('[data-welcome]').hidden = false;
+      else homeNote('הכינוי נשמר.');
       void route();
     });
     $('[data-nick-cancel] button').addEventListener('click', () => show('home'));
     $('[data-welcome-close]').addEventListener('click', () => { $('[data-welcome]').hidden = true; });
-    $('[data-rename]').addEventListener('click', () => askNickname(false));
+    $('[data-rename]').addEventListener('click', () => { homeNote(''); askNickname(false); });
 
     // ---------- sign out / delete ----------
     $('[data-signout]').addEventListener('click', async () => {
@@ -502,7 +690,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       busy(danger, true);
       const { error } = await acc.deleteAccount();
       busy(danger, false);
-      if (error) return fail('home', 'המחיקה לא הצליחה. נסה שוב, או כתוב לנו באינסטגרם.');
+      if (error) return fail('home', 'המחיקה לא הצליחה. ⟦נסה|נסי⟧ שוב, או ⟦כתוב|כתבי⟧ לנו באינסטגרם.');
       show('signin');
       fail('signin', 'החשבון נמחק.');
     });
@@ -521,11 +709,11 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
   section > p { margin: 0; }
   .form { display: flex; flex-direction: column; gap: 8px; }
   .form label { font-weight: 700; }
-  .form input {
+  .form :global(input) {
     min-height: 52px; padding: 0 14px; font: 18px/1.2 var(--f-body); color: var(--ink);
     background: var(--washi); border: 1.5px solid var(--ink); border-radius: 6px;
   }
-  .form input:focus-visible { outline-offset: 0; }
+  .form :global(input:focus-visible) { outline-offset: 0; }
   .form p { margin: 0; }
   .wide { justify-content: center; width: 100%; margin-top: 6px; }
   .tabs { align-self: flex-start; }
@@ -536,7 +724,19 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
   .link { appearance: none; background: none; border: 0; padding: 0; font: inherit; color: var(--seal); text-decoration: underline; cursor: pointer; }
   /* The panels show after the session check: hold a screen's height so the footer doesn't jump (layout shift). */
   [data-account] { min-height: 100vh; min-height: 100svh; }
-  .show-pass { align-self: flex-start; min-height: 24px; font-size: 14px; }
+  .rules ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; font-size: 15px; }
+  .rules li::before { content: '○'; display: inline-block; width: 1.4em; color: var(--muted); }
+  .rules li.met::before { content: '✓'; color: var(--ink); font-weight: 700; }
+  .rules li.met { color: var(--ink-2); }
+  .rules li.miss { color: var(--seal); font-weight: 500; }
+  .ok { color: var(--ink); font-weight: 500; }
+  .ok:empty { display: none; }
+  .details { margin: 0; display: flex; flex-direction: column; border: 1px solid var(--rule); border-radius: 8px; padding: 4px 16px; background: var(--washi-2); }
+  .details div { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 2px 12px; padding: 10px 0; border-bottom: 1px solid var(--rule); }
+  .details div:last-child { border-bottom: 0; }
+  .details dt { font-weight: 700; }
+  .details dd { grid-row: 2; grid-column: 1 / -1; margin: 0; min-width: 0; overflow-wrap: anywhere; }
+  .details .link { min-height: 32px; font-size: 15px; }
   .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 0; }
   .stats[data-games] { grid-template-columns: repeat(3, 1fr); }
   .stats div { border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px; background: var(--washi-2); }
@@ -579,6 +779,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
   @media (prefers-reduced-motion: reduce) { .switch, .switch::after { transition: none; } }
   .setting { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
   .setting-label { margin: 0; font-weight: 700; }
+  .gender-pick { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 6px; }
   .actions { display: flex; flex-wrap: wrap; gap: 10px; }
   .actions .btn { min-height: 48px; font-size: 16px; }
   .danger { border-top: 1px solid var(--rule); padding-top: 14px; margin-top: 10px; }

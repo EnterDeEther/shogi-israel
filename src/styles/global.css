@@ -311,3 +311,11 @@ html.tour-on [data-nav-narrow] .panel { padding-bottom: 50dvh; }
   .info-tip__btn { border-color: ButtonText; color: ButtonText; }
 }
 @media print { .info-tip { display: none; } }
+
+/* Form of address (lib/gender.ts): every gendered word ships in both forms; show the reader's. */
+/* display: contents, not inline: inside a flex link (<a> with inline-flex) a span would become its own flex
+   item and the space after it would vanish ("צפהבמשחק"); contents keeps the words in one run of text. */
+.gm { display: contents; }
+.gf { display: none; }
+html[data-gender="f"] .gm { display: none; }
+html[data-gender="f"] .gf { display: contents; }

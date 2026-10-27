@@ -1,9 +1,14 @@
 import { describe, expect, test } from 'bun:test';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { TIPS, tipMarkup, type TipId } from '../src/lib/info-tips';
+import { TIPS as RAW, tipMarkup, type TipId } from '../src/lib/info-tips';
+import { resolve as inForm } from '../src/lib/gender';
 
-const ids = Object.keys(TIPS) as TipId[];
+const ids = Object.keys(RAW) as TipId[];
+
+// The texts carry gender tokens (lib/gender.ts); the checks read the masculine side, which every visitor
+// without a choice sees.
+const TIPS = Object.fromEntries(Object.entries(RAW).map(([id, t]) => [id, JSON.parse(inForm(JSON.stringify(t), 'm'))])) as typeof RAW;
 
 /** The label, the text and the link question: everything a visitor or a screen reader meets. */
 const allText = (id: TipId): string[] => {
@@ -100,7 +105,7 @@ describe('tip markup', () => {
       expect(html).toContain('<button type="button" class="info-tip__btn" popovertarget="tip-x1" aria-expanded="false"');
       expect(html).toContain(`aria-label="הסבר קצר: ${TIPS[id].label}"`);
       expect(html).toContain('id="tip-x1" popover="auto"');
-      expect(html).toContain(TIPS[id].text);
+      expect(html).toContain(RAW[id].text); // tokens and all: the page turns them into the reader's form
     }
   });
 

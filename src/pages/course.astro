@@ -22,17 +22,17 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
   description="מסלול לימוד שוגי מסודר, בעברית ובחינם: עונים על שאלה אחת, ומקבלים את הצעד הבא, מהחוקים הבסיסיים דרך פתיחה ואמצע המשחק ועד בעיות מט."
 >
   <div class="wrap page" data-course>
-    <p class="eyebrow">למד לשחק</p>
+    <p class="eyebrow">⟦למד|למדי⟧ לשחק</p>
     <h1>מסלול לימוד אישי</h1>
-    <p class="lead">כל מה שיש באתר ללמוד, בסדר אחד: קודם היסודות, ואז שלושת שלבי המשחק, פתיחה, אמצע המשחק וסוף המשחק. בכל צעד כתוב למה הוא שם, ותמיד תדע מה הצעד הבא.</p>
+    <p class="lead">כל מה שיש באתר ללמוד, בסדר אחד: קודם היסודות, ואז שלושת שלבי המשחק, פתיחה, אמצע המשחק וסוף המשחק. בכל צעד כתוב למה הוא שם, ותמיד ⟦תדע|תדעי⟧ מה הצעד הבא.</p>
 
     <section class="gate card" data-gate aria-labelledby="gate-h">
       <h2 id="gate-h">מסלול אישי, נקודות ודרגות</h2>
       {accountsOn ? (
         <>
-          <p>עם חשבון (בחינם) המסלול נהיה שלך: אתה עונה על שאלה אחת ומקבל נקודת התחלה, רואה בכל רגע את הצעד הבא, וצובר נקודות שמעלות אותך בדרגה, מ־15 קיו ועד דאן (<a href="/ranks/#site">דרגות של לימוד, לא דרגה רשמית</a>). ההתקדמות נשמרת בכל מכשיר.</p>
+          <p>עם חשבון (בחינם) המסלול נהיה שלך: ⟦אתה|את⟧ עונה על שאלה אחת ⟦ומקבל|ומקבלת⟧ נקודת התחלה, רואה בכל רגע את הצעד הבא, ⟦וצובר|וצוברת⟧ נקודות שמעלות אותך בדרגה, מ־15 קיו ועד דאן (<a href="/ranks/#site">דרגות של לימוד, לא דרגה רשמית</a>). ההתקדמות נשמרת בכל מכשיר.</p>
           <p class="small muted">מה שכבר עשית בדפדפן הזה נכנס לחשבון ונספר.</p>
-          <p class="gate-cta"><a class="btn" href="/account/?mode=signup"><span>פתח חשבון בחינם</span></a> <a href="/account/?mode=signin">כבר יש לך חשבון? כניסה</a></p>
+          <p class="gate-cta"><a class="btn" href="/account/?mode=signup"><span>⟦פתח|פתחי⟧ חשבון בחינם</span></a> <a href="/account/?mode=signin">כבר יש לך חשבון? כניסה</a></p>
         </>
       ) : (
         <p>המסלול האישי ייפתח יחד עם החשבונות באתר. בינתיים אפשר ללמוד לפי הסדר שכאן.</p>
@@ -41,7 +41,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
     </section>
 
     <section class="placement" data-placement hidden aria-labelledby="place-h">
-      <h2 id="place-h">מאיפה מתחילים? ספר לנו מה אתה כבר יודע</h2>
+      <h2 id="place-h">מאיפה מתחילים? ⟦ספר|ספרי⟧ לנו מה ⟦אתה|את⟧ כבר ⟦יודע|יודעת⟧</h2>
       <div class="tracks" role="group" aria-labelledby="place-h">
         {TRACKS.map((t) => (
           <button type="button" class="track" data-track={t} aria-pressed="false">
@@ -63,7 +63,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
       <p class="next-where small muted" data-next-where></p>
       <h2 data-next-title></h2>
       <p data-next-why></p>
-      <a class="btn" data-next-link href="/rules/01-board-pieces-setup/"><span>התחל</span></a>
+      <a class="btn" data-next-link href="/rules/01-board-pieces-setup/"><span>⟦התחל|התחילי⟧</span></a>
     </section>
 
     <section class="rank card" data-rank hidden aria-labelledby="rank-h">
@@ -87,14 +87,14 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
             <li>בונוס על כל צעד שהשלמת במסלול: {XP.step}</li>
             <li>בונוס על שלב שהשלמת כולו: {XP.unit}</li>
           </ul>
-          <p class="small muted">כל דבר נספר פעם אחת: חזרה על תרגיל או בעיה שכבר פתרת לא מוסיפה נקודות, ושיפור מכוכב אחד לשלושה מוסיף רק את ההפרש. צעד שסימנת "כבר יודע" לא נותן נקודות. הדרגות נקראות על שם דרגות השוגי, קיו ודאן, אבל מודדות התקדמות בלימוד באתר, לא כוח משחק (<a href="/ranks/">איך זה עובד בעולם</a>). יש {RANKS.length} דרגות, מ־{RANKS[0].name} ועד {RANKS[RANKS.length - 1].name}.</p>
+          <p class="small muted">כל דבר נספר פעם אחת: חזרה על תרגיל או בעיה שכבר פתרת לא מוסיפה נקודות, ושיפור מכוכב אחד לשלושה מוסיף רק את ההפרש. צעד שסימנת "כבר ⟦יודע|יודעת⟧" לא נותן נקודות. הדרגות נקראות על שם דרגות השוגי, קיו ודאן, אבל מודדות התקדמות בלימוד באתר, לא כוח משחק (<a href="/ranks/">איך זה עובד בעולם</a>). יש {RANKS.length} דרגות, מ־{RANKS[0].name} ועד {RANKS[RANKS.length - 1].name}.</p>
         </details>
       </div>
     </section>
 
     <section class="done-all card" data-done-all hidden>
       <h2>סיימת את המסלול!</h2>
-      <p>עברת את כל שלושת השלבים. מכאן המשך לשחק: נגד המחשב ברמות גבוהות יותר, עם ישראלים בקהילה, ומול שחקנים מכל העולם.</p>
+      <p>עברת את כל שלושת השלבים. מכאן ⟦המשך|המשיכי⟧ לשחק: נגד המחשב ברמות גבוהות יותר, עם ישראלים בקהילה, ומול שחקנים מכל העולם.</p>
       <p><a href="/play/?level=5">נגד המחשב, מרמה 5 והלאה</a> · <a href="/tsume/7/">בעיות מט ב־7 מהלכים</a> · <a href={WHATSAPP_URL} rel="noopener">קהילת הוואטסאפ</a> · <a href="/lishogi/">יריבים מכל העולם בליש׳וגי</a></p>
     </section>
 
@@ -131,7 +131,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
                 </p>
                 <p class="step-why">{s.why}</p>
               </div>
-              <button type="button" class="step-skip small" data-skip hidden>כבר יודע</button>
+              <button type="button" class="step-skip small" data-skip hidden>כבר ⟦יודע|יודעת⟧</button>
             </li>
           ))}
         </ol>
@@ -195,7 +195,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
       const link = $<HTMLAnchorElement>('[data-next-link]');
       link.href = stepHref(step, p, levelCounts);
       link.dataset.stepLink = step.id;
-      $('span', link).textContent = stepState(step, p, levelCounts) === 'todo' && started(step.id, p) ? 'המשך' : 'התחל';
+      $('span', link).textContent = stepState(step, p, levelCounts) === 'todo' && started(step.id, p) ? '⟦המשך|המשיכי⟧' : '⟦התחל|התחילי⟧';
     }
 
     const total = pathProgress(p, levelCounts);
@@ -220,8 +220,8 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
         $('[data-xp]', li).hidden = state !== 'todo';
         const skip = $<HTMLButtonElement>('[data-skip]', li);
         skip.hidden = state === 'done';
-        skip.textContent = state === 'skipped' ? 'בטל סימון' : 'כבר יודע';
-        skip.setAttribute('aria-label', `${state === 'skipped' ? 'בטל סימון' : 'כבר יודע'}: ${s.title}`);
+        skip.textContent = state === 'skipped' ? '⟦בטל|בטלי⟧ סימון' : 'כבר ⟦יודע|יודעת⟧';
+        skip.setAttribute('aria-label', `${state === 'skipped' ? '⟦בטל|בטלי⟧ סימון' : 'כבר ⟦יודע|יודעת⟧'}: ${s.title}`);
       }
       const up = unitProgress(u, p, levelCounts);
       const bar = $('[data-unit-progress]', sec);

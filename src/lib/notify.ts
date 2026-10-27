@@ -13,6 +13,7 @@
 import { KIND_LABEL, nextStep, stepHref } from './curriculum.js';
 import { LEVEL_COUNTS } from './level-counts.js';
 import { normalize } from './progress-sync.js';
+import { resolve, type Gender } from './gender.js';
 import { weekIndex, weekPuzzle, weekStreak, weeksHe, WEEK_LENGTH } from '../tsume/week.js';
 
 export { CONSENT_TEXT, CONSENT_VERSION } from './consent.js';
@@ -78,6 +79,8 @@ export function dueEmail(row: PrefsRow, progressData: unknown, now: Date, weekCo
 export interface EmailInput {
   kind: EmailKind;
   nickname: string;
+  /** How to speak to them (user_metadata.gender); masculine, with the disclaimer, when they never chose. */
+  gender?: Gender;
   progressData: unknown;
   weekCount: number;
   now: Date;
@@ -99,11 +102,11 @@ export function buildEmail(input: EmailInput): Email {
   const streak = weekStreak(solved, weekCount, week);
   const next = p.course.track ? nextStep(p, LEVEL_COUNTS) : undefined;
   const nextLine = !p.course.track
-    ? { text: 'עוד לא בחרת מאיפה להתחיל. שאלה אחת, ותקבל מסלול לימוד אישי.', href: '/course/', cta: 'למסלול הלימוד' }
+    ? { text: 'עוד לא בחרת מאיפה להתחיל. שאלה אחת, ⟦ותקבל|ותקבלי⟧ מסלול לימוד אישי.', href: '/course/', cta: 'למסלול הלימוד' }
     : next
       ? { text: `הצעד הבא במסלול שלך: ${next.step.title.replace(/^תרגול: /, '')} (${KIND_LABEL[next.step.kind]}, בערך ${next.step.minutes} דקות).`, href: stepHref(next.step, p, LEVEL_COUNTS), cta: 'לצעד הבא' }
-      : { text: 'סיימת את כל המסלול! שחק נגד המחשב ברמה גבוהה יותר.', href: '/play/', cta: 'למשחק' };
-  const puzzle = { text: streak > 0 ? `בעיית השבוע החדשה עלתה. פתרת ${weeksHe(streak)} ברצף: אל תשבור את הרצף.` : 'בעיית השבוע החדשה עלתה: מט בשלושה מהלכים.', href: `/tsume/${WEEK_LENGTH}/`, cta: 'לבעיית השבוע' };
+      : { text: 'סיימת את כל המסלול! ⟦שחק|שחקי⟧ נגד המחשב ברמה גבוהה יותר.', href: '/play/', cta: 'למשחק' };
+  const puzzle = { text: streak > 0 ? `בעיית השבוע החדשה עלתה. פתרת ${weeksHe(streak)} ברצף: אל ⟦תשבור|תשברי⟧ את הרצף.` : 'בעיית השבוע החדשה עלתה: מט בשלושה מהלכים.', href: `/tsume/${WEEK_LENGTH}/`, cta: 'לבעיית השבוע' };
 
   let subject: string;
   let blocks: { text: string; href: string; cta: string }[];
@@ -118,14 +121,19 @@ export function buildEmail(input: EmailInput): Email {
     why = 'קיבלת את המייל כי ביקשת תזכורת כשלא ביקרת באתר זמן מה.';
   } else {
     subject = 'הלוח מחכה לך';
-    blocks = [{ text: 'רק מזכיר: ההתקדמות שלך שמורה, ואפשר להמשיך בדיוק מאיפה שעצרת.', href: nextLine.href, cta: 'המשך' }, puzzle];
+    blocks = [{ text: 'רק מזכיר: ההתקדמות שלך שמורה, ואפשר להמשיך בדיוק מאיפה שעצרת.', href: nextLine.href, cta: '⟦המשך|המשיכי⟧' }, puzzle];
     why = 'קיבלת את המייל כי ביקשת תזכורת כשלא ביקרת באתר זמן מה. זו התזכורת האחרונה עד הביקור הבא שלך.';
   }
 
+  // every text above is written with gender tokens (lib/gender.ts): pick the reader's form
+  const g = input.gender ?? 'm';
+  subject = resolve(subject, g);
+  blocks = blocks.map((b) => ({ ...b, text: resolve(b.text, g), cta: resolve(b.cta, g) }));
   const hello = `שלום ${nickname},`;
   const signoff = ['נתראה על הלוח,', 'דין, שוגי ישראל', 'אפשר פשוט להשיב למייל הזה.'];
   const settings = `${SITE}/account/#notifications`;
-  const footer = `${why} הטקסטים מנוסחים בלשון זכר מטעמי נוחות אך פונים לשני המינים. שוגי ישראל, shogi.co.il, ${REPLY_TO}`;
+  const disclaimer = g === 'f' ? '' : ' הטקסטים מנוסחים בלשון זכר מטעמי נוחות אך פונים לשני המינים.';
+  const footer = `${resolve(why, g)}${disclaimer} שוגי ישראל, shogi.co.il, ${REPLY_TO}`;
   const html = `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${esc(subject)}</title></head>
 <body style="margin:0;padding:0;background:#F6F0E4;">
 <div style="direction:rtl;text-align:right;max-width:560px;margin:0 auto;padding:24px 20px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.6;color:#1E1A14;">

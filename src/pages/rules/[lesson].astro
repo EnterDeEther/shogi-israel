@@ -77,7 +77,7 @@ const practice = (PRACTICE[stub.slug] ?? []).filter((p) => learnPages.has(p.stag
       <strong>סיימת את השיעור.</strong>
       {accountsEnabled ? (
         <>
-          <span data-signed-out-only> ההתקדמות נשמרה במכשיר הזה. כדי לשמור אותה בכל מכשיר, <a href="/account/?mode=signup">פתח חשבון</a> (לא חובה).</span>
+          <span data-signed-out-only> ההתקדמות נשמרה במכשיר הזה. כדי לשמור אותה בכל מכשיר, <a href="/account/?mode=signup">⟦פתח|פתחי⟧ חשבון</a> (לא חובה).</span>
           <span data-signed-in-only> ההתקדמות נשמרה בחשבון שלך.<span data-next-step></span></span>
         </>
       ) : ' ההתקדמות נשמרה במכשיר הזה.'}
@@ -86,7 +86,7 @@ const practice = (PRACTICE[stub.slug] ?? []).filter((p) => learnPages.has(p.stag
     {practice.length > 0 && (
       <section class="practice" aria-labelledby="practice-h">
         <h2 id="practice-h">תרגול על הלוח</h2>
-        <p>תרגילים קצרים ואינטראקטיביים לשיעור הזה. שחק עם הכלים עד שזה יושב לך בידיים.</p>
+        <p>תרגילים קצרים ואינטראקטיביים לשיעור הזה. ⟦שחק|שחקי⟧ עם הכלים עד שזה יושב לך בידיים.</p>
         <ul>
           {practice.map((p) => (
             <li><a href={stageUrl(p.stage)}><span>{p.title}</span><span aria-hidden="true">←</span></a></li>

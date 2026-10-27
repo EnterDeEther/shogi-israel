@@ -36,8 +36,8 @@ export async function GET(request: Request): Promise<Response> {
   const form = (kind: UnsubKind, token: string, label: string, ghost = false) =>
     `<form method="post" action="/api/unsubscribe"><input type="hidden" name="u" value="${u}"><input type="hidden" name="k" value="${kind}"><input type="hidden" name="t" value="${token}"><button${ghost ? ' class="ghost"' : ''}>${label}</button></form>`;
   return page('להפסיק את המיילים?', `<p>לחיצה אחת, ולא נשלח לך יותר: <strong>${NAME[k as UnsubKind]}</strong>.</p>
-${form(k as UnsubKind, t, 'הפסק את המיילים האלה')}${k !== 'all' ? form('all', all, 'הפסק את כל המיילים', true) : ''}
-<p style="font-size:15px">מיילים של החשבון עצמו (אישור כתובת, איפוס סיסמה) נשלחים רק כשאתה מבקש אותם.</p>`);
+${form(k as UnsubKind, t, '⟦הפסק|הפסיקי⟧ את המיילים האלה')}${k !== 'all' ? form('all', all, '⟦הפסק|הפסיקי⟧ את כל המיילים', true) : ''}
+<p style="font-size:15px">מיילים של החשבון עצמו (אישור כתובת, איפוס סיסמה) נשלחים רק ⟦כשאתה|כשאת⟧ ⟦מבקש|מבקשת⟧ אותם.</p>`);
 }
 
 export async function POST(request: Request): Promise<Response> {
@@ -46,13 +46,13 @@ export async function POST(request: Request): Promise<Response> {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const { u, k, t } = await read(request);
   if (!secret || !(await checkUnsubscribe(secret, u, k, t))) return bad();
-  if (!url || !serviceKey) return page('משהו השתבש', '<p>נסה שוב בעוד כמה דקות, או כתוב לנו ל־contact@shogi.co.il.</p>', 503);
+  if (!url || !serviceKey) return page('משהו השתבש', '<p>⟦נסה|נסי⟧ שוב בעוד כמה דקות, או ⟦כתוב|כתבי⟧ לנו ל־contact@shogi.co.il.</p>', 503);
   const db = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
   const off = k === 'week' ? { email_week: false } : k === 'return' ? { email_return: false } : { email_week: false, email_return: false };
   const { error } = await db.from('notification_prefs').update({ ...off, updated_at: new Date().toISOString() }).eq('user_id', u);
   if (error) {
     console.error('unsubscribe failed', error.message);
-    return page('משהו השתבש', '<p>נסה שוב בעוד כמה דקות, או כתוב לנו ל־contact@shogi.co.il.</p>', 500);
+    return page('משהו השתבש', '<p>⟦נסה|נסי⟧ שוב בעוד כמה דקות, או ⟦כתוב|כתבי⟧ לנו ל־contact@shogi.co.il.</p>', 500);
   }
   await db.from('email_log').insert({ user_id: u, kind: 'unsubscribe' });
   return page('הפסקנו', `<p>לא נשלח לך יותר: <strong>${NAME[k as UnsubKind]}</strong>.</p>

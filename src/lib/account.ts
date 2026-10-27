@@ -8,6 +8,7 @@ import { emptyProgress, gameResult, merge, normalize, same, type SyncedProgress 
 import { readLocal, writeLocal } from './progress-local';
 import { CONSENT_VERSION } from './consent';
 import { adSource } from './ad-source';
+import { applyGender, savedGender, type Gender } from './gender';
 
 export { readLocal };
 
@@ -29,10 +30,11 @@ const redirectTo = () => `${window.location.origin}/account/`;
 
 /** weeklyEmail: the unticked "send me the puzzle of the week" box on the form. It is applied on the first
  * sign-in (applySignupConsent), which may be on another device, so it travels with the account.
+ * gender: how the site speaks to them (lib/gender.ts), chosen on the form.
  * ad_source: the ad this tab arrived from, if any (src/lib/ad-source.ts), kept on the account. */
-export async function signUp(email: string, password: string, captchaToken?: string, weeklyEmail = false) {
+export async function signUp(email: string, password: string, captchaToken?: string, weeklyEmail = false, gender?: Gender) {
   const ad = adSource();
-  const data = { ...(weeklyEmail ? { email_week_opt_in: CONSENT_VERSION } : {}), ...(ad ? { ad_source: ad } : {}) };
+  const data = { ...(weeklyEmail ? { email_week_opt_in: CONSENT_VERSION } : {}), ...(gender ? { gender } : {}), ...(ad ? { ad_source: ad } : {}) };
   return supabase().auth.signUp({ email, password, options: { emailRedirectTo: redirectTo(), captchaToken, data } });
 }
 export async function signIn(email: string, password: string, captchaToken?: string) {
@@ -46,13 +48,28 @@ export async function verifySignupCode(email: string, token: string) {
 export async function sendPasswordReset(email: string, captchaToken?: string) {
   return supabase().auth.resetPasswordForEmail(email, { redirectTo: redirectTo(), captchaToken });
 }
-export async function setPassword(password: string) {
-  return supabase().auth.updateUser({ password });
+/** Settles within ms: a request the network never answers becomes an error the form can show, not a dead button. */
+export function timed<T>(p: Promise<T>, ms = 20000): Promise<T> {
+  return Promise.race([p, new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))]);
 }
-/** Signing out also clears this device's progress, so the next person on a shared device starts fresh. */
+/** nonce: the code from reauthenticate(), when Supabase asks for one (secure password change). */
+export async function setPassword(password: string, nonce?: string) {
+  return timed(supabase().auth.updateUser(nonce ? { password, nonce } : { password }));
+}
+/** Emails a code that confirms it's really them, for setPassword's nonce. */
+export async function reauthenticate() {
+  return timed(supabase().auth.reauthenticate());
+}
+/** The address changes once the link sent to it is opened (with "secure email change", the old address gets one too). */
+export async function changeEmail(email: string) {
+  return timed(supabase().auth.updateUser({ email }, { emailRedirectTo: redirectTo() }));
+}
+/** Signing out also clears this device's progress (and how the site speaks to them), so the next person on a
+ * shared device starts fresh. */
 export async function signOut() {
   await supabase().auth.signOut();
   writeLocal(emptyProgress());
+  applyGender(null);
   clearLocalGames();
 }
 export async function deleteAccount() {
@@ -60,6 +77,24 @@ export async function deleteAccount() {
   if (error) return { error };
   await signOut();
   return { error: null };
+}
+
+// ---------- masculine / feminine (lib/gender.ts) ----------
+// Kept in the account's user_metadata, not in profiles: profiles are public, this is no one else's business.
+export const accountGender = (session: Session): Gender | null => {
+  const v = session.user.user_metadata?.gender;
+  return v === 'm' || v === 'f' ? v : null;
+};
+export async function saveGender(v: Gender): Promise<boolean> {
+  const { error } = await supabase().auth.updateUser({ data: { gender: v } });
+  return !error;
+}
+/** On every signed-in page: the account's choice wins; a choice made on this device first goes to the account. */
+export async function syncGender(session: Session): Promise<void> {
+  const v = accountGender(session);
+  if (v) { if (v !== savedGender()) applyGender(v); return; }
+  const local = savedGender();
+  if (local) await saveGender(local);
 }
 
 // ---------- nickname ----------
@@ -169,7 +204,8 @@ export async function syncGames(): Promise<number> {
 }
 
 // ---------- progress ----------
-/** Pull the account's progress, merge it with this device's, and save the union on both sides. */
+/** Pull the account's progress, merge it with this device's, and save the union on both sides.
+ * Null when the account couldn't be read or written (the device keeps its copy either way). */
 export async function syncProgress(): Promise<SyncedProgress | null> {
   const session = await getSession();
   if (!session) return null;
@@ -184,7 +220,8 @@ export async function syncProgress(): Promise<SyncedProgress | null> {
     document.dispatchEvent(new CustomEvent('progress-synced'));
   }
   if (!data || !same(merged, remote)) {
-    await db.from('progress').upsert({ user_id: session.user.id, data: merged, updated_at: new Date().toISOString() });
+    const { error: saveError } = await db.from('progress').upsert({ user_id: session.user.id, data: merged, updated_at: new Date().toISOString() });
+    if (saveError) return null;
   }
   return merged;
 }
@@ -206,4 +243,5 @@ export function startSync() {
   void syncProgress();
   void syncGames();
   void touchLastSeen();
+  void getSession().then((s) => s && syncGender(s));
 }

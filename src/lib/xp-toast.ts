@@ -45,7 +45,7 @@ function guestNote(gain: number) {
     sessionStorage.setItem(GUEST_LAST, String(Date.now()));
   } catch { /* no storage: show it */ }
   const total = current();
-  show(`<span><strong><bdi dir="ltr">+${gain}</bdi> נקודות</strong> (<bdi dir="ltr">${total}</bdi> בסך הכול). <a href="/account/?mode=signup">פתח חשבון בחינם</a> והן ייספרו לדרגה שלך.</span>`, false, true);
+  show(`<span><strong><bdi dir="ltr">+${gain}</bdi> נקודות</strong> (<bdi dir="ltr">${total}</bdi> בסך הכול). <a href="/account/?mode=signup">⟦פתח|פתחי⟧ חשבון בחינם</a> והן ייספרו לדרגה שלך.</span>`, false, true);
 }
 
 function check(guest: boolean) {

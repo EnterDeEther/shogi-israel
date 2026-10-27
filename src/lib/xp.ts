@@ -5,8 +5,8 @@
 // Each thing pays once: points are counted from the set of things completed (best stars per level, puzzle
 // numbers, lessons, the first finished game and first win per level), so replaying earns nothing.
 // Pure functions (tested in test/xp.test.ts).
-import { ALL_STEPS, CURRICULUM, isOptional, stepState, stepsFor, type Step } from './curriculum';
-import type { SyncedProgress } from './progress-sync';
+import { ALL_STEPS, CURRICULUM, isOptional, stepState, stepsFor, type Step } from './curriculum.js'; // .js: api/admin-report.ts runs this file on Node
+import type { SyncedProgress } from './progress-sync.js';
 
 export const XP = {
   star: 10, // per star in an interactive lesson level (1–3 stars)

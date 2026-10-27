@@ -47,7 +47,7 @@ const LESSON_SUB: Record<string, string> = {
   '04-drops': 'הכלל שהופך שוגי לשוגי: כלי שלכדת עובר אליך, ואפשר להחזיר אותו ללוח כמעט בכל מקום.',
   '05-check-mate': 'איך מנצחים: שח, שלוש דרכים לצאת ממנו, מט, ומט שאסור לעשות בהצנחת רגלי.',
   '06-illegal-moves-endings': 'מהלך לא חוקי מפסיד במקום. ועוד: כניעה, חזרה מרובעת, מלך חודר ושעון.',
-  '07-reading-pieces': 'על כלים אמיתיים יש קאנג׳י. 14 סימנים, ואתה קורא כל לוח שוגי בעולם.',
+  '07-reading-pieces': 'על כלים אמיתיים יש קאנג׳י. 14 סימנים, ⟦ואתה|ואת⟧ ⟦קורא|קוראת⟧ כל לוח שוגי בעולם.',
   '08-reading-notation': 'P-76, Bx22+, ▲7六歩: איך כותבים מהלכים, כדי לקרוא ספרים, בעיות ומשחקים.',
 };
 
@@ -110,7 +110,7 @@ export function ogCards(): OgCard[] {
   const total = LENGTHS.reduce((sum, n) => sum + PUZZLES[n].length, 0);
   cards.push({
     path: '/tsume/', seal: '詰', eyebrow: 'צומה', title: 'בעיות מט',
-    sub: `${total.toLocaleString('he-IL')} בעיות, ממהלך אחד ועד 7. אתה פותר על הלוח, עם משוב אחרי כל מהלך.`, sfen: tsumeSfen(3),
+    sub: `${total.toLocaleString('he-IL')} בעיות, ממהלך אחד ועד 7. ⟦אתה|את⟧ ⟦פותר|פותרת⟧ על הלוח, עם משוב אחרי כל מהלך.`, sfen: tsumeSfen(3),
   });
   for (const n of LENGTHS) {
     cards.push({
@@ -122,21 +122,21 @@ export function ogCards(): OgCard[] {
   cards.push(
     {
       path: '/try/', seal: '局', eyebrow: 'משחק אחד · מהלך אחרי מהלך', title: 'איך נראה משחק שוגי?',
-      sub: `משחק שלם ב־${FIRST_GAME.length} מהלכים, מהפתיחה ועד המט. לחץ על כל מהלך וקבל הסבר פשוט. בלי הרשמה.`,
+      sub: `משחק שלם ב־${FIRST_GAME.length} מהלכים, מהפתיחה ועד המט. ⟦לחץ|לחצי⟧ על כל מהלך ⟦וקבל|וקבלי⟧ הסבר פשוט. בלי הרשמה.`,
       sfen: firstGamePlies().at(-2)!.sfen,
     },
     {
-      path: '/try/pieces/', seal: '試', eyebrow: 'שלוש דקות · שלושה כלים', title: 'עכשיו תנסה בעצמך',
+      path: '/try/pieces/', seal: '試', eyebrow: 'שלוש דקות · שלושה כלים', title: 'עכשיו ⟦תנסה|תנסי⟧ בעצמך',
       sub: 'צריח, רץ ורגלי: לכידה אחת עם כל כלי. בשוגי כלי שלכדת לא נעלם, הוא נשאר ביד שלך.',
       sfen: '9/4p4/9/9/9/9/4R4/9/9 b - 1', highlight: '52',
     },
     {
-      path: '/play/', seal: '対', eyebrow: 'שחק עכשיו', title: 'משחק נגד המחשב',
+      path: '/play/', seal: '対', eyebrow: '⟦שחק|שחקי⟧ עכשיו', title: 'משחק נגד המחשב',
       sub: 'עשר רמות, מהצעד הראשון ועד מנוע חזק. החזרת מהלך, שעון, ובלי הרשמה.', sfen: START,
     },
     {
       path: '/course/', seal: '道', eyebrow: 'מאיפה מתחילים?', title: 'מסלול לימוד אישי',
-      sub: 'ענה על שאלה אחת וקבל את הצעד הבא: מהחוקים, דרך פתיחה ואמצע המשחק, ועד בעיות מט.',
+      sub: '⟦ענה|עני⟧ על שאלה אחת ⟦וקבל|וקבלי⟧ את הצעד הבא: מהחוקים, דרך פתיחה ואמצע המשחק, ועד בעיות מט.',
       sfen: stageSfen('openings', categories.find((c) => c.key === 'openings')!.stages[1].levels),
     },
     {

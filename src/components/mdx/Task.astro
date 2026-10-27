@@ -12,10 +12,10 @@ const { answer, hint, why } = Astro.props;
 const choice = answer === 'sente' || answer === 'gote';
 ---
 <div class="task" data-task data-answer={answer} data-hint={hint} data-why={why} data-kind={answer ? (choice ? 'choice' : 'board') : 'none'}>
-  <p class="task-label">{answer ? 'נסה בעצמך' : 'לפני שממשיכים'}</p>
+  <p class="task-label">{answer ? '⟦נסה|נסי⟧ בעצמך' : 'לפני שממשיכים'}</p>
   <div class="task-body"><slot /></div>
   {choice && (
-    <div class="choices" role="group" aria-label="בחר תשובה">
+    <div class="choices" role="group" aria-label="⟦בחר|בחרי⟧ תשובה">
       <button type="button" class="btn btn-ghost" data-choice="sente">הפותח</button>
       <button type="button" class="btn btn-ghost" data-choice="gote">המשיב</button>
     </div>

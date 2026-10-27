@@ -44,17 +44,17 @@ export interface Unit {
 
 export const TRACK_INFO: Record<Track, { label: string; sub: string; start: string }> = {
   new: {
-    label: 'חדש לגמרי',
+    label: '⟦חדש|חדשה⟧ לגמרי',
     sub: 'עוד לא שיחקת שוגי, וגם לא שחמט',
     start: 'נתחיל בצפייה במשחק אחד, ואז הלוח והכלים, צעד אחר צעד. אין צורך בשום ידע קודם.',
   },
   chess: {
-    label: 'משחק שחמט',
-    sub: 'יודע איך זזים מלך, צריח ורץ',
+    label: '⟦משחק|משחקת⟧ שחמט',
+    sub: '⟦יודע|יודעת⟧ איך זזים מלך, צריח ורץ',
     start: 'נדלג על מה שמוכר לך מהשחמט ונתמקד במה שחדש: הכלים החדשים, הכתרה והצנחה.',
   },
   shogi: {
-    label: 'כבר מכיר את החוקים',
+    label: 'כבר ⟦מכיר|מכירה⟧ את החוקים',
     sub: 'שיחקת שוגי, ורוצה להשתפר',
     start: 'היסודות פתוחים לרענון, אבל המסלול מתחיל בפתיחה: מבצרים, תוכניות ובעיות מט.',
   },
@@ -72,10 +72,10 @@ export const CURRICULUM: Unit[] = [
       // The first step from the home page (/try/), so newcomers who start here see a whole game before any rule.
       // Done once opened from the course, once finished on the page itself (markSeen in src/lib/progress-local.ts),
       // or once rules lesson 1 is done: a learner who already started the rules isn't sent back to a first look.
-      { id: 'try-game', kind: 'try', href: '/try/', title: 'צפה במשחק אחד, מהלך אחרי מהלך', why: 'משחק שלם עם הסבר לכל מהלך: איך נראים פתיחה, אמצע המשחק וסוף המשחק, עוד לפני החוקים.', minutes: 10, only: ['new'] },
-      { id: 'try-pieces', kind: 'try', href: '/try/pieces/', title: 'שלוש דקות, שלושה כלים', why: 'צריח, רץ ורגלי: לכוד כלי עם כל אחד, וראה שכלי שנלכד עובר ליד שלך.', minutes: 3, only: ['new'] },
+      { id: 'try-game', kind: 'try', href: '/try/', title: '⟦צפה|צפי⟧ במשחק אחד, מהלך אחרי מהלך', why: 'משחק שלם עם הסבר לכל מהלך: איך נראים פתיחה, אמצע המשחק וסוף המשחק, עוד לפני החוקים.', minutes: 10, only: ['new'] },
+      { id: 'try-pieces', kind: 'try', href: '/try/pieces/', title: 'שלוש דקות, שלושה כלים', why: 'צריח, רץ ורגלי: ⟦לכוד|לכדי⟧ כלי עם כל אחד, ⟦וראה|וראי⟧ שכלי שנלכד עובר ליד שלך.', minutes: 3, only: ['new'] },
       { id: 'rules-01', kind: 'rules', rules: '01-board-pieces-setup', title: 'הלוח, הכלים והעמדה הפותחת', why: 'הלוח של 9×9, עשרים הכלים של כל צד, ואיך מסדרים אותם.', minutes: 10, optional: ALL_BUT_NEW },
-      { id: 'learn-intro', kind: 'learn', learn: ['introduction'], title: 'תרגול: הזז כלי ראשון', why: 'איך מזיזים כלים על הלוח באתר, לפני כל השאר.', minutes: 3, optional: ALL_BUT_NEW },
+      { id: 'learn-intro', kind: 'learn', learn: ['introduction'], title: 'תרגול: ⟦הזז|הזיזי⟧ כלי ראשון', why: 'איך מזיזים כלים על הלוח באתר, לפני כל השאר.', minutes: 3, optional: ALL_BUT_NEW },
       { id: 'rules-02', kind: 'rules', rules: '02-how-pieces-move', title: 'איך כל כלי זז', why: 'כל שמונת הכלים, עם הסבר למה כל אחד בנוי כך.', minutes: 15, optional: ['shogi'] },
       { id: 'learn-chesslike', kind: 'learn', learn: ['king', 'rook', 'bishop'], title: 'תרגול: מלך, צריח ורץ', why: 'שלושת הכלים שזזים כמו בשחמט.', minutes: 10, optional: ALL_BUT_NEW },
       { id: 'learn-new-pieces', kind: 'learn', learn: ['gold', 'silver', 'knight', 'lance', 'pawn'], title: 'תרגול: זהב, כסף, פרש, רומח ורגלי', why: 'הכלים שאין בשחמט, או שזזים בו אחרת. כאן רוב ההבדל.', minutes: 20, optional: ['shogi'] },
@@ -86,8 +86,8 @@ export const CURRICULUM: Unit[] = [
       { id: 'learn-mate', kind: 'learn', learn: ['check1', 'outOfCheck', 'checkmate1'], title: 'תרגול: שח, יציאה משח ומט במהלך אחד', why: 'הבסיס לכל התקפה, ולבעיות המט בסוף המסלול.', minutes: 25, optional: ['shogi'] },
       { id: 'rules-06', kind: 'rules', rules: '06-illegal-moves-endings', title: 'מהלכים לא חוקיים ואיך משחק נגמר', why: 'מהלך לא חוקי מפסיד במקום. ועוד: כניעה, חזרה על עמדה, ומלך שחודר לשטח היריב.', minutes: 10, optional: ['shogi'] },
       { id: 'play-first', kind: 'play', play: 1, title: 'משחק ראשון נגד המחשב', why: 'רמה 1 סלחנית. המטרה רק לסיים משחק שלם, לא לנצח.', minutes: 15, only: ['new', 'shogi'], optional: ['shogi'] },
-      { id: 'play-first-chess', kind: 'play', play: 3, title: 'משחק ראשון נגד המחשב, ברמה 3', why: 'רמה שמענישה טעויות, אבל אפשר לנצח בה. ניצחת? עלה רמה.', minutes: 20, only: ['chess'] },
-      { id: 'rules-07', kind: 'rules', rules: '07-reading-pieces', title: 'לקרוא את הכלים', why: 'על כלים אמיתיים כתוב קאנג׳י. 14 סימנים, ואתה קורא כל לוח בעולם.', minutes: 10, optional: ['new', 'chess', 'shogi'] },
+      { id: 'play-first-chess', kind: 'play', play: 3, title: 'משחק ראשון נגד המחשב, ברמה 3', why: 'רמה שמענישה טעויות, אבל אפשר לנצח בה. ניצחת? ⟦עלה|עלי⟧ רמה.', minutes: 20, only: ['chess'] },
+      { id: 'rules-07', kind: 'rules', rules: '07-reading-pieces', title: 'לקרוא את הכלים', why: 'על כלים אמיתיים כתוב קאנג׳י. 14 סימנים, ⟦ואתה|ואת⟧ ⟦קורא|קוראת⟧ כל לוח בעולם.', minutes: 10, optional: ['new', 'chess', 'shogi'] },
       { id: 'rules-08', kind: 'rules', rules: '08-reading-notation', title: 'לקרוא רישום משחק', why: 'איך כותבים מהלכים, כדי לקרוא ספרים, בעיות ומשחקים מוקלטים.', minutes: 10, optional: ['new', 'chess', 'shogi'] },
     ],
   },
@@ -102,10 +102,10 @@ export const CURRICULUM: Unit[] = [
       { id: 'learn-families', kind: 'learn', learn: ['staticRook', 'rangingRook'], title: 'צריח קבוע וצריח נודד', why: 'שתי המשפחות בקצרה: איפה הצריח תוקף, ולאן המלך הולך.', minutes: 10 },
       { id: 'read-castle', kind: 'read', href: '/learn/guide/#castle', title: 'מבצר: למה אין הצרחה בשוגי', why: 'למה המלך צריך חומה של גנרלים, ואיך בוחרים מבצר לפתיחה.', minutes: 5 },
       { id: 'learn-ranging', kind: 'learn', learn: ['fourthFileRook', 'rangingCastles'], title: 'פתיחה ראשונה: צריח בטור 6 ומבצר מינו', why: 'פתיחה בטוחה ופשוטה לצריח נודד, עם המבצר שמתאים לה.', minutes: 20 },
-      { id: 'learn-static', kind: 'learn', learn: ['yagura', 'staticCastles'], title: 'פתיחה שנייה: יגורה ומבצרים לצריח קבוע', why: 'פתיחה אחת מכל משפחה, וכך תבין גם מה היריב מתכנן נגדך.', minutes: 20 },
+      { id: 'learn-static', kind: 'learn', learn: ['yagura', 'staticCastles'], title: 'פתיחה שנייה: יגורה ומבצרים לצריח קבוע', why: 'פתיחה אחת מכל משפחה, וכך ⟦תבין|תביני⟧ גם מה היריב מתכנן נגדך.', minutes: 20 },
       { id: 'learn-central', kind: 'learn', learn: ['centralRook'], title: 'צריח מרכזי', why: 'עוד דרך לצריח נודד, עם התקפה ישירה במרכז.', minutes: 8, optional: ['new', 'chess', 'shogi'] },
-      { id: 'learn-more-openings', kind: 'learn', learn: ['thirdFileRook', 'bishopExchange', 'ishida', 'quickIshida', 'opposingRook', 'doubleRangingRook', 'sidePawn', 'twistingRook'], title: 'עוד פתיחות', why: 'אישידה, חילוף רצים, צריח מתפתל ועוד. כשתרצה גיוון.', minutes: 45, optional: ['new', 'chess', 'shogi'] },
-      { id: 'play-opening', kind: 'play', play: 2, title: 'משחק: קודם מבצר, אחר כך התקפה', why: 'שחק נגד רמה 2 או יותר, ונסה לסיים מבצר לפני ההתקפה הראשונה.', minutes: 20 },
+      { id: 'learn-more-openings', kind: 'learn', learn: ['thirdFileRook', 'bishopExchange', 'ishida', 'quickIshida', 'opposingRook', 'doubleRangingRook', 'sidePawn', 'twistingRook'], title: 'עוד פתיחות', why: 'אישידה, חילוף רצים, צריח מתפתל ועוד. ⟦כשתרצה|כשתרצי⟧ גיוון.', minutes: 45, optional: ['new', 'chess', 'shogi'] },
+      { id: 'play-opening', kind: 'play', play: 2, title: 'משחק: קודם מבצר, אחר כך התקפה', why: '⟦שחק|שחקי⟧ נגד רמה 2 או יותר, ⟦ונסה|ונסי⟧ לסיים מבצר לפני ההתקפה הראשונה.', minutes: 20 },
     ],
   },
   {
@@ -121,7 +121,7 @@ export const CURRICULUM: Unit[] = [
       { id: 'learn-sitting', kind: 'learn', learn: ['sittingSilver'], title: 'כסף יושב', why: 'תוכנית איטית ובטוחה יותר, כשהיריב כבר מוכן להתקפה מהירה.', minutes: 10 },
       { id: 'learn-whatif', kind: 'learn', learn: ['whatIf'], title: 'מה אם היריב טועה?', why: 'טעויות נפוצות של היריב, ואיך מענישים אותן.', minutes: 10 },
       { id: 'learn-more-plans', kind: 'learn', learn: ['chainedSilver', 'bishopClimbingSilver', 'rapidSilver', 'bishopSittingSilver', 'spearingSparrow'], title: 'עוד תוכניות התקפה', why: 'כסף מהיר, שיפוד הדרור ועוד, למי שרוצה להעמיק.', minutes: 30, optional: ['new', 'chess', 'shogi'] },
-      { id: 'play-middle', kind: 'play', play: 3, title: 'משחק: תקוף לפי תוכנית', why: 'שחק נגד רמה 3 או יותר, ובחר תוכנית לפני שאתה תוקף.', minutes: 25 },
+      { id: 'play-middle', kind: 'play', play: 3, title: 'משחק: ⟦תקוף|תקפי⟧ לפי תוכנית', why: '⟦שחק|שחקי⟧ נגד רמה 3 או יותר, ⟦ובחר|ובחרי⟧ תוכנית לפני ⟦שאתה|שאת⟧ ⟦תוקף|תוקפת⟧.', minutes: 25 },
     ],
   },
   {
@@ -132,11 +132,11 @@ export const CURRICULUM: Unit[] = [
     why: 'המבצר נפרץ, וההתקפה הופכת למירוץ: מי שמגיע למט ראשון מנצח. כאן ספירת מהלכים חשובה יותר מחומר, ובעיות מט הן האימון הישיר.',
     steps: [
       { id: 'read-endgame', kind: 'read', href: '/learn/guide/#endgame', title: 'סוף המשחק: מירוץ למט', why: 'למה בסוף המשחק אפשר לוותר על כלים כדי להגיע למט מהר יותר.', minutes: 3 },
-      { id: 'tsume-1', kind: 'tsume', tsume: 1, target: 20, title: 'בעיות מט במהלך אחד', why: 'פתור 20, עד שאתה רואה מט במבט אחד.', minutes: 20 },
-      { id: 'tsume-3', kind: 'tsume', tsume: 3, target: 10, title: 'בעיות מט ב־3 מהלכים', why: 'פתור 10: שח, תשובה של המגן, ומט.', minutes: 25 },
-      { id: 'tsume-5', kind: 'tsume', tsume: 5, target: 5, title: 'בעיות מט ב־5 מהלכים', why: 'פתור 5. כאן מתחילות ההקרבות.', minutes: 25 },
-      { id: 'play-win', kind: 'play', play: 4, win: true, title: 'נצח את המחשב ברמה 4', why: 'כל המסלול במשחק אחד: פתיחה, תוכנית, ומירוץ למט.', minutes: 30 },
-      { id: 'tsume-7', kind: 'tsume', tsume: 7, target: 3, title: 'בעיות מט ב־7 מהלכים', why: 'לשחקנים עם ניסיון: פתור 3.', minutes: 30, optional: ['new', 'chess', 'shogi'] },
+      { id: 'tsume-1', kind: 'tsume', tsume: 1, target: 20, title: 'בעיות מט במהלך אחד', why: '⟦פתור|פתרי⟧ 20, עד ⟦שאתה|שאת⟧ רואה מט במבט אחד.', minutes: 20 },
+      { id: 'tsume-3', kind: 'tsume', tsume: 3, target: 10, title: 'בעיות מט ב־3 מהלכים', why: '⟦פתור|פתרי⟧ 10: שח, תשובה של המגן, ומט.', minutes: 25 },
+      { id: 'tsume-5', kind: 'tsume', tsume: 5, target: 5, title: 'בעיות מט ב־5 מהלכים', why: '⟦פתור|פתרי⟧ 5. כאן מתחילות ההקרבות.', minutes: 25 },
+      { id: 'play-win', kind: 'play', play: 4, win: true, title: '⟦נצח|נצחי⟧ את המחשב ברמה 4', why: 'כל המסלול במשחק אחד: פתיחה, תוכנית, ומירוץ למט.', minutes: 30 },
+      { id: 'tsume-7', kind: 'tsume', tsume: 7, target: 3, title: 'בעיות מט ב־7 מהלכים', why: 'לשחקנים עם ניסיון: ⟦פתור|פתרי⟧ 3.', minutes: 30, optional: ['new', 'chess', 'shogi'] },
     ],
   },
 ];

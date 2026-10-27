@@ -48,13 +48,14 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
     <meta name="twitter:card" content="summary_large_image" />
     {ld.map((d) => <script is:inline type="application/ld+json" set:html={ldJson(d)} />)}
     <script is:inline>
-      // Apply the saved piece set and colour theme before first paint. Storage can be missing (in-app
+      // Apply the saved piece set, colour theme and form of address (lib/gender.ts) before first paint. Storage can be missing (in-app
       // browsers): fall back to letters and to the system's light/dark setting.
       (function () {
         var root = document.documentElement;
         var pref = '';
         try {
           if (localStorage.getItem('pieces') === 'kanji') root.setAttribute('data-pieces', 'kanji');
+          if (localStorage.getItem('gender') === 'f') root.setAttribute('data-gender', 'f');
           pref = localStorage.getItem('theme') || '';
         } catch (e) {}
         if (pref !== 'light' && pref !== 'dark') pref = '';
@@ -65,13 +66,16 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
     </script>
   </head>
   <body>
-    <a class="skip" href="#main">דלג לתוכן</a>
+    <a class="skip" href="#main">⟦דלג|דלגי⟧ לתוכן</a>
     <Header />
     <main id="main">
       <slot />
     </main>
     <Footer />
     <Analytics />
+    <script>
+      import '../scripts/gender';
+    </script>
     <script>
       // Arrived from one of our ads? Keep which one for this tab, so a new account can record it.
       import { rememberAdSource } from '../lib/ad-source';
