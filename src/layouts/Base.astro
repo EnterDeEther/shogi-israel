@@ -22,7 +22,7 @@ const ogUrl = new URL(ogImage, Astro.site);
 const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description);
 ---
 <!doctype html>
-<html lang="he" dir="rtl" data-pieces="letters">
+<html lang="he" dir="rtl" data-pieces="hebrew">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -49,12 +49,13 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
     {ld.map((d) => <script is:inline type="application/ld+json" set:html={ldJson(d)} />)}
     <script is:inline>
       // Apply the saved piece set, colour theme and form of address (lib/gender.ts) before first paint. Storage can be missing (in-app
-      // browsers): fall back to letters and to the system's light/dark setting.
+      // browsers): fall back to the Hebrew pieces and to the system's light/dark setting.
       (function () {
         var root = document.documentElement;
         var pref = '';
         try {
-          if (localStorage.getItem('pieces') === 'kanji') root.setAttribute('data-pieces', 'kanji');
+          var pieces = localStorage.getItem('pieces');
+          if (pieces === 'letters' || pieces === 'kanji') root.setAttribute('data-pieces', pieces);
           if (localStorage.getItem('gender') === 'f') root.setAttribute('data-gender', 'f');
           pref = localStorage.getItem('theme') || '';
         } catch (e) {}
@@ -86,10 +87,11 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
       import '../scripts/info-tips';
     </script>
     <script>
-      // One listener for every letters/kanji switch on the page.
+      // One listener for every piece-set switch on the page (Hebrew / letters / kanji).
+      import { pieceSetOf } from '../lib/piece-set';
       const root = document.documentElement;
       const sync = () => {
-        const set = root.getAttribute('data-pieces') === 'kanji' ? 'kanji' : 'letters';
+        const set = pieceSetOf(root.getAttribute('data-pieces'));
         document.querySelectorAll<HTMLButtonElement>('[data-pieces-set]').forEach((b) => {
           b.setAttribute('aria-pressed', String(b.dataset.piecesSet === set));
         });
@@ -97,7 +99,7 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
       document.addEventListener('click', (e) => {
         const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-pieces-set]');
         if (!btn) return;
-        const set = btn.dataset.piecesSet === 'kanji' ? 'kanji' : 'letters';
+        const set = pieceSetOf(btn.dataset.piecesSet);
         root.setAttribute('data-pieces', set);
         try { localStorage.setItem('pieces', set); } catch {}
         sync();

@@ -3,22 +3,25 @@
 // AGPL-3.0-or-later, like the rest of src/learn/.
 import LearnCtrl from './ctrl';
 import { i18n } from './i18n';
+import { currentPieceSet } from '../lib/piece-set';
 import { attachKeyboard } from './keyboard';
 import { type LearnPrefs, loadPrefs, savePrefs } from './prefs';
 import { setSoundEnabled } from './sound';
+import { routeFromUrl } from './route';
 import { stageSlug } from './urls';
 import { el, icon, mount, pieceSetSwitch, render } from './view';
 
 const slugFromPath = (): string | undefined => window.location.pathname.match(/^\/learn\/([^/]+)\/?$/)?.[1];
 
-// The site menu links straight to a category of the stage map (/learn/#cat-openings). The map is drawn
+// The site menu links straight to a level or category of the stage map (/learn/#level-beginner, #cat-openings). The map is drawn
 // here, after the page loaded, so the browser cannot scroll to it by itself.
 const scrollToCategory = (): void => {
   const id = window.location.hash.slice(1);
-  if (id.startsWith('cat-')) document.getElementById(id)?.scrollIntoView();
+  if (id.startsWith('cat-') || id.startsWith('level-')) document.getElementById(id)?.scrollIntoView();
 };
 
 export function bootLearn(root: HTMLElement): LearnCtrl {
+  routeFromUrl(); // /learn/<stage>/?route=chess from the /chess/ page
   const prefs = loadPrefs();
   const { board } = mount(root);
   let ctrl: LearnCtrl;
@@ -99,11 +102,11 @@ export function bootLearn(root: HTMLElement): LearnCtrl {
       dialog.setAttribute('open', '');
     }
   };
-  // the dialog's own letters/kanji switch is static: keep its pressed state in sync
+  // the dialog's own piece-set switch is static: keep its pressed state in sync
   document.addEventListener('pieces-changed', () => {
-    const kanji = document.documentElement.dataset.pieces === 'kanji';
+    const set = currentPieceSet();
     dialog.querySelectorAll<HTMLButtonElement>('[data-pieces-set]').forEach((b) =>
-      b.setAttribute('aria-pressed', String((b.dataset.piecesSet === 'kanji') === kanji)));
+      b.setAttribute('aria-pressed', String(b.dataset.piecesSet === set)));
   });
 
   ctrl = new LearnCtrl({ pref: prefs }, redraw, root.dataset.stage || slugFromPath());

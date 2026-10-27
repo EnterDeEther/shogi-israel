@@ -2,7 +2,8 @@
 // Source: https://github.com/WandererXII/lila/blob/89aea5f6f24c5e941c7cac8434a6e9e1acc15e94/ui/learn/src/interfaces.ts
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
-// Modified by Shogi Israel (shogi.co.il), 2026-10-24: added the coach state (Vm.coach, Vm.waiting) and the opening data (Level.why, moveNames, line, replies, replyNames).
+// Modified by Shogi Israel (shogi.co.il), 2026-10-24: added the coach state (Vm.coach, Vm.waiting) and the opening data (Level.why, moveNames, line, replies, replyNames). 2026-10-27: Level.recap, the end-of-level explanation for levels without a why list.
+// Modified by Shogi Israel, 2026-10-27: Category.level (the course's three levels).
 
 import type { DrawShape, SquareHighlight } from 'shogiground/draw';
 
@@ -48,6 +49,7 @@ export interface Level {
   why?: string[]; // Shogi Israel: why each of the user's moves is played, shown one by one as they are made
   replies?: string[]; // Shogi Israel: what each of the opponent's scripted replies is for
   replyNames?: string[]; // Shogi Israel: the opponent's replies in our notation
+  recap?: string; // Shogi Israel: what the level taught and why it matters, shown when it is done (levels without why)
   nextButton?: boolean; // wait for user to click next - allows user to review the solution
   offerIllegalDests?: boolean;
   showFailureMove?: 'random' | 'capture' | 'unprotected' | VmEvaluation<Usi | undefined>; // played after failure
@@ -67,9 +69,13 @@ export interface Stage {
 
 export type IncompleteStage = Omit<Stage, 'id'>;
 
+/** The course's three levels (Shogi Israel): each map category belongs to one. */
+export type CourseLevel = 'beginner' | 'intermediate' | 'advanced';
+
 export interface Category {
   key: CategoryKey;
   name: string;
+  level: CourseLevel;
   stages: Stage[];
 }
 

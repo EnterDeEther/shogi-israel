@@ -10,7 +10,7 @@ export interface NextLink { href: string; title: string; kind: string }
 export function courseNext(): NextLink | null {
   if (!document.documentElement.hasAttribute('data-signed-in')) return null;
   const p = readLocal();
-  if (!p.course.track) return null;
+  if (!p.course.route) return null;
   const n = nextStep(p, LEVEL_COUNTS);
   if (!n) return null;
   const href = stepHref(n.step, p, LEVEL_COUNTS);

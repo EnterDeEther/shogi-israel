@@ -10,6 +10,7 @@ import { el, icon, pieceSetSwitch } from '../learn/view';
 import PlayCtrl from './ctrl';
 import { engineSupport } from './engine';
 import { clockText, mount, render } from './view';
+import { currentPieceSet } from '../lib/piece-set';
 
 export function bootPlay(root: HTMLElement): PlayCtrl {
   const prefs = loadPrefs();
@@ -80,9 +81,9 @@ export function bootPlay(root: HTMLElement): PlayCtrl {
     }
   };
   document.addEventListener('pieces-changed', () => {
-    const kanji = document.documentElement.dataset.pieces === 'kanji';
+    const set = currentPieceSet();
     document.querySelectorAll<HTMLButtonElement>('[data-pieces-set]').forEach((b) =>
-      b.setAttribute('aria-pressed', String((b.dataset.piecesSet === 'kanji') === kanji)));
+      b.setAttribute('aria-pressed', String(b.dataset.piecesSet === set)));
   });
 
   ctrl = new PlayCtrl(prefs, redraw);

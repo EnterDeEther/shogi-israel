@@ -18,7 +18,7 @@ describe('inbox notes', () => {
   test('the next step on the path, and a rank once there are points', () => {
     const notes = buildInbox(normalize({ course: { track: 'new', trackAt: 'x' }, rules: ['01-board-pieces-setup', '02-how-pieces-move'] }), ctx());
     const next = notes.find((n) => n.kind === 'next')!;
-    expect(next.id).toBe('next:learn-intro');
+    expect(next.id).toBe('next:learn-introduction');
     expect(next.href).toBe('/learn/introduction/');
     expect(notes.find((n) => n.kind === 'rank')!.id).toMatch(/^rank:\d+$/);
   });

@@ -1,6 +1,6 @@
 /* Interactive lessons (ported Lishogi Learn engine) — Direction A skin.
    The board, piece, button and star rules are shared with the game against the computer (.play, play.css).
-   Page RTL, board LTR and never mirrored. Pieces: English letters by default, kanji via html[data-pieces].
+   Page RTL, board LTR and never mirrored. Pieces: Hebrew letters by default, English letters or kanji via html[data-pieces].
    Our own board and piece art; no Lishogi images, sounds or piece sets. */
 
 
@@ -72,8 +72,8 @@
 :is(.learn, .play) .sg-wrap coords.ranks { right: -17px; width: 14px; }
 :is(.learn, .play) .sg-wrap coords.files coord { text-align: center; }
 
-/* ---------- pieces: pentagon, letter or kanji ---------- */
-:is(.learn, .play) piece { --l: ''; --k: ''; }
+/* ---------- pieces: pentagon, Hebrew letter, English letter or kanji ---------- */
+:is(.learn, .play) piece { --h: ''; --l: ''; --k: ''; }
 :is(.learn, .play) piece::before,
 :is(.learn, .play) piece::after {
   content: '';
@@ -84,18 +84,27 @@
 :is(.learn, .play) piece::after {
   inset: calc(4% + 1.5px) calc(8% + 1.5px) calc(3% + 1.5px);
   background: var(--piece);
-  content: var(--l);
+  content: var(--h);
   display: flex; align-items: center; justify-content: center;
   padding-top: 16%;
   color: var(--piece-ink);
   font: 800 clamp(13px, 4.4vw, 22px)/1 var(--f-body);
   letter-spacing: -0.5px;
-  direction: ltr; unicode-bidi: isolate; /* "+S" never flips */
+  direction: rtl; unicode-bidi: isolate; /* Hebrew reads "כ+" with the + on the left */
 }
 /* pieces on the board are drawn at 2x and scaled down by shogiground: double the type there
    (not in the promotion picker, which draws at 1x) */
 :is(.learn, .play) sg-pieces piece::after, :is(.learn, .play) piece.dragging::after { font-size: clamp(26px, 8.8vw, 44px); }
+html[data-pieces="letters"] :is(.learn, .play) piece::after { content: var(--l); direction: ltr; /* "+S" never flips */ }
 html[data-pieces="kanji"] :is(.learn, .play) piece::after { content: var(--k); font-family: var(--f-kanji); font-weight: 800; }
+/* Hebrew set: the bishop's two letters (רץ) and the promoted "כ+" are set a little smaller; the king gets a crown above its מ */
+html:not([data-pieces="letters"]):not([data-pieces="kanji"]) :is(.learn, .play) piece:is(.bishop, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { font-size: clamp(11px, 3.8vw, 19px); }
+html:not([data-pieces="letters"]):not([data-pieces="kanji"]) :is(.learn, .play) sg-pieces piece:is(.bishop, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { font-size: clamp(22px, 7.6vw, 38px); }
+html:not([data-pieces="letters"]):not([data-pieces="kanji"]) :is(.learn, .play) piece.king::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 12'%3E%3Cpath fill='%231C1B19' d='M1 3.2 5.6 7 10 .8 14.4 7 19 3.2 17.2 11.2H2.8Z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: center 24%; background-size: 42% auto;
+  padding-top: 46%;
+}
 :is(.learn, .play) piece { filter: drop-shadow(0 1px 1px rgba(40, 25, 10, 0.4)); }
 
 /* who owns it: pointing direction. Board orientation is the player's colour (lila behaviour). */
@@ -103,21 +112,21 @@ html[data-pieces="kanji"] :is(.learn, .play) piece::after { content: var(--k); f
 :is(.learn, .play) .orientation-gote piece.sente::before, :is(.learn, .play) .orientation-gote piece.sente::after { transform: rotate(180deg); }
 :is(.learn, .play) piece.gote::after { background: var(--piece-gote); }
 
-:is(.learn, .play) piece.king { --l: 'K'; --k: '王'; }
+:is(.learn, .play) piece.king { --h: 'מ'; --l: 'K'; --k: '王'; }
 :is(.learn, .play) piece.gote.king { --k: '玉'; }
-:is(.learn, .play) piece.rook { --l: 'R'; --k: '飛'; }
-:is(.learn, .play) piece.bishop { --l: 'B'; --k: '角'; }
-:is(.learn, .play) piece.gold { --l: 'G'; --k: '金'; }
-:is(.learn, .play) piece.silver { --l: 'S'; --k: '銀'; }
-:is(.learn, .play) piece.knight { --l: 'N'; --k: '桂'; }
-:is(.learn, .play) piece.lance { --l: 'L'; --k: '香'; }
-:is(.learn, .play) piece.pawn { --l: 'P'; --k: '歩'; }
-:is(.learn, .play) piece.dragon { --l: '+R'; --k: '龍'; }
-:is(.learn, .play) piece.horse { --l: '+B'; --k: '馬'; }
-:is(.learn, .play) piece.promotedsilver { --l: '+S'; --k: '全'; }
-:is(.learn, .play) piece.promotedknight { --l: '+N'; --k: '圭'; }
-:is(.learn, .play) piece.promotedlance { --l: '+L'; --k: '杏'; }
-:is(.learn, .play) piece.tokin { --l: '+P'; --k: 'と'; }
+:is(.learn, .play) piece.rook { --h: 'צ'; --l: 'R'; --k: '飛'; }
+:is(.learn, .play) piece.bishop { --h: 'רץ'; --l: 'B'; --k: '角'; }
+:is(.learn, .play) piece.gold { --h: 'ז'; --l: 'G'; --k: '金'; }
+:is(.learn, .play) piece.silver { --h: 'כ'; --l: 'S'; --k: '銀'; }
+:is(.learn, .play) piece.knight { --h: 'פ'; --l: 'N'; --k: '桂'; }
+:is(.learn, .play) piece.lance { --h: 'ח'; --l: 'L'; --k: '香'; }
+:is(.learn, .play) piece.pawn { --h: 'ר'; --l: 'P'; --k: '歩'; }
+:is(.learn, .play) piece.dragon { --h: 'ד'; --l: '+R'; --k: '龍'; }
+:is(.learn, .play) piece.horse { --h: 'ס'; --l: '+B'; --k: '馬'; }
+:is(.learn, .play) piece.promotedsilver { --h: 'כ+'; --l: '+S'; --k: '全'; }
+:is(.learn, .play) piece.promotedknight { --h: 'פ+'; --l: '+N'; --k: '圭'; }
+:is(.learn, .play) piece.promotedlance { --h: 'ח+'; --l: '+L'; --k: '杏'; }
+:is(.learn, .play) piece.tokin { --h: 'ר+'; --l: '+P'; --k: 'と'; }
 :is(.learn, .play) piece:is(.dragon, .horse, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { color: var(--piece-seal); }
 
 /* ---------- square states ---------- */
@@ -199,6 +208,9 @@ html[data-pieces="kanji"] :is(.learn, .play) piece::after { content: var(--k); f
 .learn__overlay p { margin: 0 0 16px; color: var(--ink-2); line-height: 1.7; }
 .learn__overlay .buttons { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
 .learn__overlay .stars { font-size: 38px; display: block; margin-bottom: 4px; }
+.learn__overlay .chess-note { font-size: 15px; text-align: start; border-inline-start: 3px solid var(--seal); padding-inline-start: 10px; }
+.learn__overlay .route-switch { margin-top: -8px; }
+.learn__overlay .route-switch .linkish { background: none; border: 0; padding: 4px; color: var(--ink-2); text-decoration: underline; font: inherit; cursor: pointer; }
 @media (max-width: 480px) { .learn__overlay p { font-size: 15px; line-height: 1.55; } .learn__overlay .stage-img { display: none; } }
 
 /* ---------- stage pictures ---------- */
@@ -434,3 +446,12 @@ html[data-pieces="kanji"] :is(.learn, .play) piece::after { content: var(--k); f
 .learn__map .phase, .learn__overlay .phase { margin: 0 0 10px; font-size: 14px; }
 .learn__map .phase a, .learn__overlay .phase a { display: inline-block; padding: 2px 12px; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-2); text-decoration: none; }
 .learn__map .phase a:hover, .learn__overlay .phase a:hover { color: var(--seal); border-color: var(--seal); }
+
+/* Repetition stage: the numbered marks (1, 2, 3, 4) drawn on the board each time the position comes back */
+.sg-wrap .sg-custom-svgs .rep-digit circle { fill: var(--seal); opacity: 0.85; }
+.sg-wrap .sg-custom-svgs .rep-digit path { fill: var(--on-seal); }
+
+/* The map's three course levels (beginner, intermediate, advanced), one heading before each */
+.learn__map .course-level { display: flex; align-items: baseline; gap: 10px; margin: 36px 0 14px; font-size: 30px; font-weight: 800; color: var(--seal); }
+.learn__map .course-level:first-child { margin-top: 0; }
+.learn__map .course-level span { font-size: 14px; font-weight: 600; color: var(--ink-2); letter-spacing: .02em; }

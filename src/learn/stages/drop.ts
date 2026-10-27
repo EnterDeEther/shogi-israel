@@ -2,7 +2,7 @@
 // Source: https://github.com/WandererXII/lila/blob/89aea5f6f24c5e941c7cac8434a6e9e1acc15e94/ui/learn/src/stages/drop.ts
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
-// Modified by Shogi Israel (shogi.co.il), 2026-10-24: i18n import points to our Hebrew shim; positions, goals and key names unchanged.
+// Modified by Shogi Israel (shogi.co.il), 2026-10-24: i18n import points to our Hebrew shim; positions unchanged. 2026-10-27: a recap per level (level.recap) and beginner goals written so nothing is used before it is taught.
 
 import { i18n } from '../i18n';
 import { anyCapture, extinct } from '../assert';
@@ -14,6 +14,7 @@ import { toPiece } from '../util';
 const levels: IncompleteLevel[] = [
   {
     goal: i18n('learn:capturedPiecesCanBeDropped'),
+    recap: i18n('il_b_drop1Recap'),
     sfen: '9/9/8r/4n4/9/9/4L4/9/9 b -',
     nbMoves: 3,
     success: extinct('gote'),
@@ -23,6 +24,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:dropLimitations'),
+    recap: i18n('il_b_drop2Recap'),
     sfen: '9/9/9/9/3nbl3/9/9/9/9 b P',
     nbMoves: 6,
     success: extinct('gote'),
@@ -48,6 +50,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:takeTheEnemyPiecesAndDontLoseYours'),
+    recap: i18n('il_b_dropRecap'),
     sfen: '9/9/9/2g1s4/9/9/9/6N2/9 b - 1',
     nbMoves: 4,
     success: extinct('gote'),
@@ -56,6 +59,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:takeTheEnemyPiecesAndDontLoseYours'),
+    recap: i18n('il_b_dropRecap'),
     sfen: '9/5p3/4Gl3/9/9/5g3/9/9/9 b - 1',
     nbMoves: 4,
     success: extinct('gote'),
@@ -64,6 +68,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:takeTheEnemyPiecesAndDontLoseYours'),
+    recap: i18n('il_b_dropRecap'),
     sfen: '4n4/s3g4/8g/9/4B4/9/9/9/9 b - 1',
     nbMoves: 7,
     success: extinct('gote'),
@@ -72,6 +77,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:takeTheEnemyPiecesAndDontLoseYours'),
+    recap: i18n('il_b_dropRecap'),
     sfen: '9/3rn4/5S3/3lp4/9/7b1/9/9/9 b - 1',
     nbMoves: 7,
     success: extinct('gote'),
@@ -80,6 +86,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:takeTheEnemyPiecesAndDontLoseYours'),
+    recap: i18n('il_b_dropRecap'),
     sfen: '9/9/2n1r1b2/9/3s1g1R1/9/9/9/9 b - 1',
     nbMoves: 8,
     success: extinct('gote'),
@@ -88,12 +95,14 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:youCannotHaveTwoUnpromotedPawns'),
+    recap: i18n('il_b_dropNifuRecap'),
     sfen: '9/9/4s4/9/9/9/2PP1PP2/9/9 b P 1',
     nbMoves: 4,
     success: extinct('gote'),
   },
   {
     goal: i18n('learn:youCannotHaveTwoUnpromotedPawns'),
+    recap: i18n('il_b_dropNifuRecap'),
     sfen: '9/4G4/1n2p2b1/9/9/1+P5P1/9/9/9 b - 1',
     nbMoves: 5,
     success: extinct('gote'),
@@ -107,7 +116,7 @@ const stage: IncompleteStage = {
   subtitle: i18n('learn:reuseCapturedPieces'),
   intro: i18n('learn:dropIntro'),
   levels: levels.map((l, i) => createLevel(l, i)),
-  complete: i18n('learn:captureComplete'),
+  complete: i18n('il_b_dropComplete'),
 };
 
 export default stage;

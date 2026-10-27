@@ -35,16 +35,16 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
   <p>אם שיחקת <span lang="en">Crazyhouse</span> בצ׳ס.קום או בליצ׳ס, ⟦אתה|את⟧ כבר ⟦מכיר|מכירה⟧ את הרעיון: כלי שלכדת נכנס לכיס, ובתורך אפשר להניח אותו על הלוח במקום לזוז. בשוגי זה לא וריאנט, זה החוק הבסיסי, וקוראים לזה <strong>הצנחה</strong>. ההבדל מקרייזיהאוס: הלוח והכלים בנויים מראש בשביל זה, ולכן המשחק עמוק ומאוזן הרבה יותר.</p>
 
   <h2 id="pieces">הכלים: מה מוכר ומה חדש</h2>
-  <p>לכל צד עשרים כלים על לוח של 9×9. אין מלכה. על הלוח הכלים מסומנים באותיות באנגלית, כמו ברישום שחמט.</p>
+  <p>לכל צד עשרים כלים על לוח של 9×9. אין מלכה. על הלוח כל כלי מסומן באות מהשם שלו בעברית, כמו ברישום שחמט בעברית: מ למלך, צ לצריח, פ לפרש. ⟦מעדיף|מעדיפה⟧ אותיות באנגלית? המתג שמעל כל לוח מחליף.</p>
   <ul class="pieces">
-    <li class="same"><Piece>K</Piece><div><strong>מלך</strong><span>בדיוק כמו בשחמט, רק בלי הצרחה.</span></div></li>
-    <li class="same"><Piece>R</Piece><div><strong>צריח</strong><span>בדיוק כמו בשחמט.</span></div></li>
-    <li class="same"><Piece>B</Piece><div><strong>רץ</strong><span>בדיוק כמו בשחמט.</span></div></li>
-    <li class="close"><Piece>N</Piece><div><strong>פרש</strong><span>קופץ כמו בשחמט, אבל רק קדימה: שתיים קדימה ואחת הצידה.</span></div></li>
-    <li class="close"><Piece>P</Piece><div><strong>רגלי</strong><span>צעד אחד קדימה, וגם <em>לוכד</em> ישר קדימה. אין צעד כפול ואין הכאה דרך הילוכו.</span></div></li>
-    <li class="new"><Piece>L</Piece><div><strong>רומח</strong><span>צריח שיודע לנסוע רק קדימה.</span></div></li>
-    <li class="new"><Piece>G</Piece><div><strong>גנרל זהב</strong><span>צעד אחד לכל כיוון, חוץ מאלכסון אחורה. המגן הכי טוב של המלך.</span></div></li>
-    <li class="new"><Piece>S</Piece><div><strong>גנרל כסף</strong><span>צעד אחד באלכסון לכל כיוון, או צעד אחד ישר קדימה.</span></div></li>
+    <li class="same"><Piece>מ</Piece><div><strong>מלך</strong><span>בדיוק כמו בשחמט, רק בלי הצרחה.</span></div></li>
+    <li class="same"><Piece>צ</Piece><div><strong>צריח</strong><span>בדיוק כמו בשחמט.</span></div></li>
+    <li class="same"><Piece>רץ</Piece><div><strong>רץ</strong><span>בדיוק כמו בשחמט.</span></div></li>
+    <li class="close"><Piece>פ</Piece><div><strong>פרש</strong><span>קופץ כמו בשחמט, אבל רק קדימה: שתיים קדימה ואחת הצידה.</span></div></li>
+    <li class="close"><Piece>ר</Piece><div><strong>רגלי</strong><span>צעד אחד קדימה, וגם <em>לוכד</em> ישר קדימה. אין צעד כפול ואין הכאה דרך הילוכו.</span></div></li>
+    <li class="new"><Piece>ח</Piece><div><strong>רומח</strong><span>צריח שיודע לנסוע רק קדימה.</span></div></li>
+    <li class="new"><Piece>ז</Piece><div><strong>גנרל זהב</strong><span>צעד אחד לכל כיוון, חוץ מאלכסון אחורה. המגן הכי טוב של המלך.</span></div></li>
+    <li class="new"><Piece>כ</Piece><div><strong>גנרל כסף</strong><span>צעד אחד באלכסון לכל כיוון, או צעד אחד ישר קדימה.</span></div></li>
   </ul>
   <p class="small muted legend"><span class="dot same"></span>זהה לשחמט <span class="dot close"></span>דומה, עם הבדל <span class="dot new"></span>חדש</p>
 
@@ -87,19 +87,19 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
   <p>הסבר מלא על כל שלב, ואיפה נכנסים בו הפתיחות, המבצרים והאסטרטגיות: <a href="/learn/guide/#phases">פתיחות, מבצרים ואסטרטגיה</a>.</p>
 
   <h2 id="fast-track">המסלול המהיר: משחק ראשון תוך שעה</h2>
-  <p>אין צורך ללמוד הכול מההתחלה. כל שלב עובד גם בטלפון, וההתקדמות נשמרת.</p>
+  <p>אין צורך ללמוד הכול מההתחלה. בכל שלב בדרך ההסבר מדבר בשפת השחמט: מה זהה, מה דומה ומה חדש. הכול עובד בטלפון, וההתקדמות נשמרת.</p>
   <ol class="track">
     <li>
-      <span class="t"><a href="/rules/02-how-pieces-move/">איך כל כלי זז</a></span>
-      <span class="small muted">15 דקות. ⟦רפרף|רפרפי⟧ על המלך, הצריח והרץ, ⟦והתעכב|והתעכבי⟧ על השאר.</span>
+      <span class="t"><a href="/learn/introduction/?route=chess">הלוח ומה שונה בו</a>, ואז חזרה מהירה על <a href="/learn/king/?route=chess">המלך</a>, <a href="/learn/bishop/?route=chess">הרץ</a> ו<a href="/learn/rook/?route=chess">הצריח</a></span>
+      <span class="small muted">10 דקות. הם זזים כמו בשחמט, אז ⟦שים|שימי⟧ לב רק להכתרה.</span>
     </li>
     <li>
-      <span class="t">תרגול על הלוח, רק הכלים החדשים: <a href="/learn/gold/">זהב</a>, <a href="/learn/silver/">כסף</a>, <a href="/learn/knight/">פרש</a>, <a href="/learn/lance/">רומח</a>, <a href="/learn/pawn/">רגלי</a></span>
-      <span class="small muted">15 דקות. ⟦דלג|דלגי⟧ על המלך, הצריח והרץ.</span>
+      <span class="t">הכלים החדשים, אחד בכל שלב: <a href="/learn/gold/?route=chess">זהב</a>, <a href="/learn/silver/?route=chess">כסף</a>, <a href="/learn/knight/?route=chess">פרש</a>, <a href="/learn/lance/?route=chess">רומח</a>, <a href="/learn/pawn/?route=chess">רגלי</a></span>
+      <span class="small muted">15 דקות. גם הפרש והרגלי שונים ממה ⟦שאתה|שאת⟧ ⟦מכיר|מכירה⟧.</span>
     </li>
     <li>
-      <span class="t"><a href="/learn/drop/">הצנחה</a> ו<a href="/learn/value/">ערך הכלים</a></span>
-      <span class="small muted">10 דקות. השלב הכי חשוב בשבילך: ערכי החומר מהשחמט לא עובדים כאן.</span>
+      <span class="t"><a href="/learn/drop/?route=chess">הצנחה</a>, <a href="/learn/checkmate1/?route=chess">מט במהלך אחד</a> ו<a href="/learn/value/?route=chess">ערך הכלים</a></span>
+      <span class="small muted">15 דקות. השלב הכי חשוב בשבילך: ערכי החומר מהשחמט לא עובדים כאן.</span>
     </li>
     <li>
       {playLive
@@ -108,14 +108,14 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
       <span class="small muted">רמות שמענישות טעויות, אבל אפשר לנצח בהן. ניצחת? ⟦עלה|עלי⟧ רמה. מרמה 5 משחק מנוע חזק בהרבה.</span>
     </li>
     <li>
-      <span class="t"><a href="/learn/static-castles/">מבצרים</a> ו<a href="/learn/#cat-openings">פתיחות</a></span>
-      <span class="small muted">אחרי כמה משחקים. כאן מתחיל העומק האסטרטגי.</span>
+      <span class="t"><a href="/learn/static-rook/?route=chess">פתיחות</a> ו<a href="/learn/static-castles/?route=chess">מבצרים</a></span>
+      <span class="small muted">אחרי כמה משחקים. כאן מתחיל העומק האסטרטגי, ולכל פתיחה יש הערה לשחקני שחמט.</span>
     </li>
   </ol>
   {courseLive && (
     <div class="course-box">
       <p><strong>רוצה שהאתר יוביל אותך צעד אחר צעד?</strong> במסלול לימוד אישי כל שלב מחכה לך בתורו, מהחוקים ועד בעיות מט, וההתקדמות נשמרת בחשבון.{ranksLive && <> הנקודות מעלות דרגת לימוד באתר, לא דרגה רשמית (<a href="/ranks/">מה הן הדרגות בשוגי</a>).</>}</p>
-      <p class="cta"><a class="btn" href="/course/"><span>מסלול לימוד אישי, עם חשבון חינמי</span><Fragment set:html={arrow} /></a> <a href="/account/?mode=signup">⟦פתח|פתחי⟧ חשבון בחינם</a></p>
+      <p class="cta"><a class="btn" href="/course/?route=chess"><span>מסלול לימוד אישי, עם חשבון חינמי</span><Fragment set:html={arrow} /></a> <a href="/account/?mode=signup">⟦פתח|פתחי⟧ חשבון בחינם</a></p>
     </div>
   )}
   {tryLive && <p class="small muted">רוצה קודם לראות איך זה נראה? <a href="/try/">משחק אחד, מהלך אחרי מהלך</a>.</p>}
@@ -182,7 +182,7 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
     ) : (
       <a class="btn" href="/rules/02-how-pieces-move/"><span>⟦הכר|הכירי⟧ את הכלים</span><Fragment set:html={arrow} /></a>
     )}
-    {courseLive && <a class="btn btn-ghost" href="/course/">מסלול לימוד אישי</a>}
+    {courseLive && <a class="btn btn-ghost" href="/course/?route=chess">מסלול לימוד אישי</a>}
   </div>
   {courseLive && <p class="small muted">המסלול שומר את ההתקדמות בחשבון: <a href="/account/?mode=signup">⟦פתח|פתחי⟧ חשבון בחינם</a>.</p>}
   <p class="small muted">רוצה יריבים אנושיים? שחקנים ישראלים נפגשים ב<a href="/community/">קהילה שלנו</a>, ומשחקים פומביים וטורנירים מתקיימים {guideLive ? <a href="/lishogi/">בליש׳וגי</a> : 'בליש׳וגי'}.</p>

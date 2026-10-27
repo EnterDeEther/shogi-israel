@@ -1,7 +1,7 @@
 ---
-// Static board rendered at build time from SFEN. Letters by default, kanji via the global toggle.
+// Static board rendered at build time from SFEN. Hebrew letters by default, English letters or kanji via the global toggle.
 // Never mirrored: the grid is dir="ltr", file 9 on the left, rank 1 on top.
-import { parseSfen, describe, letterOf, kanjiOf, squareLabel } from '../lib/sfen';
+import { parseSfen, describe, letterOf, kanjiOf, hebrewOf, squareLabel } from '../lib/sfen';
 import PieceToggle from './PieceToggle.astro';
 
 interface Props {
@@ -50,6 +50,7 @@ const senteHand = handOf('sente');
         >
           {s.piece && (
             <span class:list={['pc', { g: s.piece.side === 'gote', pro: s.piece.promoted }]}>
+              <span class:list={['ph', { two: hebrewOf(s.piece).length > 1, crown: s.piece.type === 'K' }]} dir="rtl">{s.piece.type === 'K' && <svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7 10 .8 14.4 7 19 3.2 17.2 11.2H2.8Z" /></svg>}<span>{hebrewOf(s.piece)}</span></span>
               <span class="pl">{letterOf(s.piece)}</span>
               <span class="pk" lang="ja">{kanjiOf(s.piece)}</span>
             </span>
@@ -119,14 +120,23 @@ const senteHand = handOf('sente');
   .pc::after { inset: 1.5px; background: var(--piece); }
   .pc.g { transform: rotate(180deg); }
   .pc.g::after { background: var(--piece-gote); }
-  .pl, .pk { position: relative; z-index: 1; font-size: clamp(12px, 4.2vw, 19px); }
-  .pl { font: 800 clamp(12px, 4.2vw, 19px)/1 var(--f-body); letter-spacing: -0.5px; }
-  .pc.pro .pl, .pc.pro .pk { color: var(--piece-seal); }
-  .pk { display: none; font-family: var(--f-kanji); font-weight: 800; }
-  :global(html[data-pieces="kanji"]) .pl { display: none; }
+  .ph, .pl, .pk { position: relative; z-index: 1; font-size: clamp(12px, 4.2vw, 19px); }
+  .ph, .pl { font: 800 clamp(12px, 4.2vw, 19px)/1 var(--f-body); letter-spacing: -0.5px; }
+  .ph { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; unicode-bidi: isolate; }
+  .ph.two { font-size: clamp(11px, 3.6vw, 16px); }
+  /* the king's crown: drawn above the מ, in the letter's ink */
+  .ph.crown { margin-top: -4%; font-size: clamp(11px, 3.7vw, 17px); }
+  .ph svg { width: 1.05em; height: auto; fill: currentColor; }
+  .pc.pro .ph, .pc.pro .pl, .pc.pro .pk { color: var(--piece-seal); }
+  .pc.pro .ph { font-weight: 900; }
+  .pl, .pk { display: none; }
+  .pk { font-family: var(--f-kanji); font-weight: 800; }
+  :global(html[data-pieces="letters"]) .ph { display: none; }
+  :global(html[data-pieces="letters"]) .pl { display: inline; }
+  :global(html[data-pieces="kanji"]) .ph { display: none; }
   :global(html[data-pieces="kanji"]) .pk { display: inline; }
-  .kanji .pl { display: none; }
-  .kanji .pk { display: inline; }
+  .kanji .ph, .kanji .pl { display: none !important; }
+  .kanji .pk { display: inline !important; }
 
   /* Interactive states, switched on by the Task script */
   .bd:global(.live) .sq { cursor: pointer; -webkit-tap-highlight-color: transparent; }

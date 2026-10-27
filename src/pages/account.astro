@@ -253,7 +253,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
   import { accountsEnabled } from '../lib/account-config';
   import { stats, type InboxGroup, type SyncedProgress } from '../lib/progress-sync';
   import { updateInbox } from '../lib/progress-local';
-  import { KIND_LABEL, nextStep, pathProgress, stepHref, TRACK_INFO } from '../lib/curriculum';
+  import { KIND_LABEL, nextStep, pathProgress, placeLabel, stepHref, whereLabel } from '../lib/curriculum';
   import { rankFor, xpBreakdown } from '../lib/xp';
   import { savedGender } from '../lib/gender';
 
@@ -337,22 +337,22 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
     function showCourse(p: SyncedProgress) {
       const next = nextStep(p, levelCounts);
       const total = pathProgress(p, levelCounts);
-      const track = p.course.track;
+      const placed = !!p.course.route;
       const xp = xpBreakdown(p, levelCounts).total;
       const r = rankFor(xp);
       $('[data-course-kanji]').textContent = r.rank.kanji;
       $('[data-course-rank]').textContent = `דרגה ${r.rank.name}`;
       $('[data-course-xp]').textContent = `${xp.toLocaleString('he-IL')} נקודות${r.next ? ` · עוד ${(r.next.min - xp).toLocaleString('he-IL')} לדרגה ${r.next.name}` : ''}`;
-      $('[data-course-where]').textContent = track
-        ? `נקודת ההתחלה: ${TRACK_INFO[track].label}${next ? ` · ${next.unit.phase ? `שלב ${next.unit.phase}: ` : ''}${next.unit.title}` : ''}`
+      $('[data-course-where]').textContent = placed
+        ? `נקודת ההתחלה: ${placeLabel(p.course)}${next ? ` · עכשיו ב${whereLabel(next.unit)}` : ''}`
         : 'עוד לא בחרת מאיפה להתחיל.';
       $('[data-course-title]').textContent = next ? `הצעד הבא: ${next.step.title} (${KIND_LABEL[next.step.kind]})` : 'סיימת את כל המסלול!';
       $('[data-course-bar]').style.width = `${total.of ? Math.round((100 * total.done) / total.of) : 0}%`;
       $('[data-course-count]').textContent = `${total.done} מתוך ${total.of} צעדים`;
       const link = $<HTMLAnchorElement>('[data-course-next]');
       link.hidden = !next;
-      link.href = track && next ? stepHref(next.step, p, levelCounts) : '/course/';
-      $('span', link).textContent = track ? 'לצעד הבא' : '⟦בחר|בחרי⟧ מאיפה להתחיל';
+      link.href = placed && next ? stepHref(next.step, p, levelCounts) : '/course/';
+      $('span', link).textContent = placed ? 'לצעד הבא' : '⟦בחר|בחרי⟧ מאיפה להתחיל';
     }
 
     // Notification settings: which kinds of notes the bell shows (SyncedProgress.inbox.off, synced).

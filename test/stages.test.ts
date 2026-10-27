@@ -118,15 +118,15 @@ describe('every level is solvable with 3 stars', () => {
       );
 });
 
-test('40 stages, 183 levels', () => {
-  expect(stages.length).toBe(40);
-  expect(stages.reduce((a, s) => a + s.levels.length, 0)).toBe(183);
+test('42 stages, 195 levels', () => {
+  expect(stages.length).toBe(42);
+  expect(stages.reduce((a, s) => a + s.levels.length, 0)).toBe(195);
 });
 
 test('no string falls back to its key', () => {
   const strings = he as Record<string, string>;
   for (const s of stages) {
-    for (const t of [s.title, s.subtitle, s.intro, s.complete, ...s.levels.flatMap((l) => [l.goal, l.text ?? '', ...(l.why ?? []), ...(l.replies ?? [])])])
+    for (const t of [s.title, s.subtitle, s.intro, s.complete, ...s.levels.flatMap((l) => [l.goal, l.text ?? '', l.recap ?? '', ...(l.why ?? []), ...(l.replies ?? [])])])
       expect(Object.keys(strings).includes(t), `untranslated: ${t}`).toBe(false);
   }
 });

@@ -8,7 +8,7 @@
 // Manual runs, with the cron Bearer token: ?dry=1 returns the reports as JSON without sending or saving;
 // ?kind=weekly sends the weekly report today.
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { buildReport, REPORT_FROM, reportEmail, reportsDue, signupEmail, totals, type Email, type PlayerInput, type Totals } from '../src/lib/admin-report.js';
+import { adLabel, buildReport, REPORT_FROM, reportEmail, reportsDue, signupEmail, totals, type Email, type PlayerInput, type Totals } from '../src/lib/admin-report.js';
 import { israelDay } from '../src/lib/notify.js';
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -33,11 +33,11 @@ async function send(resendKey: string, to: string, email: Email, tag: string): P
 }
 
 async function authUsers(db: SupabaseClient) {
-  const users: { id: string; created_at: string; confirmed: boolean }[] = [];
+  const users: { id: string; created_at: string; confirmed: boolean; ad: string | null }[] = [];
   for (let page = 1; page < 50; page++) {
     const { data, error } = await db.auth.admin.listUsers({ page, perPage: 1000 });
     if (error) throw error;
-    for (const u of data.users) users.push({ id: u.id, created_at: u.created_at, confirmed: !!u.email_confirmed_at });
+    for (const u of data.users) users.push({ id: u.id, created_at: u.created_at, confirmed: !!u.email_confirmed_at, ad: adLabel(u.user_metadata?.ad_source) });
     if (data.users.length < 1000) break;
   }
   return users;
@@ -67,7 +67,7 @@ async function players(db: SupabaseClient): Promise<PlayerInput[]> {
     id: u.id, nickname: nick.get(u.id) ?? null, created_at: u.created_at, confirmed: u.confirmed,
     progress: prog.get(u.id)?.data ?? null, progress_at: prog.get(u.id)?.updated_at ?? null,
     games: g.get(u.id)?.games ?? 0, wins: g.get(u.id)?.wins ?? 0, last_game_at: g.get(u.id)?.last ?? null,
-    last_seen_at: pref.get(u.id)?.last_seen_at ?? null, email_week: !!pref.get(u.id)?.email_week,
+    last_seen_at: pref.get(u.id)?.last_seen_at ?? null, email_week: !!pref.get(u.id)?.email_week, ad: u.ad,
   }));
 }
 
@@ -128,7 +128,9 @@ export async function POST(): Promise<Response> {
     e.db.from('notification_prefs').select('user_id, email_week').in('user_id', batch.map((p) => p.id)),
   ]);
   const week = new Set((prefs ?? []).filter((r) => r.email_week).map((r) => r.user_id));
-  const ok = await send(e.resendKey, e.to, signupEmail(batch.map((p) => ({ nickname: p.nickname, created_at: p.created_at, total: count ?? 0, email_week: week.has(p.id) }))), 'admin-signup');
+  const ads = new Map<string, string | null>();
+  for (const p of batch) ads.set(p.id, adLabel((await e.db.auth.admin.getUserById(p.id)).data.user?.user_metadata?.ad_source));
+  const ok = await send(e.resendKey, e.to, signupEmail(batch.map((p) => ({ nickname: p.nickname, created_at: p.created_at, total: count ?? 0, email_week: week.has(p.id), ad: ads.get(p.id) }))), 'admin-signup');
   // not sent: free the claim so the next ping (or the daily report) tries again
   if (!ok) await e.db.from('admin_alerts').delete().in('user_id', batch.map((p) => p.id));
   return Response.json({ sent: ok ? batch.length : 0 });

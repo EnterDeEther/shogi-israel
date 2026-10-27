@@ -7,10 +7,13 @@
 import { categories, nextStage } from './categories';
 import type LearnCtrl from './ctrl';
 import { i18n, i18nFormat } from './i18n';
-import type { Stage } from './interfaces';
+import type { CourseLevel, Stage } from './interfaces';
+import { READ_MORE } from './read-more';
+import { chessNote, hasChessText, isChessRoute, setRoute, stageText } from './route';
 import { stageUrl } from './urls';
 import { average } from './util';
 import { courseNext } from '../lib/next-step';
+import { currentPieceSet } from '../lib/piece-set';
 
 // Same list and random pick as lila's views/congrats.ts
 const congratsKeys = [
@@ -51,7 +54,8 @@ const GUIDE: Record<string, { anchor: string; text: string }> = {
 
 // The game phase a lesson belongs to (opening, middle game, endgame), shown as a chip that links to the explanation.
 const PHASE_BY_CATEGORY: Record<string, string> = { openings: 'il_phaseOpening', castles: 'il_phaseCastles', strategy: 'il_phaseMiddle' };
-const PHASE_BY_STAGE: Record<string, string> = { whatIf: 'il_phaseOpening', checkmate1: 'il_phaseEnd' };
+const PHASE_BY_STAGE: Record<string, string> = { whatIf: 'il_phaseOpening', checkmate1: 'il_phaseEnd', value: 'il_phaseMiddle' };
+const LEVEL_KEY: Record<CourseLevel, string> = { beginner: 'il_courseBeginner', intermediate: 'il_courseIntermediate', advanced: 'il_courseAdvanced' };
 const phaseOf = (categoryKey: string, stageKey?: string): string | undefined => (stageKey && PHASE_BY_STAGE[stageKey]) || PHASE_BY_CATEGORY[categoryKey];
 const phaseChip = (phase: string | undefined, stop = false) =>
   phase && el('p', { class: 'phase' }, el('a', { href: '/learn/guide/#phases', onclick: stop ? (e: Event) => e.stopPropagation() : undefined }, i18n(phase)));
@@ -86,7 +90,7 @@ const pieceStages: Record<string, string> = {
 };
 const sealStages: Record<string, string> = {
   introduction: '始', capture: '取', drop: '打', protection: '守', check1: '手',
-  outOfCheck: '逃', checkmate1: '詰', value: '価',
+  outOfCheck: '逃', checkmate1: '詰', setup: '並', repetition: '千', value: '価',
   staticRook: '居', rangingRook: '振',
   fourthFileRook: '四', centralRook: '中', thirdFileRook: '三', yagura: '矢', bishopExchange: '角', ishida: '石',
   quickIshida: '罠', opposingRook: '向', doubleRangingRook: '相', sidePawn: '横', twistingRook: '捻',
@@ -230,7 +234,10 @@ function renderHome(ctrl: LearnCtrl, _root: HTMLElement, q: Q, go: Go, stageLink
       sealImg(seal), el('span', { class: 'text' }, el('h3', {}, title), el('span', { class: 'subtitle' }, subtitle)));
 
   q('[data-map]').replaceChildren(
-    ...categories.map((c) =>
+    ...categories.flatMap((c, i) => [
+      // Dean, 2026-10-27: the map is split into three course levels, each one starting with its own heading
+      c.level !== categories[i - 1]?.level ? el('p', { class: 'course-level', id: `level-${c.level}` },
+        el('span', {}, i18n('il_courseLevelNote')), i18n(LEVEL_KEY[c.level])) : null,
       el('section', { class: 'categ', 'aria-labelledby': `cat-${c.key}` },
         el('h2', { id: `cat-${c.key}` }, c.name),
         phaseChip(phaseOf(c.key)),
@@ -251,7 +258,7 @@ function renderHome(ctrl: LearnCtrl, _root: HTMLElement, q: Q, go: Go, stageLink
           }),
         ),
       ),
-    ),
+    ]).filter((n): n is HTMLElement => !!n),
     el('section', { class: 'categ what-next', 'aria-labelledby': 'cat-next' },
       el('h2', { id: 'cat-next' }, i18n('whatNext')),
       el('p', {}, i18n('youKnowHowToPlayShogi')),
@@ -324,6 +331,8 @@ function renderLesson(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go, stageLin
 
   // overlays on the board (lila overlays/starting.ts, overlays/completed.ts)
   const overlay = q('[data-overlay]');
+  const chess = (starting || completed) && isChessRoute();
+  const note = starting && chessNote(stage.key, chess);
   if (starting) {
     overlay.hidden = false;
     overlay.className = 'learn__overlay starting';
@@ -334,7 +343,12 @@ function renderLesson(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go, stageLin
         el('p', { class: 'eyebrow' }, i18nFormat('stageX', stage.id)),
         el('h2', { id: 'learn-ov-title' }, stage.title),
         phaseChip(phaseOf(vm.category.key, stage.key), true),
-        el('p', {}, rich(stage.intro)),
+        el('p', {}, rich(stageText(stage.key, 'Intro', stage.intro, chess))),
+        note && el('p', { class: 'chess-note' }, rich(note)),
+        // Chess route only: a way back to the plain explanation (the /chess/ page and the starting point turn the route on)
+        chess && hasChessText(stage.key) && el('p', { class: 'small route-switch' },
+          el('button', { type: 'button', class: 'linkish', 'data-fid': 'route-main', onclick: go(() => setRoute('main')) }, i18n('il_chessRouteOff'))),
+        READ_MORE[stage.key] && el('p', { class: 'guide-link' }, el('a', { href: `/${READ_MORE[stage.key]}/`, onclick: (e: Event) => e.stopPropagation() }, i18n('il_b_readMore'))),
         GUIDE[vm.category.key] && el('p', { class: 'guide-link' }, el('a', { href: `/learn/guide/#${GUIDE[vm.category.key].anchor}`, onclick: (e: Event) => e.stopPropagation() }, i18n('il_guideRead'))),
         el('button', { type: 'button', class: 'btn primary', onclick: start, 'data-autofocus': true, 'data-fid': 'letsgo' }, i18n('letsGo')),
       ),
@@ -349,7 +363,7 @@ function renderLesson(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go, stageLin
       el('div', { class: 'screen', role: 'dialog', 'aria-labelledby': 'learn-ov-title' },
         stars(avg),
         el('h2', { id: 'learn-ov-title' }, i18nFormat('stageXComplete', stage.id)),
-        el('p', {}, rich(stage.complete)),
+        el('p', {}, rich(stageText(stage.key, 'Complete', stage.complete, chess))),
         el('div', { class: 'buttons' },
           next
             ? el('button', { type: 'button', class: 'btn primary', 'data-autofocus': true, 'data-fid': 'ov-next', onclick: go(() => ctrl.nextLesson()) },
@@ -652,7 +666,9 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
             level.replies?.[i] && level.replyNames?.[i] && i < lastIdx
               ? el('span', { class: 'rep' }, ' ', el('bdi', { dir: 'ltr', class: 'mv opp' }, level.replyNames[i]), ' ', rich(level.replies[i]))
               : null))))
-      : el('p', { class: 'lead' }, el('span', { class: 'muted' }, i18n('il_doneWith')), ' ', rich(level.goal.replace(/ המהלכים.*$/, '')));
+      : level.recap
+        ? el('div', { class: 'recap' }, el('p', { class: 'eyebrow' }, i18n('il_recapTitle')), el('p', { class: 'lead' }, rich(level.recap)))
+        : el('p', { class: 'lead' }, el('span', { class: 'muted' }, i18n('il_doneWith')), ' ', rich(level.goal.replace(/ המהלכים.*$/, '')));
     body = [
       lastReply ? reply(lastIdx) : null,
       el('h2', {}, congratsFor(`${stage.key}${level.id}`), ' ', stars(vm.score ?? 0)),
@@ -721,10 +737,11 @@ function steps(made: number, total: number): HTMLElement {
 }
 
 export function pieceSetSwitch(): HTMLElement {
-  const kanji = document.documentElement.dataset.pieces === 'kanji';
+  const set = currentPieceSet();
   return el('div', { class: 'seg', role: 'group', 'aria-label': i18n('il_pieceSet') },
-    el('button', { type: 'button', 'data-pieces-set': 'letters', 'aria-pressed': String(!kanji) }, i18n('il_letters')),
-    el('button', { type: 'button', 'data-pieces-set': 'kanji', 'aria-pressed': String(kanji) }, i18n('il_kanji')),
+    el('button', { type: 'button', 'data-pieces-set': 'hebrew', 'aria-pressed': String(set === 'hebrew') }, i18n('il_hebrew')),
+    el('button', { type: 'button', 'data-pieces-set': 'letters', 'aria-pressed': String(set === 'letters') }, i18n('il_letters')),
+    el('button', { type: 'button', 'data-pieces-set': 'kanji', 'aria-pressed': String(set === 'kanji') }, i18n('il_kanji')),
   );
 }
 

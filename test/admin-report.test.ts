@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { buildReport, reportEmail, reportsDue, signupEmail, totals, type PlayerInput } from '../src/lib/admin-report';
+import { adLabel, buildReport, reportEmail, reportsDue, signupEmail, totals, type PlayerInput } from '../src/lib/admin-report';
 
 const NOW = new Date('2026-11-02T06:00:00Z'); // Monday 08:00 in Israel
 const ago = (days: number) => new Date(NOW.getTime() - days * 864e5).toISOString();
@@ -52,6 +52,20 @@ describe('admin reports', () => {
     const s = signupEmail([{ nickname: 'yuki', created_at: ago(0), total: 4, email_week: true }]);
     expect(s.subject).toContain('yuki');
     expect(s.text).toContain('4 חשבונות');
+  });
+
+  test('the ad that brought a player shows on the alert and per campaign in the weekly report', () => {
+    expect(adLabel({ source: 'google', medium: 'display', campaign: 'anime_segment', landing: '/try/' })).toBe('google / display / anime_segment');
+    expect(adLabel(undefined)).toBeNull();
+    const s = signupEmail([{ nickname: 'yuki', created_at: ago(0), total: 4, email_week: false, ad: 'google / display / anime_segment' }]);
+    expect(s.text).toContain('הגיע ממודעה: google / display / anime_segment');
+    const r = buildReport('weekly', [
+      player({ id: 'a', created_at: ago(1), ad: 'google / display / anime_segment' }),
+      player({ id: 'b', created_at: ago(2), ad: 'google / display / anime_segment' }),
+      player({ id: 'c', created_at: ago(3) }),
+    ], new Map(), NOW);
+    expect(r.insights.join(' ')).toContain('נרשמו לפי קמפיין: google / display / anime_segment 2, בלי מודעה 1.');
+    expect(buildReport('daily', [player({ created_at: ago(0.5), ad: 'x' })], new Map(), NOW).insights.join(' ')).not.toContain('קמפיין');
   });
 
   test('the weekly report goes on Sundays (Israel time)', () => {

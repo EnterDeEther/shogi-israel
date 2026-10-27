@@ -36,7 +36,7 @@ export function xpBreakdown(p: SyncedProgress, levelCounts: Record<string, numbe
   const done = ALL_STEPS.filter((s) => stepState(s, p, levelCounts) === 'done').length;
   // a unit counts once every required step in it is really done (skipped ones block the bonus; optional ones don't)
   const units = CURRICULUM.filter((u) => {
-    const req = stepsFor(u, p.course.track).filter((s) => !isOptional(s, p.course.track));
+    const req = stepsFor(u, p.course).filter((s) => !isOptional(s, p.course));
     return req.length > 0 && req.every((s) => stepState(s, p, levelCounts) === 'done');
   }).length;
   const course = done * XP.step + units * XP.unit;
