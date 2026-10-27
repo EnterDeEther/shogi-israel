@@ -82,6 +82,10 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
       rememberAdSource();
     </script>
     <script>
+      // The (?) explanations (lib/info-tips.ts): one set of listeners for every tip on the page.
+      import '../scripts/info-tips';
+    </script>
+    <script>
       // One listener for every letters/kanji switch on the page.
       const root = document.documentElement;
       const sync = () => {

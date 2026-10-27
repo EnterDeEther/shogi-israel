@@ -17,6 +17,11 @@ so a slot for a page still being built can wait in the list and appears when the
 Sections: "למדו לשחק" (lessons only), "שחקו", "הכירו את השוגי" (background reading), "כלים", "קהילה". Each section's `blurb` and links also draw the "מה יש באתר" cards on the home page. A section with a single live link shows as a plain link in the menu.
 Every page is in `sitemap-index.xml` unless it sets `noindex` on `<Base>`.
 
+## Quick info tips (?)
+A small (?) after a word the visitor may not know opens a one-line explanation with a link to the full page. Phones tap, computers point or click, keyboards use Enter and Esc.
+The text of every tip is in `src/lib/info-tips.ts` (the header comment says how to write one). Use `<InfoTip id="rank" />` (`src/components/InfoTip.astro`) in a page, or `tipEl('rank')` (`src/lib/info-tip-dom.ts`) inside `el(...)` in a screen drawn by script. `src/scripts/info-tips.ts` does the opening for the whole page, and the styles are at the end of `src/styles/global.css`.
+Never put a tip inside a link, a button or a `<summary>`. `test/info-tips.test.ts` checks the texts, their links and where tips are used.
+
 ## Share images and search data
 A page's link preview (og:image) is `public/og/<path with dashes>.png` when that file exists (`/rules/03-promotion/` → `rules-03-promotion.png`), otherwise `public/og/default.png`.
 The cards are written in `src/lib/og-cards.ts` (text, seal kanji, board). After changing one, or after adding a lesson, run `npm run og` (needs Playwright's Chromium) and commit the new images.
