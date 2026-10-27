@@ -48,8 +48,21 @@ export async function verifySignupCode(email: string, token: string) {
 export async function sendPasswordReset(email: string, captchaToken?: string) {
   return supabase().auth.resetPasswordForEmail(email, { redirectTo: redirectTo(), captchaToken });
 }
-export async function setPassword(password: string) {
-  return supabase().auth.updateUser({ password });
+/** Settles within ms: a request the network never answers becomes an error the form can show, not a dead button. */
+export function timed<T>(p: Promise<T>, ms = 20000): Promise<T> {
+  return Promise.race([p, new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))]);
+}
+/** nonce: the code from reauthenticate(), when Supabase asks for one (secure password change). */
+export async function setPassword(password: string, nonce?: string) {
+  return timed(supabase().auth.updateUser(nonce ? { password, nonce } : { password }));
+}
+/** Emails a code that confirms it's really them, for setPassword's nonce. */
+export async function reauthenticate() {
+  return timed(supabase().auth.reauthenticate());
+}
+/** The address changes once the link sent to it is opened (with "secure email change", the old address gets one too). */
+export async function changeEmail(email: string) {
+  return timed(supabase().auth.updateUser({ email }, { emailRedirectTo: redirectTo() }));
 }
 /** Signing out also clears this device's progress (and how the site speaks to them), so the next person on a
  * shared device starts fresh. */
@@ -191,7 +204,8 @@ export async function syncGames(): Promise<number> {
 }
 
 // ---------- progress ----------
-/** Pull the account's progress, merge it with this device's, and save the union on both sides. */
+/** Pull the account's progress, merge it with this device's, and save the union on both sides.
+ * Null when the account couldn't be read or written (the device keeps its copy either way). */
 export async function syncProgress(): Promise<SyncedProgress | null> {
   const session = await getSession();
   if (!session) return null;
@@ -206,7 +220,8 @@ export async function syncProgress(): Promise<SyncedProgress | null> {
     document.dispatchEvent(new CustomEvent('progress-synced'));
   }
   if (!data || !same(merged, remote)) {
-    await db.from('progress').upsert({ user_id: session.user.id, data: merged, updated_at: new Date().toISOString() });
+    const { error: saveError } = await db.from('progress').upsert({ user_id: session.user.id, data: merged, updated_at: new Date().toISOString() });
+    if (saveError) return null;
   }
   return merged;
 }
