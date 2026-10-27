@@ -15,8 +15,8 @@ Copyright (c) 2019 onwards the li[shogi in sca]la authors. **AGPL-3.0-or-later**
 | `stages/*.ts` (18) | lila | i18n import path only; positions, goals, keys unchanged |
 | `i18n.ts`, `i18n/he.json` | ours | Hebrew written from our locked glossary; **keys = Lishogi's `learn.xml` names**; `il_*` keys are ours |
 | `storage.ts`, `boot.ts`, `view.ts`, `globals.d.ts` | ours | replace lila's globals, build glue and snabbdom views. `view.ts` follows lila's screens: stage map with progress and "what next", lesson with the side map and back button, the table, the start and end overlays |
-| `prefs.ts` | ours | settings dialog (cog wheel): square numbers, move dots, animation, sound; piece set is the site-wide switch |
-| `sound.ts` | ours | sounds made with Web Audio (Lishogi's sound sets are not free) |
+| `prefs.ts` | ours | settings dialog (cog wheel): square numbers, move dots, animation, sound (+ volume, set on /account/); piece set is the site-wide switch |
+| `sound.ts` | ours | every sound on the site, Web Audio: Dean's recorded piece for the board, synthesized koto, hyoshigi and rin for the rest (Lishogi's sound sets are not free) |
 | `keyboard.ts` | ours | keyboard play (IS 5568): arrows, two digits jump to a square, Enter, D for the hand, +/- for promotion, live announcements in Hebrew |
 | `urls.ts` | ours | `/learn/<slug>/` (stage key in kebab case: `out-of-check`) |
 | `route.ts` | ours | chess-player route: `il_chess_<stage>Intro/Complete` replace a stage's intro and recap, `il_chess_<stage>Note` adds a note under it; on with `?route=chess` or the course's chess starting point |

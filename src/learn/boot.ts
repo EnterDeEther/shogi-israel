@@ -5,8 +5,8 @@ import LearnCtrl from './ctrl';
 import { i18n } from './i18n';
 import { currentPieceSet } from '../lib/piece-set';
 import { attachKeyboard } from './keyboard';
-import { type LearnPrefs, loadPrefs, savePrefs } from './prefs';
-import { setSoundEnabled } from './sound';
+import { type LearnPrefs, type SwitchPref, loadPrefs, savePrefs } from './prefs';
+import { preloadSounds, setSoundEnabled, setSoundVolume } from './sound';
 import { routeFromUrl } from './route';
 import { stageSlug } from './urls';
 import { el, icon, mount, pieceSetSwitch, render } from './view';
@@ -40,13 +40,14 @@ export function bootLearn(root: HTMLElement): LearnCtrl {
   const apply = (p: LearnPrefs) => {
     root.classList.toggle('no-coords', !p.coords);
     setSoundEnabled(p.sound);
+    setSoundVolume(p.volume);
     ctrl?.shogiground.set({
       movable: { showDests: p.dests },
       droppable: { showDests: p.dests },
       animation: { enabled: p.animation },
     });
   };
-  const toggle = (key: keyof LearnPrefs, label: string) =>
+  const toggle = (key: SwitchPref, label: string) =>
     el('label', { class: 'pref' },
       el('input', {
         type: 'checkbox', ...(prefs[key] ? { checked: true } : {}),
@@ -114,6 +115,7 @@ export function bootLearn(root: HTMLElement): LearnCtrl {
   // lila redraws only when a level ends; we also redraw on each board change for the live star counter.
   ctrl.shogiground.set({ events: { change: redraw } });
   apply(prefs);
+  void preloadSounds(); // the piece recording, ready before the first move
 
   attachKeyboard(
     ctrl,

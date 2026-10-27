@@ -13,7 +13,7 @@ import { isDrop, makeSquareName, makeUsi, parseSquareName, parseUsi } from 'shog
 import { pieceCanPromote, pieceForcePromote, promote } from 'shogiops/variant/util';
 import type { LearnPrefs } from '../learn/prefs';
 import { arrow, circle } from '../learn/shapes';
-import { play as playSound } from '../learn/sound';
+import { play as playSound, playMove } from '../learn/sound';
 import { Line } from '../play/game';
 import { type Length, markSolved, type Puzzle, solvedList } from './puzzles';
 import { legalMoves, Solver } from './solve';
@@ -116,8 +116,8 @@ export default class TsumeCtrl {
       highlight: { check: true, lastDests: true },
       hands: { inlined: true },
       events: {
-        move: (_o, _d, _p, captured) => playSound(captured ? 'capture' : 'move'),
-        drop: () => playSound('move'),
+        move: (_o, _d, promotion, captured) => playMove(!!captured, promotion),
+        drop: () => playSound('drop'),
       },
     };
   }
@@ -228,7 +228,7 @@ export default class TsumeCtrl {
     const clean = this.mistakes === 0 && !this.hinted;
     if (clean) markSolved(this.n, this.id);
     this.feedback = { kind: 'solved', clean };
-    playSound('success');
+    playSound('solved');
     this.syncGround();
     this.redraw();
   }
