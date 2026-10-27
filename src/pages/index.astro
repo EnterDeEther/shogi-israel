@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import Board from '../components/Board.astro';
 import LearnerHome from '../components/LearnerHome.astro';
+import Icon from '../components/Icon.astro';
 import { getCollection } from 'astro:content';
 import { RULES_COURSE, pad } from '../lib/course';
 import { FIRST_GAME, firstGamePlies } from '../lib/first-game';
@@ -189,7 +190,7 @@ if (hasCourse) Astro.csp?.insertScriptHash(`sha256-${createHash('sha256').update
     <ul class="offer">
       {sections.map((s) => (
         <li class="card">
-          <h3>{s.label}</h3>
+          <h3>{s.icon && <span class="card-ico"><Icon name={s.icon} size={22} /></span>}{s.label}</h3>
           {s.blurb && <p>{s.blurb}</p>}
           <ul>
             {s.links.map((l) => (
@@ -200,7 +201,7 @@ if (hasCourse) Astro.csp?.insertScriptHash(`sha256-${createHash('sha256').update
       ))}
       {isLive(ACCOUNT) && (
         <li class="card">
-          <h3>החשבון שלי</h3>
+          <h3>{ACCOUNT.icon && <span class="card-ico"><Icon name={ACCOUNT.icon} size={22} /></span>}החשבון שלי</h3>
           <p>ההתקדמות והמשחקים נשמרים בכל מכשיר. לא חובה, והכול עובד גם בלי.</p>
           <ul><li><a href="/account/">כניסה או הרשמה</a></li></ul>
         </li>
@@ -222,6 +223,14 @@ if (hasCourse) Astro.csp?.insertScriptHash(`sha256-${createHash('sha256').update
   markDone();
   document.addEventListener('progress-synced', markDone);
 
+  // The cards' pointer light (CSS above): where the pointer is, as a share of the card. Computers only.
+  if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    document.querySelectorAll<HTMLElement>('.card').forEach((c) => c.addEventListener('pointermove', (e) => {
+      const r = c.getBoundingClientRect();
+      c.style.setProperty('--mx', `${e.clientX - r.left}px`);
+      c.style.setProperty('--my', `${e.clientY - r.top}px`);
+    }));
+  }
 </script>
 
 <style>
@@ -264,15 +273,33 @@ if (hasCourse) Astro.csp?.insertScriptHash(`sha256-${createHash('sha256').update
 
   .phases-lead { margin: 0 0 14px; color: var(--ink-2); line-height: 1.6; max-width: 40em; }
   .phases { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 12px; counter-reset: ph; }
-  .phases li { counter-increment: ph; border: 1px solid var(--rule); border-radius: 8px; padding: 12px 16px; }
+  .phases li { counter-increment: ph; border: 1px solid var(--rule); border-radius: 10px; padding: 12px 16px; background: var(--surface); box-shadow: var(--shadow-1); }
   .phases h3 { margin: 0 0 4px; }
   .phases h3::before { content: counter(ph) ". "; color: var(--seal); }
   .phases p { margin: 0; color: var(--ink-2); line-height: 1.55; }
   @media (min-width: 700px) { .phases { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; } }
 
   .offer { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
-  .card { background: var(--washi-2); border: 1px solid var(--rule); border-radius: 8px; padding: 16px 18px 12px; }
-  .card h3 { font-family: var(--f-display); font-size: 21px; font-weight: 800; margin-bottom: 4px; }
+  .card {
+    position: relative; isolation: isolate; background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 16px 18px 12px; box-shadow: var(--shadow-1);
+    transition: box-shadow .2s var(--ease-out), border-color .15s ease;
+  }
+  /* a soft light follows the pointer across a card (computers only; the script below sets --mx / --my) */
+  @media (hover: hover) and (pointer: fine) {
+    .card::before {
+      content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; opacity: 0;
+      background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--seal) 9%, transparent), transparent 70%);
+      transition: opacity .25s ease;
+    }
+    .card:hover { box-shadow: var(--shadow-2); border-color: color-mix(in srgb, var(--seal) 30%, var(--rule)); }
+    .card:hover::before { opacity: 1; }
+  }
+  .card h3 { display: flex; align-items: center; gap: 10px; font-family: var(--f-display); font-size: 21px; font-weight: 800; margin-bottom: 6px; }
+  .card-ico {
+    flex: none; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px;
+    background: var(--washi-2); color: var(--seal); box-shadow: inset 0 0 0 1px var(--rule);
+  }
+  .card li a { transition: color .15s ease; }
   .card p { margin: 0 0 8px; color: var(--ink-2); line-height: 1.55; font-size: 16px; }
   .card ul { list-style: none; margin: 0; padding: 0; }
   .card li a { display: flex; align-items: center; min-height: 44px; font-weight: 700; color: var(--ink); text-decoration: none; border-top: 1px solid var(--rule); }
@@ -281,14 +308,14 @@ if (hasCourse) Astro.csp?.insertScriptHash(`sha256-${createHash('sha256').update
   @media (min-width: 700px) { .offer { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   @media (min-width: 1000px) { .offer { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; } }
 
-  .start { background: var(--washi-2); border: 1px solid var(--rule); border-radius: 8px; padding: 24px 22px; max-width: 720px; }
+  .start { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 24px 22px; max-width: 720px; box-shadow: var(--shadow-1); }
   .start h2 { margin-bottom: 8px; }
   .start p { margin: 0 0 16px; color: var(--ink-2); }
   .start-cta { display: flex; flex-direction: column; gap: 10px; }
   @media (min-width: 700px) { .start-cta { flex-direction: row; } }
 
   .course, .play { max-width: 720px; }
-  .community { background: var(--washi-2); border-radius: 8px; padding: 28px 22px; max-width: 720px; }
+  .community { background: var(--washi-2); border-radius: 10px; padding: 28px 22px; max-width: 720px; box-shadow: var(--shadow-1); }
   .community h2 { margin-bottom: 8px; }
   .community > p { margin: 0 0 16px; color: var(--ink-2); }
   .links { border-top-color: var(--rule); }

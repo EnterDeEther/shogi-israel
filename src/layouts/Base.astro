@@ -33,8 +33,8 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
     <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="icon" href="/favicon-192.png" sizes="192x192" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <meta name="theme-color" content="#F6F1E7" media="(prefers-color-scheme: light)" data-theme-color="light" />
-    <meta name="theme-color" content="#17150F" media="(prefers-color-scheme: dark)" data-theme-color="dark" />
+    <meta name="theme-color" content="#ECE4D4" media="(prefers-color-scheme: light)" data-theme-color="light" />
+    <meta name="theme-color" content="#221A14" media="(prefers-color-scheme: dark)" data-theme-color="dark" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="he_IL" />
     <meta property="og:site_name" content="שוגי ישראל" />
@@ -111,7 +111,7 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
       // Light / dark: the header button and the settings switches all land here. "auto" follows the system.
       const root = document.documentElement;
       const scheme = window.matchMedia('(prefers-color-scheme: dark)');
-      const COLORS = { light: '#F6F1E7', dark: '#17150F' };
+      const COLORS = { light: '#ECE4D4', dark: '#221A14' };
       const applyTheme = (pref: string) => {
         const dark = pref === 'auto' ? scheme.matches : pref === 'dark';
         root.setAttribute('data-theme', dark ? 'dark' : 'light');

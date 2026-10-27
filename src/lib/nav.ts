@@ -5,6 +5,8 @@
 // already and appears by itself when the page lands. Links with a #hash are always shown.
 // Only lessons go under "למד לשחק" (the newcomers' first step, /try/, first, then the guided course, /course/, which orders all the rest); background reading goes under "הכר את השוגי", utilities under "כלים".
 
+import type { IconName } from './icons';
+
 export interface NavLink {
   href: string;
   label: string;
@@ -13,6 +15,8 @@ export interface NavLink {
   external?: boolean;
   /** A topic inside the link before it: drawn as a small chip on phones, indented on desktop. */
   sub?: boolean;
+  /** Drawn beside the label in the menus (src/lib/icons.ts). Chips have none. */
+  icon?: IconName;
 }
 export interface NavSection {
   label: string;
@@ -20,6 +24,8 @@ export interface NavSection {
   blurb?: string;
   /** Where the site tour (src/lib/tour.ts) points at this section. */
   tour?: string;
+  /** Drawn on the section's home page card. */
+  icon?: IconName;
   links: NavLink[];
 }
 /** A top-level entry: a section (a dropdown on desktop, a heading on phones) or a single link. */
@@ -34,61 +40,66 @@ export const NAV: NavItem[] = [
   {
     label: '⟦הכר|הכירי⟧ את השוגי',
     tour: 'know',
+    icon: 'fan',
     blurb: 'מאיפה הוא בא, איך עובדות הדרגות, ומה מוכר ומה חדש אם ⟦אתה|את⟧ ⟦שחקן|שחקנית⟧ שחמט.',
     links: [
-      { href: '/chess/', label: 'לשחקני שחמט', hint: 'מה כבר מוכר, ומה חדש' },
-      { href: '/history/', label: 'ההיסטוריה של השוגי', hint: 'מ־1058 ועד היום' },
-      { href: '/ranks/', label: 'דרגות בשוגי', hint: 'קיו ודאן בעולם, ומה הדרגה שלך כאן' },
+      { href: '/chess/', label: 'לשחקני שחמט', hint: 'מה כבר מוכר, ומה חדש', icon: 'chess' },
+      { href: '/history/', label: 'ההיסטוריה של השוגי', hint: 'מ־1058 ועד היום', icon: 'scroll' },
+      { href: '/ranks/', label: 'דרגות בשוגי', hint: 'קיו ודאן בעולם, ומה הדרגה שלך כאן', icon: 'ranks' },
     ],
   },
   {
     label: '⟦למד|למדי⟧ לשחק',
     tour: 'learn',
+    icon: 'learn',
     blurb: 'מסלול מסודר מאפס ועד בעיות מט, בעברית ובחינם.',
     links: [
-      { href: '/try/', label: '⟦צפה|צפי⟧ במשחק אחד', hint: 'הצעד הראשון: מהלך אחרי מהלך, בלי ידע מוקדם' },
-      { href: '/course/', label: 'מסלול לימוד אישי', hint: 'מאיפה מתחילים, ומה הצעד הבא' },
-      { href: '/learn/', label: 'שיעורים אינטראקטיביים', hint: 'תרגול על הלוח, בשלוש רמות' },
+      { href: '/try/', label: '⟦צפה|צפי⟧ במשחק אחד', hint: 'הצעד הראשון: מהלך אחרי מהלך, בלי ידע מוקדם', icon: 'watch' },
+      { href: '/course/', label: 'מסלול לימוד אישי', hint: 'מאיפה מתחילים, ומה הצעד הבא', icon: 'course' },
+      { href: '/learn/', label: 'שיעורים אינטראקטיביים', hint: 'תרגול על הלוח, בשלוש רמות', icon: 'board' },
       { href: '/learn/#level-beginner', label: 'מתחילים', sub: true },
       { href: '/learn/#level-intermediate', label: 'בינוניים', sub: true },
       { href: '/learn/#level-advanced', label: 'מתקדמים', sub: true },
-      { href: '/rules/', label: 'חוקים בסיסיים', hint: 'קריאה: כל החוקים מאפס' },
-      { href: '/learn/guide/', label: 'פתיחות, מבצרים ואסטרטגיה', hint: 'מה זה ולמה' },
-      { href: '/tsume/', label: 'בעיות מט', hint: 'אימון לסוף המשחק: מט ב־1 עד 7 מהלכים' },
+      { href: '/rules/', label: 'חוקים בסיסיים', hint: 'קריאה: כל החוקים מאפס', icon: 'rules' },
+      { href: '/learn/guide/', label: 'פתיחות, מבצרים ואסטרטגיה', hint: 'מה זה ולמה', icon: 'castle' },
+      { href: '/tsume/', label: 'בעיות מט', hint: 'אימון לסוף המשחק: מט ב־1 עד 7 מהלכים', icon: 'king' },
     ],
   },
   {
     label: '⟦שחק|שחקי⟧',
     tour: 'play',
+    icon: 'play',
     blurb: 'נגד המחשב כאן באתר, או מול שחקנים מכל העולם.',
     links: [
-      { href: '/play/', label: 'נגד המחשב', hint: 'משחק מלא, ישר בדפדפן' },
-      { href: '/lishogi/', label: '⟦שחק|שחקי⟧ אונליין בליש׳וגי', hint: 'מדריך: משחקים מול כל העולם' },
+      { href: '/play/', label: 'נגד המחשב', hint: 'משחק מלא, ישר בדפדפן', icon: 'cpu' },
+      { href: '/lishogi/', label: '⟦שחק|שחקי⟧ אונליין בליש׳וגי', hint: 'מדריך: משחקים מול כל העולם', icon: 'online' },
     ],
   },
   {
     label: 'כלים',
+    icon: 'tools',
     blurb: 'שעון משחק, וצפייה במשחקים שנרשמו.',
     links: [
-      { href: '/clock/', label: 'שעון משחק', hint: 'איך משחקים על זמן' },
-      { href: '/kif/', label: 'רישום משחקים (KIF)', hint: 'צפייה וניתוח של משחק שנרשם' },
+      { href: '/clock/', label: 'שעון משחק', hint: 'איך משחקים על זמן', icon: 'clock' },
+      { href: '/kif/', label: 'רישום משחקים (KIF)', hint: 'צפייה וניתוח של משחק שנרשם', icon: 'kif' },
     ],
   },
   {
     label: 'קהילה',
     tour: 'community',
+    icon: 'group',
     blurb: 'שחקנים ישראלים: איפה משחקים ומדברים.',
     links: [
-      { href: '/community/', label: 'דף הקהילה', hint: 'איפה משחקים ומדברים' },
-      { href: WHATSAPP_URL, label: 'קהילת הוואטסאפ', external: true },
-      { href: INSTAGRAM_URL, label: 'אינסטגרם', external: true },
+      { href: '/community/', label: 'דף הקהילה', hint: 'איפה משחקים ומדברים', icon: 'group' },
+      { href: WHATSAPP_URL, label: 'קהילת הוואטסאפ', external: true, icon: 'whatsapp-logo' },
+      { href: INSTAGRAM_URL, label: 'אינסטגרם', external: true, icon: 'instagram-logo' },
     ],
   },
-  { href: '/about/', label: 'אודות' },
+  { href: '/about/', label: 'אודות', icon: 'about' },
 ];
 
 /** The account link sits apart, at the end of the bar. Shows once /account/ exists. */
-export const ACCOUNT: NavLink = { href: '/account/', label: 'החשבון שלי' };
+export const ACCOUNT: NavLink = { href: '/account/', label: 'החשבון שלי', icon: 'account' };
 
 // Routes that exist, from the files in src/pages/ ("/src/pages/play/index.astro" -> "/play/").
 const routes = new Set(

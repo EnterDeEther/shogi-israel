@@ -26,7 +26,7 @@
 @media (max-width: 600px) {
   .play__board { max-width: none; margin-inline: calc(-1 * var(--gutter)); padding-left: 2px; padding-right: 15px; }
 }
-.play__sg.sg-wrap { border: 2px solid var(--grid); border-radius: 2px; box-shadow: 0 10px 24px -14px rgba(60, 40, 20, 0.55); }
+.play__sg.sg-wrap { border: 2px solid var(--grid); border-radius: 2px; box-shadow: var(--shadow-board); }
 .play__sgbox { position: relative; }
 .play__board:focus { outline: none; }
 .play__board:focus-visible .play__sg.sg-wrap { outline: 3px solid var(--focus); outline-offset: 3px; }
