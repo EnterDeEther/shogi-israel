@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import SoundSetting from '../components/SoundSetting.astro';
 import ThemeSetting from '../components/ThemeSetting.astro';
 import PasswordField from '../components/PasswordField.astro';
 import GenderSetting from '../components/GenderSetting.astro';
@@ -30,6 +31,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
         <h2>הגדרות</h2>
         <div class="setting"><p class="setting-label">מראה האתר</p><ThemeSetting /></div>
         <div class="setting"><p class="setting-label">איך לפנות אליי באתר</p><GenderSetting label="איך לפנות אליי באתר" /></div>
+        <div class="setting"><SoundSetting /></div>
       </section>
     )}
 
@@ -225,6 +227,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
             <GenderSetting label="איך לפנות אליי באתר ובמיילים" />
             <p class="small muted" data-gender-note>נשמר בחשבון ועובר איתך לכל מכשיר.</p>
           </div>
+          <div class="setting" id="sound"><SoundSetting /></div>
           <p><a href={ACCOUNT_TOUR_URL}>הצגת הסיור בחשבון שוב</a></p>
 
           <h2>פרטי החשבון</h2>

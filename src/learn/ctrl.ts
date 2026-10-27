@@ -25,7 +25,7 @@ import {
   illegalShogigroundMoveDests,
   inCheck,
 } from './shogi';
-import { play as playSound } from './sound';
+import { play as playSound, playMove } from './sound';
 import { stageSlug, stageUrl } from './urls';
 import { currentPosition } from './util';
 
@@ -199,7 +199,9 @@ export default class LearnCtrl {
   private applyUserMoveOrDrop(usi: Usi): void {
     if (this.vm) {
       this.vm.usiCList.push({ usi, color: this.vm.level.color });
-      this.shogiground.set({ checks: inCheck(currentPosition(this.vm.level, this.vm.usiCList)) });
+      const check = inCheck(currentPosition(this.vm.level, this.vm.usiCList));
+      this.shogiground.set({ checks: check });
+      if (check) playSound('check');
 
       // Shogi Israel: in a lesson that explains its moves, stop after a correct move: the coach popup
       // says why, and the opponent answers only when the learner presses continue
@@ -314,8 +316,8 @@ export default class LearnCtrl {
     this.applyUserMoveOrDrop(usi);
   }
 
-  onMove(_orig: Key, _dest: Key, _promotion: boolean, capturedPiece: Piece | undefined): void {
-    playSound(capturedPiece ? 'capture' : 'move');
+  onMove(_orig: Key, _dest: Key, promotion: boolean, capturedPiece: Piece | undefined): void {
+    playMove(!!capturedPiece, promotion);
 
     if (capturedPiece) {
       this.shogiground.addToHand({
@@ -326,6 +328,6 @@ export default class LearnCtrl {
   }
 
   onDrop(_piece: Piece, _key: Key): void {
-    playSound('move');
+    playSound('drop');
   }
 }

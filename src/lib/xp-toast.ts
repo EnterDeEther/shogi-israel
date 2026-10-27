@@ -6,6 +6,7 @@
 import { LEVEL_COUNTS } from './level-counts';
 import { readLocal } from './progress-local';
 import { rankFor, xpBreakdown } from './xp';
+import { play as playSound } from '../learn/sound';
 
 const SEEN = 'shogi-il.xp.seen';
 const GUEST_LAST = 'shogi-il.xp.guestNote'; // sessionStorage: when the last guest note showed
@@ -34,6 +35,9 @@ function show(html: string, big: boolean, guest = false) {
   box.classList.toggle('xp-toast--rank', big);
   box.classList.toggle('xp-toast--guest', guest);
   box.classList.add('xp-toast--on');
+  // with the slide-in; only ever after the visitor's own action on this page (these notes come from progress-changed and
+  // game-end), and sound.ts stays silent before the first tap anyway
+  playSound(big ? 'rank' : 'points');
   clearTimeout(timer);
   timer = window.setTimeout(() => box?.classList.remove('xp-toast--on'), big || guest ? 6000 : 2500);
 }

@@ -14,7 +14,7 @@ import type { Piece as OpsPiece, Role } from 'shogiops/types';
 import { isDrop, makeSquareName, makeUsi, opposite, parseSquareName, parseUsi } from 'shogiops/util';
 import { pieceCanPromote, pieceForcePromote, promote } from 'shogiops/variant/util';
 import type { LearnPrefs } from '../learn/prefs';
-import { play as playSound } from '../learn/sound';
+import { play as playSound, playMove } from '../learn/sound';
 import { storage } from '../learn/storage';
 import { bookMove } from './book';
 import { cancelSearches, getEngine } from './engine';
@@ -158,8 +158,8 @@ export default class PlayCtrl {
       highlight: { check: true, lastDests: true },
       hands: { inlined: true },
       events: {
-        move: (_o, _d, _p, captured) => playSound(captured ? 'capture' : 'move'),
-        drop: () => playSound('move'),
+        move: (_o, _d, promotion, captured) => playMove(!!captured, promotion),
+        drop: () => playSound('drop'),
       },
     };
   }
@@ -213,7 +213,10 @@ export default class PlayCtrl {
     this.resignConfirm = false;
     const end = this.line.end();
     if (end) this.finish(end);
-    else this.save();
+    else {
+      this.save();
+      if (this.line.current.isCheck()) playSound('check');
+    }
     this.syncGround();
     this.redraw();
   }
@@ -311,7 +314,7 @@ export default class PlayCtrl {
     this.startClock();
     this.save();
     this.syncGround();
-    playSound('start');
+    playSound('gameStart');
     this.redraw();
     if (this.line.current.turn !== playerColor) this.aiMove();
   }
@@ -326,7 +329,7 @@ export default class PlayCtrl {
     this.resignConfirm = false;
     saveFinished({ ...this.record });
     this.save();
-    playSound(end.winner === this.playerColor ? 'end' : 'fail');
+    playSound(end.winner === this.playerColor ? 'win' : end.winner ? 'lose' : 'end');
     if (viaApply) this.syncGround();
     this.redraw();
   }

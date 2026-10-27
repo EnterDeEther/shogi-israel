@@ -4,8 +4,8 @@
 // AGPL-3.0-or-later, like the rest of this site.
 import { i18n } from '../learn/i18n';
 import { attachKeyboard } from '../learn/keyboard';
-import { type LearnPrefs, loadPrefs, savePrefs } from '../learn/prefs';
-import { setSoundEnabled } from '../learn/sound';
+import { type LearnPrefs, type SwitchPref, loadPrefs, savePrefs } from '../learn/prefs';
+import { preloadSounds, setSoundEnabled, setSoundVolume } from '../learn/sound';
 import { el, icon, pieceSetSwitch } from '../learn/view';
 import TsumeCtrl from './ctrl';
 import { type Length, loadPuzzles, nextUnsolved } from './puzzles';
@@ -30,13 +30,14 @@ export async function bootTsume(root: HTMLElement): Promise<void> {
   const apply = (p: LearnPrefs) => {
     root.classList.toggle('no-coords', !p.coords);
     setSoundEnabled(p.sound);
+    setSoundVolume(p.volume);
     ctrl?.ground.set({
       movable: { showDests: p.dests },
       droppable: { showDests: p.dests },
       animation: { enabled: p.animation },
     });
   };
-  const toggle = (key: keyof LearnPrefs, label: string) =>
+  const toggle = (key: SwitchPref, label: string) =>
     el('label', { class: 'pref' },
       el('input', {
         type: 'checkbox', ...(prefs[key] ? { checked: true } : {}),
@@ -76,6 +77,7 @@ export async function bootTsume(root: HTMLElement): Promise<void> {
   ctrl = new TsumeCtrl(n, puzzles, prefs, redraw);
   ctrl.ground.attach({ board });
   apply(prefs);
+  void preloadSounds(); // the piece recording, ready before the first move
 
   const fromHash = (): number | undefined => {
     const id = Number.parseInt(window.location.hash.slice(1));

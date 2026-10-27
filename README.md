@@ -57,6 +57,9 @@ Credit (also on the site's credits page):
 - מערכת השיעורים האינטראקטיבית מבוססת על הקוד ועל מבנה הלימוד של Lishogi (lishogi.org), תוכנה חופשית ברישיון AGPL-3.0. השינויים שלנו, כולל הטקסטים בעברית, פתוחים באותו רישיון ב-github.com/EnterDeEther/shogi-israel. תודה לצוות Lishogi.
 - The interactive lessons are adapted from the code and lesson structure of Lishogi (lishogi.org), free software under AGPL-3.0. Our changes, including the Hebrew text, are published under the same licence at github.com/EnterDeEther/shogi-israel. Thanks to the Lishogi team. Board and rules: shogiground and shogiops (GPL-3.0).
 
+## Sounds
+`src/learn/sound.ts` plays every sound on the site with Web Audio (no Lishogi sounds: their sound sets are not free to reuse). The board sound is Dean's own recording of a shogi piece (`public/sounds/piece.wav`, 0.24 s, recorded 2026-10-27); captures, drops, promotions and check are built from it. Lessons, puzzles, games and the points toast use synthesized koto, hyoshigi and rin sounds. One setting (`learn.prefs` `sound` and `volume`, on this device) in the board's cog wheel and on `/account/` controls all of it; nothing plays before the visitor's first tap, on page load, or in a background tab.
+
 ## Accounts (`/account/`)
 Optional accounts on Supabase: email + password (confirmed by email; no Google/SSO), a public nickname, and progress that follows the account. Off until the keys exist: without them the site builds exactly as before, with no account link.
 - Keys: the Vercel ↔ Supabase integration sets `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (or set `PUBLIC_SUPABASE_URL` / `PUBLIC_SUPABASE_ANON_KEY`).
