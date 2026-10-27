@@ -17,6 +17,9 @@ export function i18n(key: string): string {
   return s;
 }
 
+/** Shogi Israel: does the Hebrew file have this key? (for optional strings, like the chess-player texts) */
+export const hasKey = (key: string): boolean => strings[key.includes(':') ? key.slice(key.indexOf(':') + 1) : key] !== undefined;
+
 /** Same as lila's i18nFormat: replaces %s (and %1$s, %2$s...) in order. */
 export function i18nFormat(key: string, ...args: (string | number)[]): string {
   let i = 0;

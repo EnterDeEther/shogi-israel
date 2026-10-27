@@ -19,6 +19,7 @@ Copyright (c) 2019 onwards the li[shogi in sca]la authors. **AGPL-3.0-or-later**
 | `sound.ts` | ours | sounds made with Web Audio (Lishogi's sound sets are not free) |
 | `keyboard.ts` | ours | keyboard play (IS 5568): arrows, two digits jump to a square, Enter, D for the hand, +/- for promotion, live announcements in Hebrew |
 | `urls.ts` | ours | `/learn/<slug>/` (stage key in kebab case: `out-of-check`) |
+| `route.ts` | ours | chess-player route: `il_chess_<stage>Intro/Complete` replace a stage's intro and recap, `il_chess_<stage>Note` adds a note under it; on with `?route=chess` or the course's chess starting point |
 | `impasse.ts` | ours | 27-point declaration check (shogiops has none) |
 
 Board: [shogiground](https://github.com/WandererXII/shogiground) (GPL-3.0) with our own piece art and colours (`src/styles/learn.css`); base CSS vendored in `src/styles/shogiground.css`. Rules: [shogiops](https://github.com/WandererXII/shogiops) `~0.21` (GPL-3.0) — pinned below 0.22, which renamed the Board API that the ported code uses.

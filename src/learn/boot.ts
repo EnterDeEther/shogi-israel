@@ -6,6 +6,7 @@ import { i18n } from './i18n';
 import { attachKeyboard } from './keyboard';
 import { type LearnPrefs, loadPrefs, savePrefs } from './prefs';
 import { setSoundEnabled } from './sound';
+import { routeFromUrl } from './route';
 import { stageSlug } from './urls';
 import { el, icon, mount, pieceSetSwitch, render } from './view';
 
@@ -19,6 +20,7 @@ const scrollToCategory = (): void => {
 };
 
 export function bootLearn(root: HTMLElement): LearnCtrl {
+  routeFromUrl(); // /learn/<stage>/?route=chess from the /chess/ page
   const prefs = loadPrefs();
   const { board } = mount(root);
   let ctrl: LearnCtrl;
