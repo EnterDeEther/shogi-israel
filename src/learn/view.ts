@@ -11,6 +11,7 @@ import type { Stage } from './interfaces';
 import { stageUrl } from './urls';
 import { average } from './util';
 import { courseNext } from '../lib/next-step';
+import { currentPieceSet } from '../lib/piece-set';
 
 // Same list and random pick as lila's views/congrats.ts
 const congratsKeys = [
@@ -721,10 +722,11 @@ function steps(made: number, total: number): HTMLElement {
 }
 
 export function pieceSetSwitch(): HTMLElement {
-  const kanji = document.documentElement.dataset.pieces === 'kanji';
+  const set = currentPieceSet();
   return el('div', { class: 'seg', role: 'group', 'aria-label': i18n('il_pieceSet') },
-    el('button', { type: 'button', 'data-pieces-set': 'letters', 'aria-pressed': String(!kanji) }, i18n('il_letters')),
-    el('button', { type: 'button', 'data-pieces-set': 'kanji', 'aria-pressed': String(kanji) }, i18n('il_kanji')),
+    el('button', { type: 'button', 'data-pieces-set': 'hebrew', 'aria-pressed': String(set === 'hebrew') }, i18n('il_hebrew')),
+    el('button', { type: 'button', 'data-pieces-set': 'letters', 'aria-pressed': String(set === 'letters') }, i18n('il_letters')),
+    el('button', { type: 'button', 'data-pieces-set': 'kanji', 'aria-pressed': String(set === 'kanji') }, i18n('il_kanji')),
   );
 }
 

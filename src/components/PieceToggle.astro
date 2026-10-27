@@ -1,5 +1,5 @@
 ---
-// Letters / kanji switch. Every instance drives one site-wide setting (html[data-pieces]),
+// Hebrew / English letters / kanji switch. Every instance drives one site-wide setting (html[data-pieces]),
 // remembered on this device only. Logic lives in Base.astro so there is one listener.
 // tip: a (?) after the switch, for places where nothing else says what the two words mean.
 import InfoTip from './InfoTip.astro';
@@ -10,14 +10,16 @@ const { tip = false } = Astro.props;
 {tip ? (
   <div class="seg-tip">
     <div class="seg" role="group" aria-label="סימון הכלים">
-      <button type="button" data-pieces-set="letters" aria-pressed="true">אותיות</button>
+      <button type="button" data-pieces-set="hebrew" aria-pressed="true">עברית</button>
+      <button type="button" data-pieces-set="letters" aria-pressed="false">אנגלית</button>
       <button type="button" data-pieces-set="kanji" aria-pressed="false">קאנג׳י</button>
     </div>
     <InfoTip id="pieces" />
   </div>
 ) : (
   <div class="seg" role="group" aria-label="סימון הכלים">
-    <button type="button" data-pieces-set="letters" aria-pressed="true">אותיות</button>
+    <button type="button" data-pieces-set="hebrew" aria-pressed="true">עברית</button>
+    <button type="button" data-pieces-set="letters" aria-pressed="false">אנגלית</button>
     <button type="button" data-pieces-set="kanji" aria-pressed="false">קאנג׳י</button>
   </div>
 )}
