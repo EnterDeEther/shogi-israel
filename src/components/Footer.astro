@@ -31,8 +31,10 @@ const solos = items.filter((i) => !isSection(i));
       <a href="/about/#contact">⟦צור|צרי⟧ קשר</a>
       <a href="https://github.com/EnterDeEther/shogi-israel" rel="noopener">קוד המקור (AGPL-3.0)</a>
     </nav>
-    <p class="small muted gm">הטקסטים מנוסחים בלשון זכר מטעמי נוחות אך פונים לשני המינים. <button type="button" class="link" data-gender-set="f">לעבור ללשון נקבה</button></p>
-    <p class="small muted gf">האתר פונה אלייך בלשון נקבה. <button type="button" class="link" data-gender-set="m">לעבור ללשון זכר</button></p>
+    <p class="small muted">
+      <span class="gm">הטקסטים מנוסחים בלשון זכר מטעמי נוחות אך פונים לשני המינים. <button type="button" class="link" data-gender-set="f">לעבור ללשון נקבה</button></span>
+      <span class="gf">האתר פונה אלייך בלשון נקבה. <button type="button" class="link" data-gender-set="m">לעבור ללשון זכר</button></span>
+    </p>
     <p class="small muted">אתר קהילתי, ללא מטרות רווח. החוקים לפי איגוד השוגי היפני (JSA) והפדרציה האירופית (FESA).</p>
     <p class="small muted">שוגי ישראל · <bdi dir="ltr">shogi.co.il</bdi> · <a href={`mailto:${CONTACT_EMAIL}`}><bdi dir="ltr">{CONTACT_EMAIL}</bdi></a> · {year}</p>
   </div>
