@@ -48,7 +48,7 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
           </div>
           <div class="box">
             <h2>איך מזהים כלי</h2>
-            <p>על כל כלי כתוב סימן שאומר מה הוא. המלך, למשל, נראה כך: <span class="pchip" data-p="K" aria-hidden="true"></span>. את שאר הכלים נכיר אחד אחד, בפעם הראשונה שכל אחד מהם זז. ⟦אתה|את⟧ ⟦יכול|יכולה⟧ לבחור למעלה אם הסימן יהיה אות באנגלית או קאנג׳י, הכתב היפני שעל כלים אמיתיים.</p>
+            <p>על כל כלי כתוב סימן שאומר מה הוא. המלך, למשל, נראה כך: <span class="pchip" data-p="K" aria-hidden="true"></span>. את שאר הכלים נכיר אחד אחד, בפעם הראשונה שכל אחד מהם זז. ⟦אתה|את⟧ ⟦יכול|יכולה⟧ לבחור למעלה אם הסימן יהיה אות בעברית, אות באנגלית או קאנג׳י, הכתב היפני שעל כלים אמיתיים.</p>
           </div>
           <div class="box">
             <h2>שלושה שלבים בכל משחק</h2>
@@ -147,31 +147,39 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
   .recap li { display: flex; flex-direction: column; gap: 2px; border-top: 2px solid var(--ink); padding-top: 8px; }
   .recap span { color: var(--ink-2); line-height: 1.6; }
   .manners { font-size: 16px; }
-  /* a piece named in the text, drawn like the board's pieces: letter or kanji, following the site-wide switch */
+  /* a piece named in the text, drawn like the board's pieces: Hebrew letter, English letter or kanji, following the site-wide switch */
   .watch :global(.pchip) {
-    --l: ''; --k: '';
+    --h: ''; --l: ''; --k: '';
     position: relative; display: inline-flex; align-items: center; justify-content: center;
     width: 1.55em; height: 1.75em; padding-top: 0.28em; vertical-align: -0.45em; margin-inline: 0.1em;
     color: var(--piece-ink); line-height: 1; filter: drop-shadow(0 1px 1px rgba(40, 25, 10, 0.35));
-    unicode-bidi: isolate; direction: ltr;
+    unicode-bidi: isolate; direction: rtl;
   }
   .watch :global(.pchip)::before, .watch :global(.pchip)::after { position: absolute; clip-path: polygon(50% 0, 86% 16%, 100% 100%, 0 100%, 14% 16%); }
   .watch :global(.pchip)::before { content: ''; inset: 0; background: var(--piece-line); }
   .watch :global(.pchip)::after {
-    content: var(--l); inset: 1.5px; background: var(--piece);
+    content: var(--h); inset: 1.5px; background: var(--piece);
     display: flex; align-items: center; justify-content: center; padding-top: 0.28em;
     font: 800 0.82em/1 var(--f-body); letter-spacing: -0.3px; color: var(--piece-ink);
   }
+  :global(html[data-pieces="letters"]) .watch :global(.pchip)::after { content: var(--l); direction: ltr; }
   :global(html[data-pieces="kanji"]) .watch :global(.pchip)::after { content: var(--k); font-family: var(--f-kanji); font-size: 0.9em; }
-  .watch :global(.pchip[data-p="K"]) { --l: 'K'; --k: '王'; }
-  .watch :global(.pchip[data-p="R"]) { --l: 'R'; --k: '飛'; }
-  .watch :global(.pchip[data-p="B"]) { --l: 'B'; --k: '角'; }
-  .watch :global(.pchip[data-p="G"]) { --l: 'G'; --k: '金'; }
-  .watch :global(.pchip[data-p="S"]) { --l: 'S'; --k: '銀'; }
-  .watch :global(.pchip[data-p="N"]) { --l: 'N'; --k: '桂'; }
-  .watch :global(.pchip[data-p="L"]) { --l: 'L'; --k: '香'; }
-  .watch :global(.pchip[data-p="P"]) { --l: 'P'; --k: '歩'; }
-  .watch :global(.pchip[data-p="+R"]) { --l: '+R'; --k: '龍'; }
+  /* Hebrew: the bishop's רץ and "ר+" set smaller; the king's crown above its מ */
+  :global(html:not([data-pieces="letters"]):not([data-pieces="kanji"])) .watch :global(.pchip:is([data-p="B"], [data-p^="+"]):not([data-p="+R"]))::after { font-size: 0.66em; }
+  :global(html:not([data-pieces="letters"]):not([data-pieces="kanji"])) .watch :global(.pchip[data-p="K"])::after {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 12'%3E%3Cpath fill='%231C1B19' d='M1 3.2 5.6 7 10 .8 14.4 7 19 3.2 17.2 11.2H2.8Z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: center 26%; background-size: 46% auto;
+    padding-top: 0.62em; font-size: 0.7em;
+  }
+  .watch :global(.pchip[data-p="K"]) { --h: 'מ'; --l: 'K'; --k: '王'; }
+  .watch :global(.pchip[data-p="R"]) { --h: 'צ'; --l: 'R'; --k: '飛'; }
+  .watch :global(.pchip[data-p="B"]) { --h: 'רץ'; --l: 'B'; --k: '角'; }
+  .watch :global(.pchip[data-p="G"]) { --h: 'ז'; --l: 'G'; --k: '金'; }
+  .watch :global(.pchip[data-p="S"]) { --h: 'כ'; --l: 'S'; --k: '銀'; }
+  .watch :global(.pchip[data-p="N"]) { --h: 'פ'; --l: 'N'; --k: '桂'; }
+  .watch :global(.pchip[data-p="L"]) { --h: 'ח'; --l: 'L'; --k: '香'; }
+  .watch :global(.pchip[data-p="P"]) { --h: 'ר'; --l: 'P'; --k: '歩'; }
+  .watch :global(.pchip[data-p="+R"]) { --h: 'ד'; --l: '+R'; --k: '龍'; }
   .watch :global(.pchip[data-p^="+"])::after { color: var(--seal); }
   .watch__try { align-self: stretch; justify-content: center; min-height: 56px; font-size: 18px; }
   @media (min-width: 900px) { .watch__try { align-self: flex-start; } }
