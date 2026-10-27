@@ -434,3 +434,12 @@ html[data-pieces="kanji"] :is(.learn, .play) piece::after { content: var(--k); f
 .learn__map .phase, .learn__overlay .phase { margin: 0 0 10px; font-size: 14px; }
 .learn__map .phase a, .learn__overlay .phase a { display: inline-block; padding: 2px 12px; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-2); text-decoration: none; }
 .learn__map .phase a:hover, .learn__overlay .phase a:hover { color: var(--seal); border-color: var(--seal); }
+
+/* Repetition stage: the numbered marks (1, 2, 3, 4) drawn on the board each time the position comes back */
+.sg-wrap .sg-custom-svgs .rep-digit circle { fill: var(--seal); opacity: 0.85; }
+.sg-wrap .sg-custom-svgs .rep-digit path { fill: var(--on-seal); }
+
+/* The map's three course levels (beginner, intermediate, advanced), one heading before each */
+.learn__map .course-level { display: flex; align-items: baseline; gap: 10px; margin: 36px 0 14px; font-size: 30px; font-weight: 800; color: var(--seal); }
+.learn__map .course-level:first-child { margin-top: 0; }
+.learn__map .course-level span { font-size: 14px; font-weight: 600; color: var(--ink-2); letter-spacing: .02em; }

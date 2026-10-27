@@ -66,7 +66,7 @@ describe('the emails', () => {
     expect(e.html).toContain('דין, שוגי ישראל');
     expect(e.text).toContain('נתראה על הלוח,');
     expect(e.html).toContain('https://shogi.co.il/tsume/3/?utm_source=email');
-    expect(e.html).toContain('https://shogi.co.il/try/?utm_source=email'); // a newcomer's first step: one game (/try/)
+    expect(e.html).toContain('https://shogi.co.il/learn/introduction/?utm_source=email'); // a newcomer's first course step: Lishogi's introduction stage
     expect(e.text).toContain('הפסקת המיילים האלה: https://shogi.co.il/api/unsubscribe');
     expect(e.text).toContain('contact@shogi.co.il');
   });

@@ -3,6 +3,7 @@
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
 // Modified by Shogi Israel (shogi.co.il), 2026-10-24: added the coach state (Vm.coach, Vm.waiting) and the opening data (Level.why, moveNames, line, replies, replyNames).
+// Modified by Shogi Israel, 2026-10-27: Category.level (the course's three levels).
 
 import type { DrawShape, SquareHighlight } from 'shogiground/draw';
 
@@ -67,9 +68,13 @@ export interface Stage {
 
 export type IncompleteStage = Omit<Stage, 'id'>;
 
+/** The course's three levels (Shogi Israel): each map category belongs to one. */
+export type CourseLevel = 'beginner' | 'intermediate' | 'advanced';
+
 export interface Category {
   key: CategoryKey;
   name: string;
+  level: CourseLevel;
   stages: Stage[];
 }
 

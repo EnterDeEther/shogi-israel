@@ -4,7 +4,7 @@
 // supabase/migrations/0007_admin_reports.sql). The address the reports go to is an environment variable, never
 // in the repository, and players are named by nickname only.
 // Pure functions (tested in test/admin-report.test.ts). .js on the imports: the email job runs this file on Node.
-import { nextStep } from './curriculum.js';
+import { nextStep, placeLabel } from './curriculum.js';
 import { LEVEL_COUNTS } from './level-counts.js';
 import { israelDay } from './notify.js';
 import { normalize, stats } from './progress-sync.js';
@@ -47,7 +47,8 @@ export interface PlayerLine {
   rank: string;
   rankUp: string | null;  // the earlier rank, when the player moved up
   next: string | null;    // the next step on the course path
-  track: string | null;
+  /** Starting point in the course, in Hebrew ("בינוניים · מסלול לשחקני שחמט"), or null if not chosen. */
+  place: string | null;
   lastSeen: string | null;
   emailWeek: boolean;
 }
@@ -72,7 +73,6 @@ const minus = (a: Totals, b: Totals): Totals => ({
   tsume_solved: a.tsume_solved - b.tsume_solved, games: a.games - b.games, wins: a.wins - b.wins,
 });
 const after = (iso: string | null, t: Date) => !!iso && Date.parse(iso) > t.getTime();
-const TRACK_HE: Record<string, string> = { new: 'חדש לגמרי', chess: 'משחק שחמט', shogi: 'מכיר את החוקים' };
 
 /**
  * players: everyone with an account. before: each player's snapshot from the start of the period
@@ -94,7 +94,7 @@ export function buildReport(kind: 'daily' | 'weekly', players: PlayerInput[], be
       id: p.id, nickname: p.nickname ?? '(בלי כינוי)', isNew, active, now: t, delta, rank,
       rankUp: was !== rank ? was : null,
       next: nextStep(prog, LEVEL_COUNTS)?.step.title ?? null,
-      track: prog.course.track ? TRACK_HE[prog.course.track] : null,
+      place: placeLabel(prog.course) || null,
       lastSeen: p.last_seen_at, emailWeek: p.email_week,
     };
   });
@@ -128,11 +128,11 @@ function insights(r: Report, players: PlayerInput[], now: Date): string[] {
   if (stuck.length) out.push(`נרשמו לפני יותר מ־3 ימים ועוד לא עשו כלום: ${stuck.map((l) => l.nickname).join(', ')}. אולי שווה הודעה אישית.`);
   // the step most players are standing at
   const nexts = new Map<string, number>();
-  for (const l of all) if (l.next && (l.now.xp > 0 || l.track)) nexts.set(l.next, (nexts.get(l.next) ?? 0) + 1);
+  for (const l of all) if (l.next && (l.now.xp > 0 || l.place)) nexts.set(l.next, (nexts.get(l.next) ?? 0) + 1);
   const top = [...nexts].sort((a, b) => b[1] - a[1])[0];
   if (top && top[1] > 1) out.push(`הצעד הבא הנפוץ במסלול: "${top[0]}" (${top[1]} שחקנים עומדים בו).`);
   const tracks = new Map<string, number>();
-  for (const l of all) if (l.track) tracks.set(l.track, (tracks.get(l.track) ?? 0) + 1);
+  for (const l of all) if (l.place) tracks.set(l.place, (tracks.get(l.place) ?? 0) + 1);
   if (tracks.size) out.push(`נקודת התחלה במסלול: ${[...tracks].sort((a, b) => b[1] - a[1]).map(([t, n]) => `${t} ${n}`).join(', ')}.`);
   const optIn = all.filter((l) => l.emailWeek).length;
   out.push(`${optIn} מתוך ${r.total} ביקשו את המייל השבועי.`);

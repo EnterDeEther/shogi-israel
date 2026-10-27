@@ -2,12 +2,20 @@
 // /ranks/: how shogi ranks work in the world (kyu and dan, amateurs, professionals, online ratings) and
 // how the ranks of the guided course differ. Every fact about the world is in the sources at the bottom.
 import Page from '../layouts/Page.astro';
-import { RANKS, XP } from '../lib/xp';
+import { RANKS, XP, rankFor, stepXp } from '../lib/xp';
 import { pageExists } from '../lib/live';
+import { CURRICULUM, LEVEL_INFO, LEVELS } from '../lib/curriculum';
+import { LEVEL_COUNTS } from '../lib/level-counts';
 
 const courseLive = pageExists('/course/');
 const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>';
 const top = RANKS[RANKS.length - 1];
+// The site rank a learner reaches by the end of each course level: every step that isn't optional on the main route, at three stars.
+let sum = 0;
+const levelEnd = LEVELS.map((l) => {
+  for (const u of CURRICULUM.filter((u) => u.level === l)) sum += u.steps.filter((s) => !s.optional?.includes('main')).reduce((t, s) => t + stepXp(s, LEVEL_COUNTS), XP.unit);
+  return rankFor(sum).rank.name;
+});
 
 // Site rank vs a real rank, one row per question.
 const compare = [
@@ -72,6 +80,10 @@ const compare = [
 
   <h2 id="site">הדרגות כאן באתר</h2>
   <p>ב{courseLive ? <a href="/course/">מסלול הלימוד האישי</a> : 'מסלול הלימוד האישי'} ⟦אתה|את⟧ ⟦צובר|צוברת⟧ נקודות על כל דבר ⟦שאתה|שאת⟧ ⟦משלים|משלימה⟧, והנקודות מעלות אותך בדרגה: {RANKS.length} דרגות, מ־{RANKS[0].name} ועד {top.name}. בחרנו בשמות של דרגות השוגי כי הם חלק מהתרבות של המשחק, ⟦וכשתגיע|וכשתגיעי⟧ לשחק בליש׳וגי הם כבר יהיו מוכרים. אבל אצלנו הם סימני דרך במסלול, לא יותר.</p>
+  <p>המסלול בנוי בשלוש רמות, כמו מפת השיעורים. ⟦כשתסיים|כשתסיימי⟧ את כל הצעדים של רמה, עם שלושה כוכבים, ⟦תגיע|תגיעי⟧ בערך לדרגה הזאת:</p>
+  <ul class="levels">
+    {LEVELS.map((l, i) => <li><strong>{LEVEL_INFO[l].title}</strong> ({LEVEL_INFO[l].goal}): <bdi>{levelEnd[i]}</bdi></li>)}
+  </ul>
   <div class="table-wrap" tabindex="0" role="region" aria-label="דרגה באתר מול דרגה בעולם">
     <table class="compare">
       <thead><tr><th scope="col"><span class="visually-hidden">שאלה</span></th><th scope="col">דרגה באתר</th><th scope="col">דרגה בעולם</th></tr></thead>

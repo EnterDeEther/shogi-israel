@@ -1,15 +1,21 @@
 // Progress that follows a signed-in account: the Learn scores, the Rules lessons marked done,
-// the tsume puzzles solved, the guided course (/course/: starting point, steps read or skipped, games played),
+// the tsume puzzles solved, the guided course (/course/: route and starting level, steps read or skipped, games played),
 // and the inbox (src/lib/inbox.ts: which notes were read, which kinds are turned off).
 // Pure functions only (tested in test/progress-sync.test.ts); src/lib/progress-local.ts and src/lib/account.ts do the I/O.
 
 export interface LearnProgress { stages: Record<string, { scores: number[] }> }
-export type Track = 'new' | 'chess' | 'shogi';
+/** The course's two ways in: the main one, and the one for chess players (explanations by comparison with chess). */
+export type Route = 'main' | 'chess';
+/** The course's three levels; the starting level comes from the placement questions or a manual pick. */
+export type CourseLevel = 'beginner' | 'intermediate' | 'advanced';
 export interface CourseState {
-  /** The answer to "where do you start?"; null until chosen. */
-  track: Track | null;
-  /** When the track was chosen (ISO), so the newer choice wins when two devices disagree. */
-  trackAt: string;
+  /** The answers to "where do you start?"; both null until chosen. Before 2026-10-27 this was one
+   *  `track` ('new' | 'chess' | 'shogi'), read by normalize(): new → main/beginner, chess → chess/beginner,
+   *  shogi (knows the rules) → main/intermediate. */
+  route: Route | null;
+  start: CourseLevel | null;
+  /** When the starting point was chosen (ISO), so the newer choice wins when two devices disagree. */
+  placedAt: string;
   /** Course steps opened from /course/ (reading steps count as done once opened). */
   seen: string[];
   /** Course steps the player marked as already known. */
@@ -45,9 +51,10 @@ export const RULES_PREFIX = 'done:';
 export const TSUME_KEY = 'shogi-il.tsume.solved';
 export const COURSE_KEY = 'shogi-il.course';
 export const INBOX_KEY = 'shogi-il.inbox';
-export const TRACKS: Track[] = ['new', 'chess', 'shogi'];
+export const ROUTES: Route[] = ['main', 'chess'];
+export const COURSE_LEVELS: CourseLevel[] = ['beginner', 'intermediate', 'advanced'];
 
-export const emptyCourse = (): CourseState => ({ track: null, trackAt: '', seen: [], skipped: [], played: 0, won: 0 });
+export const emptyCourse = (): CourseState => ({ route: null, start: null, placedAt: '', seen: [], skipped: [], played: 0, won: 0 });
 export const emptyInbox = (): InboxState => ({ read: [], off: [], offAt: '' });
 export const emptyProgress = (): SyncedProgress => ({ learn: { stages: {} }, rules: [], tsume: {}, course: emptyCourse(), inbox: emptyInbox() });
 
@@ -76,15 +83,21 @@ export function normalize(raw: unknown): SyncedProgress {
     }
   }
   const c = (r.course && typeof r.course === 'object' ? r.course : {}) as Record<string, unknown>;
+  // the old one-answer `track` (until 2026-10-27) maps onto a route and a starting level
+  const legacy = ({ new: ['main', 'beginner'], chess: ['chess', 'beginner'], shogi: ['main', 'intermediate'] } as Record<string, [Route, CourseLevel]>)[c.track as string];
+  const route = ROUTES.includes(c.route as Route) ? (c.route as Route) : legacy?.[0] ?? null;
+  const start = COURSE_LEVELS.includes(c.start as CourseLevel) ? (c.start as CourseLevel) : legacy?.[1] ?? null;
+  const placedAt = typeof c.placedAt === 'string' ? c.placedAt : typeof c.trackAt === 'string' ? c.trackAt : '';
   out.course = {
-    track: TRACKS.includes(c.track as Track) ? (c.track as Track) : null,
-    trackAt: typeof c.trackAt === 'string' ? c.trackAt : '',
+    route: route && start ? route : null,
+    start: route && start ? start : null,
+    placedAt,
     seen: strings(c.seen),
     skipped: strings(c.skipped),
     played: level(c.played),
     won: level(c.won),
   };
-  if (!out.course.track) out.course.trackAt = '';
+  if (!out.course.route) out.course.placedAt = '';
   const ib = (r.inbox && typeof r.inbox === 'object' ? r.inbox : {}) as Record<string, unknown>;
   const read = Array.isArray(ib.read) ? ib.read.filter((s: unknown): s is string => typeof s === 'string' && s.length <= 64) : [];
   out.inbox = {
@@ -108,10 +121,11 @@ export function merge(a: SyncedProgress, b: SyncedProgress): SyncedProgress {
     out.tsume[n] = [...new Set([...(a.tsume[n] ?? []), ...(b.tsume[n] ?? [])])].sort((x, y) => x - y);
   }
   // the newer starting-point choice wins; everything else is a union / the best of both
-  const pick = b.course.track && (!a.course.track || b.course.trackAt > a.course.trackAt) ? b.course : a.course;
+  const pick = b.course.route && (!a.course.route || b.course.placedAt > a.course.placedAt) ? b.course : a.course;
   out.course = {
-    track: pick.track,
-    trackAt: pick.trackAt,
+    route: pick.route,
+    start: pick.start,
+    placedAt: pick.placedAt,
     seen: [...new Set([...a.course.seen, ...b.course.seen])].sort(),
     skipped: [...new Set([...a.course.skipped, ...b.course.skipped])].sort(),
     played: Math.max(a.course.played, b.course.played),
