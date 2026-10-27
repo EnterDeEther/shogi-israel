@@ -2,7 +2,7 @@
 import { describe, expect, test } from 'bun:test';
 import { parseSfen } from 'shogiops/sfen';
 import { parseSquareName } from 'shogiops/util';
-import { FIRST_GAME, PHASES, firstGamePlies } from '../src/lib/first-game';
+import { FIRST_GAME, PHASES, firstGamePlies, plainText } from '../src/lib/first-game';
 import { EXERCISES } from '../src/scripts/try-pieces';
 import { illegalShogigroundMoveDests } from '../src/learn/shogi';
 
@@ -48,5 +48,29 @@ describe('three pieces try', () => {
       expect(pos.board.get(parseSquareName(e.target)!)?.color).toBe('gote');
       expect(e.sfen.split(' ')[2]).toBe(['-', 'P', 'PS'][i]);
     });
+  });
+});
+
+// Dean, 2026-10-27: someone who knows nothing must be able to follow the game. Each piece is introduced, with its
+// mark, the first time any text names it (in the order the page shows them: phase note, then the move's texts).
+describe('first game: nothing named before it is introduced', () => {
+  const PIECES: [string, string][] = [['רגלי', '{P}'], ['צריח', '{R}'], ['גנרל זהב', '{G}'], ['רץ ', '{B}'], ['גנרל כסף', '{S}'], ['דרקון', '{+R}']];
+  const texts: string[] = [];
+  FIRST_GAME.forEach((m, i) => {
+    const ph = PHASES.find((p) => p.first === i + 1);
+    texts.push([ph?.note ?? '', m.title, m.text, m.why ?? ''].join(' '));
+  });
+
+  test('the first text that names a piece also shows it', () => {
+    for (const [name, token] of PIECES) {
+      const first = texts.find((t) => t.includes(name));
+      expect(first, name).toBeDefined();
+      expect(first!.includes(token), `${name} first named without ${token}`).toBe(true);
+    }
+  });
+
+  test('piece marks are valid and stripped for screen readers', () => {
+    for (const t of texts) for (const m of t.matchAll(/\{([^}]*)\}/g)) expect(m[1]).toMatch(/^\+?[KRBGSNLP]$/);
+    expect(plainText('זה רגלי {P}, הכלי')).toBe('זה רגלי, הכלי');
   });
 });
