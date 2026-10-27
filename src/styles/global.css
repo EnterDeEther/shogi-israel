@@ -2,12 +2,13 @@
    RTL page; the board is always LTR and never mirrors. */
 
 :root {
-  --washi: #F6F1E7;
-  --washi-2: #EFE7D7;
+  --washi: #ECE4D4;
+  --washi-2: #E2D7C2;
+  --surface: #F2EBDD;
   --ink: #1C1B19;
   --ink-2: #3A352E;
-  --muted: #6B6256;
-  --rule: #D9CFBD;
+  --muted: #675D50;
+  --rule: #D2C5AD;
   --seal: #B8361F;
   --seal-hover: #8E2814;
   --on-seal: #FFFFFF;
@@ -33,8 +34,13 @@
   --won-fg: #1E4A1B;
   --lost-bg: #F6DDD5;
   --lost-fg: #7A2414;
-  --overlay-play: rgba(246, 241, 231, 0.95);
-  --overlay-learn: rgba(246, 241, 231, 0.93);
+  --overlay-play: rgba(236, 228, 212, 0.95);
+  --overlay-learn: rgba(236, 228, 212, 0.93);
+  /* Glass: the header once the page scrolls under it, the menus and the phone sheet (blurred paper). */
+  --glass: rgba(236, 228, 212, 0.74);
+  --glass-edge: rgba(255, 255, 255, 0.6);
+  --glass-hi: rgba(242, 235, 221, 0.82);
+  --shadow-glass: 0 1px 0 var(--glass-edge) inset, 0 8px 20px -6px rgba(40, 28, 15, 0.18), 0 24px 56px -20px rgba(40, 28, 15, 0.38);
   --tour-dim: rgba(28, 27, 25, 0.55);
   --star-off: rgba(255, 255, 255, 0.35);
 
@@ -63,18 +69,19 @@
    The two blocks must carry the same values. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
-    --washi: #17150F;
-    --washi-2: #221F18;
+    --washi: #16140F;
+    --washi-2: #24211A;
+    --surface: #1F1C16;
     --ink: #EFE7D7;
     --ink-2: #D6CCB8;
     --muted: #B0A48E;
-    --rule: #3B352A;
-    --seal: #E8694C;
+    --rule: #3A3429;
+    --seal: #DE6A4F;
     --seal-hover: #F28A70;
-    --on-seal: #17150F;
+    --on-seal: #16140F;
     --focus: #F28A70;
     --btn-hover: #fff;
-    --btn-hover-ink: #17150F;
+    --btn-hover-ink: #16140F;
     --ok-text: #8FCB85;
     --no-text: #F2A48F;
     --fb-ok-bg: #1F3320;
@@ -86,8 +93,12 @@
     --won-fg: #CFE3B8;
     --lost-bg: #3A1E17;
     --lost-fg: #F2B9A8;
-    --overlay-play: rgba(23, 21, 15, 0.95);
-    --overlay-learn: rgba(23, 21, 15, 0.93);
+    --overlay-play: rgba(22, 20, 15, 0.95);
+    --overlay-learn: rgba(22, 20, 15, 0.93);
+    --glass: rgba(22, 20, 15, 0.72);
+    --glass-edge: rgba(255, 255, 255, 0.07);
+    --glass-hi: rgba(42, 38, 30, 0.78);
+    --shadow-glass: 0 1px 0 var(--glass-edge) inset, 0 8px 20px -6px rgba(0, 0, 0, 0.5), 0 24px 56px -20px rgba(0, 0, 0, 0.8);
     --tour-dim: rgba(0, 0, 0, 0.66);
     --star-off: rgba(0, 0, 0, 0.35);
     --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.45);
@@ -98,18 +109,19 @@
   }
 }
 :root[data-theme="dark"] {
-  --washi: #17150F;
-  --washi-2: #221F18;
+  --washi: #16140F;
+  --washi-2: #24211A;
+  --surface: #1F1C16;
   --ink: #EFE7D7;
   --ink-2: #D6CCB8;
   --muted: #B0A48E;
-  --rule: #3B352A;
-  --seal: #E8694C;
+  --rule: #3A3429;
+  --seal: #DE6A4F;
   --seal-hover: #F28A70;
-  --on-seal: #17150F;
+  --on-seal: #16140F;
   --focus: #F28A70;
   --btn-hover: #fff;
-  --btn-hover-ink: #17150F;
+  --btn-hover-ink: #16140F;
   --ok-text: #8FCB85;
   --no-text: #F2A48F;
   --fb-ok-bg: #1F3320;
@@ -121,8 +133,12 @@
   --won-fg: #CFE3B8;
   --lost-bg: #3A1E17;
   --lost-fg: #F2B9A8;
-  --overlay-play: rgba(23, 21, 15, 0.95);
-  --overlay-learn: rgba(23, 21, 15, 0.93);
+  --overlay-play: rgba(22, 20, 15, 0.95);
+  --overlay-learn: rgba(22, 20, 15, 0.93);
+  --glass: rgba(22, 20, 15, 0.72);
+  --glass-edge: rgba(255, 255, 255, 0.07);
+  --glass-hi: rgba(42, 38, 30, 0.78);
+  --shadow-glass: 0 1px 0 var(--glass-edge) inset, 0 8px 20px -6px rgba(0, 0, 0, 0.5), 0 24px 56px -20px rgba(0, 0, 0, 0.8);
   --star-off: rgba(0, 0, 0, 0.35);
   --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.45);
   --shadow-2: 0 2px 4px rgba(0, 0, 0, 0.35), 0 10px 22px -8px rgba(0, 0, 0, 0.6);
@@ -148,7 +164,7 @@ body {
 a { color: var(--seal); text-underline-offset: 3px; }
 a:hover { color: var(--seal-hover); }
 
-:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 2px; }
+:focus-visible { outline: 2.5px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
 
 h1, h2, h3 { font-family: var(--f-display); line-height: 1.15; margin: 0; font-weight: 800; }
 h1 { font-size: clamp(34px, 7vw, 54px); font-weight: 900; }
@@ -183,7 +199,7 @@ img, svg { max-width: 100%; }
   display: inline-flex; align-items: center; justify-content: space-between; gap: 16px;
   min-height: 56px; padding: 0 22px;
   background: var(--ink); color: var(--washi);
-  border: 0; border-radius: 6px; text-decoration: none;
+  border: 0; border-radius: 14px; text-decoration: none;
   font: 700 18px/1.2 var(--f-body); cursor: pointer;
 }
 .btn:hover { color: var(--btn-hover-ink); background: var(--btn-hover); }
@@ -193,18 +209,18 @@ img, svg { max-width: 100%; }
   transition: background-color .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease, transform .16s var(--ease-out);
   -webkit-tap-highlight-color: transparent;
 }
-.btn:not(.btn-ghost) { box-shadow: var(--shadow-1); }
+.btn:not(.btn-ghost) { box-shadow: 0 1px 0 rgba(255, 255, 255, 0.18) inset, var(--shadow-1); }
 .btn:active { transform: scale(0.97); }
 .btn svg { transition: transform .2s var(--ease-out); }
 @media (hover: hover) and (pointer: fine) {
-  .btn:not(.btn-ghost):hover { box-shadow: var(--shadow-2); }
+  .btn:not(.btn-ghost):hover { box-shadow: 0 1px 0 rgba(255, 255, 255, 0.18) inset, var(--shadow-2); }
   .btn:hover svg { transform: translateX(-3px); }
   .btn[href^="#"]:hover svg { transform: translateY(2px); } /* in-page links point down the page */
 }
 .btn-ghost {
-  background: transparent; color: var(--ink); border: 1.5px solid var(--ink);
+  background: transparent; color: var(--ink); border: 1px solid var(--ink);
 }
-.btn-ghost:hover { background: var(--washi-2); color: var(--ink); }
+.btn-ghost:hover { background: color-mix(in srgb, var(--ink) 7%, transparent); color: var(--ink); }
 
 bdi.nt, .nt { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
@@ -274,8 +290,8 @@ html[data-signed-in] [data-signed-out-only] { display: none; }
 .tour-spot { position: fixed; z-index: 71; border-radius: 8px; pointer-events: none; box-shadow: 0 0 0 3px var(--focus), 0 0 0 200vmax var(--tour-dim); }
 .tour-card {
   position: fixed; z-index: 72; width: min(340px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); overflow-y: auto;
-  padding: 10px 16px 12px; border: 1px solid var(--rule); border-radius: 12px;
-  background: var(--washi); color: var(--ink); box-shadow: var(--shadow-3);
+  padding: 10px 16px 12px; border: 1px solid var(--rule); border-radius: 16px;
+  background: var(--surface); color: var(--ink); box-shadow: var(--shadow-3);
   animation: fade-in .2s ease-out;
 }
 .tour-card:focus { outline: none; }
@@ -313,12 +329,12 @@ html.tour-on [data-nav-narrow] .panel { padding-bottom: 50dvh; }
 .info-tip::before { content: "\2060"; }
 .info-tip__btn {
   appearance: none; position: relative; display: inline-grid; place-items: center;
-  width: 20px; height: 20px; margin-inline-start: 6px; padding: 0;
-  border: 1.5px solid var(--muted); border-radius: 50%; background: transparent; color: var(--muted);
-  font: 700 12px/1 var(--f-body); vertical-align: 0.12em; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  width: 18px; height: 18px; margin-inline-start: 4px; padding: 0;
+  border: 1.25px solid var(--muted); border-radius: 50%; background: transparent; color: var(--muted);
+  font: 700 11px/1 var(--f-body); vertical-align: 0.2em; cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
 /* the circle is small, the tap target is 44px */
-.info-tip__btn::before { content: ""; position: absolute; inset: -12px; }
+.info-tip__btn::before { content: ""; position: absolute; inset: -13px; }
 .info-tip__btn { transition: border-color .15s ease, color .15s ease, transform .16s var(--ease-out); }
 .info-tip__btn:hover, .info-tip__btn[aria-expanded="true"] { border-color: var(--seal); color: var(--seal); }
 .info-tip__btn:active { transform: scale(0.9); }
@@ -326,7 +342,7 @@ html.tour-on [data-nav-narrow] .panel { padding-bottom: 50dvh; }
 .info-tip__pop {
   display: none; position: fixed; z-index: 80; inset: auto; margin: 0;
   width: max-content; max-width: min(300px, calc(100vw - 24px)); padding-block: 12px; padding-inline: 14px 36px;
-  border: 0; border-radius: 10px; background: var(--ink); color: var(--washi); overflow: visible;
+  border: 0; border-radius: 14px; background: var(--ink); color: var(--washi); overflow: visible;
   font: 400 15px/1.55 var(--f-body); text-align: start; white-space: normal; text-wrap: pretty;
   box-shadow: var(--shadow-3);
 }

@@ -303,7 +303,7 @@ html:not([data-pieces="letters"]):not([data-pieces="kanji"]) :is(.learn, .play) 
 .learn__map .categ_stages { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
 .learn__map .stage {
   position: relative; display: flex; align-items: center; gap: 12px; min-height: 92px; padding: 12px 14px;
-  border: 1.5px solid var(--rule); border-radius: 10px; background: var(--washi); color: var(--ink); text-decoration: none;
+  border: 1.5px solid var(--rule); border-radius: 12px; background: var(--surface); color: var(--ink); text-decoration: none;
   box-shadow: var(--shadow-1); -webkit-tap-highlight-color: transparent;
   transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out), border-color .15s ease;
 }

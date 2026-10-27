@@ -68,7 +68,8 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
         <svg class="i-open" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"></path></svg>
         <svg class="i-close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
       </summary>
-      <nav class="panel" aria-label="ראשי (נייד)">
+      <div class="scrim" data-scrim aria-hidden="true"></div>
+      <nav class="panel" aria-label="ראשי (נייד)" data-sheet>
         {items.map((i) => isSection(i) ? (
           <section class="group" data-tour={i.tour}>
             <h2 class="group-title">{i.label}</h2>
@@ -96,7 +97,18 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
 </header>
 
 <style>
-  .site-header { border-bottom: 1px solid var(--rule); background: var(--washi); position: relative; z-index: 20; }
+  /* The bar stays at the top. It is plain paper at the top of the page and turns to glass (blurred paper) once
+     the page scrolls under it. The blur sits on ::before: on the header itself it would trap the phone sheet,
+     which is position: fixed inside it. Pages whose board or side map sticks to the top keep the bar in place. */
+  .site-header { position: sticky; top: 0; z-index: 20; isolation: isolate; border-bottom: 1px solid var(--rule); background: var(--washi); transition: background-color .25s ease, box-shadow .25s ease; }
+  .site-header::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0; transition: opacity .25s ease;
+    background: var(--glass); -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6);
+  }
+  .site-header.scrolled { background: transparent; box-shadow: 0 12px 28px -22px rgba(0, 0, 0, 0.55); }
+  .site-header.scrolled::before { opacity: 1; }
+  :global(body:has(.step-board, .learn__side-home)) .site-header { position: relative; }
+  :global(html) { scroll-padding-top: 80px; }
   .bar { display: flex; align-items: center; min-height: 64px; gap: 16px; }
   .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); flex-shrink: 0; }
   .logo { width: 44px; height: 44px; flex-shrink: 0; }
@@ -104,38 +116,37 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
   .ext { font-size: 0.8em; margin-inline-start: 4px; color: var(--muted); }
   .hint { display: block; font-size: 14px; font-weight: 400; color: var(--muted); line-height: 1.4; }
 
-  /* Light / dark button: shows the sun in dark mode (press for light) and the moon in light mode. */
+  /* Light / dark button: the moon in light mode, the sun in dark mode; one turns away as the other turns in. */
   .theme-btn {
-    appearance: none; background: transparent; border: 0; color: var(--ink); cursor: pointer;
-    width: 44px; height: 44px; border-radius: 6px; display: flex; align-items: center; justify-content: center;
+    appearance: none; position: relative; background: transparent; border: 0; color: var(--ink); cursor: pointer;
+    width: 44px; height: 44px; border-radius: 999px; display: grid; place-items: center;
     margin-inline-start: auto; flex-shrink: 0;
   }
-  .theme-btn:hover { background: var(--washi-2); }
+  .theme-btn svg { grid-area: 1 / 1; transition: opacity .2s ease, transform .3s var(--ease-out); }
+  .theme-btn .i-sun, :global(html[data-theme="dark"]) .theme-btn .i-moon { opacity: 0; transform: rotate(-90deg) scale(0.6); }
+  :global(html[data-theme="dark"]) .theme-btn .i-sun { opacity: 1; transform: none; }
+  .theme-btn:hover, .inbox summary:hover, .inbox[open] summary { background: color-mix(in srgb, var(--ink) 7%, transparent); }
   .theme-btn, .inbox summary, .nav-narrow summary {
     transition: background-color .15s ease, transform .16s var(--ease-out); -webkit-tap-highlight-color: transparent;
   }
-  .theme-btn:active, .inbox summary:active, .nav-narrow summary:active { transform: scale(0.92); }
-  .theme-btn .i-sun { display: none; }
-  :global(html[data-theme="dark"]) .theme-btn .i-sun { display: block; }
-  :global(html[data-theme="dark"]) .theme-btn .i-moon { display: none; }
+  .theme-btn:active, .inbox summary:active, .nav-narrow summary:active { transform: scale(0.88); transition-duration: .1s; }
 
   /* ---------- the bell (signed-in visitors): sits just before the light / dark button ---------- */
   .inbox { position: static; margin-inline-start: auto; flex-shrink: 0; }
   :global(html[data-signed-in]) .theme-btn { margin-inline-start: 0; }
   .inbox summary {
-    list-style: none; position: relative; width: 44px; height: 44px; border-radius: 6px; cursor: pointer;
+    list-style: none; position: relative; width: 44px; height: 44px; border-radius: 999px; cursor: pointer;
     display: flex; align-items: center; justify-content: center; color: var(--ink);
   }
   .inbox summary::-webkit-details-marker { display: none; }
-  .inbox summary:hover, .inbox[open] summary { background: var(--washi-2); }
   .inbox-count {
     position: absolute; top: 4px; inset-inline-end: 2px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
     background: var(--seal); color: var(--on-seal); font: 700 11px/18px var(--f-body); text-align: center;
   }
   .inbox-panel {
     position: absolute; top: 100%; inset-inline: 0; z-index: 30; max-height: calc(100dvh - 64px); overflow-y: auto; overscroll-behavior: contain;
-    background: var(--washi); border-top: 1px solid var(--rule); border-bottom: 1.5px solid var(--ink);
-    padding: 12px var(--gutter) 14px; box-shadow: var(--shadow-3);
+    background: var(--glass-hi); -webkit-backdrop-filter: blur(24px) saturate(1.6); backdrop-filter: blur(24px) saturate(1.6);
+    border-top: 1px solid var(--rule); padding: 12px var(--gutter) 14px; box-shadow: var(--shadow-glass);
   }
   .inbox-title { margin: 0 0 6px; font-size: 13px; font-weight: 700; letter-spacing: 0.4px; color: var(--seal); }
   .inbox-list { list-style: none; margin: 0; padding: 0; }
@@ -153,26 +164,36 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
   .inbox-foot { margin: 10px 0 0; font-size: 15px; }
   .inbox-foot a { color: var(--ink-2); }
 
-  /* ---------- phones: a full-height panel under the bar ---------- */
+  /* ---------- phones: the menu is a sheet from the bottom, where the thumb already is, over a dimmed page.
+     Drag it down (or tap the dimmed page, ✕ or Escape) to close it. ---------- */
   .nav-wide { display: none; }
   .nav-narrow summary {
     list-style: none; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: var(--ink); border-radius: 6px; margin-inline-end: -10px;
+    cursor: pointer; color: var(--ink); border-radius: 999px; margin-inline-end: -10px;
   }
   .nav-narrow summary::-webkit-details-marker { display: none; }
   .nav-narrow .i-close, .nav-narrow[open] .i-open { display: none; }
   .nav-narrow[open] .i-close { display: block; }
+  .scrim { position: fixed; inset: 0; z-index: 1; background: rgba(10, 8, 4, 0.38); }
   .panel {
-    position: absolute; inset-inline: 0; top: 100%; height: calc(100dvh - 64px); overflow-y: auto; overscroll-behavior: contain;
-    background: var(--washi); border-top: 1px solid var(--rule);
-    padding: 8px var(--gutter) 32px; display: flex; flex-direction: column;
+    position: fixed; inset-inline: 0; bottom: 0; z-index: 2; height: min(82dvh, 720px); overflow-y: auto; overscroll-behavior: contain;
+    background: var(--glass-hi); -webkit-backdrop-filter: blur(24px) saturate(1.8); backdrop-filter: blur(24px) saturate(1.8);
+    border-radius: 22px 22px 0 0; box-shadow: 0 -1px 0 var(--glass-edge), var(--shadow-glass); touch-action: pan-y;
+    padding: 26px var(--gutter) env(safe-area-inset-bottom, 0px); display: flex; flex-direction: column;
   }
-  /* Icons: a small paper tile at the start of each link, in the muted ink; the seal red on the page you are on. */
+  /* the grabber: says "this pulls down" */
+  .panel::before {
+    content: ""; position: absolute; top: 9px; left: 50%; width: 44px; height: 5px; margin-left: -22px; border-radius: 3px;
+    background: color-mix(in srgb, var(--ink) 25%, transparent);
+  }
+  .panel.dragging { animation: none !important; transition: none; }
+  .panel.settle { transition: transform .32s var(--ease-drawer); }
+  /* Icons: a small tinted tile at the start of each link; solid seal red on the page you are on. */
   .ico {
-    flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 9px;
-    background: var(--washi-2); color: var(--ink-2); box-shadow: inset 0 0 0 1px var(--rule);
+    flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px;
+    background: color-mix(in srgb, var(--seal) 10%, transparent); color: var(--seal);
   }
-  a[aria-current="page"] .ico { color: var(--seal); }
+  a[aria-current="page"] .ico { background: var(--seal); color: var(--on-seal); }
   .group { padding: 16px 0 8px; border-bottom: 1px solid var(--rule); }
   .group-title {
     margin: 0 0 4px; font-family: inherit; font-size: 13px; font-weight: 700; letter-spacing: 0.4px; color: var(--seal);
@@ -193,30 +214,52 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
   .group .chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 2px 0 10px; }
   .group li:has(.ico) + .chips { padding-inline-start: 48px; }
   .group .chips a {
-    min-height: 40px; padding: 0 14px; font-size: 16px; border: 1px solid var(--rule); border-radius: 999px; background: var(--washi-2);
+    min-height: 40px; padding: 0 14px; font-size: 16px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 6%, transparent);
   }
   .panel .solo { min-height: 60px; font-weight: 700; border-bottom: 1px solid var(--rule); }
+  /* sign-up / account: a button that stays at the bottom of the sheet, under the thumb */
   .panel .solo.account {
-    margin-top: 20px; min-height: 48px; flex-direction: row; gap: 8px; justify-content: center; align-items: center;
-    border: 1.5px solid var(--ink); border-radius: 8px;
+    position: sticky; bottom: 0; margin: auto calc(-1 * var(--gutter)) 0; padding: 12px var(--gutter) calc(12px + env(safe-area-inset-bottom, 0px));
+    min-height: 0; flex-direction: row; gap: 8px; justify-content: center; align-items: center; border: 0;
+    background: linear-gradient(to bottom, transparent, var(--surface) 30%); color: var(--ink);
   }
+  .panel .solo.account::before {
+    content: ""; position: absolute; inset: 12px var(--gutter) calc(12px + env(safe-area-inset-bottom, 0px)); z-index: -1;
+    border-radius: 14px; background: var(--ink); box-shadow: var(--shadow-2);
+  }
+  .panel .solo.account { isolation: isolate; color: var(--washi); min-height: 74px; }
   .panel .solo.account:active { transform: scale(0.98); }
   .panel a[aria-current="page"] { color: var(--seal); font-weight: 700; }
-  .panel a[aria-current="page"]:not(:has(.ico)) .label::before { content: '● '; font-size: 0.6em; vertical-align: middle; }
-  .panel a[aria-current="page"] .ico { background: var(--washi); box-shadow: inset 0 0 0 1.5px var(--seal); }
+  .panel .solo.account[aria-current="page"] { color: var(--washi); }
+  .panel a[aria-current="page"]:not(:has(.ico)):not(.account) .label::before { content: '● '; font-size: 0.6em; vertical-align: middle; }
 
-  /* The panel slides down from the bar (the drawer curve, fast); the dropdowns and the bell grow from their button.
-     Not while the site tour is showing them: its ring measures them as they stand. */
+  /* The sheet rises from the bottom (the drawer curve) and leaves faster than it came; the dropdowns and the
+     bell grow from their button. Not while the site tour is showing them: its ring measures them as they stand. */
+  @keyframes sheet-in { from { transform: translateY(100%); } }
+  @keyframes sheet-out { to { transform: translateY(100%); } }
+  @keyframes materialize { from { opacity: 0; transform: translateY(-6px) scale(0.97); } }
   @media (prefers-reduced-motion: no-preference) {
-    :global(html:not(.tour-on)) .nav-narrow[open] .panel { animation: drop-in .24s var(--ease-drawer); }
-    :global(html:not(.tour-on)) .nav-group[open] .nav-menu,
-    :global(html:not(.tour-on)) .inbox[open] .inbox-panel { animation: pop-in .18s var(--ease-out); }
+    :global(html:not(.tour-on)) .nav-narrow[open] .panel { animation: sheet-in .32s var(--ease-drawer); }
+    :global(html:not(.tour-on)) .nav-narrow[open] .scrim { animation: fade-in .32s ease; }
+    .nav-narrow.closing .panel { animation: sheet-out .2s cubic-bezier(0.4, 0, 1, 1) forwards; }
+    .nav-narrow.closing .scrim { opacity: 0; transition: opacity .2s ease; }
+    :global(html:not(.tour-on)) .nav-group[open]:not(.instant) .nav-menu,
+    :global(html:not(.tour-on)) .inbox[open] .inbox-panel { animation: materialize .22s var(--ease-out); }
   }
   @media (prefers-reduced-motion: reduce) {
     :global(html:not(.tour-on)) .nav-narrow[open] .panel,
-    :global(html:not(.tour-on)) .nav-group[open] .nav-menu,
+    :global(html:not(.tour-on)) .nav-narrow[open] .scrim,
+    :global(html:not(.tour-on)) .nav-group[open]:not(.instant) .nav-menu,
     :global(html:not(.tour-on)) .inbox[open] .inbox-panel { animation: fade-in .15s ease-out; }
+    .nav-narrow.closing .panel, .nav-narrow.closing .scrim { opacity: 0; transition: opacity .15s ease; }
+    .theme-btn svg { transition: opacity .2s ease; }
+    .theme-btn .i-sun, :global(html[data-theme="dark"]) .theme-btn .i-moon { transform: none; }
     .theme-btn:active, .inbox summary:active, .nav-narrow summary:active, .group a:active .ico, .panel .solo:active .ico, .panel .solo.account:active { transform: none; }
+  }
+  /* For people who ask for less transparency: solid paper instead of glass. */
+  @media (prefers-reduced-transparency: reduce) {
+    .site-header::before, .panel, .nav-menu, .inbox-panel { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--surface); }
+    .site-header.scrolled { background: var(--washi); }
   }
 
   /* ---------- desktop: a bar with dropdowns ---------- */
@@ -226,53 +269,68 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
     .theme-btn { margin-inline-start: 0; }
     .inbox { position: relative; margin-inline-start: 0; }
     .inbox-panel {
-      top: calc(100% + 8px); inset-inline: auto -8px; width: 380px; max-height: 70vh; padding: 10px 16px 12px;
-      border: 1.5px solid var(--ink); border-radius: 8px;
+      top: calc(100% + 10px); inset-inline: auto -8px; width: 380px; max-height: 70vh; padding: 10px 16px 12px;
+      border: 1px solid var(--glass-edge); border-radius: 16px; transform-origin: top left;
     }
   }
   .nav-wide .top, .nav-group summary {
     color: var(--ink); text-decoration: none; font-weight: 500; padding: 8px 0; border-bottom: 2px solid transparent; white-space: nowrap;
-    transition: border-color .15s ease;
+    transition: border-color .15s ease, color .15s ease;
   }
   .nav-wide .top:hover, .nav-wide .top[aria-current="page"] { border-bottom-color: var(--seal); }
   .nav-group { position: relative; }
   .nav-group summary { list-style: none; display: flex; align-items: center; gap: 6px; cursor: pointer; }
   .nav-group summary::-webkit-details-marker { display: none; }
-  .nav-group summary:hover, .nav-group summary.current { border-bottom-color: var(--seal); }
-  .nav-group summary svg { transition: transform .2s var(--ease-out); }
+  .nav-group summary:hover { border-bottom-color: var(--seal); }
+  .nav-group summary.current { border-bottom-color: color-mix(in srgb, var(--seal) 45%, transparent); }
+  .nav-group summary svg { transition: transform .3s var(--ease-out); }
   .nav-group[open] summary svg { transform: rotate(180deg); }
   .nav-menu {
-    position: absolute; top: calc(100% + 8px); inset-inline-start: -14px; width: max-content; min-width: 280px; max-width: 360px; z-index: 30;
-    display: flex; flex-direction: column; padding: 6px; background: var(--washi);
-    border: 1.5px solid var(--ink); border-radius: 10px; box-shadow: var(--shadow-3);
+    position: absolute; top: calc(100% + 10px); inset-inline-start: -14px; width: max-content; min-width: 280px; max-width: 360px; z-index: 30;
+    display: flex; flex-direction: column; padding: 8px;
+    background: var(--glass-hi); -webkit-backdrop-filter: blur(24px) saturate(1.8); backdrop-filter: blur(24px) saturate(1.8);
+    border: 1px solid var(--glass-edge); border-radius: 16px; box-shadow: var(--shadow-glass);
     transform-origin: top right;
   }
   .nav-menu a {
     display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 12px;
-    padding: 8px 12px; border-radius: 6px; color: var(--ink); text-decoration: none; font-weight: 500;
+    padding: 8px 12px; border-radius: 10px; color: var(--ink); text-decoration: none; font-weight: 500;
     transition: background-color .12s ease;
   }
   .nav-menu a > :not(.ico) { grid-column: 2; }
   .nav-menu a .ico { grid-row: span 2; width: 32px; height: 32px; }
   .nav-menu a.sub { padding-block: 5px; padding-inline-start: 56px; font-size: 15px; } /* in line with the labels: 12 + 32 icon + 12 */
-  .nav-menu a:hover, .nav-menu a[aria-current="page"] { background: var(--washi-2); }
-  .nav-menu a:hover .ico { background: var(--washi); color: var(--seal); }
-  .nav-menu a[aria-current="page"] .label { color: var(--seal); }
+  .nav-menu a:hover { background: color-mix(in srgb, var(--ink) 7%, transparent); }
+  .nav-menu a[aria-current="page"] .label, .nav-menu a.sub[aria-current="page"] { color: var(--seal); font-weight: 700; }
   .nav-wide .account {
     display: inline-flex; align-items: center; gap: 7px;
-    color: var(--ink); text-decoration: none; font-weight: 700; padding: 7px 14px; border: 1.5px solid var(--ink); border-radius: 6px; white-space: nowrap;
+    color: var(--ink); text-decoration: none; font-weight: 700; padding: 7px 16px; border: 1px solid var(--ink); border-radius: 999px; white-space: nowrap;
     transition: background-color .15s ease, transform .16s var(--ease-out);
   }
-  .nav-wide .account:active { transform: scale(0.97); }
+  .nav-wide .account:active { transform: scale(0.96); }
   @media (prefers-reduced-motion: reduce) { .nav-wide .account:active { transform: none; } }
-  .nav-wide .account:hover, .nav-wide .account[aria-current="page"] { background: var(--washi-2); }
+  .nav-wide .account:hover, .nav-wide .account[aria-current="page"] { background: color-mix(in srgb, var(--ink) 7%, transparent); }
 </style>
 
 <script>
+  // The bar turns to glass once the page has scrolled under it.
+  const header = document.querySelector<HTMLElement>('.site-header');
+  if (header) {
+    const onScroll = () => header.classList.toggle('scrolled', scrollY > 4);
+    addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  }
+
   // Desktop dropdowns: one open at a time; close on Escape (focus back on the heading) and on a click elsewhere.
+  // Moving from one open dropdown to the next swaps them at once, without the opening animation.
   const groups = document.querySelectorAll<HTMLDetailsElement>('[data-nav-group]');
   groups.forEach((d) => {
-    d.addEventListener('toggle', () => { if (d.open) groups.forEach((o) => { if (o !== d) o.open = false; }); });
+    d.addEventListener('toggle', () => {
+      if (!d.open) { d.classList.remove('instant'); return; }
+      let swapped = false;
+      groups.forEach((o) => { if (o !== d && o.open) { o.open = false; swapped = true; } });
+      d.classList.toggle('instant', swapped);
+    });
     d.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && d.open) { d.open = false; d.querySelector('summary')?.focus(); }
     });
@@ -281,14 +339,63 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
     groups.forEach((d) => { if (d.open && !d.contains(e.target as Node)) d.open = false; });
   });
 
-  // Phone panel: the page behind does not scroll while it is open; Escape or a link closes it
-  // (a link to a #section on this same page would otherwise leave the panel covering it).
+  // Phone sheet: the page behind does not scroll while it is open. ✕, the dimmed page, Escape, a link or a drag
+  // down closes it (a link to a #section on this same page would otherwise leave the sheet covering it).
   const narrow = document.querySelector<HTMLDetailsElement>('[data-nav-narrow]');
-  if (narrow) {
+  const sheet = narrow?.querySelector<HTMLElement>('[data-sheet]');
+  if (narrow && sheet) {
+    const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let closing = false;
+    const close = (focus = false) => {
+      if (!narrow.open || closing) return;
+      const done = () => {
+        narrow.classList.remove('closing'); sheet.classList.remove('settle'); sheet.style.transform = ''; closing = false;
+        narrow.open = false;
+        if (focus) narrow.querySelector('summary')?.focus();
+      };
+      if (document.documentElement.classList.contains('tour-on')) { done(); return; }
+      closing = true;
+      narrow.classList.add('closing');
+      setTimeout(done, still() ? 150 : 200);
+    };
     narrow.addEventListener('toggle', () => { document.documentElement.style.overflow = narrow.open ? 'hidden' : ''; });
-    narrow.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && narrow.open) { narrow.open = false; narrow.querySelector('summary')?.focus(); }
-    });
-    narrow.querySelectorAll('.panel a').forEach((a) => a.addEventListener('click', () => { narrow.open = false; }));
+    narrow.querySelector('summary')?.addEventListener('click', (e) => { if (narrow.open) { e.preventDefault(); close(); } });
+    narrow.querySelector('[data-scrim]')?.addEventListener('click', () => close());
+    narrow.addEventListener('keydown', (e) => { if (e.key === 'Escape' && narrow.open) close(true); });
+    sheet.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => close()));
+
+    // Drag down from the top of the sheet's scroll to close it: past 120px, or a quick flick; otherwise it settles back.
+    // Touch events, not pointer events: the browser would take a vertical pointer drag for scrolling and cancel it.
+    let y0 = 0, t0 = 0, dy = 0, tracking = false, dragging = false;
+    sheet.addEventListener('touchstart', (e) => {
+      if (e.touches.length !== 1 || sheet.scrollTop > 0 || document.documentElement.classList.contains('tour-on')) return;
+      tracking = true; dragging = false; y0 = e.touches[0].clientY; t0 = e.timeStamp; dy = 0;
+    }, { passive: true });
+    sheet.addEventListener('touchmove', (e) => {
+      if (!tracking) return;
+      dy = e.touches[0].clientY - y0;
+      if (!dragging && (dy < 0 || sheet.scrollTop > 0)) { tracking = false; return; } // scrolling the list up
+      if (!dragging && dy > 10) { dragging = true; sheet.classList.add('dragging'); }
+      if (dragging) { e.preventDefault(); sheet.style.transform = `translateY(${Math.max(0, dy)}px)`; }
+    }, { passive: false });
+    const end = (e: TouchEvent) => {
+      if (!tracking) return;
+      tracking = false;
+      if (!dragging) return;
+      dragging = false;
+      sheet.classList.remove('dragging');
+      sheet.classList.add('settle');
+      const v = dy / Math.max(1, e.timeStamp - t0);
+      if (dy > 120 || v > 0.11) {
+        closing = true;
+        sheet.style.transform = 'translateY(100%)';
+        setTimeout(() => { closing = false; sheet.classList.remove('settle'); sheet.style.transform = ''; narrow.open = false; }, still() ? 0 : 320);
+      } else {
+        sheet.style.transform = '';
+        setTimeout(() => sheet.classList.remove('settle'), 320);
+      }
+    };
+    sheet.addEventListener('touchend', end);
+    sheet.addEventListener('touchcancel', end);
   }
 </script>
