@@ -3,8 +3,21 @@
 // set up like the KIF viewer (src/scripts/kif-viewer.ts). The game and its texts: src/lib/first-game.ts.
 import { Shogiground } from 'shogiground/shogiground';
 import { makeSquareName, parseUsi } from 'shogiops/util';
-import { FIRST_GAME, PHASES, TAG_LABEL, firstGamePlies } from '../lib/first-game';
+import { FIRST_GAME, PHASES, PIECE_TOKEN, TAG_LABEL, firstGamePlies, plainText } from '../lib/first-game';
 import { markSeen } from '../lib/progress-local';
+
+/** Fill an element with text whose {R} marks become pieces drawn like the board's (styles: .pchip in /try/). */
+function setRich(el: HTMLElement, text: string): void {
+  const parts = text.split(PIECE_TOKEN); // odd indexes are the captured piece codes
+  el.replaceChildren(...parts.map((p, i) => {
+    if (i % 2 === 0) return document.createTextNode(p);
+    const chip = document.createElement('span');
+    chip.className = 'pchip';
+    chip.dataset.p = p;
+    chip.setAttribute('aria-hidden', 'true'); // the piece's name is always written next to it
+    return chip;
+  }));
+}
 
 export function bootWatchGame(root: HTMLElement): void {
   const q = <T extends HTMLElement = HTMLElement>(s: string) => root.querySelector<T>(s)!;
@@ -65,7 +78,7 @@ export function bootWatchGame(root: HTMLElement): void {
       phaseBox.hidden = !starts;
       if (starts) {
         q('[data-phase-name]').textContent = `שלב ${ply.phase + 1}: ${ph.name}`;
-        q('[data-phase-note]').textContent = ph.note;
+        setRich(q('[data-phase-note]'), ph.note);
       }
       q('[data-who]').textContent = `מהלך ${step} מתוך ${N} · ${step % 2 ? 'הפותח' : 'המשיב'}`;
       q('[data-tags]').replaceChildren(...ply.tags.map((t) => {
@@ -75,11 +88,11 @@ export function bootWatchGame(root: HTMLElement): void {
         return s;
       }));
       q('[data-title]').textContent = m.title;
-      q('[data-text]').textContent = m.text;
+      setRich(q('[data-text]'), m.text);
       const why = q('[data-why]');
       why.hidden = !m.why;
-      q('[data-why-text]').textContent = m.why ?? '';
-      if (announce) live.textContent = `מהלך ${step}: ${m.title}. ${m.text}`;
+      setRich(q('[data-why-text]'), m.why ?? '');
+      if (announce) live.textContent = `מהלך ${step}: ${m.title}. ${plainText(m.text)}`;
     } else if (announce) {
       live.textContent = step === 0 ? 'עמדת הפתיחה' : 'סיכום המשחק';
     }

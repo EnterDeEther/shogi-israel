@@ -47,6 +47,10 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
             <p>שני שחקנים, וכל אחד שולט בצד אחד של הלוח. <strong>הפותח</strong> משחק מלמטה ו<strong>המשיב</strong> מלמעלה, והכלים של המשיב הפוכים, עם החוד כלפי מטה. הפותח זז ראשון. המטרה: לתת מט למלך של היריב, כלומר לתקוף אותו כך שאין לו מוצא.</p>
           </div>
           <div class="box">
+            <h2>איך מזהים כלי</h2>
+            <p>על כל כלי כתוב סימן שאומר מה הוא. המלך, למשל, נראה כך: <span class="pchip" data-p="K" aria-hidden="true"></span>. את שאר הכלים נכיר אחד אחד, בפעם הראשונה שכל אחד מהם זז. ⟦אתה|את⟧ ⟦יכול|יכולה⟧ לבחור למעלה אם הסימן יהיה אות באנגלית או קאנג׳י, הכתב היפני שעל כלים אמיתיים.</p>
+          </div>
+          <div class="box">
             <h2>שלושה שלבים בכל משחק</h2>
             <p>פתיחה: מסדרים את הכלים ובונים הגנה למלך. אמצע המשחק: נפגשים, לוכדים ומחליפים כלים. סוף המשחק: מרוץ למט. נסמן לך בכל מהלך באיזה שלב אנחנו.</p>
           </div>
@@ -143,6 +147,32 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
   .recap li { display: flex; flex-direction: column; gap: 2px; border-top: 2px solid var(--ink); padding-top: 8px; }
   .recap span { color: var(--ink-2); line-height: 1.6; }
   .manners { font-size: 16px; }
+  /* a piece named in the text, drawn like the board's pieces: letter or kanji, following the site-wide switch */
+  .watch :global(.pchip) {
+    --l: ''; --k: '';
+    position: relative; display: inline-flex; align-items: center; justify-content: center;
+    width: 1.55em; height: 1.75em; padding-top: 0.28em; vertical-align: -0.45em; margin-inline: 0.1em;
+    color: var(--piece-ink); line-height: 1; filter: drop-shadow(0 1px 1px rgba(40, 25, 10, 0.35));
+    unicode-bidi: isolate; direction: ltr;
+  }
+  .watch :global(.pchip)::before, .watch :global(.pchip)::after { position: absolute; clip-path: polygon(50% 0, 86% 16%, 100% 100%, 0 100%, 14% 16%); }
+  .watch :global(.pchip)::before { content: ''; inset: 0; background: var(--piece-line); }
+  .watch :global(.pchip)::after {
+    content: var(--l); inset: 1.5px; background: var(--piece);
+    display: flex; align-items: center; justify-content: center; padding-top: 0.28em;
+    font: 800 0.82em/1 var(--f-body); letter-spacing: -0.3px; color: var(--piece-ink);
+  }
+  :global(html[data-pieces="kanji"]) .watch :global(.pchip)::after { content: var(--k); font-family: var(--f-kanji); font-size: 0.9em; }
+  .watch :global(.pchip[data-p="K"]) { --l: 'K'; --k: '王'; }
+  .watch :global(.pchip[data-p="R"]) { --l: 'R'; --k: '飛'; }
+  .watch :global(.pchip[data-p="B"]) { --l: 'B'; --k: '角'; }
+  .watch :global(.pchip[data-p="G"]) { --l: 'G'; --k: '金'; }
+  .watch :global(.pchip[data-p="S"]) { --l: 'S'; --k: '銀'; }
+  .watch :global(.pchip[data-p="N"]) { --l: 'N'; --k: '桂'; }
+  .watch :global(.pchip[data-p="L"]) { --l: 'L'; --k: '香'; }
+  .watch :global(.pchip[data-p="P"]) { --l: 'P'; --k: '歩'; }
+  .watch :global(.pchip[data-p="+R"]) { --l: '+R'; --k: '龍'; }
+  .watch :global(.pchip[data-p^="+"])::after { color: var(--seal); }
   .watch__try { align-self: stretch; justify-content: center; min-height: 56px; font-size: 18px; }
   @media (min-width: 900px) { .watch__try { align-self: flex-start; } }
 </style>
