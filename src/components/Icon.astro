@@ -1,0 +1,8 @@
+---
+// One icon from src/lib/icons.ts, in the text colour. Decorative: the link or button beside it carries the words.
+import { ICONS, type IconName } from '../lib/icons';
+
+interface Props { name: IconName; size?: number; class?: string }
+const { name, size = 20, class: cls } = Astro.props;
+---
+<svg class:list={['icon', cls]} width={size} height={size} viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" focusable="false"><path d={ICONS[name]}></path></svg>

@@ -2,6 +2,7 @@
 // The menu itself lives in src/lib/nav.ts; this file only draws it (desktop bar + phone panel).
 import { ACCOUNT, isCurrent, isLive, isSection, liveNav, withChips, type NavLink } from '../lib/nav';
 import { WEEK_LENGTH } from '../tsume/week';
+import Icon from './Icon.astro';
 
 const path = Astro.url.pathname;
 const items = liveNav();
@@ -29,6 +30,7 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
           <div class="nav-menu">
             {i.links.map((l) => (
               <a href={l.href} class={l.sub ? 'sub' : undefined} aria-current={here(l)} {...ext(l)}>
+                {l.icon && <span class="ico"><Icon name={l.icon} /></span>}
                 <span class="label">{l.label}{l.external && <span class="ext" aria-hidden="true">↗</span>}</span>
                 {l.hint && <span class="hint">{l.hint}</span>}
               </a>
@@ -38,7 +40,7 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
       ) : (
         <a class="top" href={i.href} aria-current={here(i)} {...ext(i)}>{i.label}</a>
       ))}
-      {account && <a class="account" data-tour="account" href={account.href} aria-current={here(account)}><span data-signed-in-only>{account.label}</span><span data-signed-out-only>הרשמה / כניסה</span></a>}
+      {account && <a class="account" data-tour="account" href={account.href} aria-current={here(account)}>{account.icon && <Icon name={account.icon} size={18} />}<span data-signed-in-only>{account.label}</span><span data-signed-out-only>הרשמה / כניסה</span></a>}
     </nav>
 
     {account && (
@@ -76,6 +78,7 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
               ) : (
                 <li>
                   <a href={l.href} aria-current={here(l)} {...ext(l)}>
+                    {l.icon && <span class="ico"><Icon name={l.icon} /></span>}
                     <span class="label">{l.label}{l.external && <span class="ext" aria-hidden="true">↗</span>}</span>
                     {l.hint && <span class="hint">{l.hint}</span>}
                   </a>
@@ -84,9 +87,9 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
             </ul>
           </section>
         ) : (
-          <a class="solo" href={i.href} aria-current={here(i)} {...ext(i)}>{i.label}</a>
+          <a class="solo" href={i.href} aria-current={here(i)} {...ext(i)}>{i.icon && <span class="ico"><Icon name={i.icon} /></span>}<span class="label">{i.label}</span></a>
         ))}
-        {account && <a class="solo account" data-tour="account" href={account.href} aria-current={here(account)}><span data-signed-in-only>{account.label}</span><span data-signed-out-only>הרשמה / כניסה</span></a>}
+        {account && <a class="solo account" data-tour="account" href={account.href} aria-current={here(account)}>{account.icon && <Icon name={account.icon} />}<span data-signed-in-only>{account.label}</span><span data-signed-out-only>הרשמה / כניסה</span></a>}
       </nav>
     </details>
   </div>
@@ -108,6 +111,10 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
     margin-inline-start: auto; flex-shrink: 0;
   }
   .theme-btn:hover { background: var(--washi-2); }
+  .theme-btn, .inbox summary, .nav-narrow summary {
+    transition: background-color .15s ease, transform .16s var(--ease-out); -webkit-tap-highlight-color: transparent;
+  }
+  .theme-btn:active, .inbox summary:active, .nav-narrow summary:active { transform: scale(0.92); }
   .theme-btn .i-sun { display: none; }
   :global(html[data-theme="dark"]) .theme-btn .i-sun { display: block; }
   :global(html[data-theme="dark"]) .theme-btn .i-moon { display: none; }
@@ -128,7 +135,7 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
   .inbox-panel {
     position: absolute; top: 100%; inset-inline: 0; z-index: 30; max-height: calc(100dvh - 64px); overflow-y: auto; overscroll-behavior: contain;
     background: var(--washi); border-top: 1px solid var(--rule); border-bottom: 1.5px solid var(--ink);
-    padding: 12px var(--gutter) 14px; box-shadow: 0 12px 24px -16px rgba(0, 0, 0, 0.5);
+    padding: 12px var(--gutter) 14px; box-shadow: var(--shadow-3);
   }
   .inbox-title { margin: 0 0 6px; font-size: 13px; font-weight: 700; letter-spacing: 0.4px; color: var(--seal); }
   .inbox-list { list-style: none; margin: 0; padding: 0; }
@@ -160,6 +167,12 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
     background: var(--washi); border-top: 1px solid var(--rule);
     padding: 8px var(--gutter) 32px; display: flex; flex-direction: column;
   }
+  /* Icons: a small paper tile at the start of each link, in the muted ink; the seal red on the page you are on. */
+  .ico {
+    flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 9px;
+    background: var(--washi-2); color: var(--ink-2); box-shadow: inset 0 0 0 1px var(--rule);
+  }
+  a[aria-current="page"] .ico { color: var(--seal); }
   .group { padding: 16px 0 8px; border-bottom: 1px solid var(--rule); }
   .group-title {
     margin: 0 0 4px; font-family: inherit; font-size: 13px; font-weight: 700; letter-spacing: 0.4px; color: var(--seal);
@@ -169,14 +182,42 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
     display: flex; flex-direction: column; justify-content: center; min-height: 48px; padding: 6px 0;
     color: var(--ink); text-decoration: none; font-size: 18px; font-weight: 500; line-height: 1.35;
   }
+  .group a:has(.ico), .panel .solo:has(.ico) {
+    display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 14px;
+  }
+  .group a:has(.ico) .ico { grid-row: span 2; }
+  .group a:has(.ico) > :not(.ico) { grid-column: 2; }
+  .group a, .panel .solo, .group .chips a { -webkit-tap-highlight-color: transparent; transition: background-color .15s ease, transform .16s var(--ease-out); }
+  .group a:active .ico, .panel .solo:active .ico { transform: scale(0.92); }
+  .ico { transition: color .15s ease, background-color .15s ease, transform .16s var(--ease-out); }
   .group .chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 2px 0 10px; }
+  .group li:has(.ico) + .chips { padding-inline-start: 48px; }
   .group .chips a {
     min-height: 40px; padding: 0 14px; font-size: 16px; border: 1px solid var(--rule); border-radius: 999px; background: var(--washi-2);
   }
   .panel .solo { min-height: 60px; font-weight: 700; border-bottom: 1px solid var(--rule); }
-  .panel .solo.account { margin-top: 20px; min-height: 48px; justify-content: center; align-items: center; border: 1.5px solid var(--ink); border-radius: 8px; }
+  .panel .solo.account {
+    margin-top: 20px; min-height: 48px; flex-direction: row; gap: 8px; justify-content: center; align-items: center;
+    border: 1.5px solid var(--ink); border-radius: 8px;
+  }
+  .panel .solo.account:active { transform: scale(0.98); }
   .panel a[aria-current="page"] { color: var(--seal); font-weight: 700; }
-  .panel a[aria-current="page"] .label::before { content: '● '; font-size: 0.6em; vertical-align: middle; }
+  .panel a[aria-current="page"]:not(:has(.ico)) .label::before { content: '● '; font-size: 0.6em; vertical-align: middle; }
+  .panel a[aria-current="page"] .ico { background: var(--washi); box-shadow: inset 0 0 0 1.5px var(--seal); }
+
+  /* The panel slides down from the bar (the drawer curve, fast); the dropdowns and the bell grow from their button.
+     Not while the site tour is showing them: its ring measures them as they stand. */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html:not(.tour-on)) .nav-narrow[open] .panel { animation: drop-in .24s var(--ease-drawer); }
+    :global(html:not(.tour-on)) .nav-group[open] .nav-menu,
+    :global(html:not(.tour-on)) .inbox[open] .inbox-panel { animation: pop-in .18s var(--ease-out); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :global(html:not(.tour-on)) .nav-narrow[open] .panel,
+    :global(html:not(.tour-on)) .nav-group[open] .nav-menu,
+    :global(html:not(.tour-on)) .inbox[open] .inbox-panel { animation: fade-in .15s ease-out; }
+    .theme-btn:active, .inbox summary:active, .nav-narrow summary:active, .group a:active .ico, .panel .solo:active .ico, .panel .solo.account:active { transform: none; }
+  }
 
   /* ---------- desktop: a bar with dropdowns ---------- */
   @media (min-width: 1040px) {
@@ -191,25 +232,39 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
   }
   .nav-wide .top, .nav-group summary {
     color: var(--ink); text-decoration: none; font-weight: 500; padding: 8px 0; border-bottom: 2px solid transparent; white-space: nowrap;
+    transition: border-color .15s ease;
   }
   .nav-wide .top:hover, .nav-wide .top[aria-current="page"] { border-bottom-color: var(--seal); }
   .nav-group { position: relative; }
   .nav-group summary { list-style: none; display: flex; align-items: center; gap: 6px; cursor: pointer; }
   .nav-group summary::-webkit-details-marker { display: none; }
   .nav-group summary:hover, .nav-group summary.current { border-bottom-color: var(--seal); }
+  .nav-group summary svg { transition: transform .2s var(--ease-out); }
   .nav-group[open] summary svg { transform: rotate(180deg); }
   .nav-menu {
-    position: absolute; top: calc(100% + 8px); inset-inline-start: -14px; min-width: 250px; z-index: 30;
+    position: absolute; top: calc(100% + 8px); inset-inline-start: -14px; width: max-content; min-width: 280px; max-width: 360px; z-index: 30;
     display: flex; flex-direction: column; padding: 6px; background: var(--washi);
-    border: 1.5px solid var(--ink); border-radius: 8px; box-shadow: 0 12px 24px -16px rgba(0, 0, 0, 0.5);
+    border: 1.5px solid var(--ink); border-radius: 10px; box-shadow: var(--shadow-3);
+    transform-origin: top right;
   }
-  .nav-menu a { padding: 9px 12px; border-radius: 4px; color: var(--ink); text-decoration: none; font-weight: 500; }
-  .nav-menu a.sub { padding-block: 7px; padding-inline-start: 26px; font-size: 15px; }
+  .nav-menu a {
+    display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 12px;
+    padding: 8px 12px; border-radius: 6px; color: var(--ink); text-decoration: none; font-weight: 500;
+    transition: background-color .12s ease;
+  }
+  .nav-menu a > :not(.ico) { grid-column: 2; }
+  .nav-menu a .ico { grid-row: span 2; width: 32px; height: 32px; }
+  .nav-menu a.sub { padding-block: 5px; padding-inline-start: 56px; font-size: 15px; } /* in line with the labels: 12 + 32 icon + 12 */
   .nav-menu a:hover, .nav-menu a[aria-current="page"] { background: var(--washi-2); }
+  .nav-menu a:hover .ico { background: var(--washi); color: var(--seal); }
   .nav-menu a[aria-current="page"] .label { color: var(--seal); }
   .nav-wide .account {
+    display: inline-flex; align-items: center; gap: 7px;
     color: var(--ink); text-decoration: none; font-weight: 700; padding: 7px 14px; border: 1.5px solid var(--ink); border-radius: 6px; white-space: nowrap;
+    transition: background-color .15s ease, transform .16s var(--ease-out);
   }
+  .nav-wide .account:active { transform: scale(0.97); }
+  @media (prefers-reduced-motion: reduce) { .nav-wide .account:active { transform: none; } }
   .nav-wide .account:hover, .nav-wide .account[aria-current="page"] { background: var(--washi-2); }
 </style>
 

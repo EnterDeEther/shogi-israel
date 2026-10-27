@@ -93,7 +93,7 @@ const senteHand = handOf('sente');
   .bd {
     display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 1px;
     background: var(--grid); padding: 1px; border: 2px solid var(--grid); border-radius: 2px;
-    box-shadow: 0 10px 24px -14px rgba(60, 40, 20, 0.55);
+    box-shadow: var(--shadow-board);
   }
   .sq { aspect-ratio: 1 / 1; background: var(--kaya); display: flex; align-items: center; justify-content: center; position: relative; }
   .sq.zone { background: var(--kaya-zone); }
