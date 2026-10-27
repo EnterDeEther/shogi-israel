@@ -7,6 +7,7 @@
 // page stays static; the script below fills it in. index.astro decides who sees it (html[data-learner]).
 import { CURRICULUM } from '../lib/curriculum';
 import { WEEK_LENGTH } from '../tsume/week';
+import InfoTip from './InfoTip.astro';
 
 interface Props { weekCount: number }
 const { weekCount } = Astro.props;
@@ -37,6 +38,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
       <div class="rank-row">
         <span class="rank-kanji" lang="ja" aria-hidden="true" data-rank-kanji>十五級</span>
         <p class="rank-name" data-rank-name>15 קיו</p>
+        <InfoTip id="rank" />
       </div>
       <p class="rank-points" data-rank-points>0 נקודות</p>
       <div class="bar" aria-hidden="true"><span data-rank-bar></span></div>
@@ -70,7 +72,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
     <ul class="today">
       <li class="today-card">
         <h3>בעיית השבוע</h3>
-        <p data-week-text>בעיית מט ב־{WEEK_LENGTH} מהלכים, אותה בעיה לכולם. בעיה חדשה בכל יום ראשון.</p>
+        <p data-week-text>בעיית מט ב־{WEEK_LENGTH} מהלכים<InfoTip id="mate" />, אותה בעיה לכולם. בעיה חדשה בכל יום ראשון.</p>
         <a class="today-link" href="/tsume/week/" data-week-link><span data-week-cta>לפתור</span> ←</a>
       </li>
       <li class="today-card">
@@ -102,6 +104,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
   import { readLocal } from '../lib/progress-local';
   import { rankFor, xpBreakdown } from '../lib/xp';
   import { weekIndex, weekPuzzle, weekStreak, weeksHe, WEEK_LENGTH } from '../tsume/week';
+  import { tipEl } from '../lib/info-tip-dom';
 
   const root = document.querySelector<HTMLElement>('[data-me]');
   const html = document.documentElement;
@@ -190,7 +193,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
         text('[data-week-cta]', 'לעוד בעיות מט');
         $<HTMLAnchorElement>('[data-week-link]').href = '/tsume/';
       } else {
-        text('[data-week-text]', `בעיית מט ב־${WEEK_LENGTH} מהלכים, אותה בעיה לכולם. בעיה חדשה בכל יום ראשון.${streakText}`);
+        $('[data-week-text]').replaceChildren(`בעיית מט ב־${WEEK_LENGTH} מהלכים`, tipEl('mate'), `, אותה בעיה לכולם. בעיה חדשה בכל יום ראשון.${streakText}`);
         text('[data-week-cta]', streak > 0 ? 'לשמור על הרצף' : 'לפתור');
         $<HTMLAnchorElement>('[data-week-link]').href = '/tsume/week/';
       }
@@ -257,6 +260,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
   .rank p { margin: 0; }
   .rank-head { font-size: 14px; font-weight: 700; color: var(--muted); }
   .rank-row { display: flex; align-items: center; gap: 14px; }
+  .rank-row :global(.info-tip__btn) { margin-inline-start: -6px; }
   .rank-kanji { font-family: var(--f-kanji); font-size: 22px; font-weight: 800; color: var(--on-seal); background: var(--seal); border-radius: 999px; min-width: 56px; height: 56px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; }
   .rank-name { font-family: var(--f-display); font-size: 44px; font-weight: 800; line-height: 1; }
   .rank-points { font-size: 16px; color: var(--ink-2); }

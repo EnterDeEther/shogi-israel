@@ -2,6 +2,7 @@
 // One page per collection: /tsume/1/, /tsume/3/, /tsume/5/, /tsume/7/. The puzzle number is the hash (#12).
 import Base from '../../layouts/Base.astro';
 import TsumePlayer from '../../components/TsumePlayer.astro';
+import InfoTip from '../../components/InfoTip.astro';
 import { LENGTH_INFO, LENGTHS } from '../../tsume/puzzles';
 
 export function getStaticPaths() {
@@ -18,7 +19,7 @@ const info = LENGTH_INFO[n];
         ? <span aria-current="page" class="cur">{m === 1 ? 'מהלך 1' : `${m} מהלכים`}</span>
         : <a href={`/tsume/${m}/`}>{m === 1 ? 'מהלך 1' : `${m} מהלכים`}</a>)}
     </nav>
-    <h1 class="tsume-title">{info.title}</h1>
+    <div class="tsume-titlerow"><h1 class="tsume-title">{info.title}</h1><InfoTip id="mate" /></div>
     <p class="phase small"><a href="/learn/guide/#endgame">שלב במשחק: סוף המשחק</a></p>
     <TsumePlayer n={n} />
   </div>
@@ -27,7 +28,8 @@ const info = LENGTH_INFO[n];
 <style>
   .tsume-crumbs { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; margin: 18px 0 0; }
   .tsume-crumbs .cur { font-weight: 700; }
-  .tsume-title { margin: 4px 0 0; font-size: clamp(24px, 5vw, 32px); }
+  .tsume-titlerow { display: flex; align-items: center; margin: 4px 0 0; }
+  .tsume-title { margin: 0; font-size: clamp(24px, 5vw, 32px); }
   .phase { margin: 6px 0 0; }
   .phase a { display: inline-block; padding: 2px 12px; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-2); text-decoration: none; }
   .phase a:hover { color: var(--seal); border-color: var(--seal); }

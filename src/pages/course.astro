@@ -4,6 +4,7 @@
 // The path is drawn here at build time, so everyone can see it. The personal part (the start question, next step,
 // progress marks, points and rank) is for signed-in visitors only; others get a sign-up card.
 import Base from '../layouts/Base.astro';
+import InfoTip from '../components/InfoTip.astro';
 import { CURRICULUM, KIND_LABEL, TRACK_INFO, stepHref } from '../lib/curriculum';
 import { LEVEL_COUNTS as levelCounts } from '../lib/level-counts';
 import { RANKS, stepXp, XP } from '../lib/xp';
@@ -69,7 +70,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
       <span class="rank-kanji" lang="ja" aria-hidden="true" data-rank-kanji></span>
       <div class="rank-body">
         <p class="small muted" id="rank-h">הדרגה שלך</p>
-        <p class="rank-name" data-rank-name></p>
+        <div class="rank-line"><p class="rank-name" data-rank-name></p><InfoTip id="rank" /></div>
         <div class="bar" aria-hidden="true"><span data-rank-bar></span></div>
         <p class="small muted" data-rank-text></p>
         <p class="small"><a href="/ranks/#site">מה הדרגה הזאת אומרת, ומה לא?</a></p>
@@ -107,7 +108,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
     {CURRICULUM.map((u) => (
       <section class="unit" id={u.key} data-unit={u.key} aria-labelledby={`${u.key}-h`}>
         <header class="unit-head">
-          <p class="unit-tag">{u.phase ? `שלב ${u.phase} מתוך ${PHASES}` : 'לפני שמתחילים'}</p>
+          <p class="unit-tag">{u.phase ? `שלב ${u.phase} מתוך ${PHASES}` : 'לפני שמתחילים'}{u.phase && <InfoTip id="phases" />}</p>
           <h2 id={`${u.key}-h`}>{u.title}</h2>
           <p class="unit-goal"><strong>המטרה: {u.goal}.</strong> {u.why}</p>
           <div class="unit-progress" data-unit-progress hidden>
@@ -299,6 +300,7 @@ const PHASES = CURRICULUM.filter((u) => u.phase).length;
   .rank-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
   .rank-body p { margin: 0; }
   .rank-name { font: 800 26px/1.2 var(--f-display); }
+  .rank-line { display: flex; align-items: center; }
   .rank-how summary { cursor: pointer; color: var(--seal); margin-top: 4px; }
   .rank-how ul { margin: 8px 0; padding-inline-start: 20px; color: var(--ink-2); }
   .rank-how li { margin-bottom: 4px; }
