@@ -2,7 +2,7 @@
 // Source: https://github.com/WandererXII/lila/blob/89aea5f6f24c5e941c7cac8434a6e9e1acc15e94/ui/learn/src/stages/gold.ts
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
-// Modified by Shogi Israel (shogi.co.il), 2026-10-24: i18n import points to our Hebrew shim; positions, goals and key names unchanged.
+// Modified by Shogi Israel (shogi.co.il), 2026-10-24: i18n import points to our Hebrew shim; positions unchanged. 2026-10-27: a recap per level (level.recap) and beginner goals written so nothing is used before it is taught.
 
 import { i18n } from '../i18n';
 import { obstaclesCaptured } from '../assert';
@@ -13,7 +13,8 @@ import { toPiece } from '../util';
 
 const levels: IncompleteLevel[] = [
   {
-    goal: i18n('learn:grabAllTheStars'),
+    goal: i18n('il_b_gold1Goal'),
+    recap: i18n('il_b_gold1Recap'),
     sfen: '9/9/9/9/9/4G4/9/9/9 b -',
     nbMoves: 2,
     success: obstaclesCaptured,
@@ -21,14 +22,16 @@ const levels: IncompleteLevel[] = [
     drawShapes: initial([arrow('5f', '5e'), arrow('5e', '4d')]),
   },
   {
-    goal: i18n('learn:theFewerMoves'),
+    goal: i18n('il_b_gold2Goal'),
+    recap: i18n('il_b_gold2Recap'),
     sfen: '9/9/9/9/1G7/9/9/9/9 b -',
     nbMoves: 4,
     success: obstaclesCaptured,
     obstacles: ['8g', '8f', '7g', '6f'],
   },
   {
-    goal: i18n('learn:theFewerMoves'),
+    goal: i18n('il_b_gold3Goal'),
+    recap: i18n('il_b_gold3Recap'),
     sfen: '9/9/9/9/9/9/9/9/3G5 b -',
     nbMoves: 8,
     success: obstaclesCaptured,
@@ -36,6 +39,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:goldDoesntPromote'),
+    recap: i18n('il_b_gold4Recap'),
     sfen: '9/9/9/6G2/9/9/9/9/9 b -',
     nbMoves: 2,
     success: obstaclesCaptured,
@@ -43,6 +47,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:goldSummary'),
+    recap: i18n('il_b_gold5Recap'),
     sfen: '9/9/9/9/9/4G4/9/9/9 b -',
     nbMoves: 2,
     success: obstaclesCaptured,
