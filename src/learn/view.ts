@@ -7,11 +7,11 @@
 import { categories, nextStage } from './categories';
 import type LearnCtrl from './ctrl';
 import { i18n, i18nFormat } from './i18n';
+import { chessNote, hasChessText, isChessRoute, setRoute, stageText } from './route';
 import type { Stage } from './interfaces';
 import { stageUrl } from './urls';
 import { average } from './util';
 import { courseNext } from '../lib/next-step';
-import { chessNote, hasChessText, isChessRoute, setRoute, stageText } from './route';
 
 // Same list and random pick as lila's views/congrats.ts
 const congratsKeys = [
