@@ -94,7 +94,7 @@ if (hasCourse) Astro.csp?.insertScriptHash(`sha256-${createHash('sha256').update
 
   {/* After the newcomer hero in the page's text, so search engines and AI readers meet the welcome first.
       Learners never see the hero, so on their screen this is still the top of the page. */}
-  {hasCourse && <LearnerHome weekCount={weekCount} />}
+  {hasCourse && <LearnerHome weekCount={weekCount} accounts={accountsOn} />}
 
   <section class="wrap block" aria-labelledby="three" data-newcomer>
     <h2 id="three">שלושה דברים שעושים את השוגי לשוגי</h2>
