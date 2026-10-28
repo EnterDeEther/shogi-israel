@@ -1,6 +1,6 @@
 // Draws the logo and the site icons into public/. Run `npm run logo` after changing the drawing, then commit
 // the images. Needs Playwright's Chromium, like scripts/og/make.mjs.
-//   logo-132.png, logo-512.png   the logo: a red disc with a white piece-shaped line, 将 and ישראל in it (transparent)
+//   logo-132.png, logo-512.png   the logo: a red disc with a white piece-shaped line around 将, and ישראל under it (transparent)
 //   apple-touch-icon.png          the logo on paper, for the phone home screen
 //   favicon-32.png, favicon-192.png  the browser tab: a red disc with a white ring and 将
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
@@ -24,14 +24,15 @@ const PIECE = [[50, 3], [79.7, 21.8], [88.1, 97], [11.9, 97], [20.3, 21.8]];
 const path = (pts) => 'M' + pts.map((p) => p.map((v) => v.toFixed(2)).join(' ')).join('L') + 'Z';
 
 function logo(bg) {
-  const piece = PIECE.map(([x, y]) => [50 + (x - 50) * 0.72, 50 + (y - 50) * 0.72 - 3.5]);
+  // the piece line, 将 centred in it, and ישראל under it: the three together sit in the middle of the disc
+  const piece = PIECE.map(([x, y]) => [50 + (x - 50) * 0.58, 16.2 + (y - 3) * 0.58]);
   return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     ${bg ? `<rect width="100" height="100" fill="${bg}"/>` : ''}
     <g ${bg ? 'transform="translate(50 50) scale(.8) translate(-50 -50)"' : ''}>
       <circle cx="50" cy="50" r="50" fill="${C.seal}"/>
-      <path d="${path(piece)}" fill="none" stroke="${C.white}" stroke-width="2.4" stroke-linejoin="round"/>
-      <text x="50" y="56.4" text-anchor="middle" font-family="Shippori Mincho" font-weight="800" font-size="33" fill="${C.white}">将</text>
-      <text x="50" y="74.3" text-anchor="middle" direction="rtl" font-family="Heebo Variable" font-weight="800" font-size="12" fill="${C.white}">ישראל</text>
+      <path d="${path(piece)}" fill="none" stroke="${C.white}" stroke-width="2.2" stroke-linejoin="round"/>
+      <text x="50" y="57.6" text-anchor="middle" font-family="Shippori Mincho" font-weight="800" font-size="27" fill="${C.white}">将</text>
+      <text x="50" y="83.8" text-anchor="middle" direction="rtl" font-family="Heebo Variable" font-weight="800" font-size="12" fill="${C.white}">ישראל</text>
     </g>
   </svg>`;
 }
