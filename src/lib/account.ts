@@ -215,8 +215,10 @@ const setLinked = (id: string | null) => {
 };
 
 /** Pull the account's progress, merge it with this device's, and save the union on both sides.
- * Null when the account couldn't be read or written (the device keeps its copy either way). */
-export async function syncProgress(): Promise<SyncedProgress | null> {
+ * Null when the account couldn't be read or written (the device keeps its copy either way).
+ * keepDeviceCourse: the course starting point on this device was just chosen by the signed-in player
+ * (pushLocal), so it wins even on the first merge. */
+export async function syncProgress(opts: { keepDeviceCourse?: boolean } = {}): Promise<SyncedProgress | null> {
   const session = await getSession();
   if (!session) return null;
   const db = supabase();
@@ -225,6 +227,11 @@ export async function syncProgress(): Promise<SyncedProgress | null> {
   const local = readLocal();
   const remote = normalize(data?.data);
   const merged = linkedTo(session.user.id) ? merge(local, remote) : mergeSignIn(local, remote);
+  if (opts.keepDeviceCourse && local.course.route) {
+    merged.course.route = local.course.route;
+    merged.course.start = local.course.start;
+    merged.course.placedAt = local.course.placedAt;
+  }
   if (!same(merged, local)) {
     writeLocal(merged);
     document.dispatchEvent(new CustomEvent('progress-synced'));
@@ -243,7 +250,7 @@ export async function syncProgress(): Promise<SyncedProgress | null> {
 async function pushLocal() {
   const session = await getSession();
   if (!session) return;
-  if (!linkedTo(session.user.id)) { await syncProgress(); return; }
+  if (!linkedTo(session.user.id)) { await syncProgress({ keepDeviceCourse: true }); return; }
   await supabase().from('progress').upsert({ user_id: session.user.id, data: readLocal(), updated_at: new Date().toISOString() });
 }
 
