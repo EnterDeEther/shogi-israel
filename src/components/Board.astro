@@ -49,7 +49,7 @@ const senteHand = handOf('sente');
           data-label={squareLabel(s)}
         >
           {s.piece && (
-            <span class:list={['pc', { g: s.piece.side === 'gote', pro: s.piece.promoted }]}>
+            <span class:list={['pc', { g: s.piece.side === 'gote', pro: s.piece.promoted }]} data-t={(s.piece.promoted ? '+' : '') + s.piece.type}>
               <span class:list={['ph', { two: hebrewOf(s.piece).length > 1, crown: s.piece.type === 'K' }]} dir="rtl">{s.piece.type === 'K' && <svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7 10 .8 14.4 7 19 3.2 17.2 11.2H2.8Z" /></svg>}<span>{hebrewOf(s.piece)}</span></span>
               <span class="pl">{letterOf(s.piece)}</span>
               <span class="pk" lang="ja">{kanjiOf(s.piece)}</span>
@@ -117,18 +117,19 @@ const senteHand = handOf('sente');
     content: ""; position: absolute; clip-path: polygon(50% 0, 86% 16%, 100% 100%, 0 100%, 14% 16%);
   }
   .pc::before { inset: 0; background: var(--piece-line); }
-  .pc::after { inset: 1.5px; background: var(--piece); }
+  /* the face, with the move arrows on its inner edges (styles/piece-arrows.css, by data-t) */
+  .pc::after { inset: 1.5px; background: var(--piece) var(--arrows, none) center / 100% 100% no-repeat; }
   .pc.g { transform: rotate(180deg); }
-  .pc.g::after { background: var(--piece-gote); }
+  .pc.g::after { background-color: var(--piece-gote); }
   .ph, .pl, .pk { position: relative; z-index: 1; font-size: clamp(12px, 4.2vw, 19px); }
   .ph, .pl { font: 800 clamp(12px, 4.2vw, 19px)/1 var(--f-body); letter-spacing: -0.5px; }
+  .ph { font-family: var(--f-piece); font-weight: var(--fw-piece); }
   .ph { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; unicode-bidi: isolate; }
   .ph.two { font-size: clamp(11px, 3.6vw, 16px); }
   /* the king's crown: drawn above the מ, in the letter's ink */
   .ph.crown { margin-top: -4%; font-size: clamp(11px, 3.7vw, 17px); }
   .ph svg { width: 1.05em; height: auto; fill: currentColor; }
   .pc.pro .ph, .pc.pro .pl, .pc.pro .pk { color: var(--piece-seal); }
-  .pc.pro .ph { font-weight: 900; }
   .pl, .pk { display: none; }
   .pk { font-family: var(--f-kanji); font-weight: 800; }
   :global(html[data-pieces="letters"]) .ph { display: none; }

@@ -160,9 +160,9 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
   .watch :global(.pchip)::after {
     content: var(--h); inset: 1.5px; background: var(--piece);
     display: flex; align-items: center; justify-content: center; padding-top: 0.28em;
-    font: 800 0.82em/1 var(--f-body); letter-spacing: -0.3px; color: var(--piece-ink);
+    font: var(--fw-piece) 0.82em/1 var(--f-piece); letter-spacing: -0.3px; color: var(--piece-ink);
   }
-  :global(html[data-pieces="letters"]) .watch :global(.pchip)::after { content: var(--l); direction: ltr; }
+  :global(html[data-pieces="letters"]) .watch :global(.pchip)::after { content: var(--l); direction: ltr; font-family: var(--f-body); font-weight: 800; }
   :global(html[data-pieces="kanji"]) .watch :global(.pchip)::after { content: var(--k); font-family: var(--f-kanji); font-size: 0.9em; }
   /* Hebrew: the bishop's רץ and "ר+" set smaller; the king's crown above its מ */
   :global(html:not([data-pieces="letters"]):not([data-pieces="kanji"])) .watch :global(.pchip:is([data-p="B"], [data-p^="+"]):not([data-p="+R"]))::after { font-size: 0.66em; }

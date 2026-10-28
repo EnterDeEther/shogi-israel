@@ -2,7 +2,12 @@
 import '@fontsource-variable/heebo';
 import '@fontsource-variable/frank-ruhl-libre';
 import '@fontsource/shippori-mincho/800.css';
+// The three fonts for the Hebrew letters on the pieces (Hebrew glyphs only; a browser downloads only the one in use).
+import '@fontsource/noto-serif-hebrew/hebrew-800.css';
+import '@fontsource/suez-one/hebrew-400.css';
+import '@fontsource/secular-one/hebrew-400.css';
 import '../styles/global.css';
+import '../styles/piece-arrows.css';
 import Analytics from '@vercel/analytics/astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
@@ -25,7 +30,7 @@ const ogUrl = new URL(ogImage, Astro.site);
 const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description);
 ---
 <!doctype html>
-<html lang="he" dir="rtl" data-pieces="hebrew">
+<html lang="he" dir="rtl" data-pieces="hebrew" data-hfont="noto">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -66,6 +71,8 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
           localStorage.removeItem('pieces');
           var pieces = localStorage.getItem('pieceSet');
           if (pieces === 'letters' || pieces === 'kanji') root.setAttribute('data-pieces', pieces);
+          var hfont = localStorage.getItem('hebrewFont');
+          if (hfont === 'suez' || hfont === 'secular') root.setAttribute('data-hfont', hfont);
           if (localStorage.getItem('gender') === 'f') root.setAttribute('data-gender', 'f');
           pref = localStorage.getItem('theme') || '';
         } catch (e) {}
@@ -107,16 +114,28 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
       import '../scripts/info-tips';
     </script>
     <script>
-      // One listener for every piece-set switch on the page (Hebrew / letters / kanji).
-      import { pieceSetOf } from '../lib/piece-set';
+      // One listener for every piece-set switch on the page (Hebrew / letters / kanji) and every Hebrew-font switch.
+      import { pieceSetOf, hebrewFontOf } from '../lib/piece-set';
       const root = document.documentElement;
       const sync = () => {
         const set = pieceSetOf(root.getAttribute('data-pieces'));
         document.querySelectorAll<HTMLButtonElement>('[data-pieces-set]').forEach((b) => {
           b.setAttribute('aria-pressed', String(b.dataset.piecesSet === set));
         });
+        const font = hebrewFontOf(root.getAttribute('data-hfont'));
+        document.querySelectorAll<HTMLButtonElement>('[data-hfont-set]').forEach((b) => {
+          b.setAttribute('aria-pressed', String(b.dataset.hfontSet === font));
+        });
       };
       document.addEventListener('click', (e) => {
+        const fontBtn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-hfont-set]');
+        if (fontBtn) {
+          const font = hebrewFontOf(fontBtn.dataset.hfontSet);
+          root.setAttribute('data-hfont', font);
+          try { localStorage.setItem('hebrewFont', font); } catch {}
+          sync();
+          return;
+        }
         const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-pieces-set]');
         if (!btn) return;
         const set = pieceSetOf(btn.dataset.piecesSet);

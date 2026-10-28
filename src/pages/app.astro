@@ -8,6 +8,7 @@ import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
 import ThemeSetting from '../components/ThemeSetting.astro';
 import PieceToggle from '../components/PieceToggle.astro';
+import HebrewFontSwitch from '../components/HebrewFontSwitch.astro';
 import SoundSetting from '../components/SoundSetting.astro';
 import GenderSetting from '../components/GenderSetting.astro';
 import { accountsEnabled } from '../lib/account-config';
@@ -56,6 +57,7 @@ import { accountsEnabled } from '../lib/account-config';
         <div class="set-body">
           <div class="setting"><p class="setting-label">מראה</p><ThemeSetting /></div>
           <div class="setting"><p class="setting-label">סימון הכלים</p><PieceToggle /></div>
+          <div class="setting hfont-row"><p class="setting-label">גופן האותיות על הכלים</p><HebrewFontSwitch /></div>
           <div class="setting"><SoundSetting /></div>
           <div class="setting"><p class="setting-label">איך לפנות אליי</p><GenderSetting label="איך לפנות אליי" /></div>
           {accountsEnabled && <p class="small"><a href="/account/" data-signed-in-only>עוד הגדרות בחשבון: התראות, מיילים, כינוי</a></p>}

@@ -26,6 +26,7 @@ const crown = label === 'מ';
   .piece-chip::before { inset: 0; background: var(--piece-line); }
   .piece-chip::after { inset: 1.5px; background: var(--piece); }
   .pc-l { position: relative; z-index: 1; font: 800 0.82em/1 var(--f-body); letter-spacing: -0.3px; }
+  .pc-l[dir="rtl"] { font-family: var(--f-piece); font-weight: var(--fw-piece); }
   .kanji .pc-l { font-family: var(--f-kanji); font-size: 0.9em; }
   .two .pc-l { font-size: 0.7em; }
   .crown { padding-top: 0.12em; }

@@ -10,7 +10,7 @@ import { preloadSounds } from './sound';
 import { soundControls } from './sound-prefs';
 import { routeFromUrl } from './route';
 import { stageSlug } from './urls';
-import { el, icon, mount, pieceSetSwitch, render } from './view';
+import { el, hebrewFontSwitch, icon, mount, pieceSetSwitch, render } from './view';
 
 const slugFromPath = (): string | undefined => window.location.pathname.match(/^\/learn\/([^/]+)\/?$/)?.[1];
 
@@ -66,6 +66,10 @@ export function bootLearn(root: HTMLElement): LearnCtrl {
       el('fieldset', {},
         el('legend', {}, i18n('il_pieceSet')),
         pieceSetSwitch(),
+      ),
+      el('fieldset', { class: 'hfont-row' },
+        el('legend', {}, i18n('il_hebrewFont')),
+        hebrewFontSwitch(),
       ),
       el('fieldset', {},
         el('legend', {}, i18n('il_board')),
