@@ -1,0 +1,253 @@
+---
+// /app/: the start page of the site as an app on the phone's home screen (public/manifest.webmanifest opens here).
+// Only what a quick visit needs: the account, the next step of the course, a game against the computer (it
+// continues the saved one), and the settings of this device. The full menu stays in the header. Under them,
+// while the page is open in a browser, how to install it (src/lib/install.ts): a button on Android, a short
+// Share → Add to Home Screen guide on an iPhone. The script fills the buttons in from what this device keeps.
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import ThemeSetting from '../components/ThemeSetting.astro';
+import PieceToggle from '../components/PieceToggle.astro';
+import SoundSetting from '../components/SoundSetting.astro';
+import GenderSetting from '../components/GenderSetting.astro';
+import { accountsEnabled } from '../lib/account-config';
+---
+<Base title="האפליקציה" tabTitle="שוגי ישראל כאפליקציה" description="שוגי ישראל במסך הבית של הטלפון: משחק נגד המחשב, המסלול האישי וההגדרות, בלחיצה אחת." noindex>
+  <div class="wrap app" data-app>
+    <header class="hello">
+      <img src="/logo-132.png" width="64" height="64" alt="" />
+      <div>
+        <h1><span data-app-hello>שלום</span></h1>
+        <p class="who" data-app-who>מה עושים היום?</p>
+        <p class="rank small" data-app-rank hidden><a href="/ranks/#site" data-app-rank-link></a></p>
+      </div>
+    </header>
+
+    {accountsEnabled && (
+      <div class="acct" data-signed-out-only>
+        <p class="small muted">בלי חשבון ההתקדמות נשמרת רק במכשיר הזה. עם חשבון בחינם היא עוברת איתך לכל מכשיר.</p>
+        <div class="acct-btns">
+          <a class="btn btn-ghost" href="/account/?mode=signin"><span>כניסה</span></a>
+          <a class="btn btn-ghost" href="/account/?mode=signup"><span>⟦פתח|פתחי⟧ חשבון</span></a>
+        </div>
+      </div>
+    )}
+
+    <nav class="big" aria-label="מה עושים עכשיו">
+      <a class="tile main" href="/course/" data-app-course>
+        <span class="ico"><Icon name="course" size={30} /></span>
+        <span class="t" data-t>מסלול לימוד אישי</span>
+        <span class="h" data-h>מאיפה מתחילים, ומה הצעד הבא</span>
+      </a>
+      <a class="tile" href="/play/?new" data-app-play>
+        <span class="ico"><Icon name="cpu" size={30} /><span class="dot" data-app-dot hidden></span></span>
+        <span class="t" data-t>משחק נגד המחשב</span>
+        <span class="h" data-h>עשר רמות, ישר בדפדפן</span>
+      </a>
+      <a class="newgame small" href="/play/?new" data-app-new hidden>או משחק חדש</a>
+
+      <details class="tile settings" id="settings">
+        <summary>
+          <span class="ico"><Icon name="settings" size={30} /></span>
+          <span class="t">הגדרות</span>
+          <span class="h">מראה, סימון הכלים, צלילים</span>
+          <svg class="chev" width="16" height="16" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
+        </summary>
+        <div class="set-body">
+          <div class="setting"><p class="setting-label">מראה</p><ThemeSetting /></div>
+          <div class="setting"><p class="setting-label">סימון הכלים</p><PieceToggle /></div>
+          <div class="setting"><SoundSetting /></div>
+          <div class="setting"><p class="setting-label">איך לפנות אליי</p><GenderSetting label="איך לפנות אליי" /></div>
+          {accountsEnabled && <p class="small"><a href="/account/" data-signed-in-only>עוד הגדרות בחשבון: התראות, מיילים, כינוי</a></p>}
+        </div>
+      </details>
+    </nav>
+
+    <section class="install" id="install" data-app-install hidden aria-labelledby="install-h">
+      <h2 id="install-h">שוגי ישראל במסך הבית</h2>
+      <p class="muted">סמל אחד במסך הבית שפותח ישר את הדף הזה, בלי שורת כתובת. בחינם, בלי חנות אפליקציות.</p>
+
+      <div data-way="prompt" hidden>
+        <button type="button" class="btn" data-app-prompt><span>התקנה</span><Icon name="add-home" size={20} /></button>
+      </div>
+
+      <ol class="steps" data-way="ios" hidden>
+        <li><span class="k"><Icon name="share" size={22} /></span><span>⟦לחץ|לחצי⟧ על <strong>כפתור השיתוף</strong> של הדפדפן. בספארי החדש הוא נמצא בתוך כפתור <strong>⋯</strong> שבפינה.</span></li>
+        <li><span class="k"><Icon name="add-home" size={22} /></span><span>⟦בחר|בחרי⟧ <strong>הוספה למסך הבית</strong>. אם הוא לא ברשימה, ⟦גלול|גללי⟧ אותה למטה.</span></li>
+        <li><span class="k"><img src="/app-icon-192.png" width="22" height="22" alt="" /></span><span>⟦לחץ|לחצי⟧ <strong>הוספה</strong>. הסמל של שוגי ישראל יופיע במסך הבית ויפתח ישר את הדף הזה.</span></li>
+      </ol>
+
+      <ol class="steps" data-way="ios-inapp" hidden>
+        <li><span class="k"><Icon name="dots" size={22} /></span><span>מתוך אינסטגרם או פייסבוק אי אפשר להוסיף למסך הבית. ⟦לחץ|לחצי⟧ על <strong>⋯</strong> למעלה ⟦ובחר|ובחרי⟧ <strong>פתיחה בדפדפן</strong>.</span></li>
+        <li><span class="k"><Icon name="share" size={22} /></span><span>בספארי, ⟦לחץ|לחצי⟧ על <strong>כפתור השיתוף</strong> (בספארי החדש: בתוך כפתור <strong>⋯</strong>).</span></li>
+        <li><span class="k"><Icon name="add-home" size={22} /></span><span>⟦בחר|בחרי⟧ <strong>הוספה למסך הבית</strong>, ואז <strong>הוספה</strong>.</span></li>
+      </ol>
+
+      <ol class="steps" data-way="android-inapp" hidden>
+        <li><span class="k"><Icon name="dots" size={22} /></span><span>מתוך אינסטגרם או פייסבוק אי אפשר להתקין. ⟦לחץ|לחצי⟧ על <strong>⋮</strong> למעלה ⟦ובחר|ובחרי⟧ <strong>פתיחה ב־Chrome</strong>.</span></li>
+        <li><span class="k"><Icon name="add-home" size={22} /></span><span>בדף שנפתח ⟦לחץ|לחצי⟧ על <strong>התקנה</strong>.</span></li>
+      </ol>
+
+      <ol class="steps" data-way="android-menu" hidden>
+        <li><span class="k"><Icon name="dots" size={22} /></span><span>⟦פתח|פתחי⟧ את תפריט הדפדפן (<strong>⋮</strong> או <strong>☰</strong>).</span></li>
+        <li><span class="k"><Icon name="add-home" size={22} /></span><span>⟦בחר|בחרי⟧ <strong>התקנת אפליקציה</strong> או <strong>הוספה למסך הבית</strong>.</span></li>
+      </ol>
+
+      <p data-way="none" hidden>האפליקציה בנויה לטלפון. ⟦פתח|פתחי⟧ את <bdi>shogi.co.il/app</bdi> בטלפון ⟦והתקן|והתקיני⟧ משם.</p>
+      <p data-way="installed" hidden>האפליקציה כבר במסך הבית שלך.</p>
+    </section>
+
+    <p class="more small"><a href="/">לאתר המלא</a></p>
+  </div>
+</Base>
+
+<script>
+  import { accountsEnabled, hasStoredSession } from '../lib/account-config';
+  import { hasAnyProgress, nextStep, stepHref } from '../lib/curriculum';
+  import { LEVEL_COUNTS } from '../lib/level-counts';
+  import { readLocal } from '../lib/progress-local';
+  import { rankFor, xpBreakdown } from '../lib/xp';
+  import { gameInProgress } from '../play/record';
+  import { installWay, isStandalone, onInstallChange, promptInstall } from '../lib/install';
+
+  const root = document.querySelector<HTMLElement>('[data-app]')!;
+  const signedIn = () => accountsEnabled && hasStoredSession();
+  const fill = (a: HTMLAnchorElement, href: string, t: string, h: string) => {
+    a.href = href;
+    a.querySelector('[data-t]')!.textContent = t;
+    a.querySelector('[data-h]')!.textContent = h;
+  };
+
+  // The course: the same next step as the header's shortcut and the learners' home page. A newcomer without an
+  // account starts where every newcomer starts, one game watched move by move (/try/).
+  function course() {
+    const a = root.querySelector<HTMLAnchorElement>('[data-app-course]')!;
+    const p = readLocal();
+    const me = signedIn();
+    if (!me && !hasAnyProgress(p)) return fill(a, '/try/', '⟦התחל|התחילי⟧ כאן', 'משחק אחד, מהלך אחרי מהלך, בלי ידע מוקדם');
+    if (me && !p.course.route) return fill(a, '/course/', 'מסלול לימוד אישי', 'מאיפה מתחילים? שתי שאלות קצרות');
+    const next = nextStep(p, LEVEL_COUNTS);
+    if (!next) return fill(a, '/course/', 'מסלול לימוד אישי', 'סיימת את כל המסלול');
+    fill(a, stepHref(next.step, p, LEVEL_COUNTS), '⟦המשך|המשיכי⟧ במסלול', next.step.title);
+
+    // the learning rank: a rank on this site, not a real one, so it links to where /ranks/ explains it
+    const total = xpBreakdown(p, LEVEL_COUNTS).total;
+    const { rank } = rankFor(total);
+    root.querySelector<HTMLElement>('[data-app-rank]')!.hidden = false;
+    root.querySelector('[data-app-rank-link]')!.textContent = `דרגת לימוד: ${rank.name} · ${total} נקודות`;
+  }
+
+  function play() {
+    const a = root.querySelector<HTMLAnchorElement>('[data-app-play]')!;
+    const game = gameInProgress();
+    root.querySelector<HTMLElement>('[data-app-dot]')!.hidden = !game;
+    root.querySelector<HTMLElement>('[data-app-new]')!.hidden = !game;
+    if (game) fill(a, '/play/', '⟦המשך|המשיכי⟧ את המשחק', game.moves ? `רמה ${game.level}, אחרי ${game.moves} מהלכים` : `רמה ${game.level}, לפני המהלך הראשון`);
+    else fill(a, '/play/?new', 'משחק נגד המחשב', 'עשר רמות, ישר בדפדפן');
+  }
+
+  async function hello() {
+    if (!signedIn()) return;
+    try {
+      const { getSession, getProfile } = await import('../lib/account');
+      const s = await getSession();
+      const prof = s && (await getProfile(s.user.id));
+      if (prof?.nickname) root.querySelector('[data-app-hello]')!.textContent = `שלום, ${prof.nickname}`;
+    } catch {}
+  }
+
+  function install() {
+    const box = root.querySelector<HTMLElement>('[data-app-install]')!;
+    if (isStandalone()) { box.hidden = true; return; }
+    const way = installWay();
+    box.hidden = false;
+    box.querySelectorAll<HTMLElement>('[data-way]').forEach((el) => { el.hidden = el.dataset.way !== way; });
+  }
+  root.querySelector('[data-app-prompt]')?.addEventListener('click', () => void promptInstall());
+
+  const refresh = () => { course(); play(); };
+  refresh();
+  void hello();
+  install();
+  onInstallChange(install);
+  document.addEventListener('progress-synced', course);
+  addEventListener('pageshow', refresh); // back from a game or a lesson (bfcache)
+  addEventListener('storage', (e) => { if (!e.key || e.key.startsWith('shogi-il.')) refresh(); });
+  // arrived from the install offer on another page: open straight on the guide
+  if (location.hash === '#install') requestAnimationFrame(() => document.getElementById('install')?.scrollIntoView({ block: 'start' }));
+</script>
+
+<style>
+  .app { max-width: 560px; padding-block: 20px 40px; }
+  .hello { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  .hello img { width: 64px; height: 64px; flex: none; }
+  .hello h1 { margin: 0; font-size: 30px; line-height: 1.2; }
+  .who { margin: 2px 0 0; color: var(--muted); }
+  .rank { margin: 4px 0 0; }
+  .rank a { color: var(--ink-2); }
+
+  .acct { margin: 0 0 18px; padding: 14px; border: 1px solid var(--rule); border-radius: 16px; }
+  .acct p { margin: 0 0 10px; }
+  .acct-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .acct-btns .btn { justify-content: center; min-height: 48px; font-size: 16px; padding: 0 12px; }
+
+  .big { display: flex; flex-direction: column; gap: 12px; }
+  .tile {
+    display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 16px; row-gap: 2px;
+    min-height: 104px; padding: 16px 18px; border-radius: 20px; color: var(--ink); text-decoration: none;
+    background: var(--surface); border: 1px solid var(--glass-edge); box-shadow: var(--shadow-1);
+    -webkit-tap-highlight-color: transparent; transition: transform .16s var(--ease-out), box-shadow .15s ease;
+  }
+  a.tile:active, .settings summary:active { transform: scale(0.97); }
+  .tile .ico {
+    grid-row: span 2; position: relative; display: grid; place-items: center; width: 56px; height: 56px; border-radius: 16px;
+    background: color-mix(in srgb, var(--seal) 12%, transparent); color: var(--seal);
+  }
+  .tile .t { font-size: 21px; font-weight: 800; line-height: 1.25; }
+  .tile .h { font-size: 15px; color: var(--muted); line-height: 1.35; }
+  .tile.main { background: var(--ink); color: var(--washi); border-color: transparent; box-shadow: var(--shadow-2); }
+  .tile.main .ico { background: var(--seal); color: var(--on-seal); }
+  .tile.main .h { color: color-mix(in srgb, var(--washi) 75%, transparent); }
+  .dot { position: absolute; top: 6px; inset-inline-start: 6px; width: 11px; height: 11px; border-radius: 50%; background: var(--seal); box-shadow: 0 0 0 2px var(--surface); }
+  .dot[hidden] { display: none; }
+  .newgame { align-self: flex-start; margin: -4px 4px 0; color: var(--ink-2); }
+  .newgame[hidden] { display: none; }
+  @media (hover: hover) and (pointer: fine) { a.tile:hover, .settings summary:hover { box-shadow: var(--shadow-2); } }
+
+  .settings { display: block; padding: 0; }
+  .settings summary {
+    list-style: none; cursor: pointer; display: grid; grid-template-columns: auto 1fr auto; align-items: center; column-gap: 16px; row-gap: 2px;
+    min-height: 104px; padding: 16px 18px; border-radius: 20px; transition: transform .16s var(--ease-out);
+  }
+  .settings summary::-webkit-details-marker { display: none; }
+  .settings summary .t, .settings summary .h { grid-column: 2; }
+  .settings .chev { grid-column: 3; grid-row: 1 / span 2; transition: transform .3s var(--ease-out); }
+  .settings[open] .chev { transform: rotate(180deg); }
+  .set-body { padding: 0 18px 16px; border-top: 1px solid var(--rule); }
+  .setting { padding: 14px 0; border-bottom: 1px solid var(--rule); }
+  .setting:last-of-type { border-bottom: 0; }
+  .setting-label { margin: 0 0 8px; font-weight: 700; }
+  .set-body > p { margin: 8px 0 0; }
+
+  .install { margin-top: 28px; padding: 18px; border-radius: 20px; border: 1.5px dashed var(--rule); scroll-margin-top: 80px; }
+  .install h2 { margin: 0 0 6px; font-size: 22px; }
+  .install > p { margin: 0 0 14px; }
+  .install .btn { width: 100%; justify-content: center; gap: 10px; }
+  .steps { list-style: none; margin: 0; padding: 0; counter-reset: s; }
+  .steps li { counter-increment: s; display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start; padding: 10px 0; line-height: 1.5; }
+  .steps li + li { border-top: 1px solid var(--rule); }
+  .steps .k {
+    position: relative; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px;
+    background: var(--surface); border: 1px solid var(--rule); color: #0A7AFF;
+  }
+  :global(html[data-theme="dark"]) .steps .k { color: #4DA3FF; }
+  .steps .k::after {
+    content: counter(s); position: absolute; top: -6px; inset-inline-start: -6px; width: 18px; height: 18px; border-radius: 50%;
+    background: var(--seal); color: var(--on-seal); font: 700 11px/18px var(--f-body); text-align: center;
+  }
+  .steps .k img { border-radius: 5px; }
+  [data-way][hidden] { display: none; }
+  .install:target { border-color: var(--seal); }
+  .more { margin-top: 24px; text-align: center; }
+  @media (prefers-reduced-motion: reduce) { a.tile:active, .settings summary:active { transform: none; } }
+</style>
