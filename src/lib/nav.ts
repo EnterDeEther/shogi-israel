@@ -81,8 +81,9 @@ export const NAV: NavItem[] = [
   {
     label: 'כלים',
     icon: 'tools',
-    blurb: 'שעון משחק, וצפייה במשחקים שנרשמו.',
+    blurb: 'שעון משחק, צפייה במשחקים שנרשמו, והאתר כאפליקציה במסך הבית.',
     links: [
+      { href: '/app/', label: 'האפליקציה', hint: 'שוגי ישראל במסך הבית של הטלפון', icon: 'app' },
       { href: '/clock/', label: 'שעון משחק', hint: 'איך משחקים על זמן', icon: 'clock' },
       { href: '/kif/', label: 'רישום משחקים (KIF)', hint: 'צפייה וניתוח של משחק שנרשם', icon: 'kif' },
     ],

@@ -3,6 +3,8 @@
 //   logo-132.png, logo-512.png   the logo: a red disc with a white piece-shaped line around 将, and ישראל under it (transparent)
 //   apple-touch-icon.png          the logo on paper, for the phone home screen
 //   favicon-32.png, favicon-192.png  the browser tab: a red disc with a white ring and 将
+//   app-icon-192.png              the logo (transparent), for the installed app (public/manifest.webmanifest)
+//   app-icon-maskable-*.png       the logo on paper, small enough that Android's round or rounded-square mask never cuts it
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
@@ -23,7 +25,7 @@ const PIECE = [[50, 3], [79.7, 21.8], [88.1, 97], [11.9, 97], [20.3, 21.8]];
 
 const path = (pts) => 'M' + pts.map((p) => p.map((v) => v.toFixed(2)).join(' ')).join('L') + 'Z';
 
-function logo(bg) {
+function logo(bg, scale = 0.8) {
   // The piece line fits snugly around 将, with ישראל under it. The three are laid out at size, centred as one
   // block, then scaled up together to fill the disc. Ink sizes below are measured from the two faces.
   const k = 0.46, kanji = 27, he = 12, gap = 3.5, grow = 1.3;
@@ -41,7 +43,7 @@ function logo(bg) {
   const kanjiBase = cy - (31.3 / 33) * kanji / 2 + (28.4 / 33) * kanji;
   return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     ${bg ? `<rect width="100" height="100" fill="${bg}"/>` : ''}
-    <g ${bg ? 'transform="translate(50 50) scale(.8) translate(-50 -50)"' : ''}>
+    <g ${bg ? `transform="translate(50 50) scale(${scale}) translate(-50 -50)"` : ''}>
       <circle cx="50" cy="50" r="50" fill="${C.seal}"/>
       <g transform="translate(50 50) scale(${grow}) translate(-50 -50)">
         <path d="${path(piece)}" fill="none" stroke="${C.white}" stroke-width="1.7" stroke-linejoin="round"/>
@@ -66,6 +68,10 @@ const files = [
   ['apple-touch-icon.png', 180, logo(C.washi)],
   ['favicon-32.png', 32, tab()],
   ['favicon-192.png', 192, tab()],
+  ['app-icon-192.png', 192, logo()],
+  // Android's safe zone is the middle circle of 80%; the disc keeps a little paper inside it
+  ['app-icon-maskable-192.png', 192, logo(C.washi, 0.72)],
+  ['app-icon-maskable-512.png', 512, logo(C.washi, 0.72)],
 ];
 
 const browser = await chromium.launch();
