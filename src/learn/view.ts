@@ -327,7 +327,9 @@ function renderLesson(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go, stageLin
       }),
     ),
   );
-  q('[data-back-narrow]').replaceChildren(backLink('back-narrow', 'back-narrow'));
+  // Phones only (CSS): the exercise's instructions sit under the board and in the tips bubble, out of sight at first.
+  q('[data-back-narrow]').replaceChildren(backLink('back-narrow', 'back-narrow'),
+    el('p', { class: 'learn__phone-hint' }, icon('bulb'), el('span', {}, rich(i18n('il_phoneHint')))));
 
   // overlays on the board (lila overlays/starting.ts, overlays/completed.ts)
   const overlay = q('[data-overlay]');
