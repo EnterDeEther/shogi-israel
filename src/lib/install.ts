@@ -9,7 +9,7 @@
 // - Inside Instagram, Facebook and the like there is no way to install: the guide says to open the page in the browser first.
 // The offer (src/components/InstallOffer.astro) and /app/ both read this module.
 
-export type InstallWay = 'installed' | 'prompt' | 'ios' | 'ios-inapp' | 'android-inapp' | 'android-menu' | 'none';
+export type InstallWay = 'installed' | 'prompt' | 'ios' | 'ios-chrome' | 'ios-inapp' | 'android-inapp' | 'android-menu' | 'none';
 
 interface PromptEvent extends Event {
   prompt(): Promise<void>;
@@ -36,6 +36,8 @@ const ua = () => navigator.userAgent;
 // iPadOS presents itself as a Mac; a touch screen gives it away
 const isIos = () => /iPhone|iPad|iPod/.test(ua()) || (/Macintosh/.test(ua()) && navigator.maxTouchPoints > 1);
 const isAndroid = () => /Android/.test(ua());
+// Chrome, Edge and Firefox on an iPhone: the share button sits in the address bar at the top, not where Safari keeps it
+const isIosOther = () => /CriOS|EdgiOS|FxiOS/.test(ua());
 const isInApp = () => /Instagram|FBAN|FBAV|FB_IAB|FBIOS|Line\/|MicroMessenger|TikTok|musical_ly|Snapchat/i.test(ua());
 
 /** How this visitor can install the app right now. */
@@ -43,7 +45,7 @@ export function installWay(): InstallWay {
   if (isStandalone()) return 'installed';
   if (deferred) return 'prompt'; // the browser knows it is not installed (or was removed again)
   if (get(INSTALLED)) return 'installed';
-  if (isIos()) return isInApp() ? 'ios-inapp' : 'ios';
+  if (isIos()) return isInApp() ? 'ios-inapp' : isIosOther() ? 'ios-chrome' : 'ios';
   if (isAndroid()) return isInApp() ? 'android-inapp' : 'android-menu';
   return 'none';
 }
@@ -76,7 +78,7 @@ export function offerWanted(): boolean {
   if (!matchMedia('(pointer: coarse)').matches) return false;
   const way = installWay();
   // Android's own browser menu works without our help, but only the real prompt is worth interrupting for
-  return way === 'prompt' || way === 'ios' || way === 'ios-inapp';
+  return way === 'prompt' || way === 'ios' || way === 'ios-chrome' || way === 'ios-inapp';
 }
 
 /** On every page (Base.astro): keep the browser's install offer, register the service worker, count the page. */
