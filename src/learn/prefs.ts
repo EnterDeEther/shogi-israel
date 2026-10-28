@@ -8,11 +8,17 @@ export interface LearnPrefs {
   dests: boolean; // dots on the squares a selected piece can go to
   animation: boolean;
   sound: boolean; // every sound on the site (src/learn/sound.ts), also switched on /account/
-  volume: number; // 0 to 1; quiet by default
+  vol: number; // 0 to 1. Was `volume` (default 0.5, too quiet); the new key starts everyone at the new default.
+  // each kind of sound on its own (src/learn/sound-prefs.ts has the labels)
+  sndBoard: boolean; // the piece on the board: move, capture, drop, promotion, check
+  sndGame: boolean; // a game on /play/: start, win, loss
+  sndLessons: boolean; // lessons and puzzles: start, solved, wrong move, stage finished
+  sndProgress: boolean; // points and new rank
+  sndUi: boolean; // buttons, menus and switches
 }
 
 /** The on/off settings (the cog wheel's switches). */
-export type SwitchPref = Exclude<keyof LearnPrefs, 'volume'>;
+export type SwitchPref = Exclude<keyof LearnPrefs, 'vol'>;
 
 const KEY = 'learn.prefs';
 
@@ -29,7 +35,12 @@ export const defaults = (): LearnPrefs => ({
   dests: true,
   animation: !reducedMotion(),
   sound: true,
-  volume: 0.5,
+  vol: 0.8,
+  sndBoard: true,
+  sndGame: true,
+  sndLessons: true,
+  sndProgress: true,
+  sndUi: true,
 });
 
 export function loadPrefs(): LearnPrefs {
@@ -37,7 +48,7 @@ export function loadPrefs(): LearnPrefs {
   try {
     const saved = JSON.parse(storage.get(KEY) || '{}');
     for (const k of Object.keys(p) as (keyof LearnPrefs)[]) if (typeof saved[k] === typeof p[k]) (p as any)[k] = saved[k];
-    p.volume = Math.min(1, Math.max(0, p.volume));
+    p.vol = Math.min(1, Math.max(0, p.vol));
   } catch {
     /* broken or missing: defaults */
   }

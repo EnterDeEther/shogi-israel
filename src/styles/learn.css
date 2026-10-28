@@ -343,6 +343,10 @@ html:not([data-pieces="letters"]):not([data-pieces="kanji"]) :is(.learn, .play) 
 .learn__settings legend { font-weight: 700; padding: 0; margin-bottom: 8px; }
 .learn__settings .pref { display: flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; }
 .learn__settings .pref input { width: 22px; height: 22px; accent-color: var(--seal); margin: 0; }
+.learn__settings .sound-rest[hidden] { display: none; }
+.learn__settings .sound-vol { display: flex; align-items: center; gap: 12px; min-height: 44px; }
+.learn__settings .sound-vol input { flex: 1; max-width: 240px; accent-color: var(--seal); }
+.learn__settings .pref.sound-sub { padding-inline-start: 18px; min-height: 40px; }
 .learn__settings .kbd { border-top: 1px solid var(--rule); padding: 12px 0; }
 .learn__settings .kbd summary { font-weight: 700; cursor: pointer; min-height: 32px; }
 .learn__settings .kbd ul { margin: 8px 0 0; padding-inline-start: 18px; font-size: 15px; }

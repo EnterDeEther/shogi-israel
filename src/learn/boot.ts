@@ -6,7 +6,8 @@ import { i18n } from './i18n';
 import { currentPieceSet } from '../lib/piece-set';
 import { attachKeyboard } from './keyboard';
 import { type LearnPrefs, type SwitchPref, loadPrefs, savePrefs } from './prefs';
-import { preloadSounds, setSoundEnabled, setSoundVolume } from './sound';
+import { preloadSounds } from './sound';
+import { soundControls } from './sound-prefs';
 import { routeFromUrl } from './route';
 import { stageSlug } from './urls';
 import { el, icon, mount, pieceSetSwitch, render } from './view';
@@ -39,8 +40,6 @@ export function bootLearn(root: HTMLElement): LearnCtrl {
   // ---------- settings (the cog wheel) ----------
   const apply = (p: LearnPrefs) => {
     root.classList.toggle('no-coords', !p.coords);
-    setSoundEnabled(p.sound);
-    setSoundVolume(p.volume);
     ctrl?.shogiground.set({
       movable: { showDests: p.dests },
       droppable: { showDests: p.dests },
@@ -53,7 +52,7 @@ export function bootLearn(root: HTMLElement): LearnCtrl {
         type: 'checkbox', ...(prefs[key] ? { checked: true } : {}),
         onchange: (e: Event) => {
           prefs[key] = (e.target as HTMLInputElement).checked;
-          savePrefs(prefs);
+          savePrefs({ ...loadPrefs(), [key]: prefs[key] }); // keep the sound settings saved by soundControls
           apply(prefs);
         },
       }),
@@ -73,7 +72,10 @@ export function bootLearn(root: HTMLElement): LearnCtrl {
         toggle('coords', i18n('il_prefCoords')),
         toggle('dests', i18n('il_prefDests')),
         toggle('animation', i18n('il_prefAnimation')),
-        toggle('sound', i18n('il_prefSound')),
+      ),
+      el('fieldset', { class: 'sound' },
+        el('legend', {}, i18n('il_prefSound')),
+        soundControls('learn-snd', 'pref'),
       ),
       el('details', { class: 'kbd' },
         el('summary', {}, i18n('il_kbdTitle')),

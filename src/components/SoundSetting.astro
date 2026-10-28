@@ -1,72 +1,50 @@
 ---
-// The site's sounds: on/off and volume (src/learn/sound.ts). Same setting as "צלילים" in the board's cog wheel
-// (learn.prefs on this device), so turning it off here silences every board, lesson, puzzle and points note.
+// The site's sounds: one switch, the volume, and a switch for each kind of sound (src/learn/sound-prefs.ts builds them,
+// the same controls as "צלילים" in the board's cog wheel; learn.prefs on this device).
 ---
 <div class="sound-setting" data-sound-setting>
-  <label class="row" for="sound-on">
-    <span><strong>צלילים באתר</strong><span class="small muted">קול הכלי על הלוח, שיעורים, בעיות ונקודות. אף פעם לא בפתיחת עמוד.</span></span>
-    <input type="checkbox" class="sw" id="sound-on" data-sound-on checked />
-  </label>
-  <div class="vol" data-sound-vol-row>
-    <label for="sound-vol">עוצמה</label>
-    <input type="range" id="sound-vol" min="0" max="100" step="5" value="50" data-sound-vol />
-    <button type="button" class="btn btn-ghost" data-sound-test><span>השמעת דוגמה</span></button>
-  </div>
-  <p class="small muted">נשמר במכשיר הזה. אפשר לכבות גם בגלגל השיניים שליד כל לוח.</p>
+  <p class="setting-label">צלילים באתר</p>
+  <p class="small muted">קול הכלי על הלוח, משחקים, שיעורים, בעיות, נקודות וכפתורים. אף פעם לא בפתיחת עמוד.</p>
+  <div data-sound-mount></div>
+  <button type="button" class="btn btn-ghost" data-sound-test><span>השמעת דוגמה</span></button>
+  <p class="small muted">נשמר במכשיר הזה. באייפון, כשהמתג השקט דלוק, אתרים לא משמיעים צלילים.</p>
 </div>
 
 <script>
-  import { loadPrefs, savePrefs } from '../learn/prefs';
-  import { play, preloadSounds, setSoundEnabled, setSoundVolume } from '../learn/sound';
+  import { play, preloadSounds } from '../learn/sound';
+  import { soundControls } from '../learn/sound-prefs';
 
   for (const box of document.querySelectorAll<HTMLElement>('[data-sound-setting]')) {
-    const on = box.querySelector<HTMLInputElement>('[data-sound-on]')!;
-    const vol = box.querySelector<HTMLInputElement>('[data-sound-vol]')!;
-    const row = box.querySelector<HTMLElement>('[data-sound-vol-row]')!;
-    const p = loadPrefs();
-    on.checked = p.sound;
-    vol.value = String(Math.round(p.volume * 100));
-    row.hidden = !p.sound;
-    const save = () => {
-      const now = loadPrefs(); // the other board settings may have changed in another tab
-      now.sound = on.checked;
-      now.volume = Number(vol.value) / 100;
-      savePrefs(now);
-      setSoundEnabled(now.sound);
-      setSoundVolume(now.volume);
-      row.hidden = !now.sound;
-    };
-    on.addEventListener('change', () => {
-      save();
-      if (on.checked) play('move');
-    });
-    vol.addEventListener('input', save);
-    vol.addEventListener('change', () => play('move'));
-    box.querySelector('[data-sound-test]')!.addEventListener('click', () => {
-      void preloadSounds().then(() => play('move'));
-    });
+    box.querySelector('[data-sound-mount]')!.replaceWith(soundControls('acct-snd', 'acct-row', 'sw'));
+    box.querySelector('[data-sound-test]')!.addEventListener('click', () => void preloadSounds().then(() => play('move')));
   }
 </script>
 
 <style>
-  .sound-setting { display: flex; flex-direction: column; gap: 8px; width: 100%; }
-  .row { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 56px; cursor: pointer; }
-  .row > span { display: flex; flex-direction: column; }
-  .sw {
+  .sound-setting { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 100%; }
+  .sound-setting > p { margin: 0; }
+  .sound-setting > .setting-label { font-weight: 700; }
+  .sound-setting :global(.sound-controls), .sound-setting :global(.sound-rest) { width: 100%; }
+  .sound-setting :global(.acct-row) {
+    display: flex; flex-direction: row-reverse; align-items: center; justify-content: space-between; gap: 16px;
+    min-height: 52px; border-bottom: 1px solid var(--rule); cursor: pointer;
+  }
+  .sound-setting :global(.acct-row > span) { font-weight: 700; }
+  .sound-setting :global(.sound-sub > span) { font-weight: 400; padding-inline-start: 14px; }
+  .sound-setting :global(.sound-vol) { display: flex; align-items: center; gap: 14px; min-height: 52px; border-bottom: 1px solid var(--rule); }
+  .sound-setting :global(.sound-vol label) { font-weight: 700; }
+  .sound-setting :global(.sound-vol input) { flex: 1; max-width: 260px; accent-color: var(--seal); }
+  .sound-setting :global(.sw) {
     appearance: none; flex: none; width: 44px; height: 26px; border-radius: 13px; margin: 0; cursor: pointer; position: relative;
     background: var(--rule); border: 1.5px solid var(--ink-2); transition: background 0.15s;
   }
-  .sw::after {
+  .sound-setting :global(.sw::after) {
     content: ''; position: absolute; top: 2px; inset-inline-start: 2px; width: 19px; height: 19px; border-radius: 50%;
     background: var(--washi); border: 1px solid var(--ink-2); transition: inset-inline-start 0.15s;
   }
-  .sw:checked { background: var(--seal); border-color: var(--seal); }
-  .sw:checked::after { inset-inline-start: 19px; border-color: var(--seal); }
-  .sw:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-  .vol { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
-  .vol label { font-weight: 700; }
-  .vol input[type='range'] { width: min(220px, 100%); accent-color: var(--seal); }
-  .vol .btn { min-height: 44px; font-size: 15px; }
-  .vol[hidden] { display: none; }
-  @media (prefers-reduced-motion: reduce) { .sw, .sw::after { transition: none; } }
+  .sound-setting :global(.sw:checked) { background: var(--seal); border-color: var(--seal); }
+  .sound-setting :global(.sw:checked::after) { inset-inline-start: 19px; border-color: var(--seal); }
+  .sound-setting :global(.sw:focus-visible) { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .sound-setting .btn { min-height: 44px; font-size: 15px; margin-top: 4px; }
+  @media (prefers-reduced-motion: reduce) { .sound-setting :global(.sw), .sound-setting :global(.sw::after) { transition: none; } }
 </style>

@@ -5,6 +5,7 @@ import { Shogiground } from 'shogiground/shogiground';
 import { makeSquareName, parseUsi } from 'shogiops/util';
 import { FIRST_GAME, PHASES, PIECE_TOKEN, TAG_LABEL, firstGamePlies, plainText } from '../lib/first-game';
 import { markSeen } from '../lib/progress-local';
+import { playStep, preloadSounds } from '../learn/sound';
 
 /** Fill an element with text whose {R} marks become pieces drawn like the board's (styles: .pchip in /try/). */
 function setRich(el: HTMLElement, text: string): void {
@@ -34,6 +35,7 @@ export function bootWatchGame(root: HTMLElement): void {
     animation: { enabled: !matchMedia('(prefers-reduced-motion: reduce)').matches },
   });
   ground.attach({ board: q('[data-sg]') });
+  void preloadSounds();
 
   const next = q<HTMLButtonElement>('[data-next]');
   const nextLabel = q('[data-next-label]');
@@ -47,6 +49,7 @@ export function bootWatchGame(root: HTMLElement): void {
   let step = 0;
 
   function show(n: number, announce = true) {
+    const was = step;
     step = Math.max(0, Math.min(n, SUMMARY));
     const ply = plies[Math.min(step, N)];
     const [board, , hands] = ply.sfen.split(' ');
@@ -57,6 +60,11 @@ export function bootWatchGame(root: HTMLElement): void {
       checks: ply.pos.isCheck(),
       lastDests: md ? ('role' in md ? [makeSquareName(md.to)] : [makeSquareName(md.from), makeSquareName(md.to)]) : [],
     });
+    // one move forward sounds like a move on the board; jumps and steps back stay quiet
+    if (md && step === was + 1 && step <= N) {
+      const drop = 'role' in md;
+      playStep(drop, !drop && !!plies[step - 1].pos.board.get(md.to), !drop && !!md.promotion, ply.pos.isCheck());
+    }
 
     const phase = step === 0 ? -1 : step > N ? PHASES.length : ply.phase;
     chips.forEach((c, i) => {

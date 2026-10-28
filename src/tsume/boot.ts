@@ -5,7 +5,8 @@
 import { i18n } from '../learn/i18n';
 import { attachKeyboard } from '../learn/keyboard';
 import { type LearnPrefs, type SwitchPref, loadPrefs, savePrefs } from '../learn/prefs';
-import { preloadSounds, setSoundEnabled, setSoundVolume } from '../learn/sound';
+import { preloadSounds } from '../learn/sound';
+import { soundControls } from '../learn/sound-prefs';
 import { el, icon, pieceSetSwitch } from '../learn/view';
 import TsumeCtrl from './ctrl';
 import { type Length, loadPuzzles, nextUnsolved } from './puzzles';
@@ -29,8 +30,6 @@ export async function bootTsume(root: HTMLElement): Promise<void> {
 
   const apply = (p: LearnPrefs) => {
     root.classList.toggle('no-coords', !p.coords);
-    setSoundEnabled(p.sound);
-    setSoundVolume(p.volume);
     ctrl?.ground.set({
       movable: { showDests: p.dests },
       droppable: { showDests: p.dests },
@@ -43,7 +42,7 @@ export async function bootTsume(root: HTMLElement): Promise<void> {
         type: 'checkbox', ...(prefs[key] ? { checked: true } : {}),
         onchange: (e: Event) => {
           prefs[key] = (e.target as HTMLInputElement).checked;
-          savePrefs(prefs);
+          savePrefs({ ...loadPrefs(), [key]: prefs[key] }); // keep the sound settings saved by soundControls
           apply(prefs);
         },
       }),
@@ -60,7 +59,10 @@ export async function bootTsume(root: HTMLElement): Promise<void> {
         toggle('coords', i18n('il_prefCoords')),
         toggle('dests', i18n('il_prefDests')),
         toggle('animation', i18n('il_prefAnimation')),
-        toggle('sound', i18n('il_prefSound')),
+      ),
+      el('fieldset', { class: 'sound' },
+        el('legend', {}, i18n('il_prefSound')),
+        soundControls('tsume-snd', 'pref'),
       ),
       el('div', { class: 'foot' }, el('span'), el('button', { type: 'submit', class: 'btn primary' }, i18n('il_close'))),
     ),

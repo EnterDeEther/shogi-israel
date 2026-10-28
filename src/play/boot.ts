@@ -5,7 +5,8 @@
 import { i18n } from '../learn/i18n';
 import { attachKeyboard } from '../learn/keyboard';
 import { type LearnPrefs, type SwitchPref, loadPrefs, savePrefs } from '../learn/prefs';
-import { preloadSounds, setSoundEnabled, setSoundVolume } from '../learn/sound';
+import { preloadSounds } from '../learn/sound';
+import { soundControls } from '../learn/sound-prefs';
 import { el, icon, pieceSetSwitch } from '../learn/view';
 import PlayCtrl from './ctrl';
 import { engineSupport } from './engine';
@@ -30,8 +31,6 @@ export function bootPlay(root: HTMLElement): PlayCtrl {
   // ---------- settings dialog (same look as the lessons' cog wheel)
   const apply = (p: LearnPrefs) => {
     root.classList.toggle('no-coords', !p.coords);
-    setSoundEnabled(p.sound);
-    setSoundVolume(p.volume);
     ctrl?.ground.set({
       movable: { showDests: p.dests },
       droppable: { showDests: p.dests },
@@ -44,7 +43,7 @@ export function bootPlay(root: HTMLElement): PlayCtrl {
         type: 'checkbox', ...(prefs[key] ? { checked: true } : {}),
         onchange: (e: Event) => {
           prefs[key] = (e.target as HTMLInputElement).checked;
-          savePrefs(prefs);
+          savePrefs({ ...loadPrefs(), [key]: prefs[key] }); // keep the sound settings saved by soundControls
           apply(prefs);
         },
       }),
@@ -61,7 +60,10 @@ export function bootPlay(root: HTMLElement): PlayCtrl {
         toggle('coords', i18n('il_prefCoords')),
         toggle('dests', i18n('il_prefDests')),
         toggle('animation', i18n('il_prefAnimation')),
-        toggle('sound', i18n('il_prefSound')),
+      ),
+      el('fieldset', { class: 'sound' },
+        el('legend', {}, i18n('il_prefSound')),
+        soundControls('play-snd', 'pref'),
       ),
       el('details', { class: 'kbd' },
         el('summary', {}, i18n('il_kbdTitle')),
