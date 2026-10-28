@@ -9,7 +9,7 @@ import type { Position } from 'shogiops/variant/position';
 import { loadPrefs } from '../learn/prefs';
 import { arrow } from '../learn/shapes';
 import { illegalShogigroundMoveDests } from '../learn/shogi';
-import { play, preloadSounds, setSoundEnabled, setSoundVolume } from '../learn/sound';
+import { play, preloadSounds } from '../learn/sound';
 import { markSeen } from '../lib/progress-local';
 
 interface Exercise {
@@ -80,8 +80,6 @@ export const EXERCISES: Exercise[] = [
 export function bootTryPieces(root: HTMLElement): void {
   const q = <T extends HTMLElement = HTMLElement>(s: string) => root.querySelector<T>(s)!;
   const prefs = loadPrefs();
-  setSoundEnabled(prefs.sound);
-  setSoundVolume(prefs.volume);
   void preloadSounds();
   const live = q('[data-live]');
   const chips = [...root.querySelectorAll<HTMLElement>('[data-chip]')];

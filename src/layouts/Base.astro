@@ -56,7 +56,10 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
         var root = document.documentElement;
         var pref = '';
         try {
-          var pieces = localStorage.getItem('pieces');
+          // 'pieceSet' is the choice made since Hebrew became the default (27 Oct 2026). The older 'pieces' key was saved
+          // while English letters were the default, so it is dropped rather than read: everyone starts on Hebrew once.
+          localStorage.removeItem('pieces');
+          var pieces = localStorage.getItem('pieceSet');
           if (pieces === 'letters' || pieces === 'kanji') root.setAttribute('data-pieces', pieces);
           if (localStorage.getItem('gender') === 'f') root.setAttribute('data-gender', 'f');
           pref = localStorage.getItem('theme') || '';
@@ -78,6 +81,10 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
     <Analytics />
     <script>
       import '../scripts/gender';
+    </script>
+    <script>
+      // Sounds on every page (src/learn/sound.ts): unlocks audio on the first tap (phones) and ticks for buttons and menus.
+      import '../learn/sound';
     </script>
     <script>
       // Arrived from one of our ads? Keep which one for this tab, so a new account can record it.
@@ -103,7 +110,7 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
         if (!btn) return;
         const set = pieceSetOf(btn.dataset.piecesSet);
         root.setAttribute('data-pieces', set);
-        try { localStorage.setItem('pieces', set); } catch {}
+        try { localStorage.setItem('pieceSet', set); } catch {}
         sync();
         document.dispatchEvent(new CustomEvent('pieces-changed', { detail: set }));
       });

@@ -16,14 +16,14 @@ describe('site tour', () => {
   test('every menu step points at a menu section that carries its tour key', () => {
     // nav.ts reads the pages with import.meta.glob (Vite only), so read its source
     const keys = [...readFileSync(new URL('../src/lib/nav.ts', import.meta.url), 'utf8').matchAll(/tour: '(\w+)'/g)].map((m) => m[1]);
-    for (const s of SITE_TOUR.steps) if (!['try', 'account'].includes(s.target)) expect(keys).toContain(s.target);
+    for (const s of SITE_TOUR.steps) if (!['try', 'quick', 'account'].includes(s.target)) expect(keys).toContain(s.target);
   });
 
   test('a step whose target is not on the page is left out, and the counter follows', () => {
     const steps = stepsFor(SITE_TOUR.steps, (t) => t !== 'account');
-    expect(steps.map((s) => s.target)).toEqual(['try', 'learn', 'play', 'know', 'community']);
-    expect(counter(2, steps.length)).toBe('צעד 2 מתוך 5');
-    expect(SITE_TOUR.intro.body(steps.length).startsWith('חמישה צעדים')).toBe(true);
+    expect(steps.map((s) => s.target)).toEqual(['try', 'learn', 'play', 'quick', 'know', 'community']);
+    expect(counter(2, steps.length)).toBe('צעד 2 מתוך 6');
+    expect(SITE_TOUR.intro.body(steps.length).startsWith('שישה צעדים')).toBe(true);
   });
 
   test('a learning rank is always explained on /ranks/', () => {

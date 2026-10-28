@@ -5,41 +5,45 @@
 // clappers) for the start of a game and check, a rin bell for points and ranks. Scale: D "yo" pentatonic (D E G A B).
 // Listening page with the same sounds: https://claude.ai/artifact/KJvUnVmMJqiSwFgoj28k2J
 // Rules: nothing plays before the visitor has tapped or pressed a key, nothing plays in a background tab, and the one
-// switch (prefs.sound, the cog wheel and /account/) silences all of it. Volume is prefs.volume (0 to 1).
+// switch (prefs.sound, the cog wheel and /account/) silences all of it; each kind of sound also has its own switch
+// (prefs.sndBoard and the rest, see CATEGORY). Volume is prefs.vol (0 to 1, default 0.8).
+// Phones: the first tap anywhere unlocks audio (iOS keeps a page's audio suspended until a tap resumes it), and an
+// iPhone with its silent switch on stays silent on websites, as it should.
 // AGPL-3.0-or-later, like the rest of src/learn/.
-import { loadPrefs } from './prefs';
+import { type LearnPrefs, loadPrefs } from './prefs';
 
 export type SoundName =
   | 'move' | 'capture' | 'drop' | 'promote' | 'check' // the board
   | 'gameStart' | 'win' | 'lose' // a game on /play/
   | 'start' | 'success' | 'fail' | 'end' | 'solved' // lessons and puzzles: stage starts, exercise solved, wrong move, stage finished, puzzle solved
-  | 'points' | 'rank'; // the points toast
+  | 'points' | 'rank' // the points toast
+  | 'tap' | 'toggle'; // buttons, menus and switches
+
+export type SoundPref = 'sndBoard' | 'sndGame' | 'sndLessons' | 'sndProgress' | 'sndUi';
+const CATEGORY: Record<SoundName, SoundPref> = {
+  move: 'sndBoard', capture: 'sndBoard', drop: 'sndBoard', promote: 'sndBoard', check: 'sndBoard',
+  gameStart: 'sndGame', win: 'sndGame', lose: 'sndGame',
+  start: 'sndLessons', success: 'sndLessons', fail: 'sndLessons', end: 'sndLessons', solved: 'sndLessons',
+  points: 'sndProgress', rank: 'sndProgress',
+  tap: 'sndUi', toggle: 'sndUi',
+};
 
 let ctx: AudioContext | undefined;
 let out: GainNode | undefined;
-let enabled: boolean | undefined;
-let volume: number | undefined;
+let cur: LearnPrefs | undefined;
 let sr = 44100;
+let lastOther = 0; // when a sound other than a tap last played (a tap gives way to the move its button plays)
 let piece: AudioBuffer | null = null;
 let pieceLoading: Promise<void> | undefined;
 const cache = new Map<string, AudioBuffer>();
 const last = new Map<string, number>();
 
-const prefs = () => {
-  if (enabled === undefined || volume === undefined) {
-    const p = loadPrefs();
-    enabled ??= p.sound;
-    volume ??= p.volume;
-  }
-};
+const prefs = (): LearnPrefs => (cur ??= loadPrefs());
 
-export function setSoundEnabled(on: boolean): void {
-  enabled = on;
-}
-
-export function setSoundVolume(v: number): void {
-  volume = Math.min(1, Math.max(0, v));
-  if (ctx && out) out.gain.setTargetAtTime(volume * volume, ctx.currentTime, 0.03);
+/** Use these settings from now on (the cog wheel and /account/ call it after saving). */
+export function applySoundPrefs(p: LearnPrefs): void {
+  cur = { ...p };
+  if (ctx && out) out.gain.setTargetAtTime(p.vol * p.vol, ctx.currentTime, 0.03);
 }
 
 /** Fetch and decode the piece recording (21 KB) ahead of the first move. Boards call it when they load. */
@@ -72,7 +76,7 @@ function audio(): AudioContext | undefined {
       ctx = new AC() as AudioContext;
       sr = ctx.sampleRate;
       out = ctx.createGain();
-      out.gain.value = (volume ?? 0.5) ** 2;
+      out.gain.value = prefs().vol ** 2;
       const comp = ctx.createDynamicsCompressor();
       comp.threshold.value = -12;
       comp.ratio.value = 4;
@@ -101,9 +105,12 @@ const rnd = (): number => {
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 };
 
+type Modes = [freq: number, decay: number, amp: number][];
+const HYOSHIGI: Modes = [[1180, 0.06, 1], [1260, 0.05, 0.5], [2780, 0.03, 0.55], [4300, 0.018, 0.3], [650, 0.04, 0.35]];
+const TAP: Modes = [[1700, 0.004, 1], [2900, 0.003, 0.6], [4200, 0.002, 0.3]]; // a tiny dry tick, for buttons
+
 /** Hyoshigi: a very short contact noise ringing a bank of damped resonators (hard wood on hard wood). */
-function clap(d: Float32Array, at: number, amp = 1): void {
-  const modes: [number, number, number][] = [[1180, 0.06, 1], [1260, 0.05, 0.5], [2780, 0.03, 0.55], [4300, 0.018, 0.3], [650, 0.04, 0.35]];
+function clap(d: Float32Array, at: number, amp = 1, modes: Modes = HYOSHIGI): void {
   const s0 = Math.floor(at * sr), L = Math.min(d.length - s0, Math.ceil(0.3 * sr)), exT = 0.0006;
   const exN = Math.ceil(exT * 8 * sr), ex = new Float32Array(L);
   for (let i = 0; i < exN && i < L; i++) ex[i] = (rnd() * 2 - 1) * Math.exp(-i / sr / exT);
@@ -183,17 +190,20 @@ interface Def {
 }
 
 const DEF: Record<Synth, Def> = {
-  move: { len: 0.25, db: -6, layers: [[0, 'piece', 1, 1]] },
-  capture: { len: 0.35, db: -5, layers: [[0, 'piece', 0.96, 1.05], [0.085, 'piece', 1.35, 0.3]] },
-  drop: { len: 0.3, db: -4, layers: [[0, 'piece', 0.9, 1.15]] },
-  promote: { len: 0.8, db: -5, layers: [[0, 'piece', 1, 1], [0.05, 'piece', 1.5, 0.22], [0.07, 'promoteNote', 1, 0.5]] },
+  // Dean, 2026-10-28: the board was too quiet; it is now the loudest everyday sound
+  move: { len: 0.25, db: 0, layers: [[0, 'piece', 1, 1]] },
+  capture: { len: 0.35, db: 1, layers: [[0, 'piece', 0.96, 1.05], [0.085, 'piece', 1.35, 0.3]] },
+  drop: { len: 0.3, db: 1, layers: [[0, 'piece', 0.9, 1.15]] },
+  promote: { len: 0.8, db: 0, layers: [[0, 'piece', 1, 1], [0.05, 'piece', 1.5, 0.22], [0.07, 'promoteNote', 1, 0.5]] },
   // played by the board right after a move that gives check (the piece itself already sounded)
-  check: { len: 0.4, db: -7, layers: [[0.1, 'clap', 1, 1]] },
+  check: { len: 0.4, db: -4, layers: [[0.1, 'clap', 1, 1]] },
+  tap: { len: 0.1, db: -15, r: (d) => clap(d, 0, 1, TAP) },
+  toggle: { len: 0.15, db: -14, r: (d) => { clap(d, 0, 1, TAP); clap(d, 0.035, 0.7, TAP); } },
   clap: { len: 0.4, db: 0, r: (d) => clap(d, 0) },
   promoteNote: { len: 0.8, db: 0, r: (d) => koto(d, 0, NOTE.A5, { amp: 0.35, t60: 0.7, bright: 0.7 }) },
   gameStart: { len: 1, db: -5, r: (d) => { clap(d, 0); clap(d, 0.42); } },
   win: {
-    len: 3.8, db: -2,
+    len: 3.8, db: -5,
     r: (d) => {
       [0, 0.34, 0.58, 0.74, 0.85, 0.93, 0.99, 1.04, 1.08].forEach((t, i) => clap(d, t, 1 - i * 0.06));
       rin(d, 1.2, NOTE.D5, { amp: 0.9, decay: 2 });
@@ -215,7 +225,7 @@ const DEF: Record<Synth, Def> = {
   },
   fail: { len: 0.9, db: -9, rate: [1, 0.94, 0.3], r: (d) => koto(d, 0, 220, { amp: 0.9, t60: 0.7, bright: 0.3 }) },
   end: {
-    len: 2.8, db: -3,
+    len: 2.8, db: -5,
     r: (d) => {
       [NOTE.D4, NOTE.E4, NOTE.A4, NOTE.B4, NOTE.D5].forEach((f, i) => koto(d, i * 0.1, f, { amp: 0.55, t60: 1.6 - i * 0.1 }));
       rin(d, 0.5, NOTE.D6, { amp: 0.25, decay: 1.2 });
@@ -227,7 +237,7 @@ const DEF: Record<Synth, Def> = {
   },
   points: { len: 1.2, db: -15, r: (d) => rin(d, 0, NOTE.A5 * 1.5, { amp: 0.5, decay: 0.45 }) },
   rank: {
-    len: 4.2, db: -3,
+    len: 4.2, db: -6,
     r: (d) => {
       rin(d, 0, NOTE.D4 * 1.5, { amp: 1, decay: 2.4 });
       [NOTE.D5, NOTE.E5, NOTE.A5, NOTE.B5, NOTE.D6].forEach((f, i) => koto(d, 0.25 + i * 0.09, f, { amp: 0.35, t60: 1.2 }));
@@ -256,8 +266,9 @@ function buffer(a: AudioContext, id: Synth): AudioBuffer | null {
 }
 
 export function play(name: SoundName): void {
-  prefs();
-  if (!enabled || document.hidden || !volume) return;
+  const p = prefs();
+  if (!p.sound || !p[CATEGORY[name]] || document.hidden || !p.vol) return;
+  if (CATEGORY[name] !== 'sndUi') lastOther = performance.now();
   const a = audio();
   if (!a || !out) return;
   const now = a.currentTime;
@@ -292,4 +303,42 @@ export function play(name: SoundName): void {
 /** The board sound for a move: capture first, then promotion, else a plain move. */
 export function playMove(captured: boolean, promotion: boolean): void {
   play(captured ? 'capture' : promotion ? 'promote' : 'move');
+}
+
+/** A board step in a game viewer (/try/, /kif/): the move's sound, then the clap if it gives check. */
+export function playStep(drop: boolean, captured: boolean, promotion: boolean, check: boolean): void {
+  if (drop) play('drop');
+  else playMove(captured, promotion);
+  if (check) play('check');
+}
+
+// ---------------------------------------------------------------- every page
+
+function unlock(): void {
+  const a = audio();
+  if (!a) return;
+  // a silent sample started inside the tap is what lets iOS play the later ones
+  const src = a.createBufferSource();
+  src.buffer = a.createBuffer(1, 1, a.sampleRate);
+  src.connect(a.destination);
+  src.start();
+  if (a.state === 'running') for (const ev of UNLOCK) document.removeEventListener(ev, unlock, true);
+}
+const UNLOCK = ['pointerup', 'touchend', 'keydown', 'click'] as const;
+
+/** Buttons, menus and switches: a tiny tick (sndUi). Links in running text and the boards themselves stay quiet. */
+const TAPPABLE = 'button, summary, [role="button"], .btn, header a, nav a, input[type="checkbox"], input[type="radio"]';
+function onClick(e: MouseEvent): void {
+  const t = (e.target as Element | null)?.closest?.(TAPPABLE);
+  if (!t || (t as HTMLButtonElement).disabled) return;
+  const name: SoundName = t.matches('input') ? 'toggle' : 'tap';
+  const at = performance.now();
+  setTimeout(() => { if (lastOther < at) play(name); }, 0); // after the button's own handler: a move or a solved sound wins
+}
+
+if (typeof document !== 'undefined') {
+  for (const ev of UNLOCK) document.addEventListener(ev, unlock, { capture: true, passive: true });
+  document.addEventListener('click', onClick, true);
+  // the setting changed on another page or tab
+  window.addEventListener('storage', (e) => { if (e.key?.endsWith('learn.prefs')) applySoundPrefs(loadPrefs()); });
 }

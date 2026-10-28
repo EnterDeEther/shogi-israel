@@ -29,6 +29,8 @@ export interface GameRecord {
 }
 
 const HISTORY = 'play.history';
+/** The game in progress (src/play/ctrl.ts saves it after every move, so a reload or another page continues it). */
+export const CURRENT = 'play.current';
 const MAX_HISTORY = 100;
 
 export const newGameId = (): string => Math.random().toString(36).slice(2, 10);
@@ -53,4 +55,16 @@ export function saveFinished(record: GameRecord): void {
 /** Highest level this device has beaten (with or without takebacks). */
 export function highestBeaten(): number {
   return loadHistory().reduce((m, r) => (r.result?.winner === r.playerColor ? Math.max(m, r.level) : m), 0);
+}
+
+/** The saved game, if one is still being played: the header's play button continues it instead of starting a new one. */
+export function gameInProgress(): { moves: number; level: number } | null {
+  try {
+    const saved = JSON.parse(storage.get(CURRENT) || 'null') as { record?: GameRecord } | null;
+    const r = saved?.record;
+    if (!r || r.version !== 1 || r.result || !Array.isArray(r.moves)) return null;
+    return { moves: r.moves.length, level: r.level };
+  } catch {
+    return null;
+  }
 }

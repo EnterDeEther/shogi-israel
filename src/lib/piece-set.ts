@@ -1,4 +1,5 @@
-// The site-wide piece set: html[data-pieces], remembered on this device as localStorage 'pieces'.
+// The site-wide piece set: html[data-pieces], remembered on this device as localStorage 'pieceSet'
+// (the older 'pieces' key, from before Hebrew was the default, is removed in Base.astro).
 // Hebrew letters are the default; anything unknown (old or missing storage) falls back to it.
 export type PieceSet = 'hebrew' | 'letters' | 'kanji';
 

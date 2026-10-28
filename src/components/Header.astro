@@ -12,6 +12,11 @@ const ext = (l: NavLink) => (l.external ? { rel: 'noopener', target: '_blank' } 
 // the bell (signed-in only, src/lib/inbox-ui.ts) needs the size of the weekly-puzzle collection
 const tsume = import.meta.glob<{ default: unknown[] }>('../tsume/data/mate*.json', { eager: true });
 const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length ?? 0;
+// Two shortcuts on every page: a game against the computer (it continues the saved game when there is one)
+// and the next step of the personal course. The script below fills in where each one leads for this visitor.
+const PLAY: NavLink = { href: '/play/', label: 'משחק נגד המחשב' };
+const COURSE: NavLink = { href: '/course/', label: 'מסלול לימוד אישי' };
+const quick = isLive(PLAY) && isLive(COURSE);
 ---
 <header class="site-header">
   <div class="wrap bar">
@@ -43,6 +48,19 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
       {account && <a class="account" data-tour="account" href={account.href} aria-current={here(account)}>{account.icon && <Icon name={account.icon} size={18} />}<span data-signed-in-only>{account.label}</span><span data-signed-out-only>הרשמה / כניסה</span></a>}
     </nav>
 
+    {quick && (
+      <div class="quick" data-tour="quick">
+        <a class="quick-btn" href={PLAY.href} data-quick-play aria-current={here(PLAY)} aria-label="משחק נגד המחשב" title="משחק נגד המחשב">
+          <span class="quick-ico"><Icon name="cpu" size={22} /><span class="quick-dot" data-quick-dot hidden></span></span>
+          <span class="quick-cap" aria-hidden="true">משחק</span>
+        </a>
+        <a class="quick-btn" href={COURSE.href} data-quick-course aria-current={here(COURSE)} aria-label="מסלול לימוד אישי" title="מסלול לימוד אישי">
+          <span class="quick-ico"><Icon name="course" size={22} /></span>
+          <span class="quick-cap" aria-hidden="true">מסלול</span>
+        </a>
+      </div>
+    )}
+
     {account && (
       <details class="inbox" data-inbox data-signed-in-only data-week-count={weekCount} data-tour="bell">
         <summary>
@@ -70,6 +88,20 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
       </summary>
       <div class="scrim" data-scrim aria-hidden="true"></div>
       <nav class="panel" aria-label="ראשי (נייד)" data-sheet>
+        {quick && (
+          <div class="quick-tiles">
+            <a class="tile" href={PLAY.href} data-quick-play aria-current={here(PLAY)}>
+              <span class="ico"><Icon name="cpu" /></span>
+              <span class="label" data-quick-title>משחק נגד המחשב</span>
+              <span class="hint" data-quick-hint>עשר רמות, ישר בדפדפן</span>
+            </a>
+            <a class="tile" href={COURSE.href} data-quick-course aria-current={here(COURSE)}>
+              <span class="ico"><Icon name="course" /></span>
+              <span class="label" data-quick-title>מסלול לימוד אישי</span>
+              <span class="hint" data-quick-hint>מאיפה מתחילים, ומה הצעד הבא</span>
+            </a>
+          </div>
+        )}
         {items.map((i) => isSection(i) ? (
           <section class="group" data-tour={i.tour}>
             <h2 class="group-title">{i.label}</h2>
@@ -90,6 +122,10 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
         ) : (
           <a class="solo" href={i.href} aria-current={here(i)} {...ext(i)}>{i.icon && <span class="ico"><Icon name={i.icon} /></span>}<span class="label">{i.label}</span></a>
         ))}
+        <button type="button" class="solo theme-row" data-theme-toggle aria-pressed="false">
+          <span class="ico"><svg class="i-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg><svg class="i-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"></path></svg></span>
+          <span class="label"><span class="t-dark">מצב כהה</span><span class="t-light">מצב בהיר</span></span>
+        </button>
         {account && <a class="solo account" data-tour="account" href={account.href} aria-current={here(account)}>{account.icon && <Icon name={account.icon} />}<span data-signed-in-only>{account.label}</span><span data-signed-out-only>הרשמה / כניסה</span></a>}
       </nav>
     </details>
@@ -163,6 +199,51 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
   .inbox-list :global(.inbox-empty) { padding: 14px 0; color: var(--muted); }
   .inbox-foot { margin: 10px 0 0; font-size: 15px; }
   .inbox-foot a { color: var(--ink-2); }
+
+  /* ---------- the two shortcuts: a game against the computer, the next step of the course ----------
+     Icon tiles with a short caption, beside the bell. A seal dot on the game one: a game is waiting. */
+  .quick { display: flex; gap: 2px; margin-inline-start: auto; flex-shrink: 0; }
+  .quick-btn {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    min-width: 44px; height: 48px; padding: 0 4px; border-radius: 12px; color: var(--ink); text-decoration: none;
+    -webkit-tap-highlight-color: transparent; transition: background-color .15s ease, transform .16s var(--ease-out);
+  }
+  .quick-btn:hover { background: color-mix(in srgb, var(--ink) 7%, transparent); }
+  .quick-btn:active { transform: scale(0.9); transition-duration: .1s; }
+  .quick-btn[aria-current="page"] { color: var(--seal); }
+  .quick-ico { position: relative; display: grid; place-items: center; }
+  .quick-dot {
+    position: absolute; top: -2px; inset-inline-start: -4px; width: 9px; height: 9px; border-radius: 50%;
+    background: var(--seal); box-shadow: 0 0 0 2px var(--washi);
+  }
+  .site-header.scrolled .quick-dot { box-shadow: 0 0 0 2px var(--glass-hi); }
+  .quick-dot[hidden] { display: none; }
+  .quick-cap { font-size: 11px; font-weight: 700; line-height: 1; letter-spacing: 0.2px; white-space: nowrap; }
+  :global(html[data-signed-in]) .inbox, .quick ~ .inbox { margin-inline-start: 0; }
+  .quick ~ .theme-btn { margin-inline-start: 0; }
+  @media (prefers-reduced-motion: reduce) { .quick-btn:active { transform: none; } }
+
+  /* phones: the same two as wide tiles at the top of the sheet, with where each one leads */
+  .quick-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
+  .quick-tiles .tile {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-height: 112px; padding: 12px;
+    border-radius: 16px; background: var(--surface); border: 1px solid var(--glass-edge); box-shadow: var(--shadow-1);
+    color: var(--ink); text-decoration: none; -webkit-tap-highlight-color: transparent; transition: transform .16s var(--ease-out);
+  }
+  .quick-tiles .tile:active { transform: scale(0.97); }
+  .quick-tiles .label { font-size: 16px; font-weight: 700; line-height: 1.3; }
+  .quick-tiles .hint { font-size: 13px; line-height: 1.35; }
+  .quick-tiles .tile[aria-current="page"] { border-color: color-mix(in srgb, var(--seal) 45%, transparent); }
+  @media (prefers-reduced-motion: reduce) { .quick-tiles .tile:active { transform: none; } }
+
+  /* phones: light / dark moves from the bar into the sheet, to leave the bar room for the shortcuts */
+  .theme-row { appearance: none; background: none; border: 0; width: 100%; font: inherit; text-align: start; cursor: pointer; }
+  .theme-row .ico svg { grid-area: 1 / 1; }
+  .theme-row .i-sun, .theme-row .t-light, :global(html[data-theme="dark"]) .theme-row .i-moon, :global(html[data-theme="dark"]) .theme-row .t-dark { display: none; }
+  :global(html[data-theme="dark"]) .theme-row .i-sun, :global(html[data-theme="dark"]) .theme-row .t-light { display: inline; }
+  .bar:has(.quick) > .theme-btn { display: none; }
+  /* the narrowest phones: the logo alone carries the name */
+  @media (max-width: 374px) { .bar:has(.quick) .brand-name { display: none; } }
 
   /* ---------- phones: the menu is a sheet from the bottom, where the thumb already is, over a dimmed page.
      Drag it down (or tap the dimmed page, ✕ or Escape) to close it. ---------- */
@@ -265,6 +346,8 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
   /* ---------- desktop: a bar with dropdowns ---------- */
   @media (min-width: 1040px) {
     .nav-narrow { display: none; }
+    .bar:has(.quick) > .theme-btn { display: grid; }
+    .quick { margin-inline-start: 4px; }
     .nav-wide { display: flex; align-items: center; gap: 22px; margin-inline-start: auto; }
     .theme-btn { margin-inline-start: 0; }
     .inbox { position: relative; margin-inline-start: 0; }
@@ -273,6 +356,13 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
       border: 1px solid var(--glass-edge); border-radius: 16px; transform-origin: top left;
     }
   }
+  /* small desktops: a little less air between the menu items, to make room for the shortcuts */
+  @media (min-width: 1040px) { .bar:has(.quick) { gap: 10px; } .bar:has(.quick) .nav-wide { gap: 18px; } }
+  @media (min-width: 1040px) and (max-width: 1279px) {
+    .bar:has(.quick) .nav-wide { gap: 11px; }
+    .bar:has(.quick) > .theme-btn, .bar:has(.quick) .inbox summary { width: 40px; }
+  }
+  .nav-wide .account :global(svg) { flex-shrink: 0; }
   .nav-wide .top, .nav-group summary {
     color: var(--ink); text-decoration: none; font-weight: 500; padding: 8px 0; border-bottom: 2px solid transparent; white-space: nowrap;
     transition: border-color .15s ease, color .15s ease;
@@ -311,6 +401,58 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
   @media (prefers-reduced-motion: reduce) { .nav-wide .account:active { transform: none; } }
   .nav-wide .account:hover, .nav-wide .account[aria-current="page"] { background: color-mix(in srgb, var(--ink) 7%, transparent); }
 </style>
+
+<script>
+  import { gameInProgress } from '../play/record';
+
+  // The two shortcuts. The game one continues a saved game (/play/ resumes it on its own) or opens a new one;
+  // the course one leads a signed-in learner straight to the next step, and everyone else to /course/
+  // (signed-out visitors see the preview and the sign-up card there).
+  const setAll = (sel: string, f: (a: HTMLAnchorElement) => void) => document.querySelectorAll<HTMLAnchorElement>(sel).forEach(f);
+  const say = (a: HTMLAnchorElement, title: string, hint: string) => {
+    a.removeAttribute('data-g-aria-label'); a.removeAttribute('data-g-title'); // src/scripts/gender.ts keeps a token's two forms there
+    a.setAttribute('aria-label', hint ? `${title}: ${hint}` : title);
+    a.setAttribute('title', hint ? `${title}: ${hint}` : title);
+    const t = a.querySelector('[data-quick-title]');
+    const h = a.querySelector('[data-quick-hint]');
+    if (t) t.textContent = title;
+    if (h) h.textContent = hint;
+  };
+
+  function playLink() {
+    const game = gameInProgress();
+    setAll('[data-quick-play]', (a) => {
+      a.href = game ? '/play/' : '/play/?new';
+      if (game) say(a, '⟦המשך|המשיכי⟧ את המשחק', game.moves ? `רמה ${game.level}, אחרי ${game.moves} מהלכים` : `רמה ${game.level}, לפני המהלך הראשון`);
+      else say(a, 'משחק נגד המחשב', 'עשר רמות, ישר בדפדפן');
+    });
+    document.querySelector('[data-quick-dot]')?.toggleAttribute('hidden', !game);
+  }
+
+  async function courseLink() {
+    if (!document.documentElement.hasAttribute('data-signed-in')) {
+      setAll('[data-quick-course]', (a) => say(a, 'מסלול לימוד אישי', 'מאיפה מתחילים, ומה הצעד הבא'));
+      return;
+    }
+    const [{ nextStep, stepHref }, { LEVEL_COUNTS }, { readLocal }] = await Promise.all([
+      import('../lib/curriculum'), import('../lib/level-counts'), import('../lib/progress-local'),
+    ]);
+    const p = readLocal();
+    const next = p.course.route ? nextStep(p, LEVEL_COUNTS) : undefined;
+    setAll('[data-quick-course]', (a) => {
+      if (!p.course.route) { a.href = '/course/'; say(a, 'מסלול לימוד אישי', 'מאיפה מתחילים? שתי שאלות קצרות'); }
+      else if (!next) { a.href = '/course/'; say(a, 'מסלול לימוד אישי', 'סיימת את כל המסלול'); }
+      else { a.href = stepHref(next.step, p, LEVEL_COUNTS); say(a, 'הצעד הבא במסלול', next.step.title); }
+    });
+  }
+
+  const refresh = () => { playLink(); void courseLink(); };
+  refresh();
+  document.addEventListener('progress-synced', () => void courseLink());
+  document.addEventListener('shogi-il:game-end', playLink);
+  addEventListener('pageshow', refresh); // back from another page (bfcache)
+  addEventListener('storage', (e) => { if (!e.key || e.key.startsWith('shogi-il.')) refresh(); }); // another tab
+</script>
 
 <script>
   // The bar turns to glass once the page has scrolled under it.
