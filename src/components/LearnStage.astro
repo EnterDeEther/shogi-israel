@@ -19,8 +19,10 @@ const { stage = '' } = Astro.props;
 const current = stage ? stages.find((s) => stageSlug(s.key) === stage) : undefined;
 const LEVEL_KEY = { beginner: 'il_courseBeginner', intermediate: 'il_courseIntermediate', advanced: 'il_courseAdvanced' } as const;
 const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-/** Same markup as the island's rich() (src/learn/view.ts): **bold** for a new term, moves like P-76 kept left-to-right. */
-const rich = (text: string) =>
+/** Same markup as the island's rich() (src/learn/view.ts): **bold** for a new term, ==...== for the task, moves like P-76 kept left-to-right. */
+const rich = (text: string): string =>
+  text.split(/(==.+?==)/).map((chunk, j) => (j % 2 === 1 ? `<mark class="learn-task">${inline(chunk.slice(2, -2))}</mark>` : inline(chunk))).join('');
+const inline = (text: string) =>
   text.split(/(\*\*[^*]+\*\*|\+?[KRBGSNLP](?:\d\d)?[-x*]\d\d\+?)/).map((part, i) =>
     i % 2 === 0 ? esc(part) : part.startsWith('**') ? `<strong>${esc(part.slice(2, -2))}</strong>` : `<bdi dir="ltr">${esc(part)}</bdi>`).join('');
 ---
