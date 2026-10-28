@@ -69,8 +69,9 @@ const rich = (text: string) =>
 
 <style>
   .learn-credit { margin: 4px 0 0; max-width: 680px; line-height: 1.6; }
-  .stage-about { margin: 16px 0 0; max-width: 680px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
-  .stage-about summary { cursor: pointer; padding: 12px 0; font-weight: 500; color: var(--muted); font-size: 15px; }
+  .stage-about { margin: 16px 0 0; max-width: 680px; padding: 0 18px; background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; box-shadow: var(--shadow-1); }
+  .stage-about summary { cursor: pointer; padding: 12px 0; font-weight: 500; color: var(--ink-2); font-size: 15px; }
+  .stage-about[open] summary { border-bottom: 1px solid var(--rule); }
   .stage-about p, .stage-about li { color: var(--ink-2); line-height: 1.7; }
   .stage-about h2 { font-size: 18px; margin: 16px 0 6px; }
   .stage-about ol { padding-inline-start: 22px; margin: 0 0 14px; }
