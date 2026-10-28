@@ -137,6 +137,9 @@ const quick = isLive(PLAY) && isLive(COURSE);
      the page scrolls under it. The blur sits on ::before: on the header itself it would trap the phone sheet,
      which is position: fixed inside it. Pages whose board or side map sticks to the top keep the bar in place. */
   .site-header { position: sticky; top: 0; z-index: 20; isolation: isolate; border-bottom: 1px solid var(--rule); background: var(--washi); transition: background-color .25s ease, box-shadow .25s ease; }
+  /* An open menu, phone sheet or bell panel goes above the lesson coach and its bubble (z-index 40-41,
+     src/styles/learn.css), which would otherwise cover it; the site tour (70+) stays on top. */
+  .site-header:has(details[open]) { z-index: 45; }
   .site-header::before {
     content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0; transition: opacity .25s ease;
     background: var(--glass); -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6);

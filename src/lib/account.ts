@@ -4,7 +4,7 @@
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js';
 import { AUTH_STORAGE_KEY, SUPABASE_KEY, SUPABASE_URL } from './account-config';
 import type { GameRecord } from '../play/record';
-import { emptyProgress, gameResult, merge, normalize, same, type SyncedProgress } from './progress-sync';
+import { emptyProgress, gameResult, merge, mergeSignIn, normalize, same, type SyncedProgress } from './progress-sync';
 import { readLocal, writeLocal } from './progress-local';
 import { CONSENT_VERSION } from './consent';
 import { adSource } from './ad-source';
@@ -69,6 +69,7 @@ export async function changeEmail(email: string) {
 export async function signOut() {
   await supabase().auth.signOut();
   writeLocal(emptyProgress());
+  setLinked(null);
   applyGender(null);
   clearLocalGames();
 }
@@ -204,9 +205,20 @@ export async function syncGames(): Promise<number> {
 }
 
 // ---------- progress ----------
+// Which account this device's progress was last merged with. Until the first merge for the signed-in account
+// succeeds, the device may hold a guest's progress: it is merged in with mergeSignIn (the account's choices win),
+// and never pushed over the account's copy (pushLocal waits for that merge).
+const LINKED_KEY = 'shogi-il.progress.linked';
+const linkedTo = (id: string) => { try { return localStorage.getItem(LINKED_KEY) === id; } catch { return false; } };
+const setLinked = (id: string | null) => {
+  try { if (id) localStorage.setItem(LINKED_KEY, id); else localStorage.removeItem(LINKED_KEY); } catch { /* merged again next time; harmless */ }
+};
+
 /** Pull the account's progress, merge it with this device's, and save the union on both sides.
- * Null when the account couldn't be read or written (the device keeps its copy either way). */
-export async function syncProgress(): Promise<SyncedProgress | null> {
+ * Null when the account couldn't be read or written (the device keeps its copy either way).
+ * keepDeviceCourse: the course starting point on this device was just chosen by the signed-in player
+ * (pushLocal), so it wins even on the first merge. */
+export async function syncProgress(opts: { keepDeviceCourse?: boolean } = {}): Promise<SyncedProgress | null> {
   const session = await getSession();
   if (!session) return null;
   const db = supabase();
@@ -214,7 +226,12 @@ export async function syncProgress(): Promise<SyncedProgress | null> {
   if (error) return null;
   const local = readLocal();
   const remote = normalize(data?.data);
-  const merged = merge(local, remote);
+  const merged = linkedTo(session.user.id) ? merge(local, remote) : mergeSignIn(local, remote);
+  if (opts.keepDeviceCourse && local.course.route) {
+    merged.course.route = local.course.route;
+    merged.course.start = local.course.start;
+    merged.course.placedAt = local.course.placedAt;
+  }
   if (!same(merged, local)) {
     writeLocal(merged);
     document.dispatchEvent(new CustomEvent('progress-synced'));
@@ -223,12 +240,18 @@ export async function syncProgress(): Promise<SyncedProgress | null> {
     const { error: saveError } = await db.from('progress').upsert({ user_id: session.user.id, data: merged, updated_at: new Date().toISOString() });
     if (saveError) return null;
   }
+  setLinked(session.user.id);
   return merged;
 }
 
+/** "Start over" (a reset in the lessons, a new starting point): replace the account's copy with this device's.
+ * Only once this device has merged with the account; before that, merge instead, so a guest's progress
+ * never replaces what the account already has. */
 async function pushLocal() {
   const session = await getSession();
-  if (session) await supabase().from('progress').upsert({ user_id: session.user.id, data: readLocal(), updated_at: new Date().toISOString() });
+  if (!session) return;
+  if (!linkedTo(session.user.id)) { await syncProgress({ keepDeviceCourse: true }); return; }
+  await supabase().from('progress').upsert({ user_id: session.user.id, data: readLocal(), updated_at: new Date().toISOString() });
 }
 
 /** Runs on every page for signed-in visitors: sync now, then after each saved score or finished lesson. */

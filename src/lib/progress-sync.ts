@@ -141,6 +141,24 @@ export function merge(a: SyncedProgress, b: SyncedProgress): SyncedProgress {
   return out;
 }
 
+/** The first sync of an account on a device that holds a guest's progress (or another session's): nothing the
+ * account has is lost or replaced. Scores, lessons, puzzles and course steps are the best of both, as in merge(),
+ * but the account's own choices win even when the guest's are newer: its starting point in the course and its
+ * notification settings. The guest's choice is kept only where the account has none. */
+export function mergeSignIn(device: SyncedProgress, account: SyncedProgress): SyncedProgress {
+  const out = merge(device, account);
+  if (account.course.route) {
+    out.course.route = account.course.route;
+    out.course.start = account.course.start;
+    out.course.placedAt = account.course.placedAt;
+  }
+  if (account.inbox.offAt) {
+    out.inbox.off = [...account.inbox.off];
+    out.inbox.offAt = account.inbox.offAt;
+  }
+  return out;
+}
+
 export const same = (a: SyncedProgress, b: SyncedProgress) => JSON.stringify(a) === JSON.stringify(b);
 
 export interface Stats {

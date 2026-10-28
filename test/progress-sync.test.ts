@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { emptyProgress, gameResult, merge, normalize, NICKNAME_RE, RESERVED_RE, stats } from '../src/lib/progress-sync';
+import { emptyProgress, gameResult, merge, mergeSignIn, normalize, NICKNAME_RE, RESERVED_RE, stats } from '../src/lib/progress-sync';
 
 describe('progress sync', () => {
   test('merge keeps the best score per level and every finished lesson', () => {
@@ -8,6 +8,37 @@ describe('progress sync', () => {
     const m = merge(a, b);
     expect(m.learn).toEqual({ stages: { king: { scores: [3, 2, 3] }, gold: { scores: [1] } } });
     expect(m.rules).toEqual(['01', '02']);
+  });
+
+  test('signing in keeps the account: best of both, and the account choices win over a newer guest choice', () => {
+    const guest = normalize({
+      learn: { stages: { king: { scores: [1, 3] }, rook: { scores: [2] } } }, rules: ['01'], tsume: { 1: [5] },
+      course: { route: 'main', start: 'beginner', placedAt: '2026-10-28T10:00:00Z', seen: ['g1'], played: 2 },
+      inbox: { read: ['a'], off: [], offAt: '2026-10-28T10:00:00Z' },
+    });
+    const account = normalize({
+      learn: { stages: { king: { scores: [3, 2] } } }, rules: ['02'], tsume: { 1: [7] },
+      course: { route: 'chess', start: 'intermediate', placedAt: '2026-10-20T10:00:00Z', seen: ['g2'], won: 3 },
+      inbox: { read: ['b'], off: ['news'], offAt: '2026-10-20T10:00:00Z' },
+    });
+    const m = mergeSignIn(guest, account);
+    expect(m.learn).toEqual({ stages: { king: { scores: [3, 3] }, rook: { scores: [2] } } });
+    expect(m.rules).toEqual(['01', '02']);
+    expect(m.tsume).toEqual({ 1: [5, 7] });
+    expect([m.course.route, m.course.start, m.course.placedAt]).toEqual(['chess', 'intermediate', '2026-10-20T10:00:00Z']);
+    expect(m.course.seen).toEqual(['g1', 'g2']);
+    expect([m.course.played, m.course.won]).toEqual([2, 3]);
+    expect(m.inbox.off).toEqual(['news']);
+    expect(m.inbox.read).toEqual(['a', 'b']);
+    // plain merge (an already linked device) lets the newer choice win
+    expect(merge(guest, account).course.route).toBe('main');
+  });
+
+  test('signing in to a new account keeps the guest choices', () => {
+    const guest = normalize({ course: { route: 'chess', start: 'beginner', placedAt: '2026-10-28T10:00:00Z' }, inbox: { off: ['week'], offAt: '2026-10-28T10:00:00Z' } });
+    const m = mergeSignIn(guest, emptyProgress());
+    expect([m.course.route, m.course.start]).toEqual(['chess', 'beginner']);
+    expect(m.inbox.off).toEqual(['week']);
   });
 
   test('normalize survives junk', () => {

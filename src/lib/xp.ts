@@ -5,7 +5,7 @@
 // Each thing pays once: points are counted from the set of things completed (best stars per level, puzzle
 // numbers, lessons, the first finished game and first win per level), so replaying earns nothing.
 // Pure functions (tested in test/xp.test.ts).
-import { ALL_STEPS, CURRICULUM, isOptional, stepState, stepsFor, type Step } from './curriculum.js'; // .js: api/admin-report.ts runs this file on Node
+import { ALL_STEPS, curriculumFor, isOptional, stepState, stepsFor, type Step } from './curriculum.js'; // .js: api/admin-report.ts runs this file on Node
 import type { SyncedProgress } from './progress-sync.js';
 
 export const XP = {
@@ -35,7 +35,8 @@ export function xpBreakdown(p: SyncedProgress, levelCounts: Record<string, numbe
   // only steps actually done count: a step marked "already known" gives no points
   const done = ALL_STEPS.filter((s) => stepState(s, p, levelCounts) === 'done').length;
   // a unit counts once every required step in it is really done (skipped ones block the bonus; optional ones don't)
-  const units = CURRICULUM.filter((u) => {
+  // units of the learner's own path (main or chess); steps above count on either path, so changing route keeps them
+  const units = curriculumFor(p.course.route).filter((u) => {
     const req = stepsFor(u, p.course).filter((s) => !isOptional(s, p.course));
     return req.length > 0 && req.every((s) => stepState(s, p, levelCounts) === 'done');
   }).length;

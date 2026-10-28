@@ -114,8 +114,8 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
   </ol>
   {courseLive && (
     <div class="course-box">
-      <p><strong>רוצה שהאתר יוביל אותך צעד אחר צעד?</strong> במסלול לימוד אישי כל שלב מחכה לך בתורו, מהחוקים ועד בעיות מט, וההתקדמות נשמרת בחשבון.{ranksLive && <> הנקודות מעלות דרגת לימוד באתר, לא דרגה רשמית (<a href="/ranks/">מה הן הדרגות בשוגי</a>).</>}</p>
-      <p class="cta"><a class="btn" href="/course/?route=chess"><span>מסלול לימוד אישי, עם חשבון חינמי</span><Fragment set:html={arrow} /></a> <a href="/account/?mode=signup">⟦פתח|פתחי⟧ חשבון בחינם</a></p>
+      <p><strong>רוצה שהאתר יוביל אותך צעד אחר צעד?</strong> יש מסלול לימוד אישי לשחקני שחמט: רק מה שחדש לך, בסדר שמתאים לשחקן שחמט, מהכלים החדשים ועד בעיות מט. כל שלב מחכה לך בתורו, וההתקדמות נשמרת בחשבון.{ranksLive && <> הנקודות מעלות דרגת לימוד באתר, לא דרגה רשמית (<a href="/ranks/">מה הן הדרגות בשוגי</a>).</>}</p>
+      <p class="cta"><a class="btn" href="/course/?route=chess"><span>מסלול לימוד אישי לשחקני שחמט</span><Fragment set:html={arrow} /></a> <a href="/account/?mode=signup" data-chess-intent>⟦פתח|פתחי⟧ חשבון בחינם</a></p>
     </div>
   )}
   {tryLive && <p class="small muted">רוצה קודם לראות איך זה נראה? <a href="/try/">משחק אחד, מהלך אחרי מהלך</a>.</p>}
@@ -182,9 +182,9 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
     ) : (
       <a class="btn" href="/rules/02-how-pieces-move/"><span>⟦הכר|הכירי⟧ את הכלים</span><Fragment set:html={arrow} /></a>
     )}
-    {courseLive && <a class="btn btn-ghost" href="/course/?route=chess">מסלול לימוד אישי</a>}
+    {courseLive && <a class="btn btn-ghost" href="/course/?route=chess">מסלול לימוד אישי לשחקני שחמט</a>}
   </div>
-  {courseLive && <p class="small muted">המסלול שומר את ההתקדמות בחשבון: <a href="/account/?mode=signup">⟦פתח|פתחי⟧ חשבון בחינם</a>.</p>}
+  {courseLive && <p class="small muted">המסלול שומר את ההתקדמות בחשבון: <a href="/account/?mode=signup" data-chess-intent>⟦פתח|פתחי⟧ חשבון בחינם</a>.</p>}
   <p class="small muted">רוצה יריבים אנושיים? שחקנים ישראלים נפגשים ב<a href="/community/">קהילה שלנו</a>, ומשחקים פומביים וטורנירים מתקיימים {guideLive ? <a href="/lishogi/">בליש׳וגי</a> : 'בליש׳וגי'}.</p>
 
   <details class="more sources">
@@ -198,6 +198,14 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
     </ul>
   </details>
 </Page>
+
+<script>
+  // Signing up from here marks a chess player: the course then opens on the chess players' path, and the lessons
+  // show their chess text. Same device key as ROUTE_KEY in src/learn/route.ts.
+  document.querySelectorAll('[data-chess-intent]').forEach((a) => a.addEventListener('click', () => {
+    try { localStorage.setItem('learnRoute', 'chess'); } catch { /* storage blocked: the course asks instead */ }
+  }));
+</script>
 
 <style>
   .lead { font-size: 19px; color: var(--ink); }
