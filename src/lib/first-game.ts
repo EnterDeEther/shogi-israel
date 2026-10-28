@@ -5,7 +5,7 @@
 // the bishop, and move 22 is the losing mistake the text calls one. The game is chosen to show the three
 // phases, not to be perfect, and the page says so.
 // Tags (capture, drop, promotion, check, mate) are worked out from the moves, not written by hand.
-// Written for someone who knows neither shogi nor chess (Dean, 2026-10-27): every piece is introduced, with its
+// Written for someone who knows neither shogi nor chess: every piece is introduced, with its
 // mark, the first time it's named ({R} draws the piece as it looks on the board, see PIECE_TOKEN), and no word is
 // used before it's explained. test/first-game.test.ts checks the first mention of each piece.
 import { initialSfen, makeSfen, parseSfen } from 'shogiops/sfen';

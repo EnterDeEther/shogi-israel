@@ -1,5 +1,5 @@
 // Shogi Israel: the sound settings, built the same way in the board's cog wheel (learn, play, tsume) and on /account/.
-// One switch for everything, a volume, and a switch for each kind of sound (Dean, 2026-10-28: "let them choose which").
+// One switch for everything, a volume, and a switch for each kind of sound.
 // Saved in learn.prefs on this device. AGPL-3.0-or-later, like the rest of src/learn/.
 import { type LearnPrefs, loadPrefs, savePrefs } from './prefs';
 import { type SoundName, type SoundPref, applySoundPrefs, play, preloadSounds } from './sound';

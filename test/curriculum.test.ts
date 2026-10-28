@@ -36,7 +36,7 @@ describe('curriculum data', () => {
     for (const st of stages) expect(ALL_STEPS.some((s) => s.learn?.includes(st.key))).toBe(true);
   });
 
-  // Dean, 2026-10-27: the course copies Lishogi's map. Its units are the map's categories, in the map's order.
+  // The course copies Lishogi's map. Its units are the map's categories, in the map's order.
   test('the units follow the lesson map, category by category, then tsume', () => {
     expect(CURRICULUM.map((u) => u.key)).toEqual([...categories.map((c) => c.key), 'tsume']);
     for (const c of categories) expect(CURRICULUM.find((u) => u.key === c.key)!.level).toBe(c.level);

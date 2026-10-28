@@ -20,7 +20,7 @@ export { CONSENT_TEXT, CONSENT_VERSION } from './consent.js';
 
 export type EmailKind = 'week' | 'return';
 export const SITE = 'https://shogi.co.il';
-export const FROM = 'דין משוגי ישראל <noreply@shogi.co.il>'; // personal, from Dean (Godin rule)
+export const FROM = 'דין משוגי ישראל <noreply@shogi.co.il>'; // a personal sender
 export const REPLY_TO = 'contact@shogi.co.il';
 
 const DAY = 24 * 60 * 60 * 1000;

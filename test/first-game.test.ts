@@ -51,7 +51,7 @@ describe('three pieces try', () => {
   });
 });
 
-// Dean, 2026-10-27: someone who knows nothing must be able to follow the game. Each piece is introduced, with its
+// Someone who knows nothing must be able to follow the game. Each piece is introduced, with its
 // mark, the first time any text names it (in the order the page shows them: phase note, then the move's texts).
 describe('first game: nothing named before it is introduced', () => {
   const PIECES: [string, string][] = [['רגלי', '{P}'], ['צריח', '{R}'], ['גנרל זהב', '{G}'], ['רץ ', '{B}'], ['גנרל כסף', '{S}'], ['דרקון', '{+R}']];

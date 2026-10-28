@@ -235,7 +235,7 @@ function renderHome(ctrl: LearnCtrl, _root: HTMLElement, q: Q, go: Go, stageLink
 
   q('[data-map]').replaceChildren(
     ...categories.flatMap((c, i) => [
-      // Dean, 2026-10-27: the map is split into three course levels, each one starting with its own heading
+      // The map is split into three course levels, each one starting with its own heading
       c.level !== categories[i - 1]?.level ? el('p', { class: 'course-level', id: `level-${c.level}` },
         el('span', {}, i18n('il_courseLevelNote')), i18n(LEVEL_KEY[c.level])) : null,
       el('section', { class: 'categ', 'aria-labelledby': `cat-${c.key}` },

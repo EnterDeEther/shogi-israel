@@ -190,7 +190,7 @@ interface Def {
 }
 
 const DEF: Record<Synth, Def> = {
-  // Dean, 2026-10-28: the board was too quiet; it is now the loudest everyday sound
+  // The board sound is the loudest everyday sound
   move: { len: 0.25, db: 0, layers: [[0, 'piece', 1, 1]] },
   capture: { len: 0.35, db: 1, layers: [[0, 'piece', 0.96, 1.05], [0.085, 'piece', 1.35, 0.3]] },
   drop: { len: 0.3, db: 1, layers: [[0, 'piece', 0.9, 1.15]] },
