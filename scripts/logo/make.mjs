@@ -24,15 +24,30 @@ const PIECE = [[50, 3], [79.7, 21.8], [88.1, 97], [11.9, 97], [20.3, 21.8]];
 const path = (pts) => 'M' + pts.map((p) => p.map((v) => v.toFixed(2)).join(' ')).join('L') + 'Z';
 
 function logo(bg) {
-  // the piece line, 将 centred in it, and ישראל under it: the three together sit in the middle of the disc
-  const piece = PIECE.map(([x, y]) => [50 + (x - 50) * 0.58, 16.2 + (y - 3) * 0.58]);
+  // The piece line fits snugly around 将, with ישראל under it. The three are laid out at size, centred as one
+  // block, then scaled up together to fill the disc. Ink sizes below are measured from the two faces.
+  const k = 0.46, kanji = 27, he = 12, gap = 3.5, grow = 1.3;
+  const height = 94 * k + gap + 0.758 * he;
+  const top = 50 - height / 2;
+  const piece = PIECE.map(([x, y]) => [50 + (x - 50) * k, top + (y - 3) * k]);
+  let area = 0, cy = 0;
+  piece.forEach(([x0, y0], i) => {
+    const [x1, y1] = piece[(i + 1) % piece.length];
+    const c = x0 * y1 - x1 * y0;
+    area += c / 2;
+    cy += (y0 + y1) * c;
+  });
+  cy /= 6 * area;
+  const kanjiBase = cy - (31.3 / 33) * kanji / 2 + (28.4 / 33) * kanji;
   return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     ${bg ? `<rect width="100" height="100" fill="${bg}"/>` : ''}
     <g ${bg ? 'transform="translate(50 50) scale(.8) translate(-50 -50)"' : ''}>
       <circle cx="50" cy="50" r="50" fill="${C.seal}"/>
-      <path d="${path(piece)}" fill="none" stroke="${C.white}" stroke-width="2.2" stroke-linejoin="round"/>
-      <text x="50" y="57.6" text-anchor="middle" font-family="Shippori Mincho" font-weight="800" font-size="27" fill="${C.white}">将</text>
-      <text x="50" y="83.8" text-anchor="middle" direction="rtl" font-family="Heebo Variable" font-weight="800" font-size="12" fill="${C.white}">ישראל</text>
+      <g transform="translate(50 50) scale(${grow}) translate(-50 -50)">
+        <path d="${path(piece)}" fill="none" stroke="${C.white}" stroke-width="1.7" stroke-linejoin="round"/>
+        <text x="50" y="${kanjiBase.toFixed(2)}" text-anchor="middle" font-family="Shippori Mincho" font-weight="800" font-size="${kanji}" fill="${C.white}">将</text>
+        <text x="50" y="${(top + height).toFixed(2)}" text-anchor="middle" direction="rtl" font-family="Heebo Variable" font-weight="800" font-size="${he}" fill="${C.white}">ישראל</text>
+      </g>
     </g>
   </svg>`;
 }
