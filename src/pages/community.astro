@@ -3,7 +3,7 @@
 // players for them to mean something. No events here until meetups are planned.
 import Page from '../layouts/Page.astro';
 import { pageExists, LISHOGI_TEAM } from '../lib/live';
-import { WHATSAPP_URL, INSTAGRAM_URL } from '../lib/nav';
+import { WHATSAPP_URL, INSTAGRAM_URL, FACEBOOK_GROUP_URL, FACEBOOK_PAGE_URL } from '../lib/nav';
 import { accountsEnabled } from '../lib/account-config';
 const hasPlay = pageExists('/play/');
 const hasWeek = pageExists('/tsume/week/');
@@ -31,6 +31,8 @@ const hasWeek = pageExists('/tsume/week/');
   <ul class="rows links">
     <li><a href={WHATSAPP_URL} rel="noopener"><span class="row-title"><strong>קהילת הוואטסאפ</strong></span><span class="small muted">עדכונים, שאלות, ומי רוצה לשחק</span></a></li>
     <li><a href={INSTAGRAM_URL} rel="noopener"><span class="row-title"><strong>אינסטגרם</strong></span><bdi dir="ltr" class="small muted">@shogi.israel</bdi></a></li>
+    <li><a href={FACEBOOK_GROUP_URL} rel="noopener"><span class="row-title"><strong>קבוצת הפייסבוק</strong></span><span class="small muted">שאלות, משחקים ושיחה</span></a></li>
+    <li><a href={FACEBOOK_PAGE_URL} rel="noopener"><span class="row-title"><strong>עמוד הפייסבוק</strong></span><span class="small muted">עדכונים מהאתר</span></a></li>
   </ul>
 
   <h2 id="play">איפה משחקים</h2>

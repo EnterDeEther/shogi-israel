@@ -2,7 +2,7 @@
 // the share card (public/og/<slug>.png, made by `npm run og` from src/lib/og-cards.ts) and the JSON-LD.
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { INSTAGRAM_URL } from './nav';
+import { FACEBOOK_PAGE_URL, INSTAGRAM_URL } from './nav';
 import { LISHOGI_TEAM } from './live';
 import { FAQ, plainAnswer } from './shogi-faq';
 
@@ -20,11 +20,11 @@ const org = {
   name: NAME,
   alternateName: 'Shogi Israel',
   url: `${SITE}/`,
-  logo: `${SITE}/favicon-192.png`,
+  logo: `${SITE}/logo-512.png`,
   description: 'הקהילה הישראלית של השוגי, השחמט היפני: שיעורים, בעיות מט ומשחק נגד המחשב, בעברית ובחינם.',
   areaServed: { '@type': 'Country', name: 'Israel' },
   knowsAbout: ['שוגי', 'Shogi', 'Japanese chess', 'Tsume shogi'],
-  sameAs: [INSTAGRAM_URL, LISHOGI_TEAM],
+  sameAs: [INSTAGRAM_URL, FACEBOOK_PAGE_URL, LISHOGI_TEAM],
 };
 
 // The game itself, so search engines and AI tools tie our pages to the right "shogi".

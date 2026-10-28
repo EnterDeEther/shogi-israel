@@ -18,7 +18,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "test": "bun test test/",
-    "og": "node scripts/og/make.mjs"
+    "og": "node scripts/og/make.mjs",
+    "logo": "node scripts/logo/make.mjs"
   },
   "engines": {
     "node": "24.x"
