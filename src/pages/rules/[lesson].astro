@@ -42,6 +42,7 @@ const practice = (PRACTICE[stub.slug] ?? []).filter((p) => learnPages.has(p.stag
 <Base
   title={entry ? entry.data.title : `שיעור ${stub.n}: ${stub.title}`}
   description={entry ? entry.data.description : `שיעור ${stub.n} בחוקים הבסיסיים של שוגי ישראל. השיעור בכתיבה.`}
+  tabTitle={entry ? `חוקי השוגי, ${entry.data.title}` : undefined}
   noindex={!entry}
 >
   <div class="wrap lesson" data-lesson={stub.slug}>

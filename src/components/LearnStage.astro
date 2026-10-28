@@ -4,15 +4,59 @@
 import '../styles/shogiground.css';
 import '../styles/learn.css';
 import { pageExists } from '../lib/live';
+import { categories, stages } from '../learn/categories';
+import { i18n } from '../learn/i18n';
+import { stageSlug, stageUrl } from '../learn/urls';
 
 interface Props {
   stage?: string;
 }
 const { stage = '' } = Astro.props;
+
+// The island draws everything with JavaScript. Until it does (and for readers that never run it: search engines,
+// AI crawlers), the page carries the same text as HTML: the stage's heading, or the map as a list of links. The
+// island replaces it when it mounts. Under the board, "על השלב הזה" keeps the stage's intro and exercises for everyone.
+const current = stage ? stages.find((s) => stageSlug(s.key) === stage) : undefined;
+const LEVEL_KEY = { beginner: 'il_courseBeginner', intermediate: 'il_courseIntermediate', advanced: 'il_courseAdvanced' } as const;
+const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+/** Same markup as the island's rich() (src/learn/view.ts): **bold** for a new term, moves like P-76 kept left-to-right. */
+const rich = (text: string) =>
+  text.split(/(\*\*[^*]+\*\*|\+?[KRBGSNLP](?:\d\d)?[-x*]\d\d\+?)/).map((part, i) =>
+    i % 2 === 0 ? esc(part) : part.startsWith('**') ? `<strong>${esc(part.slice(2, -2))}</strong>` : `<bdi dir="ltr">${esc(part)}</bdi>`).join('');
 ---
 <section class="learn-island" data-learn data-stage={stage} data-has-play={pageExists('/play/') ? '' : undefined} data-has-account={pageExists('/account/') ? '' : undefined} data-has-lishogi-guide={pageExists('/lishogi/') ? '' : undefined} data-has-tsume={pageExists('/tsume/') ? '' : undefined} aria-label="שיעור אינטראקטיבי">
+  {current ? <h1 class="visually-hidden">{current.title}</h1> : (
+    <div class="visually-hidden">
+      <h1>{i18n('learnShogi')}</h1>
+      <p>{i18n('byPlaying')}</p>
+      {categories.map((c, i) => (
+        <section>
+          {c.level !== categories[i - 1]?.level && <p>{i18n('il_courseLevelNote')}: {i18n(LEVEL_KEY[c.level])}</p>}
+          <h2>{c.name}</h2>
+          <ul>{c.stages.map((s) => <li><a href={stageUrl(s.key)}>{s.title}</a>: {s.subtitle.replace(/\*\*/g, '')}</li>)}</ul>
+        </section>
+      ))}
+    </div>
+  )}
   <noscript><p>השיעור האינטראקטיבי צריך JavaScript. אפשר ללמוד את אותו חומר בשיעורי <a href="/rules/">החוקים הבסיסיים</a>.</p></noscript>
 </section>
+{current && (
+  <details class="stage-about">
+    <summary>על השלב הזה</summary>
+    <p class="stage-sub" set:html={rich(current.subtitle)} />
+    <p set:html={rich(current.intro)} />
+    <h2>התרגילים</h2>
+    <ol>
+      {current.levels.map((l) => (
+        <li>
+          <span set:html={rich(l.goal)} />
+          {l.recap && <p class="small muted" set:html={rich(l.recap)} />}
+          {l.why && <ul class="small muted">{l.why.map((w) => <li set:html={rich(w)} />)}</ul>}
+        </li>
+      ))}
+    </ol>
+  </details>
+)}
 <p class="small muted learn-credit">
   מערכת השיעורים מבוססת על הקוד ועל מבנה הלימוד של <a href="https://lishogi.org/learn" rel="noopener">Lishogi</a> (רישיון AGPL-3.0). הטקסט בעברית שלנו.{' '}
   <a href="https://github.com/EnterDeEther/shogi-israel/tree/main/src/learn" rel="noopener">קוד המקור</a>
@@ -25,4 +69,14 @@ const { stage = '' } = Astro.props;
 
 <style>
   .learn-credit { margin: 4px 0 0; max-width: 680px; line-height: 1.6; }
+  .stage-about { margin: 16px 0 0; max-width: 680px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .stage-about summary { cursor: pointer; padding: 12px 0; font-weight: 500; color: var(--muted); font-size: 15px; }
+  .stage-about p, .stage-about li { color: var(--ink-2); line-height: 1.7; }
+  .stage-about h2 { font-size: 18px; margin: 16px 0 6px; }
+  .stage-about ol { padding-inline-start: 22px; margin: 0 0 14px; }
+  .stage-about ol > li { margin-bottom: 8px; }
+  .stage-about li p, .stage-about li ul { margin: 2px 0 0; }
+  .stage-about li ul { padding-inline-start: 18px; }
+  .stage-sub { font-weight: 500; color: var(--ink) !important; }
+  .stage-about :global(bdi) { white-space: nowrap; }
 </style>

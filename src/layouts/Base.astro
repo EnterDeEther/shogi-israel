@@ -13,10 +13,12 @@ interface Props {
   description: string;
   ogImage?: string;
   noindex?: boolean;
+  /** The browser-tab and search-result title, when it should say more than the page's name (e.g. "חוקי השוגי, …"). */
+  tabTitle?: string;
 }
 
-const { title, description, ogImage = ogImageFor(Astro.url.pathname), noindex = false } = Astro.props;
-const fullTitle = title === 'שוגי ישראל' ? 'שוגי ישראל · השחמט היפני, בעברית' : `${title} · שוגי ישראל`;
+const { title, description, ogImage = ogImageFor(Astro.url.pathname), noindex = false, tabTitle } = Astro.props;
+const fullTitle = title === 'שוגי ישראל' ? 'שוגי ישראל · השחמט היפני, בעברית' : `${tabTitle ?? title} · שוגי ישראל`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogUrl = new URL(ogImage, Astro.site);
 const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description);

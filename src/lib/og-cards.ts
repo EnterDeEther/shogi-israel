@@ -140,6 +140,10 @@ export function ogCards(): OgCard[] {
       sfen: stageSfen('openings', categories.find((c) => c.key === 'openings')!.stages[1].levels),
     },
     {
+      path: '/what-is-shogi/', seal: '棋', eyebrow: 'השחמט היפני', title: 'מה זה שוגי?',
+      sub: 'לוח 9 על 9, 20 כלים לכל צד, וכלי שלכדת עובר לצד שלך. התשובות הקצרות, בעברית.', sfen: START,
+    },
+    {
       path: '/chess/', seal: '将', eyebrow: 'לשחקני שחמט', title: 'יודע שחמט? חצי מהשוגי כבר אצלך',
       sub: 'מה מוכר, מה שונה, ואיך מגיעים למשחק ראשון תוך שעה, ישר מהטלפון.', sfen: START,
     },
