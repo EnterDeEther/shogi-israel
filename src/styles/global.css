@@ -16,8 +16,9 @@
   --kaya-zone: #E2C285;
   --grid: #5C4630;
   --piece-line: #7A5C3A;
-  --piece: #F7E7C4;
-  --piece-gote: #DCC08A;
+  /* your pieces (sente) are the darker face, the opponent's the lighter one (Dean, 28 Oct 2026) */
+  --piece: #DCC08A;
+  --piece-gote: #F7E7C4;
   --piece-ink: #1C1B19;
   --focus: #B8361F;
   --piece-seal: #B8361F;
@@ -57,6 +58,9 @@
   --f-display: 'Frank Ruhl Libre Variable', 'Frank Ruhl Libre', 'Noto Serif Hebrew', serif;
   --f-body: 'Heebo Variable', 'Heebo', 'Assistant', system-ui, sans-serif;
   --f-kanji: 'Shippori Mincho', 'Noto Serif JP', serif;
+  /* the Hebrew letters on the pieces: one of three fonts, picked in the settings (html[data-hfont], lib/piece-set.ts) */
+  --f-piece: 'Noto Serif Hebrew', 'Frank Ruhl Libre Variable', serif;
+  --fw-piece: 800;
 
   --page: 1120px;
   --text: 680px;
@@ -146,6 +150,13 @@
   --shadow-board: 0 12px 28px -12px rgba(0, 0, 0, 0.7);
   color-scheme: dark;
 }
+html[data-hfont="suez"] { --f-piece: 'Suez One', 'Frank Ruhl Libre Variable', serif; --fw-piece: 400; }
+html[data-hfont="secular"] { --f-piece: 'Secular One', 'Heebo Variable', sans-serif; --fw-piece: 400; }
+/* the Hebrew-font switch (HebrewFontSwitch.astro, learn/view.ts): each choice in its own font; gone while the pieces aren't Hebrew */
+[data-hfont-set="noto"] { font-family: 'Noto Serif Hebrew', serif; font-weight: 800; }
+[data-hfont-set="suez"] { font-family: 'Suez One', serif; font-weight: 400; }
+[data-hfont-set="secular"] { font-family: 'Secular One', sans-serif; font-weight: 400; }
+html:is([data-pieces="letters"], [data-pieces="kanji"]) .hfont-row { display: none; }
 
 *, *::before, *::after { box-sizing: border-box; }
 

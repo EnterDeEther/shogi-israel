@@ -14,7 +14,7 @@ import { chessNote, hasChessText, isChessRoute, setRoute, stageText } from './ro
 import { stageUrl } from './urls';
 import { average } from './util';
 import { courseNext } from '../lib/next-step';
-import { currentPieceSet } from '../lib/piece-set';
+import { currentPieceSet, currentHebrewFont, HEBREW_FONTS } from '../lib/piece-set';
 
 // Same list and random pick as lila's views/congrats.ts
 const congratsKeys = [
@@ -768,6 +768,14 @@ export function pieceSetSwitch(): HTMLElement {
     el('button', { type: 'button', 'data-pieces-set': 'hebrew', 'aria-pressed': String(set === 'hebrew') }, i18n('il_hebrew')),
     el('button', { type: 'button', 'data-pieces-set': 'letters', 'aria-pressed': String(set === 'letters') }, i18n('il_letters')),
     el('button', { type: 'button', 'data-pieces-set': 'kanji', 'aria-pressed': String(set === 'kanji') }, i18n('il_kanji')),
+  );
+}
+
+// The font of the Hebrew letters on the pieces, for the cog-wheel settings (same buttons as HebrewFontSwitch.astro).
+export function hebrewFontSwitch(): HTMLElement {
+  const font = currentHebrewFont();
+  return el('div', { class: 'seg hfont-switch', role: 'group', 'aria-label': i18n('il_hebrewFont') },
+    ...HEBREW_FONTS.map((f) => el('button', { type: 'button', 'data-hfont-set': f.id, 'aria-pressed': String(f.id === font) }, f.label)),
   );
 }
 

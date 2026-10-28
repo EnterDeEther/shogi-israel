@@ -83,34 +83,36 @@
 :is(.learn, .play) piece::before { inset: 4% 8% 3%; background: var(--piece-line); }
 :is(.learn, .play) piece::after {
   inset: calc(4% + 1.5px) calc(8% + 1.5px) calc(3% + 1.5px);
-  background: var(--piece);
+  background-color: var(--piece);
+  /* the move arrows on the inner edges (styles/piece-arrows.css) */
+  background-image: var(--arrows, none); background-size: 100% 100%; background-repeat: no-repeat;
   content: var(--h);
   display: flex; align-items: center; justify-content: center;
   padding-top: 16%;
   color: var(--piece-ink);
-  font: 800 clamp(13px, 4.4vw, 22px)/1 var(--f-body);
+  font: var(--fw-piece) clamp(13px, 4.4vw, 22px)/1 var(--f-piece);
   letter-spacing: -0.5px;
   direction: rtl; unicode-bidi: isolate; /* Hebrew reads "כ+" with the + on the left */
 }
 /* pieces on the board are drawn at 2x and scaled down by shogiground: double the type there
    (not in the promotion picker, which draws at 1x) */
 :is(.learn, .play) sg-pieces piece::after, :is(.learn, .play) piece.dragging::after { font-size: clamp(26px, 8.8vw, 44px); }
-html[data-pieces="letters"] :is(.learn, .play) piece::after { content: var(--l); direction: ltr; /* "+S" never flips */ }
+html[data-pieces="letters"] :is(.learn, .play) piece::after { content: var(--l); direction: ltr; /* "+S" never flips */ font-family: var(--f-body); font-weight: 800; }
 html[data-pieces="kanji"] :is(.learn, .play) piece::after { content: var(--k); font-family: var(--f-kanji); font-weight: 800; }
 /* Hebrew set: the bishop's two letters (רץ) and the promoted "כ+" are set a little smaller; the king gets a crown above its מ */
 html:not([data-pieces="letters"]):not([data-pieces="kanji"]) :is(.learn, .play) piece:is(.bishop, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { font-size: clamp(11px, 3.8vw, 19px); }
 html:not([data-pieces="letters"]):not([data-pieces="kanji"]) :is(.learn, .play) sg-pieces piece:is(.bishop, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { font-size: clamp(22px, 7.6vw, 38px); }
 html:not([data-pieces="letters"]):not([data-pieces="kanji"]) :is(.learn, .play) piece.king::after {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 12'%3E%3Cpath fill='%231C1B19' d='M1 3.2 5.6 7 10 .8 14.4 7 19 3.2 17.2 11.2H2.8Z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: center 24%; background-size: 42% auto;
-  padding-top: 46%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 12'%3E%3Cpath fill='%231C1B19' d='M1 3.2 5.6 7 10 .8 14.4 7 19 3.2 17.2 11.2H2.8Z'/%3E%3C/svg%3E"), var(--arrows, none);
+  background-repeat: no-repeat; background-position: center 30%, center; background-size: 36% auto, 100% 100%;
+  padding-top: 50%;
 }
 :is(.learn, .play) piece { filter: drop-shadow(0 1px 1px rgba(40, 25, 10, 0.4)); }
 
 /* who owns it: pointing direction. Board orientation is the player's colour (lila behaviour). */
 :is(.learn, .play) .orientation-sente piece.gote::before, :is(.learn, .play) .orientation-sente piece.gote::after,
 :is(.learn, .play) .orientation-gote piece.sente::before, :is(.learn, .play) .orientation-gote piece.sente::after { transform: rotate(180deg); }
-:is(.learn, .play) piece.gote::after { background: var(--piece-gote); }
+:is(.learn, .play) piece.gote::after { background-color: var(--piece-gote); }
 
 :is(.learn, .play) piece.king { --h: 'מ'; --l: 'K'; --k: '王'; }
 :is(.learn, .play) piece.gote.king { --k: '玉'; }
