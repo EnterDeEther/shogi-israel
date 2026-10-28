@@ -17,7 +17,7 @@ export interface Card {
 import { g } from './gender';
 
 const SIZE = 1080;
-const C = { washi: '#F6F1E7', washi2: '#EFE7D7', ink: '#1C1B19', ink2: '#4A463F', seal: '#B8361F', white: '#FFFFFF' };
+const C = { washi: '#F6F1E7', washi2: '#EFE7D7', ink: '#1C1B19', ink2: '#4A463F', seal: '#B8361F' };
 const F = {
   display: "'Frank Ruhl Libre Variable', 'Frank Ruhl Libre', 'Noto Serif Hebrew', serif",
   body: "'Heebo Variable', 'Heebo', system-ui, sans-serif",
@@ -52,8 +52,14 @@ export async function drawCard(card: Card): Promise<HTMLCanvasElement> {
   await Promise.all([
     document.fonts?.load(`900 92px ${F.display}`, card.title),
     document.fonts?.load(`700 40px ${F.body}`, 'שוגי ישראל'),
-    document.fonts?.load(`700 64px ${F.kanji}`, `将棋${card.kanji ?? ''}`),
+    card.kanji && document.fonts?.load(`700 64px ${F.kanji}`, card.kanji),
   ]).catch(() => undefined);
+  const logo = await new Promise<HTMLImageElement | null>((res) => {
+    const img = new Image();
+    img.onload = () => res(img);
+    img.onerror = () => res(null);
+    img.src = '/logo-512.png';
+  });
   const cv = document.createElement('canvas');
   cv.width = cv.height = SIZE;
   const ctx = cv.getContext('2d')!;
@@ -73,21 +79,12 @@ export async function drawCard(card: Card): Promise<HTMLCanvasElement> {
     ctx.fillText(card.kanji, SIZE / 2, SIZE / 2 + 20);
   }
 
-  // the logo: a red disc with 将棋 over ישראל
+  // the logo: the red piece with 将 over ישראל
+  if (logo) ctx.drawImage(logo, SIZE / 2 - 95, 105, 190, 190);
   const cx = SIZE / 2;
-  const cy = 200;
-  ctx.fillStyle = C.seal;
-  ctx.beginPath();
-  ctx.arc(cx, cy, 82, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = C.white;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
-  ctx.font = `700 64px ${F.kanji}`;
-  ctx.fillText('将棋', cx, cy + 10);
   ctx.direction = 'rtl';
-  ctx.font = `700 30px ${F.body}`;
-  ctx.fillText('ישראל', cx, cy + 50);
 
   // the title and the line under it
   ctx.fillStyle = C.ink;

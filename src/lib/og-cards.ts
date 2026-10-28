@@ -15,7 +15,6 @@ import mate7 from '../tsume/data/mate7.json';
 
 export interface OgCard {
   path: string; // the page, e.g. /rules/03-promotion/
-  seal: string; // one kanji in the red seal
   eyebrow?: string;
   title: string;
   sub: string;
@@ -30,15 +29,15 @@ export const ogSlug = (path: string): string => path.replace(/^\/+|\/+$/g, '').r
 const START = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1';
 const plain = (s: string) => s.replace(/\*\*/g, '').replace(/\s+/g, ' ').trim();
 
-const LESSONS: Record<string, Pick<OgCard, 'seal' | 'sfen' | 'highlight' | 'zones' | 'kanji'>> = {
-  '01-board-pieces-setup': { seal: '盤', sfen: START },
-  '02-how-pieces-move': { seal: '動', sfen: '9/9/9/9/4K4/9/9/9/9 b - 1', highlight: '44,54,64,45,65,46,56,66' },
-  '03-promotion': { seal: '成', sfen: '9/9/9/4S4/9/9/9/9/9 b - 1', highlight: '43,53,63', zones: true },
-  '04-drops': { seal: '打', sfen: '9/9/3r1b3/9/9/9/9/9/9 b N 1', highlight: '55' },
-  '05-check-mate': { seal: '詰', sfen: '4k4/9/4P4/9/9/9/9/9/9 b G 1', highlight: '52' },
-  '06-illegal-moves-endings': { seal: '反', sfen: '4r4/9/9/9/9/9/9/4G4/4K4 b - 1', highlight: '47,67,48,68' },
-  '07-reading-pieces': { seal: '字', sfen: '4k4/9/1r2G1b2/9/2S3s2/9/1B2g1R2/9/4K4 b - 1', kanji: true },
-  '08-reading-notation': { seal: '譜', sfen: 'lnsgkgsnl/1r5b1/pppppp1pp/6p2/9/2P6/PP1PPPPPP/1B5R1/LNSGKGSNL b - 3', highlight: '76,34' },
+const LESSONS: Record<string, Pick<OgCard, 'sfen' | 'highlight' | 'zones' | 'kanji'>> = {
+  '01-board-pieces-setup': { sfen: START },
+  '02-how-pieces-move': { sfen: '9/9/9/9/4K4/9/9/9/9 b - 1', highlight: '44,54,64,45,65,46,56,66' },
+  '03-promotion': { sfen: '9/9/9/4S4/9/9/9/9/9 b - 1', highlight: '43,53,63', zones: true },
+  '04-drops': { sfen: '9/9/3r1b3/9/9/9/9/9/9 b N 1', highlight: '55' },
+  '05-check-mate': { sfen: '4k4/9/4P4/9/9/9/9/9/9 b G 1', highlight: '52' },
+  '06-illegal-moves-endings': { sfen: '4r4/9/9/9/9/9/9/4G4/4K4 b - 1', highlight: '47,67,48,68' },
+  '07-reading-pieces': { sfen: '4k4/9/1r2G1b2/9/2S3s2/9/1B2g1R2/9/4K4 b - 1', kanji: true },
+  '08-reading-notation': { sfen: 'lnsgkgsnl/1r5b1/pppppp1pp/6p2/9/2P6/PP1PPPPPP/1B5R1/LNSGKGSNL b - 3', highlight: '76,34' },
 };
 const LESSON_SUB: Record<string, string> = {
   '01-board-pieces-setup': '81 משבצות, 40 כלים בצבע אחד, ומי מתחיל. כל מה שצריך לפני המהלך הראשון.',
@@ -51,9 +50,6 @@ const LESSON_SUB: Record<string, string> = {
   '08-reading-notation': 'P-76, Bx22+, ▲7六歩: איך כותבים מהלכים, כדי לקרוא ספרים, בעיות ומשחקים.',
 };
 
-const CATEGORY_SEAL: Record<string, string> = {
-  theIntroduction: '入', shogiPieces: '駒', fundamentals: '基', advanced: '上', openings: '序', castles: '囲', strategy: '戦',
-};
 const LINE_CATEGORIES = new Set(['openings', 'castles', 'strategy']);
 
 /** The board a stage card shows: where an opening, castle or strategy lesson ends; otherwise the first exercise. */
@@ -77,7 +73,7 @@ export function ogCards(): OgCard[] {
   const stages = categories.flatMap((c) => c.stages);
 
   cards.push({
-    path: '/rules/', seal: '則', eyebrow: 'קורס חינמי בעברית', title: 'חוקים בסיסיים',
+    path: '/rules/', eyebrow: 'קורס חינמי בעברית', title: 'חוקים בסיסיים',
     sub: `${RULES_COURSE.length} שיעורים קצרים ואינטראקטיביים, מהלוח הריק ועד מט. בלי הרשמה.`, sfen: START,
   });
   for (const l of RULES_COURSE) {
@@ -89,19 +85,19 @@ export function ogCards(): OgCard[] {
 
   const castles = categories.find((c) => c.key === 'castles')!;
   cards.push({
-    path: '/learn/', seal: '学', eyebrow: 'לומדים תוך כדי משחק', title: 'שיעורים אינטראקטיביים',
+    path: '/learn/', eyebrow: 'לומדים תוך כדי משחק', title: 'שיעורים אינטראקטיביים',
     sub: `${stages.length} תרגילים קצרים על הלוח: הכלים, יסודות, פתיחות, מבצרים ואסטרטגיה.`,
     sfen: stageSfen('strategy', categories.find((c) => c.key === 'strategy')!.stages[0].levels),
   });
   cards.push({
-    path: '/learn/guide/', seal: '局', eyebrow: 'פתיחה · אמצע המשחק · סוף המשחק', title: 'פתיחות, מבצרים ואסטרטגיה',
+    path: '/learn/guide/', eyebrow: 'פתיחה · אמצע המשחק · סוף המשחק', title: 'פתיחות, מבצרים ואסטרטגיה',
     sub: 'איך משחק שוגי בנוי מההתחלה ועד ההתקפה, ומה כל שלב צריך.',
     sfen: stageSfen('castles', castles.stages[castles.stages.length - 1].levels),
   });
   for (const c of categories) {
     for (const s of c.stages) {
       cards.push({
-        path: `/learn/${stageSlug(s.key)}/`, seal: CATEGORY_SEAL[c.key] ?? '学', eyebrow: `שיעור אינטראקטיבי · ${c.name}`,
+        path: `/learn/${stageSlug(s.key)}/`, eyebrow: `שיעור אינטראקטיבי · ${c.name}`,
         title: plain(s.title), sub: plain(s.subtitle), sfen: stageSfen(c.key, s.levels),
       });
     }
@@ -109,64 +105,64 @@ export function ogCards(): OgCard[] {
 
   const total = LENGTHS.reduce((sum, n) => sum + PUZZLES[n].length, 0);
   cards.push({
-    path: '/tsume/', seal: '詰', eyebrow: 'צומה', title: 'בעיות מט',
+    path: '/tsume/', eyebrow: 'צומה', title: 'בעיות מט',
     sub: `${total.toLocaleString('he-IL')} בעיות, ממהלך אחד ועד 7. ⟦אתה|את⟧ ⟦פותר|פותרת⟧ על הלוח, עם משוב אחרי כל מהלך.`, sfen: tsumeSfen(3),
   });
   for (const n of LENGTHS) {
     cards.push({
-      path: `/tsume/${n}/`, seal: '詰', eyebrow: `בעיות מט · ${PUZZLES[n].length.toLocaleString('he-IL')} בעיות`,
+      path: `/tsume/${n}/`, eyebrow: `בעיות מט · ${PUZZLES[n].length.toLocaleString('he-IL')} בעיות`,
       title: LENGTH_INFO[n].title, sub: `${LENGTH_INFO[n].sub} פותרים על הלוח, עם רמז ופתרון מלא.`, sfen: tsumeSfen(n),
     });
   }
 
   cards.push(
     {
-      path: '/try/', seal: '局', eyebrow: 'משחק אחד · מהלך אחרי מהלך', title: 'איך נראה משחק שוגי?',
+      path: '/try/', eyebrow: 'משחק אחד · מהלך אחרי מהלך', title: 'איך נראה משחק שוגי?',
       sub: `משחק שלם ב־${FIRST_GAME.length} מהלכים, מהפתיחה ועד המט. ⟦לחץ|לחצי⟧ על כל מהלך ⟦וקבל|וקבלי⟧ הסבר פשוט. בלי הרשמה.`,
       sfen: firstGamePlies().at(-2)!.sfen,
     },
     {
-      path: '/try/pieces/', seal: '試', eyebrow: 'שלוש דקות · שלושה כלים', title: 'עכשיו ⟦תנסה|תנסי⟧ בעצמך',
+      path: '/try/pieces/', eyebrow: 'שלוש דקות · שלושה כלים', title: 'עכשיו ⟦תנסה|תנסי⟧ בעצמך',
       sub: 'צריח, רץ ורגלי: לכידה אחת עם כל כלי. בשוגי כלי שלכדת לא נעלם, הוא נשאר ביד שלך.',
       sfen: '9/4p4/9/9/9/9/4R4/9/9 b - 1', highlight: '52',
     },
     {
-      path: '/play/', seal: '対', eyebrow: '⟦שחק|שחקי⟧ עכשיו', title: 'משחק נגד המחשב',
+      path: '/play/', eyebrow: '⟦שחק|שחקי⟧ עכשיו', title: 'משחק נגד המחשב',
       sub: 'עשר רמות, מהצעד הראשון ועד מנוע חזק. החזרת מהלך, שעון, ובלי הרשמה.', sfen: START,
     },
     {
-      path: '/course/', seal: '道', eyebrow: 'מאיפה מתחילים?', title: 'מסלול לימוד אישי',
+      path: '/course/', eyebrow: 'מאיפה מתחילים?', title: 'מסלול לימוד אישי',
       sub: '⟦ענה|עני⟧ על שאלה אחת ⟦וקבל|וקבלי⟧ את הצעד הבא: מהחוקים, דרך פתיחה ואמצע המשחק, ועד בעיות מט.',
       sfen: stageSfen('openings', categories.find((c) => c.key === 'openings')!.stages[1].levels),
     },
     {
-      path: '/what-is-shogi/', seal: '棋', eyebrow: 'השחמט היפני', title: 'מה זה שוגי?',
+      path: '/what-is-shogi/', eyebrow: 'השחמט היפני', title: 'מה זה שוגי?',
       sub: 'לוח 9 על 9, 20 כלים לכל צד, וכלי שלכדת עובר לצד שלך. התשובות הקצרות, בעברית.', sfen: START,
     },
     {
-      path: '/chess/', seal: '将', eyebrow: 'לשחקני שחמט', title: 'יודע שחמט? חצי מהשוגי כבר אצלך',
+      path: '/chess/', eyebrow: 'לשחקני שחמט', title: 'יודע שחמט? חצי מהשוגי כבר אצלך',
       sub: 'מה מוכר, מה שונה, ואיך מגיעים למשחק ראשון תוך שעה, ישר מהטלפון.', sfen: START,
     },
     {
-      path: '/history/', seal: '史', eyebrow: 'מאות שנים על לוח אחד', title: 'ההיסטוריה של השוגי',
+      path: '/history/', eyebrow: 'מאות שנים על לוח אחד', title: 'ההיסטוריה של השוגי',
       sub: 'ממשחק הודי עתיק, דרך אלופי השוגון, ועד המחשב שניצח את המייג׳ין.', sfen: START, kanji: true,
     },
     {
-      path: '/ranks/', seal: '段', eyebrow: 'קיו ודאן', title: 'דרגות בשוגי',
+      path: '/ranks/', eyebrow: 'קיו ודאן', title: 'דרגות בשוגי',
       sub: 'איך עובדות דרגות בעולם, איך משיגים דרגה אמיתית, ומה הדרגה שלך במסלול הלימוד.', sfen: START, kanji: true,
     },
     {
-      path: '/clock/', seal: '時', eyebrow: 'שעון בשוגי', title: 'איך משחק על זמן עובד?',
+      path: '/clock/', eyebrow: 'שעון בשוגי', title: 'איך משחק על זמן עובד?',
       sub: 'זמן ראשי, ספירת שניות, תוספת זמן וזמן קבוע, ואיך משחקים המקצוענים.',
       sfen: 'lnsgkgsnl/1r5b1/pppppp1pp/6p2/9/2P6/PP1PPPPPP/1B5R1/LNSGKGSNL b - 3',
     },
     {
-      path: '/kif/', seal: '記', eyebrow: 'רישום משחק', title: 'קובצי KIF',
+      path: '/kif/', eyebrow: 'רישום משחק', title: 'קובצי KIF',
       sub: 'מה זה קובץ KIF, איך קוראים אותו, ואיפה משתמשים בו. עם צופה שעובד בדפדפן.',
       sfen: 'lnsgkgsnl/1r5+B1/pppppp1pp/6p2/9/2P6/PP1PPPPPP/7R1/LNSGKGSNL w B 4', kanji: true,
     },
     {
-      path: '/lishogi/', seal: '網', eyebrow: 'שוגי אונליין', title: 'המדריך לליש׳וגי',
+      path: '/lishogi/', eyebrow: 'שוגי אונליין', title: 'המדריך לליש׳וגי',
       sub: 'פתיחת חשבון, משחק עם חברים, הקבוצה והליגה הישראלית, טורנירים ודירוג.', sfen: START,
     },
   );

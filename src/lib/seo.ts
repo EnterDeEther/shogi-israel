@@ -20,7 +20,7 @@ const org = {
   name: NAME,
   alternateName: 'Shogi Israel',
   url: `${SITE}/`,
-  logo: `${SITE}/favicon-192.png`,
+  logo: `${SITE}/logo-512.png`,
   description: 'הקהילה הישראלית של השוגי, השחמט היפני: שיעורים, בעיות מט ומשחק נגד המחשב, בעברית ובחינם.',
   areaServed: { '@type': 'Country', name: 'Israel' },
   knowsAbout: ['שוגי', 'Shogi', 'Japanese chess', 'Tsume shogi'],
