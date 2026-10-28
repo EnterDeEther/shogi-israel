@@ -4,7 +4,7 @@ import { initialSfen, parseSfen } from 'shogiops/sfen';
 import { parseSquareName, parseUsi } from 'shogiops/util';
 import { categories } from '../src/learn/categories';
 import { RULES_COURSE } from '../src/lib/course';
-import { ALL_STEPS, CURRICULUM, LEVELS, isKnown, nextStep, pathProgress, placeFrom, placeLabel, stepHref, stepState, stepsFor, unitProgress } from '../src/lib/curriculum';
+import { ALL_STEPS, CHESS_CURRICULUM, CURRICULUM, LEVELS, curriculumFor, isKnown, isOptional, nextStep, pathProgress, placeFrom, placeLabel, stepHref, stepState, stepsFor, unitProgress } from '../src/lib/curriculum';
 import { merge, normalize, type SyncedProgress } from '../src/lib/progress-sync';
 
 const stages = categories.flatMap((c) => c.stages);
@@ -77,16 +77,19 @@ describe('next step', () => {
   test('with no starting point the path is the main one from the start', () => {
     expect(nextStep(prog({}), levelCounts)?.step.id).toBe('learn-introduction');
   });
-  test('a chess player has king, rook and bishop as known, and plays the first game at level 3', () => {
+  test('a chess player gets the chess path: differences first, king, rook and bishop as known, first game at level 3', () => {
     const p = placed('chess', 'beginner', { seen: [] });
+    expect(curriculumFor('chess')).toBe(CHESS_CURRICULUM);
+    expect(nextStep(p, levelCounts)?.step.id).toBe('read-chess-diff');
     for (const id of ['learn-king', 'learn-rook', 'learn-bishop']) expect(isKnown(step(id), p.course)).toBe(true);
+    for (const id of ['learn-king', 'learn-rook', 'learn-bishop']) expect(isKnown(step(id), placed('main', 'beginner').course)).toBe(false);
     expect(isKnown(step('learn-gold'), p.course)).toBe(false);
-    const done = prog({ course: { route: 'chess', start: 'beginner', placedAt: 'x' }, learn: { stages: { introduction: full('introduction') } } });
+    const done = prog({ course: { route: 'chess', start: 'beginner', placedAt: 'x', seen: ['read-chess-diff'] }, learn: { stages: { introduction: full('introduction') } } });
     expect(nextStep(done, levelCounts)?.step.id).toBe('learn-gold');
-    const inter = CURRICULUM.find((u) => u.key === 'intermediate')!;
-    expect(stepsFor(inter, p.course).some((s) => s.id === 'play-first-chess')).toBe(true);
-    expect(stepsFor(inter, p.course).some((s) => s.id === 'play-first')).toBe(false);
-    expect(stepsFor(inter, placed('main', 'beginner').course).some((s) => s.id === 'play-first-chess')).toBe(false);
+    const ids = CHESS_CURRICULUM.flatMap((u) => u.steps.map((s) => s.id));
+    expect(ids).toContain('play-first-chess');
+    expect(ids).not.toContain('play-first');
+    expect(CURRICULUM.flatMap((u) => u.steps.map((s) => s.id))).not.toContain('play-first-chess');
   });
   test('starting at intermediate: the beginner level is known, the path starts with board setup', () => {
     const p = placed('main', 'intermediate');
@@ -127,6 +130,59 @@ describe('next step', () => {
     expect(t.done).toBe(0);
     expect(t.of).toBeGreaterThan(30);
     expect(pathProgress(placed('main', 'advanced'), levelCounts).of).toBeLessThan(t.of);
+  });
+});
+
+describe('the chess players\' path', () => {
+  const chessSteps = CHESS_CURRICULUM.flatMap((u) => u.steps);
+  const chessStages = chessSteps.flatMap((s) => s.learn ?? []);
+  test('a step on both paths is the same lesson under the same id', () => {
+    const mainSteps = CURRICULUM.flatMap((u) => u.steps);
+    for (const s of chessSteps) {
+      const m = mainSteps.find((x) => x.id === s.id);
+      if (!m) continue;
+      for (const k of ['kind', 'learn', 'rules', 'href', 'tsume', 'target', 'play', 'win'] as const) expect(s[k]).toEqual(m[k]);
+    }
+    expect(new Set(chessSteps.map((s) => s.id)).size).toBe(chessSteps.length);
+    expect(new Set(CHESS_CURRICULUM.map((u) => u.key)).size).toBe(CHESS_CURRICULUM.length);
+    for (const u of CHESS_CURRICULUM) expect(CURRICULUM.some((m) => m.key === u.key)).toBe(false); // unit ids are unique on /course/
+  });
+  test('three levels in order; every piece, drops, mate, setup, repetition and piece value are on it', () => {
+    const levels = CHESS_CURRICULUM.map((u) => LEVELS.indexOf(u.level));
+    expect(levels).toEqual([...levels].sort());
+    for (const l of LEVELS) expect(CHESS_CURRICULUM.some((u) => u.level === l)).toBe(true);
+    const beginner = categories.slice(0, 3).flatMap((c) => c.stages.map((st) => st.key));
+    for (const k of [...beginner, 'setup', 'repetition', 'value']) expect(chessStages).toContain(k);
+  });
+  test('nothing is used before it is taught: the new pieces before capture, drops before mate, mate before value', () => {
+    const at = (k: string) => chessStages.indexOf(k);
+    for (const piece of ['king', 'gold', 'silver', 'knight', 'lance', 'bishop', 'rook', 'pawn']) expect(at(piece)).toBeLessThan(at('capture'));
+    expect(at('introduction')).toBeLessThan(at('king'));
+    expect(at('capture')).toBeLessThan(at('drop'));
+    expect(at('drop')).toBeLessThan(at('check1'));
+    expect(at('checkmate1')).toBeLessThan(at('value'));
+    expect(at('value')).toBeLessThan(at('setup'));
+    expect(at('rangingRook')).toBeLessThan(at('rangingCastles'));
+  });
+  test('only for chess players: no beginner board tour, no "how every piece moves" lesson, no level-1 first game', () => {
+    const ids = chessSteps.map((s) => s.id);
+    for (const id of ['try-pieces', 'rules-01', 'rules-02', 'play-first']) expect(ids).not.toContain(id);
+  });
+  test('the known pieces are optional there, and progress carries over between the paths', () => {
+    const c = placed('chess', 'beginner');
+    expect(isOptional(step('learn-king'), c.course)).toBe(true);
+    expect(isOptional(step('learn-king'), placed('main', 'beginner').course)).toBe(false);
+    // piece value is advanced on the main path and beginner on the chess path: starting at intermediate makes it known only there
+    expect(isKnown(step('learn-value'), placed('chess', 'intermediate').course)).toBe(true);
+    expect(isKnown(step('learn-value'), placed('main', 'intermediate').course)).toBe(false);
+    const both = (route: string) => prog({ course: { route, start: 'beginner', placedAt: 'x' }, learn: { stages: { introduction: full('introduction'), gold: full('gold') } } });
+    expect(stepState(step('learn-gold'), both('chess'), levelCounts)).toBe('done');
+    expect(stepState(step('learn-gold'), both('main'), levelCounts)).toBe('done');
+    expect(pathProgress(placed('chess', 'beginner'), levelCounts).of).toBeLessThan(pathProgress(placed('main', 'beginner'), levelCounts).of);
+  });
+  test('starting at intermediate on the chess path begins with board setup', () => {
+    expect(nextStep(placed('chess', 'intermediate'), levelCounts)?.step.id).toBe('learn-setup');
+    expect(nextStep(placed('chess', 'advanced'), levelCounts)?.step.id).toBe('read-strategy');
   });
 });
 

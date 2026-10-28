@@ -6,7 +6,7 @@
 // Each note has a stable id, so "read" survives reloads and follows the account (SyncedProgress.inbox).
 // Pure functions (tested in test/inbox.test.ts); src/lib/inbox-ui.ts draws the bell and the list.
 import { stageUrl } from '../learn/urls';
-import { CURRICULUM, nextStep, stageDone, stepHref, KIND_LABEL } from './curriculum';
+import { curriculumFor, nextStep, stageDone, stepHref, KIND_LABEL } from './curriculum';
 import type { InboxGroup, SyncedProgress } from './progress-sync';
 import { rankFor, xpBreakdown } from './xp';
 import { weekIndex, weekPuzzle, weekStreak, weeksHe } from '../tsume/week';
@@ -128,7 +128,7 @@ export function buildInbox(p: SyncedProgress, ctx: InboxContext): InboxNote[] {
 }
 
 function halfDoneStage(p: SyncedProgress, levelCounts: Record<string, number>, skip: string[]) {
-  for (const unit of CURRICULUM) {
+  for (const unit of curriculumFor(p.course.route)) {
     for (const s of unit.steps) {
       for (const key of s.learn ?? []) {
         if (skip.includes(key) || stageDone(key, p, levelCounts)) continue;
