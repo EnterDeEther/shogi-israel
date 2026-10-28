@@ -24,14 +24,14 @@ const PIECE = [[50, 3], [79.7, 21.8], [88.1, 97], [11.9, 97], [20.3, 21.8]];
 const path = (pts) => 'M' + pts.map((p) => p.map((v) => v.toFixed(2)).join(' ')).join('L') + 'Z';
 
 function logo(bg) {
-  const piece = PIECE.map(([x, y]) => [50 + (x - 50) * 0.72, 50 + (y - 50) * 0.72]);
+  const piece = PIECE.map(([x, y]) => [50 + (x - 50) * 0.72, 50 + (y - 50) * 0.72 - 3.5]);
   return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     ${bg ? `<rect width="100" height="100" fill="${bg}"/>` : ''}
     <g ${bg ? 'transform="translate(50 50) scale(.8) translate(-50 -50)"' : ''}>
       <circle cx="50" cy="50" r="50" fill="${C.seal}"/>
       <path d="${path(piece)}" fill="none" stroke="${C.white}" stroke-width="2.4" stroke-linejoin="round"/>
-      <text x="50" y="60" text-anchor="middle" font-family="Shippori Mincho" font-weight="800" font-size="33" fill="${C.white}">将</text>
-      <text x="50" y="77" text-anchor="middle" direction="rtl" font-family="Heebo Variable" font-weight="800" font-size="9.5" fill="${C.white}">ישראל</text>
+      <text x="50" y="56.4" text-anchor="middle" font-family="Shippori Mincho" font-weight="800" font-size="33" fill="${C.white}">将</text>
+      <text x="50" y="74.3" text-anchor="middle" direction="rtl" font-family="Heebo Variable" font-weight="800" font-size="12" fill="${C.white}">ישראל</text>
     </g>
   </svg>`;
 }
