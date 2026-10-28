@@ -38,7 +38,8 @@ export default defineConfig({
     csp: {
       directives: [
         "default-src 'self'",
-        "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+        // only our own Supabase project, not any *.supabase.co, so a script can't send data to someone else's
+        "connect-src 'self' https://idcckcvrjoxwqvwtyccc.supabase.co wss://idcckcvrjoxwqvwtyccc.supabase.co",
         "img-src 'self' data: blob:",
         "font-src 'self' data:",
         "media-src 'self'",

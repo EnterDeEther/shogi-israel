@@ -2,7 +2,7 @@
 // Source: https://github.com/WandererXII/lila/blob/89aea5f6f24c5e941c7cac8434a6e9e1acc15e94/ui/learn/src/stages/setup.ts
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
-// Modified by Shogi Israel (shogi.co.il), 2026-10-27: i18n import points to our Hebrew shim; positions, goals and key names unchanged. Recap per level (level.recap). Brought back for the course redesign (Dean, 2026-10-27), after being left out on 2026-10-24.
+// Modified by Shogi Israel (shogi.co.il), 2026-10-27: i18n import points to our Hebrew shim; positions, goals and key names unchanged. Recap per level (level.recap). Brought back for the course redesign.
 
 import { i18n } from '../i18n';
 import { pieceOn, scenarioFailure, scenarioSuccess } from '../assert';

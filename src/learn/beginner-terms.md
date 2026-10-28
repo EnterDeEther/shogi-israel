@@ -1,6 +1,6 @@
 # Beginner terms: where each one is taught
 
-Rule (Dean, 27 Oct 2026): a newcomer never meets a word, piece or rule before the course teaches it, and nothing assumes chess. This list is the order in which the beginner stages teach each term. `test/beginner-terms.test.ts` checks it on every run: it fails if a term shows up in any text the learner reads before the place listed here.
+Rule: a newcomer never meets a word, piece or rule before the course teaches it, and nothing assumes chess. This list is the order in which the beginner stages teach each term. `test/beginner-terms.test.ts` checks it on every run: it fails if a term shows up in any text the learner reads before the place listed here.
 
 "Where" is the stage and the exercise (תרגיל) number. "Intro" is the screen that opens the stage. The texts are in `src/learn/i18n/he.json`. Stage and category names on the map are labels and are not checked.
 

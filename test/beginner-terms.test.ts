@@ -1,4 +1,4 @@
-// Teach before use (Dean, 27 Oct 2026): a newcomer never meets a word, piece or rule before the beginner
+// Teach before use: a newcomer never meets a word, piece or rule before the beginner
 // stages teach it, and nothing assumes chess. Walks the beginner stages in course order, in the order the
 // learner reads the texts (stage intro, then each level's goal, text and recap, then the stage's closing
 // text), and fails when a term shows up before the place that teaches it. The full list of terms and where

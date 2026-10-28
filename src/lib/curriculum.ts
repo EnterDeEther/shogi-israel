@@ -1,5 +1,5 @@
 // The guided course (/course/, "מסלול לימוד אישי"): one ordered path through everything on the site that teaches.
-// Since the redesign (Dean, 2026-10-27) it follows Lishogi's course map: the same categories in the same order,
+// It follows Lishogi's course map: the same categories in the same order,
 // one stage per step, grouped under the course's three levels (מתחילים, בינוניים, מתקדמים), then our own
 // openings, castles, strategy and tsume. Rule: a learner never meets a word, piece or rule before it's taught.
 // The rules lessons ride along as optional reading next to the stage they explain.
