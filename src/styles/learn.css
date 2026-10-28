@@ -445,6 +445,9 @@ html:not([data-pieces="letters"]):not([data-pieces="kanji"]) :is(.learn, .play) 
 .learn__bubble.unread, .learn__bubble.new { animation: bubble-pulse 1.6s ease-in-out infinite; }
 @keyframes bubble-pulse { 0%, 100% { box-shadow: 0 10px 24px -8px rgba(0, 0, 0, 0.5), 0 0 0 0 rgba(184, 54, 31, 0.45); } 50% { box-shadow: 0 10px 24px -8px rgba(0, 0, 0, 0.5), 0 0 0 12px rgba(184, 54, 31, 0); } }
 @media (prefers-reduced-motion: reduce) { .learn__bubble.unread, .learn__bubble.new { animation: none; } }
+/* under three stars: why, and how to get all three (view.ts praise) */
+.learn__coach .score-why { margin: -2px 0 12px; font: 600 15px/1.55 var(--f-body); }
+.learn__table .result .score-why { margin: 6px 0 0; }
 .learn__coach .how { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 12px; padding: 10px 12px; border-radius: 8px; background: var(--washi-2); }
 .learn__coach .how .icon { color: var(--seal); flex-shrink: 0; margin-top: 2px; }
 .learn__coach .how p { margin: 0; font: 500 14.5px/1.55 var(--f-body); }

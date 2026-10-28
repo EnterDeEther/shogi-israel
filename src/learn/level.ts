@@ -15,8 +15,11 @@ export function createLevel(l: IncompleteLevel, it: number): Level {
 }
 
 // assumes level is completed
+/** Shogi Israel: the player's own moves in this level (the opponent's replies don't count). */
+export const ownMoves = (l: Level, usiCList: UsiWithColor[]): number => usiCList.filter(uc => uc.color === l.color).length;
+
 export function calcScore(l: Level, usiCList: UsiWithColor[]): Score {
-  const nbMoves = usiCList.filter(uc => uc.color === l.color).length;
+  const nbMoves = ownMoves(l, usiCList);
   if (nbMoves <= l.nbMoves) return 3;
   else if (nbMoves - 1 <= l.nbMoves) return 2;
   else return 1;
