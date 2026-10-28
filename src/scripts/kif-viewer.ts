@@ -9,6 +9,7 @@ import {
   parseKif, readKifFile, westernMove,
 } from '../lib/kif';
 import { playStep, preloadSounds } from '../learn/sound';
+import { scrollWithin } from '../lib/scroll-within';
 
 export function bootKifViewer(root: HTMLElement): void {
   const q = <T extends HTMLElement = HTMLElement>(s: string) => root.querySelector<T>(s)!;
@@ -63,7 +64,7 @@ export function bootKifViewer(root: HTMLElement): void {
     list.querySelectorAll('button').forEach((b, i) => {
       const cur = i + 1 === ply;
       b.toggleAttribute('aria-current', cur);
-      if (cur) b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      if (cur) scrollWithin(list, b);
     });
     if (announce) live.textContent = ply === 0 ? 'עמדת הפתיחה' : `מהלך ${ply}: ${list.children[ply - 1]?.textContent ?? ''}`;
   }

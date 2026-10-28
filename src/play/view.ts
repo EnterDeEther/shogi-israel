@@ -14,6 +14,7 @@ import type { GameEnd } from './game';
 import { engineLabel, getLevel, levels } from './levels';
 import { highestBeaten } from './record';
 import { recordKif } from './record-kif';
+import { scrollWithin } from '../lib/scroll-within';
 
 const SIDE: Record<Color, string> = { sente: 'פותח', gote: 'משיב' };
 const MARK: Record<Color, string> = { sente: '☗', gote: '☖' };
@@ -377,7 +378,7 @@ export function render(ctrl: PlayCtrl, root: HTMLElement, openSettings: () => vo
     const active = box.querySelector<HTMLElement>('.mv.active');
     if (ctrl.live || !active) box.scrollTop = box.scrollHeight;
     else if (movesScroll !== undefined) box.scrollTop = movesScroll;
-    active?.scrollIntoView?.({ block: 'nearest' });
+    if (active) scrollWithin(box, active);
   }
   if (focusedId) root.querySelector<HTMLElement>(`[data-fid="${focusedId}"]`)?.focus({ preventScroll: true });
 }
