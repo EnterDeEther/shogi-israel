@@ -8,6 +8,7 @@ import {
   LISHOGI_IMPORT_URL, type ParsedKif, copyText, downloadKif, endText, gamePositions, kifFileName, makeKif,
   parseKif, readKifFile, westernMove,
 } from '../lib/kif';
+import { playStep, preloadSounds } from '../learn/sound';
 
 export function bootKifViewer(root: HTMLElement): void {
   const q = <T extends HTMLElement = HTMLElement>(s: string) => root.querySelector<T>(s)!;
@@ -30,6 +31,7 @@ export function bootKifViewer(root: HTMLElement): void {
     animation: { enabled: !matchMedia('(prefers-reduced-motion: reduce)').matches },
   });
   ground.attach({ board: sgEl });
+  void preloadSounds();
 
   let game: ParsedKif;
   let positions: Position[] = [];
@@ -41,6 +43,7 @@ export function bootKifViewer(root: HTMLElement): void {
   };
 
   function show(n: number, announce = true) {
+    const was = ply;
     ply = Math.max(0, Math.min(n, positions.length - 1));
     const pos = positions[ply];
     const [board, , hands] = makeSfen(pos).split(' '); // shogiground takes board and hands separately
@@ -51,6 +54,11 @@ export function bootKifViewer(root: HTMLElement): void {
       checks: pos.isCheck(),
       lastDests: md ? ('role' in md ? [makeSquareName(md.to)] : [makeSquareName(md.from), makeSquareName(md.to)]) : [],
     });
+    // one move forward sounds like a move on the board; jumps and steps back stay quiet
+    if (md && ply === was + 1) {
+      const drop = 'role' in md;
+      playStep(drop, !drop && !!positions[ply - 1].board.get(md.to), !drop && !!md.promotion, pos.isCheck());
+    }
     counter.textContent = ply === 0 ? `עמדת הפתיחה · ${game.moves.length} מהלכים` : `מהלך ${ply} מתוך ${game.moves.length}`;
     list.querySelectorAll('button').forEach((b, i) => {
       const cur = i + 1 === ply;

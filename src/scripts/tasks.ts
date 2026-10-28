@@ -1,5 +1,6 @@
 // Lesson tasks: makes the board above a <Task answer="..."> tappable and keyboard-operable,
 // checks the answer, and records lesson completion on this device (and the account, if signed in).
+import { play } from '../learn/sound';
 
 const lessonId = document.querySelector<HTMLElement>('[data-lesson]')?.dataset.lesson ?? '';
 
@@ -105,6 +106,7 @@ function setupBoardTask(task: HTMLElement, answer: string) {
     clearMisses();
     if (matches(answer, sq)) {
       mark(s, 'ok', '✓');
+      play('success');
       say('is-ok', `נכון! משבצת ${sq}.` + (why ? ` ${why}` : ''));
       task.classList.add('done');
       fig.classList.add('revealed');
@@ -114,6 +116,7 @@ function setupBoardTask(task: HTMLElement, answer: string) {
     } else {
       misses++;
       mark(s, 'no', '✗');
+      play('fail');
       say('is-no', `לא. זו משבצת ${sq} (${what}). ⟦נסה|נסי⟧ שוב.` + (hint && misses >= 2 ? ` רמז: ${hint}` : ''));
     }
   };
@@ -150,10 +153,12 @@ function setupChoiceTask(task: HTMLElement, answer: string) {
       if (!fb) return;
       if (b.dataset.choice === answer) {
         fb.textContent = 'נכון! הפותח עושה את המהלך הראשון.';
+        play('success');
         task.classList.add('done');
         markDone();
       } else {
         fb.textContent = 'לא הפעם. מי שפותח את המשחק?';
+        play('fail');
       }
     });
   });

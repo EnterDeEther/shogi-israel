@@ -83,6 +83,10 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
       import '../scripts/gender';
     </script>
     <script>
+      // Sounds on every page (src/learn/sound.ts): unlocks audio on the first tap (phones) and ticks for buttons and menus.
+      import '../learn/sound';
+    </script>
+    <script>
       // Arrived from one of our ads? Keep which one for this tab, so a new account can record it.
       import { rememberAdSource } from '../lib/ad-source';
       rememberAdSource();
