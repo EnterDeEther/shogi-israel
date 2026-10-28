@@ -9,8 +9,9 @@ import { LEVELS, LEVEL_INFO } from '../lib/curriculum';
 import { WEEK_LENGTH } from '../tsume/week';
 import InfoTip from './InfoTip.astro';
 
-interface Props { weekCount: number }
-const { weekCount } = Astro.props;
+// accounts: the account page is live, so a visitor without an account gets the invite under the next step.
+interface Props { weekCount: number; accounts?: boolean }
+const { weekCount, accounts = false } = Astro.props;
 const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
 ---
 <section class="me wrap" data-learner-only data-me data-week-count={weekCount} aria-labelledby="me-h">
@@ -29,6 +30,24 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
           <span class="small"></span>
         </div>
         <a class="btn next-btn" href="/course/" data-next-link data-tour="next"><span data-next-cta>למסלול</span></a>
+
+        {accounts && (
+          <div class="invite" data-signed-out-only data-invite aria-labelledby="invite-h">
+            <p class="invite-head" id="invite-h">כרגע ההתקדמות שלך שמורה רק בדפדפן הזה. עם חשבון בחינם:</p>
+            <ul class="invite-list">
+              <li>ההתקדמות נשמרת בכל מכשיר, בטלפון ובמחשב.</li>
+              <li>מסלול אישי: עונה על שתי שאלות קצרות ⟦ומקבל|ומקבלת⟧ נקודת התחלה שמתאימה לך.</li>
+              <li>הנקודות ודרגת הלימוד שלך נשמרות בחשבון ולא הולכות לאיבוד.</li>
+              <li>אם ⟦תרצה|תרצי⟧, בעיית השבוע במייל, פעם בשבוע לכל היותר.</li>
+            </ul>
+            <p class="invite-note">מה שכבר עשית כאן נכנס לחשבון ונספר. אפשר גם להמשיך בלי חשבון.</p>
+            <div class="invite-actions">
+              <a class="btn invite-btn" href="/account/?mode=signup"><span>⟦פתח|פתחי⟧ חשבון בחינם</span></a>
+              <a class="invite-link" href="/account/?mode=signin">כבר יש לך חשבון? כניסה</a>
+              <button type="button" class="invite-link invite-later" data-invite-later>לא עכשיו</button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
 
@@ -42,7 +61,7 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
       <p class="rank-points" data-rank-points>0 נקודות</p>
       <div class="bar" aria-hidden="true"><span data-rank-bar></span></div>
       <p class="small rank-text" data-rank-text>נקודות נצברות פעם אחת על כל שיעור, בעיה או משחק.</p>
-      <p class="small rank-guest" data-signed-out-only>הנקודות נשמרות רק בדפדפן הזה. <a href="/account/?mode=signup">⟦פתח|פתחי⟧ חשבון בחינם</a>, והן יישמרו בכל מכשיר.</p>
+      <p class="small rank-guest" data-signed-out-only>{accounts ? 'הנקודות נשמרות רק בדפדפן הזה, עד שיש חשבון.' : 'הנקודות נשמרות בדפדפן הזה.'}</p>
       <p class="small"><a href="/ranks/#site">דרגה של לימוד באתר, לא דרגה רשמית</a></p>
     </aside>
   </div>
@@ -229,7 +248,23 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
     } catch { /* keep the plain hello */ }
   }
 
+  // "לא עכשיו" on the account invite: hidden on this device for two weeks, then offered once more
+  const LATER_KEY = 'shogi-il.invite-later';
+  const LATER_MS = 14 * 24 * 60 * 60 * 1000;
+  function invite() {
+    const box = root?.querySelector<HTMLElement>('[data-invite]');
+    if (!box) return;
+    let until = 0;
+    try { until = Number(localStorage.getItem(LATER_KEY)) || 0; } catch { /* no storage: always offered */ }
+    box.hidden = until > Date.now();
+    box.querySelector('[data-invite-later]')?.addEventListener('click', () => {
+      try { localStorage.setItem(LATER_KEY, String(Date.now() + LATER_MS)); } catch { /* fine, it just comes back */ }
+      box.hidden = true;
+    });
+  }
+
   render();
+  invite();
   void hello();
   document.addEventListener('progress-synced', render);
 </script>
@@ -255,6 +290,19 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
   .next-progress .bar { flex: 1; max-width: 280px; background: color-mix(in srgb, var(--washi) 25%, transparent); }
   .next-btn { align-self: stretch; background: var(--washi); color: var(--ink); border-color: var(--washi); margin-top: 4px; }
   .next-btn:hover { background: var(--kaya); color: #1C1B19; border-color: var(--kaya); }
+
+  /* the account invite, for visitors without an account: a quiet part of the same card, under the button */
+  .invite { border-top: 1px solid color-mix(in srgb, var(--washi) 22%, transparent); margin-top: 10px; padding-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .invite[hidden] { display: none; }
+  .invite-head { font-weight: 700; font-size: 16px; line-height: 1.5; }
+  .invite-list { margin: 0; padding-inline-start: 20px; display: flex; flex-direction: column; gap: 4px; font-size: 15.5px; line-height: 1.55; opacity: .9; }
+  .invite-note { font-size: 14px; line-height: 1.5; opacity: .75; }
+  .invite-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 18px; margin-top: 2px; }
+  /* outlined, so "continue" stays the main button of the card */
+  .invite-btn { background: transparent; color: inherit; border-color: color-mix(in srgb, var(--washi) 55%, transparent); }
+  .invite-btn:hover { background: var(--washi); color: var(--ink); border-color: var(--washi); }
+  .invite-link { color: inherit; font: inherit; font-size: 15px; font-weight: 700; background: none; border: 0; padding: 0; min-height: 44px; display: inline-flex; align-items: center; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .invite-later { font-weight: 400; opacity: .75; }
 
   .rank { background: var(--washi-2); border: 1px solid var(--rule); border-radius: 8px; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
   .rank p { margin: 0; }
