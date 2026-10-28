@@ -20,7 +20,7 @@ import { bookMove } from './book';
 import { cancelSearches, getEngine } from './engine';
 import { type GameEnd, Line, START_SFEN } from './game';
 import { engineLabel, getLevel } from './levels';
-import { type ClockSetting, type GameRecord, newGameId, saveFinished } from './record';
+import { type ClockSetting, CURRENT, type GameRecord, newGameId, saveFinished } from './record';
 
 export interface PlaySettings {
   level: number;
@@ -42,7 +42,6 @@ interface Saved {
 }
 
 const SETTINGS = 'play.settings';
-const CURRENT = 'play.current';
 const MIN_REPLY_MS = 350; // a book move or a level-1 reply would otherwise land before the player's own move animates
 
 export const defaultSettings = (): PlaySettings => ({ level: 1, color: 'sente', clock: null });
@@ -494,6 +493,8 @@ export default class PlayCtrl {
       this.clock = saved.clock ? { ...saved.clock, running: undefined, since: undefined } : null;
       this.orientation = saved.orientation ?? saved.record.playerColor;
       this.setupOpen = false;
+      // /play/?new (the header's play button when no game is going on) opens the setup over a finished game
+      if (!this.playing && new URLSearchParams(window.location.search).has('new')) this.setupOpen = true;
       if (this.playing) {
         this.startClock();
         if (this.line.current.turn !== this.playerColor) this.aiMove();

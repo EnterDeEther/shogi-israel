@@ -74,3 +74,22 @@ describe('book', () => {
     expect(bookMove(['1g1f', '1c1d', '9g9f'])).toBeUndefined();
   });
 });
+
+describe('the header play button', () => {
+  // src/learn/storage.ts reads window.localStorage under the shogi-il. prefix
+  const m = new Map<string, string>();
+  (globalThis as { window?: unknown }).window = { localStorage: { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => void m.set(k, v), removeItem: (k: string) => void m.delete(k) } };
+  const save = (record: object) => m.set('shogi-il.play.current', JSON.stringify({ record, clock: null, orientation: 'sente' }));
+  const game = { id: 'a', version: 1, startedAt: '', startSfen: '', moves: ['7g7f', '3c3d'], playerColor: 'sente', level: 3, engine: '', clock: null, takebacks: 0 };
+
+  test('continues a game still being played, and only that', async () => {
+    const { gameInProgress } = await import('../src/play/record');
+    expect(gameInProgress()).toBeNull();
+    save(game);
+    expect(gameInProgress()).toEqual({ moves: 2, level: 3 });
+    save({ ...game, result: { reason: 'mate', winner: 'sente' } });
+    expect(gameInProgress()).toBeNull();
+    m.set('shogi-il.play.current', '{not json');
+    expect(gameInProgress()).toBeNull();
+  });
+});
