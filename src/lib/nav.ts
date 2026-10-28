@@ -34,6 +34,8 @@ export const isSection = (i: NavItem): i is NavSection => 'links' in i;
 
 export const WHATSAPP_URL = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
 export const INSTAGRAM_URL = 'https://www.instagram.com/shogi.israel/';
+export const FACEBOOK_PAGE_URL = 'https://www.facebook.com/shogi.israel';
+export const FACEBOOK_GROUP_URL = 'https://www.facebook.com/share/g/1DXk7iY3wp/';
 export { CONTACT_EMAIL } from './contact';
 
 export const NAV: NavItem[] = [
@@ -94,6 +96,8 @@ export const NAV: NavItem[] = [
       { href: '/community/', label: 'דף הקהילה', hint: 'איפה משחקים ומדברים', icon: 'group' },
       { href: WHATSAPP_URL, label: 'קהילת הוואטסאפ', external: true, icon: 'whatsapp-logo' },
       { href: INSTAGRAM_URL, label: 'אינסטגרם', external: true, icon: 'instagram-logo' },
+      { href: FACEBOOK_GROUP_URL, label: 'קבוצת הפייסבוק', external: true, icon: 'facebook-logo' },
+      { href: FACEBOOK_PAGE_URL, label: 'עמוד הפייסבוק', external: true, icon: 'facebook-logo' },
     ],
   },
   { href: '/about/', label: 'אודות', icon: 'about' },
