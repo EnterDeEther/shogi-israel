@@ -8,6 +8,7 @@ import { categories, nextStage } from './categories';
 import type LearnCtrl from './ctrl';
 import { i18n, i18nFormat } from './i18n';
 import type { CourseLevel, Stage } from './interfaces';
+import { ownMoves } from './level';
 import { READ_MORE } from './read-more';
 import { chessNote, hasChessText, isChessRoute, setRoute, stageText } from './route';
 import { stageUrl } from './urls';
@@ -20,9 +21,19 @@ const congratsKeys = [
   'awesome', 'excellent', 'greatJob', 'perfect', 'outstanding',
   'wayToGo', 'yesYesYes', 'youreGoodAtThis', 'nailedIt', 'rightOn',
 ];
-const congrats = () => i18n(congratsKeys[Math.floor(Math.random() * congratsKeys.length)]);
 // Shogi Israel: the coach redraws often, so its word stays the same for a given level
 const congratsFor = (seed: string) => i18n(congratsKeys[[...seed].reduce((a, c) => a + c.charCodeAt(0), 0) % congratsKeys.length]);
+// Shogi Israel: the praise matches the stars ("מושלם!" with two stars read as a contradiction). Under three
+// stars it says why (more moves than needed) and how to get all three.
+const movesText = (n: number) => (n === 1 ? 'מהלך אחד' : `־${n} מהלכים`);
+function praise(vm: NonNullable<LearnCtrl['vm']>, seed: string): { word: string; why: HTMLElement | null } {
+  const { level, score = 0, usiCList } = vm;
+  if (score >= 3) return { word: congratsFor(seed), why: null };
+  return {
+    word: i18n(score === 2 ? 'il_praiseTwo' : 'il_praiseOne'),
+    why: el('p', { class: 'small score-why' }, i18nFormat('il_fewerMoves', movesText(ownMoves(level, usiCList)), movesText(level.nbMoves))),
+  };
+}
 
 type Child = Node | string | null | undefined | false;
 type Attrs = Record<string, string | boolean | undefined | ((e: Event) => void)>;
@@ -412,9 +423,11 @@ function renderLesson(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go, stageLin
       el('button', { type: 'button', class: 'btn', 'data-fid': 'retry', onclick: go(() => ctrl.retryMove()) }, i18n('retry')),
     );
   } else if (vm.levelState === 'completed') {
+    const p = praise(vm, `${stage.key}${level.id}`);
     status = el('div', { class: 'result completed' },
-      el('strong', {}, congrats()),
+      el('strong', {}, p.word),
       stars(vm.score ?? 0),
+      p.why,
       el('button', { type: 'button', class: 'btn primary', 'data-fid': 'next', onclick: go(() => ctrl.nextLesson()) }, i18n('next')),
       whyList,
     );
@@ -671,9 +684,11 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
       : level.recap
         ? el('div', { class: 'recap' }, el('p', { class: 'eyebrow' }, i18n('il_recapTitle')), el('p', { class: 'lead' }, rich(level.recap)))
         : el('p', { class: 'lead' }, el('span', { class: 'muted' }, i18n('il_doneWith')), ' ', rich(level.goal.replace(/ המהלכים.*$/, '')));
+    const p = praise(vm, `${stage.key}${level.id}`);
     body = [
       lastReply ? reply(lastIdx) : null,
-      el('h2', {}, congratsFor(`${stage.key}${level.id}`), ' ', stars(vm.score ?? 0)),
+      el('h2', {}, p.word, ' ', stars(vm.score ?? 0)),
+      p.why,
       recap,
       el('div', { class: 'buttons' },
         btn(last ? i18n('il_finishStage') : i18n('il_nextLevel'), () => ctrl.nextLesson()),
