@@ -1,6 +1,6 @@
 // Draws the logo and the site icons into public/. Run `npm run logo` after changing the drawing, then commit
 // the images. Needs Playwright's Chromium, like scripts/og/make.mjs.
-//   logo-132.png, logo-512.png   the logo: a red shogi piece with a white inner line, 将 and ישראל (transparent)
+//   logo-132.png, logo-512.png   the logo: a red disc with a white piece-shaped line, 将 and ישראל in it (transparent)
 //   apple-touch-icon.png          the logo on paper, for the phone home screen
 //   favicon-32.png, favicon-192.png  the browser tab: a red disc with a white ring and 将
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
@@ -18,35 +18,20 @@ const css = (p) => pathToFileURL(join(root, 'node_modules', p)).href;
 
 const C = { washi: '#ECE4D4', seal: '#B8361F', white: '#FFFFFF' };
 
-// The piece: the same five-sided shape as the site's own icons (src/lib/icons.ts), drawn on a 100×100 grid.
+// The piece line: the same five-sided shape as the site's own icons (src/lib/icons.ts), drawn on a 100×100 grid.
 const PIECE = [[50, 3], [79.7, 21.8], [88.1, 97], [11.9, 97], [20.3, 21.8]];
 
-/** The polygon moved `d` inward on every side. */
-function inset(pts, d) {
-  const n = pts.length;
-  const lines = pts.map((p, i) => {
-    const q = pts[(i + 1) % n];
-    const dx = q[0] - p[0], dy = q[1] - p[1], len = Math.hypot(dx, dy);
-    const nx = -dy / len, ny = dx / len; // the inside is on this side for a clockwise polygon on a y-down grid
-    return [[p[0] + nx * d, p[1] + ny * d], [q[0] + nx * d, q[1] + ny * d]];
-  });
-  return lines.map((l, i) => {
-    const [a, b] = lines[(i + n - 1) % n], [c, e] = l;
-    const d1 = [b[0] - a[0], b[1] - a[1]], d2 = [e[0] - c[0], e[1] - c[1]];
-    const t = ((c[0] - a[0]) * d2[1] - (c[1] - a[1]) * d2[0]) / (d1[0] * d2[1] - d1[1] * d2[0]);
-    return [a[0] + d1[0] * t, a[1] + d1[1] * t];
-  });
-}
 const path = (pts) => 'M' + pts.map((p) => p.map((v) => v.toFixed(2)).join(' ')).join('L') + 'Z';
 
 function logo(bg) {
+  const piece = PIECE.map(([x, y]) => [50 + (x - 50) * 0.72, 50 + (y - 50) * 0.72]);
   return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     ${bg ? `<rect width="100" height="100" fill="${bg}"/>` : ''}
     <g ${bg ? 'transform="translate(50 50) scale(.8) translate(-50 -50)"' : ''}>
-      <path d="${path(PIECE)}" fill="${C.seal}" stroke="${C.seal}" stroke-width="3" stroke-linejoin="round"/>
-      <path d="${path(inset(PIECE, 6))}" fill="none" stroke="${C.white}" stroke-width="1.8" stroke-linejoin="round"/>
-      <text x="50" y="55" text-anchor="middle" font-family="Shippori Mincho" font-weight="800" font-size="44" fill="${C.white}">将</text>
-      <text x="50" y="82" text-anchor="middle" direction="rtl" font-family="Heebo Variable" font-weight="800" font-size="12.5" fill="${C.white}">ישראל</text>
+      <circle cx="50" cy="50" r="50" fill="${C.seal}"/>
+      <path d="${path(piece)}" fill="none" stroke="${C.white}" stroke-width="2.4" stroke-linejoin="round"/>
+      <text x="50" y="60" text-anchor="middle" font-family="Shippori Mincho" font-weight="800" font-size="33" fill="${C.white}">将</text>
+      <text x="50" y="77" text-anchor="middle" direction="rtl" font-family="Heebo Variable" font-weight="800" font-size="9.5" fill="${C.white}">ישראל</text>
     </g>
   </svg>`;
 }
