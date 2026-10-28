@@ -71,8 +71,17 @@ const phaseOf = (categoryKey: string, stageKey?: string): string | undefined => 
 const phaseChip = (phase: string | undefined, stop = false) =>
   phase && el('p', { class: 'phase' }, el('a', { href: '/learn/guide/#phases', onclick: stop ? (e: Event) => e.stopPropagation() : undefined }, i18n(phase)));
 
-/** Our strings use **bold** for a new term, and moves like P-76 must stay left-to-right. */
+/** Our strings use **bold** for a new term, ==...== for what the learner has to do (highlighted, so a skimmer
+ * sees the task), and moves like P-76 must stay left-to-right. */
 export function rich(text: string): DocumentFragment {
+  const f = document.createDocumentFragment();
+  text.split(/(==.+?==)/).forEach((chunk, j) => {
+    if (j % 2 === 1) f.append(el('mark', { class: 'learn-task' }, inline(chunk.slice(2, -2))));
+    else if (chunk) f.append(inline(chunk));
+  });
+  return f;
+}
+function inline(text: string): DocumentFragment {
   const f = document.createDocumentFragment();
   text.split(/(\*\*[^*]+\*\*|\+?[KRBGSNLP](?:\d\d)?[-x*]\d\d\+?)/).forEach((part, i) => {
     if (!part) return;
@@ -683,7 +692,7 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
               : null))))
       : level.recap
         ? el('div', { class: 'recap' }, el('p', { class: 'eyebrow' }, i18n('il_recapTitle')), el('p', { class: 'lead' }, rich(level.recap)))
-        : el('p', { class: 'lead' }, el('span', { class: 'muted' }, i18n('il_doneWith')), ' ', rich(level.goal.replace(/ המהלכים.*$/, '')));
+        : el('p', { class: 'lead' }, el('span', { class: 'muted' }, i18n('il_doneWith')), ' ', rich(level.goal.replace(/ ==המהלכים.*$/, '').replace(/==/g, '')));
     const p = praise(vm, `${stage.key}${level.id}`);
     body = [
       lastReply ? reply(lastIdx) : null,
