@@ -98,7 +98,7 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
 
 <script>
   import { accountsEnabled, hasStoredSession } from '../lib/account-config';
-  import { hasAnyProgress, KIND_LABEL, LEVELS, nextStep, pathProgress, stepCount, stepHref, unitProgress, unitsOf, whereLabel } from '../lib/curriculum';
+  import { hasAnyProgress, KIND_LABEL, LEVELS, levelInfoFor, nextStep, pathProgress, stepCount, stepHref, unitProgress, unitsOf, whereLabel } from '../lib/curriculum';
   import { LEVEL_COUNTS } from '../lib/level-counts';
   import { readLocal } from '../lib/progress-local';
   import { rankFor, xpBreakdown } from '../lib/xp';
@@ -172,10 +172,11 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
     const path = pathProgress(p, LEVEL_COUNTS);
     for (const l of LEVELS) {
       const a = $<HTMLAnchorElement>(`[data-level="${l}"]`);
-      const up = unitsOf(l).map((u) => unitProgress(u, p, LEVEL_COUNTS)).reduce((x, y) => ({ done: x.done + y.done, of: x.of + y.of }), { done: 0, of: 0 });
+      const up = unitsOf(l, p.course.route).map((u) => unitProgress(u, p, LEVEL_COUNTS)).reduce((x, y) => ({ done: x.done + y.done, of: x.of + y.of }), { done: 0, of: 0 });
       // a level before the starting point has no required steps: it's already familiar
       $('[data-unit-count]', a).textContent = up.of === 0 && p.course.route ? 'כבר מוכר' : up.done === up.of && up.of > 0 ? 'הושלם ✓' : up.done > 0 ? `${up.done} מתוך ${up.of} צעדים` : '';
       a.toggleAttribute('data-current', !!next && next.unit.level === l);
+      $('.unit-goal', a).textContent = levelInfoFor(p.course.route)[l].goal; // the chess players' path has its own goals
     }
     root.dataset.pathDone = String(path.done);
 

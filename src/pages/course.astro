@@ -8,15 +8,32 @@
 import Base from '../layouts/Base.astro';
 import Board from '../components/Board.astro';
 import InfoTip from '../components/InfoTip.astro';
-import { CURRICULUM, KIND_LABEL, LEVELS, LEVEL_INFO, ROUTE_INFO, stepHref, unitsOf } from '../lib/curriculum';
+import { CHESS_CURRICULUM, CHESS_LEVEL_INFO, CURRICULUM, KIND_LABEL, LEVELS, LEVEL_INFO, stepHref } from '../lib/curriculum';
 import { LEVEL_COUNTS as levelCounts } from '../lib/level-counts';
-import { RANKS, stepXp, XP } from '../lib/xp';
+import { RANKS, rankFor, stepXp, XP } from '../lib/xp';
 import { emptyProgress } from '../lib/progress-sync';
 import { accountsEnabled } from '../lib/account-config';
 import { pageExists } from '../lib/live';
 import { WHATSAPP_URL } from '../lib/nav';
 
 const empty = emptyProgress();
+// Both paths are drawn; the page shows the chess players' one to anyone who said they play chess (placement,
+// a /chess/ link with ?route=chess, or the chess lessons on this device), and the main one to everyone else.
+const PATHS = [
+  { route: 'main', units: CURRICULUM, info: LEVEL_INFO },
+  { route: 'chess', units: CHESS_CURRICULUM, info: CHESS_LEVEL_INFO },
+] as const;
+// The learning rank at the end of each level of a path: every required step, at three stars (as on /ranks/).
+const levelEnd = (units: typeof CURRICULUM, route: 'main' | 'chess') => {
+  let sum = 0;
+  return LEVELS.map((l) => {
+    for (const u of units.filter((x) => x.level === l)) {
+      sum += u.steps.filter((s) => !s.optional?.includes(route) && !s.known?.includes(route) && (!s.only || s.only.includes(route)))
+        .reduce((t, s) => t + stepXp(s, levelCounts), XP.unit);
+    }
+    return rankFor(sum).rank.name;
+  });
+};
 const accountsOn = accountsEnabled && pageExists('/account/');
 
 // The board check: three positions, each checked with shogiops in test/curriculum.test.ts.
@@ -47,8 +64,10 @@ const CHECK = [
 >
   <div class="wrap page" data-course>
     <p class="eyebrow">⟦למד|למדי⟧ לשחק</p>
-    <h1>מסלול לימוד אישי</h1>
-    <p class="lead">כל מה שיש באתר ללמוד, בסדר אחד ובשלוש רמות: מתחילים, בינוניים ומתקדמים. כל כלי וכל כלל מוסבר לפני שמשתמשים בו, כך שאפשר להתחיל בלי לדעת כלום, גם לא שחמט.</p>
+    <h1>מסלול לימוד אישי<span data-route-only="chess" hidden> לשחקני שחמט</span></h1>
+    <p class="lead" data-route-only="main">כל מה שיש באתר ללמוד, בסדר אחד ובשלוש רמות: מתחילים, בינוניים ומתקדמים. כל כלי וכל כלל מוסבר לפני שמשתמשים בו, כך שאפשר להתחיל בלי לדעת כלום, גם לא שחמט.</p>
+    <p class="lead" data-route-only="chess" hidden>מסלול נפרד, רק עם מה שחדש לשחקן שחמט: חמשת הכלים החדשים, הכלל שאין בשחמט, ומבצרים במקום הצרחה. מה שכבר מוכר לך הוא חזרה מהירה, וכל הסבר משווה לשחמט. <a href="/course/?route=main" data-route-switch="main">למסלול הרגיל, בלי השוואות לשחמט</a></p>
+    <p class="small muted" data-route-only="main"><a href="/course/?route=chess" data-route-switch="chess">⟦משחק|משחקת⟧ שחמט? יש מסלול נפרד בשבילך</a></p>
     <p class="phases-note small muted">בכל שיעור כתוב לאיזה משלושת שלבי המשחק הוא שייך: פתיחה, אמצע המשחק או סוף המשחק.<InfoTip id="phases" /></p>
 
     <section class="gate card" data-gate aria-labelledby="gate-h">
@@ -79,7 +98,7 @@ const CHECK = [
         <fieldset class="q">
           <legend>⟦משחק|משחקת⟧ שחמט?</legend>
           <div class="opts two" role="group">
-            <button type="button" class="opt" data-chess="yes" aria-pressed="false"><strong>כן</strong><span class="small muted">ההסברים ישוו לשחמט</span></button>
+            <button type="button" class="opt" data-chess="yes" aria-pressed="false"><strong>כן</strong><span class="small muted">מסלול נפרד, רק עם מה שחדש לך</span></button>
             <button type="button" class="opt" data-chess="no" aria-pressed="false"><strong>לא</strong><span class="small muted">הכול יוסבר מההתחלה</span></button>
           </div>
         </fieldset>
@@ -117,7 +136,7 @@ const CHECK = [
             </button>
           ))}
         </div>
-        <label class="chess-box small"><input type="checkbox" data-pick-chess /> ⟦אני משחק|אני משחקת⟧ שחמט: ההסברים ישוו לשחמט</label>
+        <label class="chess-box small"><input type="checkbox" data-pick-chess /> ⟦אני משחק|אני משחקת⟧ שחמט: המסלול לשחקני שחמט</label>
         <p class="small"><button type="button" class="link" data-back-questions>חזרה לשאלות</button></p>
       </div>
     </section>
@@ -178,47 +197,51 @@ const CHECK = [
       {LEVELS.map((l, i) => <a href={`#${l}`}>{i + 1}. {LEVEL_INFO[l].title}</a>)}
     </nav>
 
-    {LEVELS.map((l, i) => (
-      <section class="level" id={l} data-level={l} aria-labelledby={`${l}-h`}>
-        <header class="level-head">
-          <p class="level-tag">רמה {i + 1} מתוך {LEVELS.length} · בערך {LEVEL_INFO[l].ranks} בדרגות הלימוד<InfoTip id="rank" /></p>
-          <h2 id={`${l}-h`}>{LEVEL_INFO[l].title}</h2>
-          <p class="level-goal"><strong>המטרה: {LEVEL_INFO[l].goal}.</strong> {LEVEL_INFO[l].why}</p>
-          <p class="level-known small" data-level-known hidden>כבר מוכר לך, לפי נקודת ההתחלה. הכול נשאר פתוח לחזרה, וצעד ⟦שתעשה|שתעשי⟧ ייספר.</p>
-        </header>
-        {unitsOf(l).map((u) => (
-          <section class="unit" id={u.key} data-unit={u.key} aria-labelledby={`${u.key}-h`}>
-            <header class="unit-head">
-              <h3 id={`${u.key}-h`}>{u.title}</h3>
-              <p class="unit-goal">{u.why}</p>
-              <div class="unit-progress" data-unit-progress hidden>
-                <div class="bar" aria-hidden="true"><span></span></div>
-                <span class="small muted"></span>
-              </div>
+    {PATHS.map(({ route, units, info }) => (
+      <div class="path" data-path={route} hidden={route !== 'main'}>
+        {LEVELS.map((l, i) => (
+          <section class="level" id={route === 'main' ? l : `${route}-${l}`} data-level={l} aria-labelledby={`${route}-${l}-h`}>
+            <header class="level-head">
+              <p class="level-tag">רמה {i + 1} מתוך {LEVELS.length} · בסופה בערך {levelEnd(units, route)[i]} בדרגות הלימוד<InfoTip id="rank" /></p>
+              <h2 id={`${route}-${l}-h`}>{info[l].title}</h2>
+              <p class="level-goal"><strong>המטרה: {info[l].goal}.</strong> {info[l].why}</p>
+              <p class="level-known small" data-level-known hidden>כבר מוכר לך, לפי נקודת ההתחלה. הכול נשאר פתוח לחזרה, וצעד ⟦שתעשה|שתעשי⟧ ייספר.</p>
             </header>
-            <ol class="steps">
-              {u.steps.map((s) => (
-                <li class="step" data-step={s.id} data-kind={s.kind} hidden={!!s.only && !s.only.includes('main')}>
-                  <span class="mark" aria-hidden="true"></span>
-                  <div class="step-body">
-                    <a class="step-title" href={stepHref(s, empty, levelCounts)} data-step-link>{s.title}</a>
-                    <p class="step-meta small muted">
-                      <span>{KIND_LABEL[s.kind]}</span> · <span>{s.minutes} דק׳</span>
-                      <span class="opt-tag" data-opt-tag hidden> · רשות</span>
-                      <span class="opt-tag" data-known-tag hidden> · כבר מוכר</span>
-                      <span class="count" data-count></span>
-                      <span class="xp" data-xp hidden> · עד +{stepXp(s, levelCounts)} נק׳</span>
-                      <span class="sr-only" data-state-sr></span>
-                    </p>
-                    <p class="step-why">{s.why}</p>
+            {units.filter((u) => u.level === l).map((u) => (
+              <section class="unit" id={u.key} data-unit={u.key} aria-labelledby={`${u.key}-h`}>
+                <header class="unit-head">
+                  <h3 id={`${u.key}-h`}>{u.title}</h3>
+                  <p class="unit-goal">{u.why}</p>
+                  <div class="unit-progress" data-unit-progress hidden>
+                    <div class="bar" aria-hidden="true"><span></span></div>
+                    <span class="small muted"></span>
                   </div>
-                  <button type="button" class="step-skip small" data-skip hidden>כבר ⟦יודע|יודעת⟧</button>
-                </li>
-              ))}
-            </ol>
+                </header>
+                <ol class="steps">
+                  {u.steps.map((s) => (
+                    <li class="step" data-step={s.id} data-kind={s.kind} hidden={!!s.only && !s.only.includes(route)}>
+                      <span class="mark" aria-hidden="true"></span>
+                      <div class="step-body">
+                        <a class="step-title" href={stepHref(s, empty, levelCounts)} data-step-link>{s.title}</a>
+                        <p class="step-meta small muted">
+                          <span>{KIND_LABEL[s.kind]}</span> · <span>{s.minutes} דק׳</span>
+                          <span class="opt-tag" data-opt-tag hidden={!s.optional?.includes(route) || !!s.known?.includes(route)}> · רשות</span>
+                          <span class="opt-tag" data-known-tag hidden={!s.known?.includes(route)}> · כבר מוכר</span>
+                          <span class="count" data-count></span>
+                          <span class="xp" data-xp hidden> · עד +{stepXp(s, levelCounts)} נק׳</span>
+                          <span class="sr-only" data-state-sr></span>
+                        </p>
+                        <p class="step-why">{s.why}</p>
+                      </div>
+                      <button type="button" class="step-skip small" data-skip hidden>כבר ⟦יודע|יודעת⟧</button>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            ))}
           </section>
         ))}
-      </section>
+      </div>
     ))}
 
     <p class="small muted foot">עוד באתר: <a href="/learn/">מפת השיעורים האינטראקטיביים</a> · <a href="/learn/guide/">פתיחות, מבצרים ואסטרטגיה</a> · <a href="/rules/">חוקים בסיסיים</a> · <a href="/tsume/">בעיות מט</a></p>
@@ -226,7 +249,7 @@ const CHECK = [
 </Base>
 
 <script>
-  import { ALL_STEPS, CURRICULUM, KIND_LABEL, LEVELS, LEVEL_INFO, ROUTE_INFO, hasAnyProgress, isKnown, isOptional, isSkipped, legacyOf, nextStep, pathProgress, placeFrom, placeLabel, stepCount, stepHref, stepState, stepsFor, unitProgress, unitsOf, whereLabel, type Experience } from '../lib/curriculum';
+  import { ALL_STEPS, KIND_LABEL, LEVELS, LEVEL_INFO, ROUTE_INFO, curriculumFor, hasAnyProgress, isKnown, isOptional, isSkipped, legacyOf, nextStep, pathProgress, placeFrom, placeLabel, stepCount, stepHref, stepState, stepsFor, unitProgress, unitsOf, whereLabel, type Experience } from '../lib/curriculum';
   import { markSeen, readLocal, updateCourse } from '../lib/progress-local';
   import type { CourseLevel, Route, SyncedProgress } from '../lib/progress-sync';
   import { accountsEnabled, hasStoredSession } from '../lib/account-config';
@@ -243,10 +266,34 @@ const CHECK = [
 
   const STATE_SR = { done: 'הושלם', skipped: 'סומן כמוכר', todo: '' } as const;
 
+  // ---------- which path: the main one, or the chess players' own ----------
+  // ?route=chess comes from the /chess/ page's buttons (and ?route=main from the switch at the top of this page).
+  // 'learnRoute' is the same device key as ROUTE_KEY in src/learn/route.ts, set by the /chess/ page's lesson links
+  // (not imported here: that module pulls in all the lesson strings).
+  const asked = ((r) => (r === 'chess' || r === 'main' ? r : null))(new URLSearchParams(location.search).get('route')) as Route | null;
+  const deviceRoute = ((): Route | null => {
+    try { const r = localStorage.getItem('learnRoute'); return r === 'chess' || r === 'main' ? r : null; } catch { return null; }
+  })();
+  const pathEl = () => $(`[data-path="${root.dataset.route ?? 'main'}"]`);
+  function showPath(route: Route) {
+    root.dataset.route = route;
+    $$('[data-path]').forEach((el) => { el.hidden = el.dataset.path !== route; });
+    $$('[data-route-only]').forEach((el) => { el.hidden = el.dataset.routeOnly !== route; });
+    // the path on show owns the plain level ids (#beginner …), so links from the menu and the home page land on it
+    $$('[data-path] [data-level]').forEach((el) => {
+      const path = el.closest<HTMLElement>('[data-path]')!.dataset.path;
+      el.id = path === route ? el.dataset.level! : `${path}-${el.dataset.level}`;
+    });
+  }
+  function scrollToHash() {
+    const el = location.hash.length > 1 ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
+    if (el && !el.closest('[hidden]')) el.scrollIntoView();
+  }
+
   // ---------- placement ----------
   let exp: Experience | null = null;
-  // /course/?route=chess (the /chess/ page's buttons) answers the chess question in advance
-  let chess: boolean | null = new URLSearchParams(location.search).get('route') === 'chess' ? true : null;
+  // a chess player answered in advance: a /chess/ link, or the chess lessons opened on this device
+  let chess: boolean | null = asked ? asked === 'chess' : deviceRoute === 'chess' ? true : null;
   let score = 0;
 
   function showStep(name: 'questions' | 'check' | 'manual') {
@@ -274,7 +321,8 @@ const CHECK = [
       : start === 'beginner' ? 'מתחילים מההתחלה: כל כלי וכל כלל, אחד אחרי השני.' : 'החוקים כבר מוכרים לך, אז מתחילים בבינוניים. רמת המתחילים נשארת פתוחה לרענון.';
 
   $$<HTMLButtonElement>('[data-exp]').forEach((b) => b.addEventListener('click', () => { exp = b.dataset.exp as Experience; syncQuestions(); }));
-  $$<HTMLButtonElement>('[data-chess]').forEach((b) => b.addEventListener('click', () => { chess = b.dataset.chess === 'yes'; syncQuestions(); }));
+  // the path below follows the answer at once
+  $$<HTMLButtonElement>('[data-chess]').forEach((b) => b.addEventListener('click', () => { chess = b.dataset.chess === 'yes'; syncQuestions(); render(); }));
   $('[data-place-go]').addEventListener('click', () => {
     if (exp === null || chess === null) return;
     const pl = placeFrom(exp, chess);
@@ -321,14 +369,20 @@ const CHECK = [
     showStep('manual');
   });
   $('[data-back-questions]').addEventListener('click', () => showStep('questions'));
+  $<HTMLInputElement>('[data-pick-chess]').addEventListener('change', (e) => { chess = (e.target as HTMLInputElement).checked; syncQuestions(); render(); });
   $$<HTMLButtonElement>('[data-pick]').forEach((b) => b.addEventListener('click', () => {
     const start = b.dataset.pick as CourseLevel;
     save($<HTMLInputElement>('[data-pick-chess]').checked ? 'chess' : 'main', start, `בחרת להתחיל ב${LEVEL_INFO[start].title}.`);
   }));
 
   // ---------- the path ----------
-  function render(p: SyncedProgress = readLocal(), why?: string) {
-    const placed = !!p.course.route;
+  function render(saved: SyncedProgress = readLocal(), why?: string) {
+    const placed = !!saved.course.route;
+    const picking = !placed || changing;
+    // before a route is saved, the path on show follows the chess answer (or a /chess/ link)
+    const route: Route = placed && !changing ? saved.course.route! : chess ? 'chess' : 'main';
+    const p: SyncedProgress = placed && !changing ? saved : { ...saved, course: { ...saved.course, route } };
+    showPath(route);
     $('[data-gate]').hidden = true;
     const xp = xpBreakdown(p, levelCounts).total;
     const r = rankFor(xp);
@@ -340,7 +394,6 @@ const CHECK = [
     $('[data-rank-text]').textContent = r.next
       ? `${xp.toLocaleString('he-IL')} נקודות · עוד ${(r.next.min - xp).toLocaleString('he-IL')} לדרגה ${r.next.name}`
       : `${xp.toLocaleString('he-IL')} נקודות · הדרגה הגבוהה ביותר באתר`;
-    const picking = !placed || changing;
     $('[data-placement]').hidden = !picking;
     $('[data-chosen]').hidden = picking;
     if (placed) {
@@ -371,11 +424,11 @@ const CHECK = [
     $('[data-overall-text]').textContent = `${total.done} מתוך ${total.of} צעדים במסלול`;
 
     for (const l of LEVELS) {
-      const known = unitsOf(l).every((u) => stepsFor(u, p.course).every((s) => isKnown(s, p.course)));
-      $('[data-level-known]', $(`[data-level="${l}"]`)).hidden = !(placed && known);
+      const known = unitsOf(l, route).every((u) => stepsFor(u, p.course).every((s) => isKnown(s, p.course)));
+      $('[data-level-known]', $(`[data-level="${l}"]`, pathEl())).hidden = !(placed && known);
     }
-    for (const u of CURRICULUM) {
-      const sec = $(`[data-unit="${u.key}"]`);
+    for (const u of curriculumFor(route)) {
+      const sec = $(`[data-unit="${u.key}"]`, pathEl());
       const visible = new Set(stepsFor(u, p.course).map((s) => s.id));
       for (const s of u.steps) {
         const li = $(`[data-step="${s.id}"]`, sec);
@@ -384,7 +437,8 @@ const CHECK = [
         li.dataset.state = state;
         li.classList.toggle('is-next', next?.step.id === s.id && showNext);
         $<HTMLAnchorElement>('[data-step-link]', li).href = stepHref(s, p, levelCounts);
-        const known = placed && isKnown(s, p.course);
+        // marked known by the path itself (the chess path's king, rook, bishop), or before the starting level
+        const known = (placed || !!s.known?.includes(route)) && isKnown(s, p.course);
         $('[data-known-tag]', li).hidden = !known || state === 'done';
         $('[data-opt-tag]', li).hidden = known || !isOptional(s, p.course);
         const c = stepCount(s, p, levelCounts);
@@ -442,12 +496,31 @@ const CHECK = [
     if (step && (step.kind === 'read' || step.kind === 'try')) markSeen(step.id);
   });
 
+  if (asked) {
+    // remembered on this device too: the lessons show their chess text (or not), and a later sign-up starts here
+    try { localStorage.setItem('learnRoute', asked); } catch { /* storage blocked: this visit still shows the path */ }
+    history.replaceState(null, '', location.pathname + location.hash); // a reload must not switch again
+  }
   if (signedIn) {
+    // Asked for the other path with a route already saved (a chess player arriving from the /chess/ page): switch,
+    // keep the starting level. Progress carries over: the two paths share their lessons.
+    const c = readLocal().course;
+    if (asked && c.route && c.route !== asked) {
+      try { localStorage.removeItem('learnRoute'); } catch { /* nothing to clear */ }
+      const p = updateCourse((x) => { x.route = asked; x.placedAt = new Date().toISOString(); }, { overwrite: true });
+      render(p, asked === 'chess' ? 'עברת למסלול לשחקני שחמט: רק מה שחדש לך, וכל הסבר משווה לשחמט. ההתקדמות שלך נשארת.' : 'עברת למסלול הרגיל. ההתקדמות שלך נשארת.');
+    } else {
+      render();
+    }
     syncQuestions();
-    render();
+    scrollToHash();
     document.addEventListener('progress-synced', () => render());
     // Coming back with the browser's back button after a lesson: show the new progress.
     window.addEventListener('pageshow', (e) => { if (e.persisted) render(); });
+  } else if (chess) {
+    // no account: the chess players' path is still there to read, in its own order
+    showPath('chess');
+    scrollToHash();
   }
 </script>
 
