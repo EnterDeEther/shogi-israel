@@ -8,8 +8,8 @@ const { id, browserNote = false } = Astro.props;
 ---
 <div class="push-setting" data-push-setting data-browser-note={browserNote ? '' : undefined} hidden>
   <div data-push-on hidden>
-    <fieldset class="push-kinds">
-      <legend>התראות בטלפון (רק אם ⟦תבחר|תבחרי⟧)</legend>
+    <p class="push-title" id={`${id}-title`}>התראות בטלפון (רק אם ⟦תבחר|תבחרי⟧)</p>
+    <fieldset class="push-kinds" aria-labelledby={`${id}-title`}>
       {PUSH_KINDS.map((k) => (
         <label class="push-row" for={`${id}-${k}`}>
           <span><strong>{PUSH_LABEL[k].title}</strong><span class="small muted">{PUSH_LABEL[k].sub}</span>
@@ -89,7 +89,7 @@ const { id, browserNote = false } = Astro.props;
   .push-setting[hidden], .push-setting [hidden] { display: none; }
   .push-setting p { margin: 8px 0 0; }
   .push-kinds { border: 1px solid var(--rule); border-radius: 8px; padding: 4px 16px; margin: 0; background: var(--washi-2); }
-  .push-kinds legend { padding: 0 6px; margin-inline-start: -6px; font-weight: 700; }
+  .push-setting .push-title { margin: 0 0 8px; font-weight: 700; }
   .push-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 56px; padding: 8px 0; border-bottom: 1px solid var(--rule); cursor: pointer; }
   .push-row:last-child { border-bottom: 0; }
   .push-row > span { display: flex; flex-direction: column; }
