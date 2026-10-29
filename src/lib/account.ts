@@ -44,9 +44,16 @@ export async function signIn(email: string, password: string, captchaToken?: str
 export async function verifySignupCode(email: string, token: string) {
   return supabase().auth.verifyOtp({ email, token, type: 'email' });
 }
-/** Emails a link back to /account/, which opens the "new password" form (PASSWORD_RECOVERY). */
+/** Emails a link back to /account/, which opens the "new password" form (PASSWORD_RECOVERY). The link
+ * (template: supabase/templates/reset-password.html) carries a one-time token_hash, checked by verifyResetLink. */
 export async function sendPasswordReset(email: string, captchaToken?: string) {
   return supabase().auth.resetPasswordForEmail(email, { redirectTo: redirectTo(), captchaToken });
+}
+/** The token_hash from the reset link. Unlike the default PKCE link, it works in any browser: a PKCE code can only
+ * be traded in the browser that asked for it, and on an iPhone the home-screen app doesn't share storage with
+ * Safari or Chrome, where the email link opens. Success fires PASSWORD_RECOVERY. */
+export async function verifyResetLink(tokenHash: string) {
+  return supabase().auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
 }
 /** Settles within ms: a request the network never answers becomes an error the form can show, not a dead button. */
 export function timed<T>(p: Promise<T>, ms = 20000): Promise<T> {
