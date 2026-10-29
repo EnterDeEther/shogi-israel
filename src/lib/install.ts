@@ -34,7 +34,7 @@ export const isStandalone = (): boolean =>
 
 const ua = () => navigator.userAgent;
 // iPadOS presents itself as a Mac; a touch screen gives it away
-const isIos = () => /iPhone|iPad|iPod/.test(ua()) || (/Macintosh/.test(ua()) && navigator.maxTouchPoints > 1);
+export const isIos = () => /iPhone|iPad|iPod/.test(ua()) || (/Macintosh/.test(ua()) && navigator.maxTouchPoints > 1);
 const isAndroid = () => /Android/.test(ua());
 // Chrome, Edge and Firefox on an iPhone: the share button sits in the address bar at the top, not where Safari keeps it
 const isIosOther = () => /CriOS|EdgiOS|FxiOS/.test(ua());

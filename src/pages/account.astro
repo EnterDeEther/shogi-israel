@@ -272,6 +272,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
   import { KIND_LABEL, nextStep, pathProgress, placeLabel, stepHref, whereLabel } from '../lib/curriculum';
   import { rankFor, xpBreakdown } from '../lib/xp';
   import { savedGender } from '../lib/gender';
+  import { isIos, isStandalone } from '../lib/install';
 
   const root = document.querySelector<HTMLElement>('[data-account]')!;
   if (accountsEnabled) void start();
@@ -564,7 +565,10 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       forgotCaptcha.reset();
       busy(forgotForm, false);
       if (error) return fail('forgot', error.status === 429 ? 'נשלחו יותר מדי מיילים. ⟦חכה|חכי⟧ כמה דקות ⟦ונסה|ונסי⟧ שוב.' : 'השליחה לא הצליחה. ⟦נסה|נסי⟧ שוב בעוד רגע.');
-      sent(`אם יש חשבון עם ${email}, שלחנו אליו קישור לבחירת סיסמה חדשה.`);
+      // An iPhone opens email links in the browser, never in the home-screen app (Apple's rule): say so up front.
+      const inIosApp = isIos() && isStandalone();
+      sent(`אם יש חשבון עם ${email}, שלחנו אליו קישור לבחירת סיסמה חדשה.` + (inIosApp
+        ? ' באייפון הקישור ייפתח בדפדפן ולא באפליקציה. ⟦בחר|בחרי⟧ שם סיסמה חדשה, ואז ⟦חזור|חזרי⟧ לאפליקציה ⟦והיכנס|והיכנסי⟧ איתה.' : ''));
     });
     root.querySelectorAll('[data-back]').forEach((b) => b.addEventListener('click', () => { setMode('signin'); show('signin'); }));
 
@@ -628,9 +632,13 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
         if (sessionGone(error as { code?: string })) return fail('newpass', 'הקישור לאיפוס כבר לא בתוקף. ⟦בקש|בקשי⟧ קישור חדש דרך "שכחת סיסמה?" במסך הכניסה.');
         return fail('newpass', saveError(error, 'שמירת הסיסמה'));
       }
+      // From a reset link on an iPhone browser: the request may have come from the home-screen app, which has its
+      // own sign-in, so point the way back to it.
+      const backToApp = recovering && isIos() && !isStandalone();
       recovering = false;
       hidePasswords();
-      homeNote('הסיסמה החדשה נשמרה.');
+      homeNote('הסיסמה החדשה נשמרה.' + (backToApp
+        ? ' אם ביקשת אותה מהאפליקציה של שוגי ישראל במסך הבית, ⟦חזור|חזרי⟧ אליה עכשיו ⟦והיכנס|והיכנסי⟧ עם הסיסמה החדשה.' : ''));
       void route();
     });
     $('[data-newpass-cancel] button').addEventListener('click', () => show('home'));
@@ -711,6 +719,20 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       fail('signin', 'החשבון נמחק.');
     });
 
+    // Arrived from the reset email: its link carries a one-time token_hash (acc.verifyResetLink), so it works in
+    // whichever browser opens it. Older PKCE links (?code=) are still handled by the client itself.
+    const params = new URLSearchParams(location.search);
+    const resetToken = params.get('type') === 'recovery' ? params.get('token_hash') : null;
+    if (resetToken) {
+      history.replaceState(null, '', location.pathname + location.hash); // a reload must not reuse a spent token
+      recovering = true; // keeps route() off the page; PASSWORD_RECOVERY opens the new-password form
+      const { error } = await acc.verifyResetLink(resetToken).catch((err) => ({ error: err as Error }));
+      if (!error) return;
+      recovering = false;
+      setMode('signin');
+      show('forgot');
+      return fail('forgot', 'הקישור לאיפוס כבר לא בתוקף, או שכבר השתמשת בו. ⟦הכנס|הכניסי⟧ את המייל ונשלח קישור חדש.');
+    }
     await route();
   }
 </script>
