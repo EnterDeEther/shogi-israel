@@ -5,6 +5,7 @@
 //   favicon-32.png, favicon-192.png  the browser tab: a red disc with a white ring and 将
 //   app-icon-192.png              the logo (transparent), for the installed app (public/manifest.webmanifest)
 //   app-icon-maskable-*.png       the logo on paper, small enough that Android's round or rounded-square mask never cuts it
+//   push-badge-96.png             a white 将 on nothing: Android's status bar shows a push notification's badge as a silhouette
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
@@ -62,6 +63,12 @@ function tab() {
   </svg>`;
 }
 
+function badge() {
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <text x="50" y="50" text-anchor="middle" dominant-baseline="central" font-family="Shippori Mincho" font-weight="800" font-size="78" fill="${C.white}">将</text>
+  </svg>`;
+}
+
 const files = [
   ['logo-132.png', 132, logo()],
   ['logo-512.png', 512, logo()],
@@ -72,6 +79,7 @@ const files = [
   // Android's safe zone is the middle circle of 80%; the disc keeps a little paper inside it
   ['app-icon-maskable-192.png', 192, logo(C.washi, 0.72)],
   ['app-icon-maskable-512.png', 512, logo(C.washi, 0.72)],
+  ['push-badge-96.png', 96, badge()],
 ];
 
 const browser = await chromium.launch();
