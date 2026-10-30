@@ -26,6 +26,12 @@
 @media (max-width: 600px) {
   .play__board { max-width: none; margin-inline: calc(-1 * var(--gutter)); padding-left: 2px; padding-right: 15px; }
 }
+/* tablets: iPad portrait in learn.css (with the lessons); big touch screens get a bigger board than 600px */
+@media (min-width: 860px) and (hover: none) and (pointer: coarse) {
+  .wrap--play { --bmax: clamp(600px, calc(100svh - 240px), 720px); max-width: calc(var(--bmax) + 410px); }
+  .play { grid-template-columns: minmax(0, var(--bmax)) minmax(280px, 340px); }
+  .play__board { max-width: var(--bmax); }
+}
 .play__sg.sg-wrap { border: 2px solid var(--grid); border-radius: 2px; box-shadow: var(--shadow-board); }
 .play__sgbox { position: relative; }
 .play__board:focus { outline: none; }

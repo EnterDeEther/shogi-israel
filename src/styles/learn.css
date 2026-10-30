@@ -44,6 +44,25 @@
   .learn__board { max-width: none; margin-inline: calc(-1 * var(--gutter)); padding-left: 2px; padding-right: 15px; }
   :is(.learn, .play) .sg-wrap coords.ranks { right: -14px; width: 12px; }
 }
+/* tablets upright (iPad portrait, 601-859px): one column as on phones, but the board takes the width, as much
+   as the screen's height leaves room for, centred; the panels under it are as wide as the board, not the page.
+   The 280px is the header, the back link and the two hand rows. */
+@media (min-width: 600.02px) and (max-width: 859.98px) {
+  :is(.learn--run, .play) { --tab-board: clamp(420px, calc(100svh - 280px), 100%); }
+  /* tsume: the title sits above the board, and the "your move" feedback should still show under it */
+  .play.tsume { --tab-board: clamp(420px, calc(100svh - 440px), 100%); }
+  :is(.learn--run, .play) :is(.learn__board, .play__board) { max-width: var(--tab-board); margin-inline: auto; }
+  .learn--run :is(.learn__table, .learn__side, .learn__back-narrow), .play__table { width: 100%; max-width: var(--tab-board); margin-inline: auto; }
+  .learn--run .learn__coach { left: 50%; right: auto; width: min(var(--tab-board), calc(100vw - 2 * var(--gutter)) + 20px); transform: translateX(-50%); }
+}
+/* big tablets (iPad Pro 12.9" upright and sideways): a touch screen tall enough for a bigger board than 560px */
+@media (min-width: 860px) and (hover: none) and (pointer: coarse) {
+  .learn--run { --bmax: clamp(560px, calc(100svh - 260px), 720px); grid-template-columns: minmax(0, var(--bmax)) minmax(260px, 320px); }
+  .learn__board { max-width: var(--bmax, 560px); }
+}
+@media (min-width: 1180px) and (hover: none) and (pointer: coarse) {
+  .learn--run { grid-template-columns: 220px minmax(0, var(--bmax)) minmax(260px, 320px); }
+}
 .learn__sg.sg-wrap {
   border: 2px solid var(--grid);
   border-radius: 2px;
