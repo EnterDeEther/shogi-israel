@@ -355,7 +355,16 @@ export function render(ctrl: PlayCtrl, root: HTMLElement, openSettings: () => vo
     overlay.hidden = true;
     overlay.replaceChildren();
   }
+  const wasSetup = root.classList.contains('setup-open');
   root.classList.toggle('setup-open', !overlay.hidden);
+  // On phones the setup is taller than the board it replaces, so "start" can leave the board's top above the screen
+  // (half the board hidden on an iPhone SE). Bring the whole frame back under the header (html scroll-padding-top).
+  if (wasSetup && overlay.hidden) {
+    const frame = q('.play__board');
+    requestAnimationFrame(() => {
+      if (frame.getBoundingClientRect().top < (document.querySelector('.site-header')?.clientHeight ?? 0)) frame.scrollIntoView({ block: 'start' });
+    });
+  }
 
   // ---- table: the top row is whoever sits at the top of the board
   const top = ctrl.orientation === 'sente' ? 'gote' : 'sente';
