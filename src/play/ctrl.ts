@@ -496,8 +496,13 @@ export default class PlayCtrl {
       this.clock = saved.clock ? { ...saved.clock, running: undefined, since: undefined } : null;
       this.orientation = saved.orientation ?? saved.record.playerColor;
       this.setupOpen = false;
-      // /play/?new (the header's play button when no game is going on) opens the setup over a finished game
-      if (!this.playing && new URLSearchParams(window.location.search).has('new')) this.setupOpen = true;
+      // /play/?new (the header's play button with no game going on, and the app's "או משחק חדש" beside a game
+      // in progress) opens the setup over the saved game: "חזרה למשחק" still goes back to it. The ?new is dropped
+      // from the address, so a reload (or the app reopening on this page) continues the game instead.
+      if (new URLSearchParams(window.location.search).has('new')) {
+        this.setupOpen = true;
+        history.replaceState(history.state, '', window.location.pathname + window.location.hash);
+      }
       if (this.playing) {
         this.startClock();
         if (this.line.current.turn !== this.playerColor) this.aiMove();
