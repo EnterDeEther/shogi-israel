@@ -17,6 +17,8 @@ import { play as playSound, playMove } from '../learn/sound';
 import { Line } from '../play/game';
 import { type Length, markSolved, type Puzzle, solvedList } from './puzzles';
 import { legalMoves, Solver } from './solve';
+import { liveBounds } from '../lib/live-bounds';
+import { SQUARE_RATIO } from '../lib/square-ratio';
 
 const REPLY_MS = 550;
 
@@ -47,7 +49,7 @@ export default class TsumeCtrl {
     readonly pref: LearnPrefs,
     readonly redraw: () => void,
   ) {
-    this.ground = Shogiground(this.groundConfig());
+    this.ground = liveBounds(Shogiground(this.groundConfig()));
   }
 
   get count(): number {
@@ -90,6 +92,7 @@ export default class TsumeCtrl {
   private groundConfig(): Config {
     return {
       orientation: 'sente',
+      squareRatio: SQUARE_RATIO,
       movable: { free: false, showDests: this.pref.dests, events: { after: (o, d, prom) => this.onUserMove(o, d, prom) } },
       droppable: { free: false, showDests: this.pref.dests, events: { after: (p, k) => this.onUserDrop(p, k) } },
       // Same promotion rules as the lessons (ported from lila ui/learn/src/ground.ts).

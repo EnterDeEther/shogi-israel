@@ -28,6 +28,7 @@ import {
 import { play as playSound, playMove } from './sound';
 import { stageSlug, stageUrl } from './urls';
 import { currentPosition } from './util';
+import { liveBounds } from '../lib/live-bounds';
 
 export default class LearnCtrl {
   shogiground: Api;
@@ -54,7 +55,7 @@ export default class LearnCtrl {
 
     this.progress = new ProgressStorage(this.opts);
 
-    this.shogiground = Shogiground(ground.initConfig(this));
+    this.shogiground = liveBounds(Shogiground(ground.initConfig(this)));
 
     // Shogi Israel: /learn/<stage>/#<level> instead of /learn#/<stageId>/<levelId>
     const startStage = this.stages.find(s => stageSlug(s.key) === startStageKey);

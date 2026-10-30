@@ -21,6 +21,8 @@ import { cancelSearches, getEngine } from './engine';
 import { type GameEnd, Line, START_SFEN } from './game';
 import { engineLabel, getLevel } from './levels';
 import { type ClockSetting, CURRENT, type GameRecord, newGameId, saveFinished } from './record';
+import { liveBounds } from '../lib/live-bounds';
+import { SQUARE_RATIO } from '../lib/square-ratio';
 
 export interface PlaySettings {
   level: number;
@@ -85,7 +87,7 @@ export default class PlayCtrl {
     readonly pref: LearnPrefs,
     readonly redraw: () => void,
   ) {
-    this.ground = Shogiground(this.groundConfig());
+    this.ground = liveBounds(Shogiground(this.groundConfig()));
     this.resume();
   }
 
@@ -131,6 +133,7 @@ export default class PlayCtrl {
   private groundConfig(): Config {
     return {
       orientation: this.orientation,
+      squareRatio: SQUARE_RATIO,
       movable: { free: false, showDests: this.pref.dests, events: { after: (o, d, prom) => this.onUserMove(o, d, prom) } },
       droppable: { free: false, showDests: this.pref.dests, events: { after: (p, k) => this.onUserDrop(p, k) } },
       // Same promotion rules as the lessons (ported from lila ui/learn/src/ground.ts).

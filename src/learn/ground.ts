@@ -14,9 +14,11 @@ import type LearnCtrl from './ctrl';
 import type { Level, UsiWithColor } from './interfaces';
 import { illegalShogigroundDropDests, illegalShogigroundMoveDests, inCheck } from './shogi';
 import { currentPosition } from './util';
+import { SQUARE_RATIO } from '../lib/square-ratio';
 
 export function initConfig(ctrl: LearnCtrl): Config {
   return {
+    squareRatio: SQUARE_RATIO, // Shogi Israel: our squares are square (../lib/square-ratio.ts)
     movable: {
       free: false,
       showDests: ctrl.pref.dests,
