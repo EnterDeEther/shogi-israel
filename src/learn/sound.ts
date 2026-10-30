@@ -7,9 +7,11 @@
 // Rules: nothing plays before the visitor has tapped or pressed a key, nothing plays in a background tab, and the one
 // switch (prefs.sound, the cog wheel and /account/) silences all of it; each kind of sound also has its own switch
 // (prefs.sndBoard and the rest, see CATEGORY). Volume is prefs.vol (0 to 1, default 0.8).
+// Every play() also asks src/learn/haptics.ts for a buzz on phones, with its own switch (prefs.haptics).
 // Phones: the first tap anywhere unlocks audio (iOS keeps a page's audio suspended until a tap resumes it), and an
 // iPhone with its silent switch on stays silent on websites, as it should.
 // AGPL-3.0-or-later, like the rest of src/learn/.
+import { applyHaptics, buzz } from './haptics';
 import { type LearnPrefs, loadPrefs } from './prefs';
 
 export type SoundName =
@@ -266,9 +268,10 @@ function buffer(a: AudioContext, id: Synth): AudioBuffer | null {
 }
 
 export function play(name: SoundName): void {
+  buzz(name); // the haptic tick has its own switch, so it comes first (src/learn/haptics.ts)
+  if (CATEGORY[name] !== 'sndUi') lastOther = performance.now();
   const p = prefs();
   if (!p.sound || !p[CATEGORY[name]] || document.hidden || !p.vol) return;
-  if (CATEGORY[name] !== 'sndUi') lastOther = performance.now();
   const a = audio();
   if (!a || !out) return;
   const now = a.currentTime;
@@ -330,7 +333,7 @@ const UNLOCK = ['pointerup', 'touchend', 'keydown', 'click'] as const;
 const TAPPABLE = 'button, summary, [role="button"], .btn, header a, nav a, input[type="checkbox"], input[type="radio"]';
 function onClick(e: MouseEvent): void {
   const t = (e.target as Element | null)?.closest?.(TAPPABLE);
-  if (!t || (t as HTMLButtonElement).disabled) return;
+  if (!t || (t as HTMLButtonElement).disabled || t.closest('[data-haptic]')) return; // the iPhone haptic switch's own clicks
   const name: SoundName = t.matches('input') ? 'toggle' : 'tap';
   const at = performance.now();
   setTimeout(() => { if (lastOther < at) play(name); }, 0); // after the button's own handler: a move or a solved sound wins
@@ -340,5 +343,10 @@ if (typeof document !== 'undefined') {
   for (const ev of UNLOCK) document.addEventListener(ev, unlock, { capture: true, passive: true });
   document.addEventListener('click', onClick, true);
   // the setting changed on another page or tab
-  window.addEventListener('storage', (e) => { if (e.key?.endsWith('learn.prefs')) applySoundPrefs(loadPrefs()); });
+  window.addEventListener('storage', (e) => {
+    if (!e.key?.endsWith('learn.prefs')) return;
+    const p = loadPrefs();
+    applySoundPrefs(p);
+    applyHaptics(p.haptics);
+  });
 }

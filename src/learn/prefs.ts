@@ -15,6 +15,7 @@ export interface LearnPrefs {
   sndLessons: boolean; // lessons and puzzles: start, solved, wrong move, stage finished
   sndProgress: boolean; // points and new rank
   sndUi: boolean; // buttons, menus and switches
+  haptics: boolean; // a buzz on phones for the same moments (src/learn/haptics.ts), on even when sounds are off
 }
 
 /** The on/off settings (the cog wheel's switches). */
@@ -41,6 +42,7 @@ export const defaults = (): LearnPrefs => ({
   sndLessons: true,
   sndProgress: true,
   sndUi: true,
+  haptics: true,
 });
 
 export function loadPrefs(): LearnPrefs {
