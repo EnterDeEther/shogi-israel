@@ -17,6 +17,8 @@ const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length
 const PLAY: NavLink = { href: '/play/', label: 'משחק נגד המחשב' };
 const COURSE: NavLink = { href: '/course/', label: 'מסלול לימוד אישי' };
 const quick = isLive(PLAY) && isLive(COURSE);
+// The settings of this device (look, pieces, sound, form of address) live on /app/; the sheet opens them high up.
+const SETTINGS: NavLink = { href: '/app/#settings', label: 'הגדרות' };
 ---
 <header class="site-header">
   <div class="wrap bar">
@@ -102,6 +104,11 @@ const quick = isLive(PLAY) && isLive(COURSE);
             </a>
           </div>
         )}
+        <a class="solo settings-row" href={SETTINGS.href} aria-current={here(SETTINGS)}>
+          <span class="ico"><Icon name="settings" /></span>
+          <span class="label">הגדרות</span>
+          <span class="hint">מראה, סימון הכלים, צלילים</span>
+        </a>
         {items.map((i) => isSection(i) ? (
           <section class="group" data-tour={i.tour}>
             <h2 class="group-title">{i.label}</h2>
@@ -238,6 +245,10 @@ const quick = isLive(PLAY) && isLive(COURSE);
   .quick-tiles .hint { font-size: 13px; line-height: 1.35; }
   .quick-tiles .tile[aria-current="page"] { border-color: color-mix(in srgb, var(--seal) 45%, transparent); }
   @media (prefers-reduced-motion: reduce) { .quick-tiles .tile:active { transform: none; } }
+
+  /* phones: the device's settings, right under the shortcuts */
+  .panel .settings-row .ico { grid-row: span 2; }
+  .panel .settings-row > :not(.ico) { grid-column: 2; }
 
   /* phones: light / dark moves from the bar into the sheet, to leave the bar room for the shortcuts */
   .theme-row { appearance: none; background: none; border: 0; width: 100%; font: inherit; text-align: start; cursor: pointer; }

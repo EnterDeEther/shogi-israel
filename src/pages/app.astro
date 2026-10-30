@@ -183,6 +183,18 @@ import { accountsEnabled } from '../lib/account-config';
   addEventListener('storage', (e) => { if (!e.key || e.key.startsWith('shogi-il.')) refresh(); });
   // arrived from the install offer on another page: open straight on the guide
   if (location.hash === '#install') requestAnimationFrame(() => document.getElementById('install')?.scrollIntoView({ block: 'start' }));
+  // arrived from "הגדרות" in the menu (also from this page, which only changes the hash): the settings open
+  const openSettings = () => {
+    if (location.hash !== '#settings') return;
+    const box = document.getElementById('settings') as HTMLDetailsElement | null;
+    if (!box) return;
+    box.open = true;
+    requestAnimationFrame(() => box.scrollIntoView({ block: 'start' }));
+  };
+  openSettings();
+  addEventListener('hashchange', openSettings);
+  // the same link again (the hash does not change then) after the settings were closed
+  document.querySelectorAll('a[href="/app/#settings"]').forEach((a) => a.addEventListener('click', () => setTimeout(openSettings)));
 </script>
 
 <style>
@@ -222,7 +234,7 @@ import { accountsEnabled } from '../lib/account-config';
   .newgame[hidden] { display: none; }
   @media (hover: hover) and (pointer: fine) { a.tile:hover, .settings summary:hover { box-shadow: var(--shadow-2); } }
 
-  .settings { display: block; padding: 0; }
+  .settings { display: block; padding: 0; scroll-margin-top: 80px; }
   .settings summary {
     list-style: none; cursor: pointer; display: grid; grid-template-columns: auto 1fr auto; align-items: center; column-gap: 16px; row-gap: 2px;
     min-height: 104px; padding: 16px 18px; border-radius: 20px; transition: transform .16s var(--ease-out);
