@@ -1,7 +1,8 @@
 // Shogi Israel: the sound settings, built the same way in the board's cog wheel (learn, play, tsume) and on /account/.
-// One switch for everything, a volume, and a switch for each kind of sound.
+// One switch for everything, a volume, and a switch for each kind of sound. On phones, also the haptic switch (רטט).
 // Saved in learn.prefs on this device. AGPL-3.0-or-later, like the rest of src/learn/.
 import { type LearnPrefs, loadPrefs, savePrefs } from './prefs';
+import { applyHaptics, hapticsSupported } from './haptics';
 import { type SoundName, type SoundPref, applySoundPrefs, play, preloadSounds } from './sound';
 
 export const SOUND_TYPES: { key: SoundPref; label: string; sample: SoundName }[] = [
@@ -75,5 +76,12 @@ export function soundControls(prefix: string, cls: string, box = ''): HTMLElemen
       if (on) void preloadSounds().then(() => play(t.sample));
     }, true));
   root.append(rest);
+
+  // phones only, and outside the sound switches: the buzz works with sound off (an iPhone on silent)
+  if (hapticsSupported())
+    root.append(row(`${prefix}-haptics`, 'רטט בטלפון', p.haptics, (on) => {
+      save((q) => { q.haptics = on; });
+      applyHaptics(on); // the switch's own tick (sound.ts, sndUi) is the sample
+    }));
   return root;
 }
