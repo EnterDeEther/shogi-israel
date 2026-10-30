@@ -1,10 +1,13 @@
 // Shogi Israel: haptic feedback (a short buzz in the hand) for the same moments that make a sound (src/learn/sound.ts
 // calls buzz() from play()). Works without sound: the phone can be on silent and still tick on each move.
 // Android (Chrome, Firefox, Samsung Internet): navigator.vibrate with a short pattern per kind of moment.
-// iPhone: Safari has no vibrate, but since iOS 17.4 tapping a switch (<input type="checkbox" switch>) gives the system
-// haptic tick, and iOS 18 lets a page click one from code. So we keep one hidden switch and click it, once per pulse.
-// It only works inside or right after a tap, which is when every buzz here happens (the computer's reply on /play/
-// may stay quiet on iPhone). iPads, computers and older iPhones have nothing to buzz, and the setting is hidden there.
+// iPhone: Safari has no vibrate, but since iOS 17.4 a finger flipping a switch (<input type="checkbox" switch>) gives the
+// system haptic tick. Up to iOS 26.4 a page could also click a hidden switch from code (iosTick below, kept for those
+// phones); iOS 26.5 closed that, and only a real finger on a switch ticks now. So every plain button carries an invisible
+// switch label over it (armButtons): the tap lands on it, iOS ticks, and the click goes on to the button as before.
+// The board can't do this: it cancels its touches (to drag pieces), which also turns the switch off, so on a new iPhone
+// moves and right/wrong answers don't buzz, only button taps do. iPads and computers have nothing to buzz, and the
+// setting is hidden there.
 // One switch, prefs.haptics (the cog wheel and /account/), default on. AGPL-3.0-or-later, like the rest of src/learn/.
 import type { SoundName } from './sound';
 import { loadPrefs } from './prefs';
@@ -44,10 +47,15 @@ const canVibrate = (): boolean => typeof navigator !== 'undefined' && typeof nav
 /** A phone that can buzz: Android with vibrate, or a touch screen without it (iPhone). Computers never show the setting. */
 export const hapticsSupported = (): boolean => typeof window !== 'undefined' && coarse();
 
+const isIOS = (): boolean =>
+  typeof navigator !== 'undefined' &&
+  (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+
 let on: boolean | undefined;
 /** Use this setting from now on (sound-prefs calls it after saving). */
 export function applyHaptics(value: boolean): void {
   on = value;
+  document.documentElement.toggleAttribute('data-haptics-off', !value);
 }
 
 let sw: HTMLLabelElement | undefined;
@@ -67,6 +75,63 @@ function iosTick(): void {
     document.body.append(sw);
   }
   sw.click();
+}
+
+// ---------------------------------------------------------------- iPhone: a switch under the finger on every button
+
+const TAP_SEL = 'button[data-haptic-tap-host]';
+let armed = false;
+
+/** Plain buttons only: a label over a submit button, a popover button or a link would take over its default action. */
+function wants(b: HTMLButtonElement): boolean {
+  return (b.type === 'button' || !b.form) && !b.hasAttribute('popovertarget') && !b.hasAttribute('commandfor') &&
+    !b.closest('[data-board], .sg-wrap, sg-wrap, [data-haptic]');
+}
+
+function arm(b: HTMLButtonElement): void {
+  if (b.querySelector(':scope > [data-haptic-tap]') || !wants(b)) return;
+  const l = document.createElement('label');
+  l.setAttribute('data-haptic-tap', '');
+  l.setAttribute('aria-hidden', 'true');
+  const i = document.createElement('input');
+  i.type = 'checkbox';
+  i.setAttribute('switch', '');
+  i.tabIndex = -1;
+  i.addEventListener('click', (e) => e.stopPropagation()); // the label's own click goes on to the button; this one is ours
+  l.append(i);
+  b.setAttribute('data-haptic-tap-host', '');
+  b.append(l);
+}
+
+/** Put the switch on every plain button now and on every button added later (lessons redraw theirs). */
+function armButtons(): void {
+  if (armed || !isIOS() || !hapticsSupported()) return;
+  armed = true;
+  const css = document.createElement('style');
+  css.textContent =
+    `${TAP_SEL}{position:relative}` +
+    `${TAP_SEL}>[data-haptic-tap]{position:absolute;inset:0;margin:0;padding:0;border-radius:inherit;` +
+    `touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:inherit}` +
+    `${TAP_SEL}>[data-haptic-tap]>input{position:absolute;width:1px;height:1px;margin:0;visibility:hidden}` +
+    `html[data-haptics-off] [data-haptic-tap],${TAP_SEL}:disabled>[data-haptic-tap]{display:none}`;
+  document.head.append(css);
+  const scan = () => document.querySelectorAll<HTMLButtonElement>('button').forEach(arm);
+  let queued = false;
+  new MutationObserver(() => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => { queued = false; scan(); });
+  }).observe(document.body, { childList: true, subtree: true });
+  scan();
+}
+
+if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+  const start = () => {
+    if (!loadPrefs().haptics) document.documentElement?.setAttribute('data-haptics-off', '');
+    armButtons();
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
+  else start();
 }
 
 const last = new Map<SoundName, number>();
@@ -89,6 +154,7 @@ export function buzz(name: SoundName): void {
     }
     return;
   }
+  if (armed && (name === 'tap' || name === 'toggle')) return; // the button's own switch already ticked
   const ticks = Math.ceil(pattern.length / 2);
   for (let i = 0; i < ticks; i++) {
     if (i === 0) iosTick();

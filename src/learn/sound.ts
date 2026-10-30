@@ -333,7 +333,7 @@ const UNLOCK = ['pointerup', 'touchend', 'keydown', 'click'] as const;
 const TAPPABLE = 'button, summary, [role="button"], .btn, header a, nav a, input[type="checkbox"], input[type="radio"]';
 function onClick(e: MouseEvent): void {
   const t = (e.target as Element | null)?.closest?.(TAPPABLE);
-  if (!t || (t as HTMLButtonElement).disabled || t.closest('[data-haptic]')) return; // the iPhone haptic switch's own clicks
+  if (!t || (t as HTMLButtonElement).disabled || t.closest('[data-haptic], [data-haptic-tap]')) return; // the iPhone haptic switches' own clicks
   const name: SoundName = t.matches('input') ? 'toggle' : 'tap';
   const at = performance.now();
   setTimeout(() => { if (lastOther < at) play(name); }, 0); // after the button's own handler: a move or a solved sound wins
