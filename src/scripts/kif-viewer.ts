@@ -10,6 +10,7 @@ import {
 } from '../lib/kif';
 import { playStep, preloadSounds } from '../learn/sound';
 import { scrollWithin } from '../lib/scroll-within';
+import { liveBounds } from '../lib/live-bounds';
 
 export function bootKifViewer(root: HTMLElement): void {
   const q = <T extends HTMLElement = HTMLElement>(s: string) => root.querySelector<T>(s)!;
@@ -23,14 +24,14 @@ export function bootKifViewer(root: HTMLElement): void {
   const file = q<HTMLInputElement>('[data-file]');
   const boardBox = q('[data-board]');
 
-  const ground = Shogiground({
+  const ground = liveBounds(Shogiground({
     viewOnly: true,
     coordinates: { enabled: true, files: 'numeric', ranks: 'numeric' },
     highlight: { lastDests: true, check: true },
     hands: { inlined: true },
     drawable: { enabled: false, visible: false },
     animation: { enabled: !matchMedia('(prefers-reduced-motion: reduce)').matches },
-  });
+  }));
   ground.attach({ board: sgEl });
   void preloadSounds();
 

@@ -17,6 +17,7 @@ import { play as playSound, playMove } from '../learn/sound';
 import { Line } from '../play/game';
 import { type Length, markSolved, type Puzzle, solvedList } from './puzzles';
 import { legalMoves, Solver } from './solve';
+import { liveBounds } from '../lib/live-bounds';
 
 const REPLY_MS = 550;
 
@@ -47,7 +48,7 @@ export default class TsumeCtrl {
     readonly pref: LearnPrefs,
     readonly redraw: () => void,
   ) {
-    this.ground = Shogiground(this.groundConfig());
+    this.ground = liveBounds(Shogiground(this.groundConfig()));
   }
 
   get count(): number {

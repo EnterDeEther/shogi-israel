@@ -6,6 +6,7 @@ import { makeSquareName, parseUsi } from 'shogiops/util';
 import { FIRST_GAME, PHASES, PIECE_TOKEN, TAG_LABEL, firstGamePlies, plainText } from '../lib/first-game';
 import { markSeen } from '../lib/progress-local';
 import { playStep, preloadSounds } from '../learn/sound';
+import { liveBounds } from '../lib/live-bounds';
 
 /** Fill an element with text whose {R} marks become pieces drawn like the board's (styles: .pchip in /try/). */
 function setRich(el: HTMLElement, text: string): void {
@@ -26,14 +27,14 @@ export function bootWatchGame(root: HTMLElement): void {
   const N = FIRST_GAME.length;
   const SUMMARY = N + 1; // one step past the mate: the summary
 
-  const ground = Shogiground({
+  const ground = liveBounds(Shogiground({
     viewOnly: true,
     coordinates: { enabled: true, files: 'numeric', ranks: 'numeric' },
     highlight: { lastDests: true, check: true },
     hands: { inlined: true },
     drawable: { enabled: false, visible: false },
     animation: { enabled: !matchMedia('(prefers-reduced-motion: reduce)').matches },
-  });
+  }));
   ground.attach({ board: q('[data-sg]') });
   void preloadSounds();
 
