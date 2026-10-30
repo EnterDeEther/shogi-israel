@@ -12,6 +12,7 @@ import { illegalShogigroundMoveDests } from '../learn/shogi';
 import { play, preloadSounds } from '../learn/sound';
 import { markSeen } from '../lib/progress-local';
 import { liveBounds } from '../lib/live-bounds';
+import { SQUARE_RATIO } from '../lib/square-ratio';
 
 interface Exercise {
   name: string;
@@ -93,6 +94,7 @@ export function bootTryPieces(root: HTMLElement): void {
   let pos: Position;
 
   const ground = liveBounds(Shogiground({
+    squareRatio: SQUARE_RATIO,
     coordinates: { enabled: true, files: 'numeric', ranks: 'numeric' },
     highlight: { lastDests: true, check: false },
     hands: { inlined: true },

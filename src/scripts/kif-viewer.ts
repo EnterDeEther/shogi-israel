@@ -11,6 +11,7 @@ import {
 import { playStep, preloadSounds } from '../learn/sound';
 import { scrollWithin } from '../lib/scroll-within';
 import { liveBounds } from '../lib/live-bounds';
+import { SQUARE_RATIO } from '../lib/square-ratio';
 
 export function bootKifViewer(root: HTMLElement): void {
   const q = <T extends HTMLElement = HTMLElement>(s: string) => root.querySelector<T>(s)!;
@@ -26,6 +27,7 @@ export function bootKifViewer(root: HTMLElement): void {
 
   const ground = liveBounds(Shogiground({
     viewOnly: true,
+    squareRatio: SQUARE_RATIO,
     coordinates: { enabled: true, files: 'numeric', ranks: 'numeric' },
     highlight: { lastDests: true, check: true },
     hands: { inlined: true },

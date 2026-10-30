@@ -7,6 +7,7 @@ import { FIRST_GAME, PHASES, PIECE_TOKEN, TAG_LABEL, firstGamePlies, plainText }
 import { markSeen } from '../lib/progress-local';
 import { playStep, preloadSounds } from '../learn/sound';
 import { liveBounds } from '../lib/live-bounds';
+import { SQUARE_RATIO } from '../lib/square-ratio';
 
 /** Fill an element with text whose {R} marks become pieces drawn like the board's (styles: .pchip in /try/). */
 function setRich(el: HTMLElement, text: string): void {
@@ -29,6 +30,7 @@ export function bootWatchGame(root: HTMLElement): void {
 
   const ground = liveBounds(Shogiground({
     viewOnly: true,
+    squareRatio: SQUARE_RATIO,
     coordinates: { enabled: true, files: 'numeric', ranks: 'numeric' },
     highlight: { lastDests: true, check: true },
     hands: { inlined: true },
