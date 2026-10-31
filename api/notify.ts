@@ -4,11 +4,14 @@
 // SUPABASE_SERVICE_ROLE_KEY (server only, never PUBLIC_) and the Supabase URL.
 // Manual runs, with the same Bearer token: ?dry=1 lists who would get what without sending;
 // ?user=<uuid> sends that one player their email now (for a test), ignoring the schedule but not their settings.
+// The app's push notifications go out first, in the same run (src/lib/push-send.ts; skipped with ?user=, and
+// while VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY aren't set).
 import { createClient } from '@supabase/supabase-js';
 import { buildEmail, dueEmail, FROM, REPLY_TO, unsubscribeUrl, type EmailKind, type PrefsRow } from '../src/lib/notify.js';
 import { asGender } from '../src/lib/gender.js';
 import { TSUME_COUNTS } from '../src/lib/level-counts.js';
 import { WEEK_LENGTH } from '../src/tsume/week.js';
+import { pushConfigured, runPush } from '../src/lib/push-send.js';
 
 /** Resend's free plan allows 100 emails a day; keep room for account emails. The rest go out the next day. */
 const DAILY_MAX = Number(process.env.NOTIFY_DAILY_MAX) || 80;
@@ -19,7 +22,7 @@ export async function GET(request: Request): Promise<Response> {
   const url = process.env.SUPABASE_URL || process.env.PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const resendKey = process.env.RESEND_API_KEY;
-  if (!url || !serviceKey || !resendKey) return Response.json({ error: 'not-configured' }, { status: 503 });
+  if (!url || !serviceKey) return Response.json({ error: 'not-configured' }, { status: 503 });
 
   const params = new URL(request.url).searchParams;
   const dry = params.get('dry') === '1';
@@ -27,6 +30,8 @@ export async function GET(request: Request): Promise<Response> {
   const db = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
   const now = new Date();
   const weekCount = TSUME_COUNTS[WEEK_LENGTH];
+  const push = !only && pushConfigured() ? await runPush(db, now, weekCount, dry).catch((e: Error) => ({ error: e.message })) : null;
+  if (!resendKey) return Response.json({ error: 'not-configured', push }, { status: 503 });
 
   let q = db.from('notification_prefs').select('user_id, email_week, email_return, paused_reason, last_seen_at, return_sent, last_email_at')
     .or('email_week.eq.true,email_return.eq.true').is('paused_reason', null).limit(5000);
@@ -55,7 +60,7 @@ export async function GET(request: Request): Promise<Response> {
       : dueEmail(row, prog?.data, now, weekCount, prog?.updated_at);
     if (kind) plan.push({ user: row.user_id, kind });
   }
-  if (dry) return Response.json({ now: now.toISOString(), opted_in: rows?.length ?? 0, due: plan.length, plan: plan.map((p) => ({ ...p, user: p.user.slice(0, 8) })) });
+  if (dry) return Response.json({ now: now.toISOString(), opted_in: rows?.length ?? 0, due: plan.length, plan: plan.map((p) => ({ ...p, user: p.user.slice(0, 8) })), push });
 
   let sent = 0;
   const failed: string[] = [];
@@ -94,5 +99,5 @@ export async function GET(request: Request): Promise<Response> {
       ...(kind === 'return' ? { return_sent: row.return_sent + 1 } : {}),
     }).eq('user_id', user);
   }
-  return Response.json({ due: plan.length, sent, failed, left: Math.max(0, plan.length - DAILY_MAX) });
+  return Response.json({ due: plan.length, sent, failed, left: Math.max(0, plan.length - DAILY_MAX), push });
 }

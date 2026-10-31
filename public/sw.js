@@ -51,3 +51,27 @@ self.addEventListener('fetch', (e) => {
     }
   })());
 });
+
+// Push notifications (opt-in, src/lib/push.ts decides who gets what): show what the server sent, and open its page
+// when tapped, in the app's window if it is already open.
+self.addEventListener('push', (e) => {
+  let m = {};
+  try { m = e.data ? e.data.json() : {}; } catch {}
+  const title = m.title || 'שוגי ישראל';
+  e.waitUntil(self.registration.showNotification(title, {
+    body: m.body || '', tag: m.tag, icon: '/app-icon-192.png', badge: '/push-badge-96.png', lang: 'he', dir: 'rtl',
+    data: { url: m.url || '/app/' },
+  }));
+});
+
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const url = new URL((e.notification.data && e.notification.data.url) || '/app/', location.origin);
+  if (url.origin !== location.origin) return;
+  e.waitUntil((async () => {
+    const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const win = wins.find((w) => 'focus' in w);
+    if (win) { await win.focus(); return win.navigate(url.href).catch(() => self.clients.openWindow(url.href)); }
+    return self.clients.openWindow(url.href);
+  })());
+});
