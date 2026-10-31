@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { afterPush, buildPush, duePush, pushEndpointOk, type PushContext, type PushRow } from '../src/lib/push';
+import { afterPush, buildPush, duePush, isPublished, pushEndpointOk, type PushContext, type PushRow } from '../src/lib/push';
 import { israelWeek } from '../src/lib/notify';
 import { weekPuzzle } from '../src/tsume/week';
 
@@ -61,6 +61,12 @@ describe('which push a phone gets today', () => {
     const due = duePush(row({ push_news: true }), ctx({ notices: [notice] }))!;
     expect(afterPush(row(), due, ctx()).news_after).toBe(notice.starts_at);
   });
+});
+
+test('only published news is pushed', () => {
+  expect(isPublished({ status: 'published' })).toBe(true);
+  expect(isPublished({})).toBe(true); // before the status column
+  for (const status of ['draft', 'waiting', 'archived']) expect(isPublished({ status })).toBe(false);
 });
 
 describe('what the push says', () => {

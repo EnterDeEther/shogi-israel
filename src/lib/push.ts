@@ -67,6 +67,10 @@ export interface PushContext {
   lastSeen?: string | null;
 }
 
+/** News that may be pushed: published rows only (drafts, waiting and archived news never go out). Rows from before
+ *  the notices table had a status count as published. */
+export const isPublished = (n: { status?: string | null }): boolean => n.status == null || n.status === 'published';
+
 export type PushDue = { kind: 'week' } | { kind: 'course' } | { kind: 'news'; notice: Notice };
 
 /** Which push (if any) this phone gets today. */

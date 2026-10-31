@@ -4,7 +4,7 @@
 // service answers 404 or 410: the app was removed or notifications were turned off in the phone's settings) is deleted.
 import webpush from 'web-push';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { afterPush, buildPush, duePush, type Notice, type PushContext, type PushMessage, type PushRow } from './push.js';
+import { afterPush, buildPush, duePush, isPublished, type Notice, type PushContext, type PushMessage, type PushRow } from './push.js';
 import { asGender } from './gender.js';
 
 export const pushConfigured = (): boolean => Boolean(process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY);
@@ -32,8 +32,11 @@ type Row = PushRow & { p256dh: string; auth: string };
 export async function runPush(db: SupabaseClient, now: Date, weekCount: number, dry: boolean) {
   const { data: rows, error } = await db.from('push_subscriptions').select('*').or('push_week.eq.true,push_course.eq.true,push_news.eq.true').limit(5000);
   if (error) return { error: error.message };
-  const { data: notices } = await db.from('notices').select('id, title, body, url, starts_at')
-    .lte('starts_at', now.toISOString()).or(`ends_at.is.null,ends_at.gt.${now.toISOString()}`).order('starts_at', { ascending: false }).limit(10);
+  // The service key skips the table's read policy, so drafts must be left out here: only published news is pushed.
+  // Rows from before the status column (plans/news-updates-bar.md) have no status and count as published.
+  const { data: noticeRows } = await db.from('notices').select('*')
+    .lte('starts_at', now.toISOString()).or(`ends_at.is.null,ends_at.gt.${now.toISOString()}`).order('starts_at', { ascending: false }).limit(20);
+  const notices = (noticeRows ?? []).filter(isPublished).slice(0, 10);
 
   // the signed-in phones: progress and last visit, for the course reminder and the "already solved" check
   const ids = [...new Set((rows ?? []).map((r) => r.user_id).filter(Boolean))] as string[];
