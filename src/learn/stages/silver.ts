@@ -1,0 +1,81 @@
+// Ported from Lishogi (lila) ui/learn/src/stages/silver.ts
+// Source: https://github.com/WandererXII/lila/blob/89aea5f6f24c5e941c7cac8434a6e9e1acc15e94/ui/learn/src/stages/silver.ts
+// Copyright (c) 2019 onwards the li[shogi in sca]la authors.
+// Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
+// Modified by Shogi Israel (shogi.co.il), 2026-10-24.
+
+import { i18n } from '../i18n';
+import { obstaclesCaptured } from '../assert';
+import type { IncompleteLevel, IncompleteStage } from '../interfaces';
+import { createLevel } from '../level';
+import { arrow, initial, pieceMovesHighlihts } from '../shapes';
+import { toPiece } from '../util';
+
+const levels: IncompleteLevel[] = [
+  {
+    goal: i18n('il_b_silver1Goal'),
+    recap: i18n('il_b_silver1Recap'),
+    sfen: '9/9/9/9/9/4S4/9/9/9 b -',
+    nbMoves: 4,
+    success: obstaclesCaptured,
+    obstacles: ['5e', '6d', '8f'],
+    drawShapes: initial([
+      arrow('5f', '5e'),
+      arrow('5e', '6d'),
+      arrow('6d', '7e'),
+      arrow('7e', '8f'),
+    ]),
+  },
+  {
+    goal: i18n('il_b_silver2Goal'),
+    recap: i18n('il_b_silver2Recap'),
+    sfen: '9/9/9/4S4/9/9/9/9/9 b -',
+    nbMoves: 5,
+    success: obstaclesCaptured,
+    obstacles: ['4e', '5f', '6g', '5h', '4i'],
+  },
+  {
+    goal: i18n('il_b_silver3Goal'),
+    recap: i18n('il_b_silver3Recap'),
+    sfen: '9/9/9/9/3S5/6S2/9/9/9 b -',
+    nbMoves: 5,
+    success: obstaclesCaptured,
+    obstacles: ['6f', '6g', '5f', '3e', '2f'],
+  },
+  {
+    goal: i18n('learn:silverPromotion'),
+    recap: i18n('il_b_silver4Recap'),
+    sfen: '9/9/9/6S2/9/9/9/9/9 b -',
+    nbMoves: 3,
+    success: obstaclesCaptured,
+    obstacles: ['5d', '4d', '4c'],
+  },
+  {
+    goal: i18n('learn:silverSummary'),
+    recap: i18n('il_b_silver5Recap'),
+    sfen: '9/9/9/9/9/4S4/9/9/9 b -',
+    nbMoves: 2,
+    success: obstaclesCaptured,
+    obstacles: ['5d'],
+    squareHighlights: initial(pieceMovesHighlihts(toPiece('S'), '5f')),
+  },
+  {
+    goal: i18n('learn:psilverSummary'),
+    recap: i18n('il_b_silver6Recap'),
+    sfen: '9/9/9/9/9/4+S4/9/9/9 b -',
+    nbMoves: 2,
+    success: obstaclesCaptured,
+    obstacles: ['5d'],
+    squareHighlights: initial(pieceMovesHighlihts(toPiece('+S'), '5f')),
+  },
+];
+
+const stage: IncompleteStage = {
+  key: 'silver',
+  title: i18n('learn:theSilver'),
+  subtitle: i18n('learn:itMovesEitherForwardOrDiagonallyBack'),
+  intro: i18n('learn:silverIntro'),
+  levels: levels.map((l, i) => createLevel(l, i)),
+  complete: i18n('learn:silverComplete'),
+};
+export default stage;

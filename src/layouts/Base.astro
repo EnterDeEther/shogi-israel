@@ -1,0 +1,188 @@
+---
+import '@fontsource-variable/heebo';
+import '@fontsource-variable/frank-ruhl-libre';
+import '@fontsource/shippori-mincho/800.css';
+import '@fontsource/noto-serif-hebrew/hebrew-800.css';
+import '@fontsource/suez-one/hebrew-400.css';
+import '@fontsource/secular-one/hebrew-400.css';
+import '../styles/global.css';
+import '../styles/piece-arrows.css';
+import Analytics from '@vercel/analytics/astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import InstallOffer from '../components/InstallOffer.astro';
+import { ogImageFor, structuredData, ldJson } from '../lib/seo';
+
+interface Props {
+  title: string;
+  description: string;
+  ogImage?: string;
+  noindex?: boolean;
+  tabTitle?: string;
+}
+
+const { title, description, ogImage = ogImageFor(Astro.url.pathname), noindex = false, tabTitle } = Astro.props;
+const fullTitle = title === 'שוגי ישראל' ? 'שוגי ישראל · השחמט היפני, בעברית' : `${tabTitle ?? title} · שוגי ישראל`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogUrl = new URL(ogImage, Astro.site);
+const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description);
+---
+<!doctype html>
+<html lang="he" dir="rtl" data-pieces="hebrew" data-hfont="noto">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="icon" href="/favicon-192.png" sizes="192x192" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="apple-mobile-web-app-title" content="שוגי ישראל" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#ECE4D4" media="(prefers-color-scheme: light)" data-theme-color="light" />
+    <meta name="theme-color" content="#221A14" media="(prefers-color-scheme: dark)" data-theme-color="dark" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="he_IL" />
+    <meta property="og:site_name" content="שוגי ישראל" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={fullTitle} />
+    <meta name="twitter:card" content="summary_large_image" />
+    {ld.map((d) => <script is:inline type="application/ld+json" set:html={ldJson(d)} />)}
+    <script is:inline>
+      (function () {
+        var root = document.documentElement;
+        var pref = '';
+        try {
+          localStorage.removeItem('pieces');
+          var pieces = localStorage.getItem('pieceSet');
+          if (pieces === 'letters' || pieces === 'kanji') root.setAttribute('data-pieces', pieces);
+          var hfont = localStorage.getItem('hebrewFont');
+          if (hfont === 'suez' || hfont === 'secular') root.setAttribute('data-hfont', hfont);
+          if (localStorage.getItem('gender') === 'f') root.setAttribute('data-gender', 'f');
+          pref = localStorage.getItem('theme') || '';
+        } catch (e) {}
+        if (pref !== 'light' && pref !== 'dark') pref = '';
+        var dark = pref ? pref === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        root.setAttribute('data-theme', dark ? 'dark' : 'light');
+        root.setAttribute('data-theme-pref', pref || 'auto');
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">⟦דלג|דלגי⟧ לתוכן</a>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+    <InstallOffer />
+    <Analytics />
+    <script>
+      import '../scripts/gender';
+    </script>
+    <script>
+      import '../learn/sound';
+    </script>
+    <script>
+      import { startInstall } from '../lib/install';
+      startInstall();
+    </script>
+    <script>
+      import { rememberAdSource } from '../lib/ad-source';
+      rememberAdSource();
+    </script>
+    <script>
+      import '../scripts/info-tips';
+    </script>
+    <script>
+      import { pieceSetOf, hebrewFontOf } from '../lib/piece-set';
+      const root = document.documentElement;
+      const sync = () => {
+        const set = pieceSetOf(root.getAttribute('data-pieces'));
+        document.querySelectorAll<HTMLButtonElement>('[data-pieces-set]').forEach((b) => {
+          b.setAttribute('aria-pressed', String(b.dataset.piecesSet === set));
+        });
+        const font = hebrewFontOf(root.getAttribute('data-hfont'));
+        document.querySelectorAll<HTMLButtonElement>('[data-hfont-set]').forEach((b) => {
+          b.setAttribute('aria-pressed', String(b.dataset.hfontSet === font));
+        });
+      };
+      document.addEventListener('click', (e) => {
+        const fontBtn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-hfont-set]');
+        if (fontBtn) {
+          const font = hebrewFontOf(fontBtn.dataset.hfontSet);
+          root.setAttribute('data-hfont', font);
+          try { localStorage.setItem('hebrewFont', font); } catch {}
+          sync();
+          return;
+        }
+        const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-pieces-set]');
+        if (!btn) return;
+        const set = pieceSetOf(btn.dataset.piecesSet);
+        root.setAttribute('data-pieces', set);
+        try { localStorage.setItem('pieceSet', set); } catch {}
+        sync();
+        document.dispatchEvent(new CustomEvent('pieces-changed', { detail: set }));
+      });
+      sync();
+    </script>
+    <script>
+      const root = document.documentElement;
+      const scheme = window.matchMedia('(prefers-color-scheme: dark)');
+      const COLORS = { light: '#ECE4D4', dark: '#221A14' };
+      const applyTheme = (pref: string) => {
+        const dark = pref === 'auto' ? scheme.matches : pref === 'dark';
+        root.setAttribute('data-theme', dark ? 'dark' : 'light');
+        root.setAttribute('data-theme-pref', pref);
+        document.querySelectorAll<HTMLMetaElement>('meta[data-theme-color]').forEach((m) => {
+          const own = m.dataset.themeColor as 'light' | 'dark';
+          m.content = pref === 'auto' ? COLORS[own] : COLORS[dark ? 'dark' : 'light'];
+        });
+        document.querySelectorAll<HTMLButtonElement>('[data-theme-set]').forEach((b) => {
+          b.setAttribute('aria-pressed', String(b.dataset.themeSet === pref));
+        });
+        document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((b) => {
+          b.setAttribute('aria-label', dark ? 'מעבר למצב בהיר' : 'מעבר למצב כהה');
+          b.setAttribute('aria-pressed', String(dark));
+        });
+      };
+      const savePref = (pref: string) => {
+        try { if (pref === 'auto') localStorage.removeItem('theme'); else localStorage.setItem('theme', pref); } catch {}
+        applyTheme(pref);
+      };
+      document.addEventListener('click', (e) => {
+        const t = e.target as HTMLElement;
+        const set = t.closest<HTMLButtonElement>('[data-theme-set]');
+        if (set) return savePref(set.dataset.themeSet === 'light' || set.dataset.themeSet === 'dark' ? set.dataset.themeSet : 'auto');
+        if (t.closest('[data-theme-toggle]')) savePref(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+      });
+      scheme.addEventListener('change', () => {
+        if (root.getAttribute('data-theme-pref') === 'auto') applyTheme('auto');
+      });
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'theme') applyTheme(e.newValue === 'light' || e.newValue === 'dark' ? e.newValue : 'auto');
+      });
+      applyTheme(root.getAttribute('data-theme-pref') || 'auto');
+    </script>
+    <script>
+      import { accountsEnabled, hasStoredSession } from '../lib/account-config';
+      if (accountsEnabled && hasStoredSession()) {
+        document.documentElement.setAttribute('data-signed-in', '');
+        if (location.pathname !== '/account/') import('../lib/account').then((m) => m.startSync());
+        import('../lib/xp-toast').then((m) => m.startXpNotes());
+        import('../lib/inbox-ui').then((m) => m.startInbox());
+      } else if (accountsEnabled) {
+        import('../lib/xp-toast').then((m) => m.startXpNotes(true));
+      }
+    </script>
+  </body>
+</html>

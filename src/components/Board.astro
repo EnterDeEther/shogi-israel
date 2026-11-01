@@ -1,0 +1,173 @@
+---
+import { parseSfen, describe, letterOf, kanjiOf, hebrewOf, squareLabel, type PieceType } from '../lib/sfen';
+import PieceToggle from './PieceToggle.astro';
+
+interface Props {
+  sfen: string;
+  highlight?: string;
+  zones?: boolean;
+  caption?: string;
+  toggle?: boolean;
+  size?: 'full' | 'compact';
+  reveal?: boolean;
+  kanji?: boolean;
+}
+
+const { sfen, highlight = '', zones = false, caption, toggle = true, size = 'full', reveal = false, kanji = false } = Astro.props;
+const pos = parseSfen(sfen);
+const hl = new Set(highlight.split(',').map((s) => s.trim()).filter(Boolean));
+const files = [9, 8, 7, 6, 5, 4, 3, 2, 1];
+const ranksDigit = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+const ranksKanji = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
+const isHoshi = (f: number, r: number) => (f === 7 || f === 4) && (r === 3 || r === 6);
+const desc = describe(pos);
+const handOf = (side: 'sente' | 'gote') =>
+  Object.entries(pos.hands[side]).map(([t, n]) => ({ t, n }));
+const goteHand = handOf('gote');
+const senteHand = handOf('sente');
+const handPieces = (hand: { t: string; n: number }[], side: 'sente' | 'gote') =>
+  hand.map((h) => ({ n: h.n, p: { type: h.t as PieceType, side, promoted: false } }));
+---
+<figure class:list={['board-fig', size, { reveal, kanji }]} data-board>
+  {toggle && !kanji && (
+    <div class="board-head">
+      <span class="small muted">סימון הכלים</span>
+      <PieceToggle />
+    </div>
+  )}
+  {goteHand.length > 0 && (
+    <p class="hand gote small" aria-hidden="true">ביד של המשיב: {handPieces(goteHand, 'gote').map(({ n, p }, i) => <>{i > 0 && ' '}<bdi dir="ltr" class="hp"><span class="hh" dir="rtl">{hebrewOf(p)}</span><span class="hlt">{letterOf(p)}</span><span class="hk" lang="ja">{kanjiOf(p)}</span>×{n}</bdi></>)}</p>
+  )}
+  <div class="bw" dir="ltr">
+    <div class="files" aria-hidden="true">{files.map((f) => <span>{f}</span>)}</div>
+    <span aria-hidden="true"></span>
+    <div class="bd" aria-hidden="true" data-grid>
+      {pos.squares.map((s) => (
+        <div
+          class:list={['sq', { hs: isHoshi(s.file, s.rank), hl: hl.has(s.id), zone: zones && (s.rank <= 3 || s.rank >= 7) }]}
+          data-sq={s.id}
+          data-label={squareLabel(s)}
+        >
+          {s.piece && (
+            <span class:list={['pc', { g: s.piece.side === 'gote', pro: s.piece.promoted }]} data-t={(s.piece.promoted ? '+' : '') + s.piece.type}>
+              <span class:list={['ph', { two: hebrewOf(s.piece).length > 1, crown: s.piece.type === 'K' }]} dir="rtl">{s.piece.type === 'K' && <svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7 10 .8 14.4 7 19 3.2 17.2 11.2H2.8Z" /></svg>}<span>{hebrewOf(s.piece)}</span></span>
+              <span class="pl">{letterOf(s.piece)}</span>
+              <span class="pk" lang="ja">{kanjiOf(s.piece)}</span>
+            </span>
+          )}
+        </div>
+      ))}
+    </div>
+    <div class="ranks" aria-hidden="true">
+      {ranksDigit.map((r, i) => <span><span class="rd">{r}</span><span class="rk" lang="ja">{ranksKanji[i]}</span></span>)}
+    </div>
+  </div>
+  <p class="board-fb" data-board-fb role="status" aria-live="polite"></p>
+  {senteHand.length > 0 && (
+    <p class="hand sente small" aria-hidden="true">ביד של הפותח: {handPieces(senteHand, 'sente').map(({ n, p }, i) => <>{i > 0 && ' '}<bdi dir="ltr" class="hp"><span class="hh" dir="rtl">{hebrewOf(p)}</span><span class="hlt">{letterOf(p)}</span><span class="hk" lang="ja">{kanjiOf(p)}</span>×{n}</bdi></>)}</p>
+  )}
+  {caption && <figcaption class="cap">{caption}</figcaption>}
+  <details class="alt">
+    <summary>תיאור הלוח בטקסט</summary>
+    {desc.map((l) => <p>{l}</p>)}
+  </details>
+</figure>
+
+<style>
+  .board-fig { margin: 24px 0; max-width: 520px; }
+  .board-fig.compact { max-width: 420px; }
+  @media (max-width: 600px) {
+    .board-fig, .board-fig.compact { max-width: none; }
+    .bw { width: 100vw; margin-inline: calc(50% - 50vw); padding-left: 2px; grid-template-columns: 1fr 13px; gap: 1px; }
+  }
+  .board-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+  .bw { display: grid; grid-template-columns: 1fr 18px; grid-template-rows: 18px auto; gap: 2px; }
+  .files { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); font: 500 11px/18px var(--f-body); color: var(--muted); text-align: center; }
+  .ranks { display: grid; grid-template-rows: repeat(9, minmax(0, 1fr)); font: 500 11px var(--f-body); color: var(--muted); align-items: center; text-align: center; }
+  .ranks .rk { display: none; font-weight: 800; }
+  :global(html[data-pieces="kanji"]) .ranks .rd { display: none; }
+  :global(html[data-pieces="kanji"]) .ranks .rk { display: inline; }
+
+  .bd {
+    display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 1px;
+    background: var(--grid); padding: 1px; border: 2px solid var(--grid); border-radius: 2px;
+    box-shadow: var(--shadow-board);
+  }
+  .sq { aspect-ratio: 1 / 1; background: var(--kaya); display: flex; align-items: center; justify-content: center; position: relative; }
+  .sq.zone { background: var(--kaya-zone); }
+  .sq.hs::after {
+    content: ""; position: absolute; right: -3px; bottom: -3px; width: 5px; height: 5px;
+    border-radius: 50%; background: var(--grid); z-index: 2;
+  }
+  .sq.hl { box-shadow: inset 0 0 0 3px var(--seal); background: #F3DFB2; }
+  .sq.hl::before {
+    content: ""; position: absolute; top: 2px; left: 2px; width: 0; height: 0;
+    border-top: 9px solid var(--seal); border-right: 9px solid transparent; z-index: 1;
+  }
+
+  .pc {
+    position: relative; width: 82%; height: 90%;
+    display: flex; align-items: center; justify-content: center; padding-top: 14%;
+    filter: drop-shadow(0 1px 1px rgba(40, 25, 10, 0.4));
+    color: var(--piece-ink); line-height: 1;
+  }
+  .pc::before, .pc::after {
+    content: ""; position: absolute; clip-path: polygon(50% 0, 86% 16%, 100% 100%, 0 100%, 14% 16%);
+  }
+  .pc::before { inset: 0; background: var(--piece-line); }
+  .pc::after { inset: 1.5px; background: var(--piece) var(--arrows, none) center / 100% 100% no-repeat; }
+  .pc.g { transform: rotate(180deg); }
+  .pc.g::after { background-color: var(--piece-gote); }
+  .ph, .pl, .pk { position: relative; z-index: 1; font-size: clamp(12px, 4.2vw, 19px); }
+  .ph, .pl { font: 800 clamp(12px, 4.2vw, 19px)/1 var(--f-body); letter-spacing: -0.5px; }
+  .ph { font-family: var(--f-piece); font-weight: var(--fw-piece); }
+  .ph { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; unicode-bidi: isolate; }
+  .ph.two { font-size: clamp(11px, 3.6vw, 16px); }
+  .ph.crown { margin-top: -4%; font-size: clamp(11px, 3.7vw, 17px); }
+  .ph svg { width: 1.05em; height: auto; fill: currentColor; }
+  .pc.pro .ph, .pc.pro .pl, .pc.pro .pk { color: var(--piece-seal); }
+  .pl, .pk { display: none; }
+  .pk { font-family: var(--f-kanji); font-weight: 800; }
+  :global(html[data-pieces="letters"]) .ph { display: none; }
+  :global(html[data-pieces="letters"]) .pl { display: inline; }
+  :global(html[data-pieces="kanji"]) .ph { display: none; }
+  :global(html[data-pieces="kanji"]) .pk { display: inline; }
+  .kanji .ph, .kanji .pl { display: none !important; }
+  .kanji .pk { display: inline !important; }
+
+  .bd:global(.live) .sq { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .bd:global(.live) .sq:hover { background: #F1DDB0; }
+  .bd:global(.live) .sq:focus-visible { outline: 3px solid var(--ink); outline-offset: -3px; z-index: 3; }
+  .sq:global(.ok) { background: #CFE3B8 !important; box-shadow: inset 0 0 0 3px #2F6B2A; }
+  .sq:global(.no) { background: var(--sq-no) !important; box-shadow: inset 0 0 0 3px var(--seal); animation: nudge 0.25s; }
+  .sq :global(.mk) {
+    position: absolute; top: 2px; inset-inline-end: 3px; z-index: 4;
+    font: 800 clamp(11px, 3vw, 15px)/1 var(--f-body); color: var(--seal);
+  }
+  .sq:global(.ok) :global(.mk) { color: #2F6B2A; }
+  @keyframes nudge { 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
+  @media (prefers-reduced-motion: reduce) { .sq:global(.no) { animation: none; } }
+
+  .reveal:not(:global(.revealed)) .sq.hl { box-shadow: none; background: var(--kaya); }
+  .reveal:not(:global(.revealed)) .sq.hl::before { display: none; }
+  .reveal:not(:global(.revealed)) .sq.zone { background: var(--kaya); }
+
+  .board-fb { margin: 8px 0 0; padding: 10px 12px; border-radius: 6px; font-weight: 700; font-size: 16px; line-height: 1.5; }
+  .board-fb:empty { display: none; }
+  .board-fb:global(.is-ok) { background: var(--fb-ok-bg); color: var(--fb-ok-fg); }
+  .board-fb:global(.is-no) { background: var(--fb-no-bg); color: var(--fb-no-fg); }
+
+  .hand { margin: 6px 0; color: var(--muted); }
+  .hh { font-family: var(--f-piece); font-weight: var(--fw-piece); }
+  .hlt, .hk { display: none; }
+  .hk { font-family: var(--f-kanji); font-weight: 800; }
+  :global(html[data-pieces="letters"]) .hh, :global(html[data-pieces="kanji"]) .hh { display: none; }
+  :global(html[data-pieces="letters"]) .hlt { display: inline; }
+  :global(html[data-pieces="kanji"]) .hk { display: inline; }
+  .kanji .hh, .kanji .hlt { display: none !important; }
+  .kanji .hk { display: inline !important; }
+  .cap { margin-top: 10px; font-size: 15px; color: var(--muted); line-height: 1.6; }
+  .alt { margin-top: 8px; font-size: 15px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .alt summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 700; color: var(--ink-2); }
+  .alt p { margin: 0 0 10px; }
+</style>

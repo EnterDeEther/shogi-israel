@@ -1,0 +1,76 @@
+---
+import { CONTACT_EMAIL, isSection, liveNav } from '../lib/nav';
+import { TOUR_URL } from '../lib/tour';
+
+const year = new Date().getFullYear();
+const items = liveNav();
+const sections = items.filter(isSection);
+const solos = items.filter((i) => !isSection(i));
+---
+<footer class="site-footer">
+  <div class="wrap inner">
+    <nav aria-label="מפת האתר" class="sitemap">
+      {sections.map((s) => (
+        <div>
+          <h2>{s.label}</h2>
+          <ul>{s.links.map((l) => <li><a href={l.href} rel={l.external ? 'noopener' : undefined}>{l.label}</a></li>)}</ul>
+        </div>
+      ))}
+      {solos.length > 0 && (
+        <div>
+          <h2>עוד</h2>
+          <ul>{solos.map((l) => <li><a href={l.href} rel={l.external ? 'noopener' : undefined}>{l.label}</a></li>)}</ul>
+        </div>
+      )}
+    </nav>
+    <nav aria-label="קישורים משפטיים ומידע" class="legal">
+      <a href={TOUR_URL} data-tour-start>סיור באתר</a>
+      <a href="/accessibility/">הצהרת נגישות</a>
+      <a href="/privacy/">מדיניות פרטיות</a>
+      <a href="/about/#credits">קרדיטים</a>
+      <a href="/about/#contact">⟦צור|צרי⟧ קשר</a>
+      <a href="https://github.com/EnterDeEther/shogi-israel" rel="noopener">קוד המקור (AGPL-3.0)</a>
+    </nav>
+    <p class="small muted">
+      <span class="gm">הטקסטים מנוסחים בלשון זכר מטעמי נוחות אך פונים לשני המינים. <button type="button" class="link" data-gender-set="f">לעבור ללשון נקבה</button></span>
+      <span class="gf">האתר פונה אלייך בלשון נקבה. <button type="button" class="link" data-gender-set="m">לעבור ללשון זכר</button></span>
+    </p>
+    <p class="small muted">אתר קהילתי, ללא מטרות רווח. החוקים לפי איגוד השוגי היפני (JSA) והפדרציה האירופית (FESA).</p>
+    <p class="small muted">שוגי ישראל · <bdi dir="ltr">shogi.co.il</bdi> · <a href={`mailto:${CONTACT_EMAIL}`}><bdi dir="ltr">{CONTACT_EMAIL}</bdi></a> · {year}</p>
+  </div>
+</footer>
+
+<script>
+  type TourId = 'site' | 'account';
+  const isTourId = (v: string | null): v is TourId => v === 'site' || v === 'account';
+  const start = (id: TourId, from?: HTMLElement) => {
+    const ok = id === 'site' || document.documentElement.hasAttribute('data-signed-in');
+    return import('../scripts/tour').then((m) => m.startTour(ok ? id : 'site', from));
+  };
+  document.addEventListener('click', (e) => {
+    const link = (e.target as HTMLElement).closest<HTMLElement>('[data-tour-start]');
+    if (!link || location.pathname !== '/') return;
+    e.preventDefault();
+    void start(link.dataset.tourStart === 'account' ? 'account' : 'site', link);
+  });
+  const asked = new URLSearchParams(location.search).get('tour');
+  if (location.pathname === '/' && isTourId(asked)) {
+    history.replaceState(history.state, '', location.pathname + location.hash);
+    setTimeout(() => void start(asked), asked === 'account' ? 300 : 0);
+  }
+</script>
+
+<style>
+  .site-footer { margin-top: 72px; border-top: 1px solid var(--rule); padding: 32px 0 40px; }
+  .inner { display: flex; flex-direction: column; gap: 10px; }
+  .sitemap { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 24px; padding-bottom: 20px; margin-bottom: 10px; border-bottom: 1px solid var(--rule); }
+  .sitemap h2 { font-family: inherit; font-size: 13px; font-weight: 700; color: var(--muted); margin: 0 0 6px; }
+  .sitemap ul { list-style: none; margin: 0; padding: 0; }
+  .sitemap a { color: var(--ink); text-decoration: none; min-height: 32px; padding: 4px 0; line-height: 1.3; display: inline-flex; align-items: center; }
+  .sitemap a:hover { color: var(--seal); text-decoration: underline; }
+  @media (min-width: 900px) { .sitemap { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .legal { display: flex; flex-wrap: wrap; gap: 4px 20px; }
+  .legal a { color: var(--ink-2); min-height: 32px; display: inline-flex; align-items: center; }
+  p { margin: 0; line-height: 1.6; }
+  .link { appearance: none; background: none; border: 0; padding: 0; font: inherit; color: var(--ink-2); text-decoration: underline; cursor: pointer; min-height: 32px; }
+</style>

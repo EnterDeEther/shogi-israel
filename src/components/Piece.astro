@@ -1,0 +1,31 @@
+---
+interface Props { promoted?: boolean }
+const { promoted = false } = Astro.props;
+const label = (await Astro.slots.render('default')).replace(/<[^>]+>/g, '').trim();
+const isKanji = /[぀-ヿ㐀-鿿]/.test(label);
+const isHebrew = /[א-ת]/.test(label);
+const crown = label === 'מ';
+---
+<span class:list={['piece-chip', { kanji: isKanji, pro: promoted, two: isHebrew && label.length > 1, crown }]} lang={isKanji ? 'ja' : undefined}><span class="pc-l" dir={isHebrew ? 'rtl' : undefined}>{crown && <svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7 10 .8 14.4 7 19 3.2 17.2 11.2H2.8Z" /></svg>}{label}</span></span>
+
+<style>
+  .piece-chip {
+    position: relative; display: inline-flex; align-items: center; justify-content: center;
+    width: 1.55em; height: 1.75em; padding-top: 0.28em; vertical-align: -0.45em; margin-inline: 0.1em;
+    color: var(--piece-ink); line-height: 1; filter: drop-shadow(0 1px 1px rgba(40, 25, 10, 0.35));
+    unicode-bidi: isolate;
+  }
+  .piece-chip::before, .piece-chip::after {
+    content: ""; position: absolute; clip-path: polygon(50% 0, 86% 16%, 100% 100%, 0 100%, 14% 16%);
+  }
+  .piece-chip::before { inset: 0; background: var(--piece-line); }
+  .piece-chip::after { inset: 1.5px; background: var(--piece); }
+  .pc-l { position: relative; z-index: 1; font: 800 0.82em/1 var(--f-body); letter-spacing: -0.3px; }
+  .pc-l[dir="rtl"] { font-family: var(--f-piece); font-weight: var(--fw-piece); }
+  .kanji .pc-l { font-family: var(--f-kanji); font-size: 0.9em; }
+  .two .pc-l { font-size: 0.7em; }
+  .crown { padding-top: 0.12em; }
+  .crown .pc-l { display: inline-flex; flex-direction: column; align-items: center; gap: 0.08em; font-size: 0.74em; }
+  .crown svg { width: 0.95em; height: auto; fill: currentColor; }
+  .pro .pc-l { color: var(--seal); }
+</style>

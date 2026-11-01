@@ -1,0 +1,7 @@
+---
+import { tipMarkup, type TipId } from '../lib/info-tips';
+
+interface Props { id: TipId }
+const { id } = Astro.props;
+---
+<Fragment set:html={tipMarkup(id)} />

@@ -1,0 +1,161 @@
+---
+import Base from '../layouts/Base.astro';
+import KifViewer from '../components/KifViewer.astro';
+import Piece from '../components/Piece.astro';
+
+const pieces: [string, string, string, boolean?][] = [
+  ['玉', 'K', 'מלך'], ['飛', 'R', 'צריח'], ['角', 'B', 'רץ'], ['金', 'G', 'גנרל זהב'], ['銀', 'S', 'גנרל כסף'],
+  ['桂', 'N', 'פרש'], ['香', 'L', 'רומח'], ['歩', 'P', 'רגלי'],
+  ['龍', '+R', 'דרקון', true], ['馬', '+B', 'סוס', true], ['成銀', '+S', 'כסף מוכתר', true],
+  ['成桂', '+N', 'פרש מוכתר', true], ['成香', '+L', 'רומח מוכתר', true], ['と', '+P', 'טוקין', true],
+];
+const hasPlay = Object.keys(import.meta.glob(['./play.astro', './play/index.astro'])).length > 0;
+const ranks = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
+---
+<Base title="רישום משחק: קובצי KIF" description="מה זה קובץ KIF, למה הוא טוב, איך קוראים אותו ואיפה משתמשים בו: ליש׳וגי, 81Dojo ואפליקציות. עם צופה KIF שעובד בדפדפן.">
+  <div class="wrap page kif-page">
+    <p class="eyebrow">כלים</p>
+    <h1>רישום משחק: קובצי KIF</h1>
+    <p class="lead measure">כל משחק שוגי אפשר לשמור כקובץ טקסט קטן, ולפתוח אותו שוב בכל אתר ובכל אפליקציה. הפורמט הנפוץ ביותר נקרא KIF. בעמוד הזה: מה יש בקובץ, איך קוראים אותו, ואיפה משתמשים בו.</p>
+
+    <nav class="toc measure" aria-label="בעמוד הזה">
+      <a href="#what">מה זה</a> · <a href="#why">למה זה טוב</a> · <a href="#read">איך קוראים</a> · <a href="#kifv-title">צופה KIF</a> · <a href="#where">איפה משתמשים</a> · <a href="#faq">שאלות</a>
+    </nav>
+
+    <div class="prose measure">
+      <h2 id="what">מה זה KIF?</h2>
+      <p>רישום משחק (ביפנית <span lang="ja">棋譜</span>, קיפו) הוא רשימה של כל המהלכים במשחק, לפי הסדר. KIF הוא הדרך הנפוצה לשמור רישום כזה בקובץ. הוא נולד ביפן, ולכן המהלכים בו כתובים ביפנית, אבל אחרי חמש דקות של היכרות אפשר לקרוא אותו בלי בעיה.</p>
+      <p>קובץ KIF הוא קובץ טקסט רגיל, עם סיומת <bdi dir="ltr" class="nt">.kif</bdi> (או <bdi dir="ltr" class="nt">.kifu</bdi>). בראש הקובץ יש פרטים על המשחק: מי שיחק, מתי, ומאיזו עמדה התחילו. אחריהם באה רשימת המהלכים, שורה לכל מהלך, ובסוף איך המשחק נגמר.</p>
+
+      <h2 id="why">למה זה טוב?</h2>
+      <ul>
+        <li><strong>ללמוד מהמשחקים שלך.</strong> כל משחק ⟦שתשחק|שתשחקי⟧ כאן באתר אפשר להוריד כקובץ KIF. ⟦פתח|פתחי⟧ אותו בליש׳וגי, ומנוע חזק מראה איפה טעית ומה היה עדיף.</li>
+        <li><strong>לשתף.</strong> ⟦שלח|שלחי⟧ את הקובץ לחבר או למורה, או ⟦הדבק|הדביקי⟧ אותו בקבוצת הווטסאפ, ⟦ושאל|ושאלי⟧: מה היית עושה כאן?</li>
+        <li><strong>לשמור.</strong> המשחקים שלך נשארים אצלך, גם אם ⟦תעבור|תעברי⟧ אתר או אפליקציה.</li>
+        <li><strong>לעבור בין תוכנות.</strong> כמעט כל תוכנת שוגי בעולם יודעת לקרוא KIF, אז משחק מאתר אחד נפתח בכל מקום אחר.</li>
+      </ul>
+
+      <h2 id="read">איך קוראים קובץ KIF?</h2>
+      <p>ככה נראה החלק העליון של קובץ:</p>
+      <pre class="kif-sample" dir="ltr" lang="ja"><code>開始日時：2026/10/24 20:00:00
+手合割：平手
+先手：Dean
+後手：Noa
+手数----指手---------消費時間--
+   1 ７六歩(77)
+   2 ３四歩(33)
+   3 ２二角成(88)
+   4 同　銀(31)
+   5 ４五角打</code></pre>
+      <h3>הכותרת</h3>
+      <ul>
+        <li><span lang="ja">開始日時</span>: מתי המשחק התחיל.</li>
+        <li><span lang="ja">手合割</span>: מאיזו עמדה התחילו. <span lang="ja">平手</span> היא העמדה הרגילה. במשחק פור כתוב כאן איזה כלי הוריד נותן הפור, למשל <span lang="ja">角落ち</span> (בלי רץ).</li>
+        <li><span lang="ja">先手</span>: הפותח, מי שמשחק ראשון. <span lang="ja">後手</span>: המשיב. במשחק פור כתוב במקומם <span lang="ja">下手</span> (מקבל הפור) ו־<span lang="ja">上手</span> (נותן הפור).</li>
+        <li>לפעמים יש עוד שורות, כמו <span lang="ja">棋戦</span> (שם הטורניר) או <span lang="ja">持ち時間</span> (הזמן לכל שחקן). אפשר לדלג עליהן.</li>
+      </ul>
+
+      <h3>שורת מהלך</h3>
+      <p>⟦קח|קחי⟧ את <span lang="ja" class="kj">７六歩(77)</span>. היא אומרת: <strong>לאן</strong>, <strong>איזה כלי</strong>, ו<strong>מאיפה</strong>.</p>
+      <ol>
+        <li><span lang="ja" class="kj">７六</span> היא משבצת היעד: טור 7, שורה 6. כלומר <bdi dir="ltr" class="nt">76</bdi>. הטור כתוב בספרה, והשורה במספר יפני (טבלה למטה).</li>
+        <li><span lang="ja" class="kj">歩</span> הוא הכלי: רגלי <Piece>歩</Piece>.</li>
+        <li><bdi dir="ltr" class="nt">(77)</bdi> היא המשבצת שממנה הכלי יצא.</li>
+      </ol>
+      <p>ביחד: הרגלי עבר מ־<bdi dir="ltr" class="nt">77</bdi> ל־<bdi dir="ltr" class="nt">76</bdi>. אצלנו באתר כותבים את אותו מהלך <bdi dir="ltr" class="nt">P-76</bdi>.</p>
+
+      <h3>ארבעה סימנים שכדאי להכיר</h3>
+      <table class="kif-table">
+        <thead><tr><th scope="col">סימן</th><th scope="col">משמעות</th><th scope="col">דוגמה</th></tr></thead>
+        <tbody>
+          <tr><td lang="ja" class="kj">成</td><td>הכתרה</td><td><span lang="ja" class="kj">２二角成(88)</span>: הרץ לוכד ב־<bdi dir="ltr" class="nt">22</bdi> ומוכתר, <bdi dir="ltr" class="nt">Bx22+</bdi></td></tr>
+          <tr><td lang="ja" class="kj">不成</td><td>ויתור על הכתרה</td><td><span lang="ja" class="kj">２三銀不成(34)</span>: הכסף נכנס לאזור ההכתרה ולא מוכתר</td></tr>
+          <tr><td lang="ja" class="kj">打</td><td>הצנחה</td><td><span lang="ja" class="kj">４五角打</span>: מצניחים רץ מהיד ל־<bdi dir="ltr" class="nt">45</bdi>, <bdi dir="ltr" class="nt">B*45</bdi>. אין משבצת מוצא, כי הכלי בא מהיד</td></tr>
+          <tr><td lang="ja" class="kj">同</td><td>אותה משבצת</td><td><span lang="ja" class="kj">同　銀(31)</span>: הכסף לוכד בדיוק במשבצת של המהלך הקודם</td></tr>
+        </tbody>
+      </table>
+
+      <h3>מספרי השורות ביפנית</h3>
+      <table class="kif-table ranks">
+        <thead><tr><th scope="row">ביפנית</th>{ranks.map((r) => <td lang="ja" class="kj">{r}</td>)}</tr></thead>
+        <tbody><tr><th scope="row">שורה</th>{ranks.map((_, i) => <td class="nt">{i + 1}</td>)}</tr></tbody>
+      </table>
+
+      <h3>הכלים</h3>
+      <table class="kif-table">
+        <thead><tr><th scope="col">ב־KIF</th><th scope="col">אצלנו</th><th scope="col">שם</th></tr></thead>
+        <tbody>
+          {pieces.map(([k, l, he, pro]) => (
+            <tr><td><Piece promoted={pro}>{k}</Piece></td><td><bdi dir="ltr" class="nt">{l}</bdi></td><td>{he}</td></tr>
+          ))}
+        </tbody>
+      </table>
+      <p class="small muted">המלך כתוב לפעמים <span lang="ja">王</span> ולפעמים <span lang="ja">玉</span>, ולכלים מוכתרים יש לפעמים קיצור של סימן אחד (<span lang="ja">全 圭 杏</span>). הצופה שלנו מבין את כולם.</p>
+
+      <h3>איך משחק נגמר</h3>
+      <p>השורה האחרונה ברשימה אומרת למה המשחק נגמר. הנפוצה ביותר היא <span lang="ja" class="kj">投了</span>, כניעה: השחקן שהיה בתור נכנע. אחרות: <span lang="ja" class="kj">詰み</span> (מט), <span lang="ja" class="kj">切れ負け</span> (הפסד בזמן), <span lang="ja" class="kj">千日手</span> (חזרה מרובעת), <span lang="ja" class="kj">持将棋</span> (מבוי סתום), <span lang="ja" class="kj">反則負け</span> (מהלך לא חוקי) ו־<span lang="ja" class="kj">中断</span> (המשחק הופסק). אחריה מופיע סיכום כמו <span lang="ja" class="kj">まで19手で先手の勝ち</span>: אחרי 19 מהלכים, הפותח ניצח.</p>
+      <p>מספרים בסוגריים בסוף שורת מהלך, כמו <bdi dir="ltr" class="nt">( 0:05/00:01:20)</bdi>, הם הזמן שלקח המהלך והזמן הכולל עד אליו. שורה שמתחילה ב־<bdi dir="ltr">*</bdi> היא הערה, וחלק שמתחיל ב־<span lang="ja">変化</span> הוא וריאציה: ⟦המשך|המשיכי⟧ אחר שמישהו בדק.</p>
+    </div>
+
+    <KifViewer />
+
+    <div class="prose measure">
+      <h2 id="where">איפה משתמשים ב־KIF?</h2>
+
+      <h3>כאן באתר</h3>
+      {hasPlay
+        ? <p><a href="/play/">⟦שחק|שחקי⟧ נגד המחשב כאן באתר</a>. בסוף כל משחק אפשר להוריד אותו כקובץ KIF, להעתיק אותו, או לשלוח אותו ישר לניתוח בליש׳וגי.</p>
+        : <p>בקרוב ⟦תוכל|תוכלי⟧ לשחק נגד המחשב כאן באתר. בסוף כל משחק ⟦תוכל|תוכלי⟧ להוריד אותו כקובץ KIF, להעתיק אותו, או לשלוח אותו ישר לניתוח בליש׳וגי.</p>}
+
+      <h3>ליש׳וגי</h3>
+      <p>האתר שבו הקבוצה שלנו משחקת טורנירים ומשחקים פתוחים. ליש׳וגי קורא וכותב KIF:</p>
+      <ul>
+        <li><strong>להוריד משחק שלך:</strong> ⟦פתח|פתחי⟧ משחק שהסתיים בלוח הניתוח. מתחת ללוח יש אפשרויות ייצוא: <span lang="en" dir="ltr">Download raw</span> נותן קובץ נקי, ו־<span lang="en" dir="ltr">Download annotated</span> נותן קובץ עם הערות הניתוח של המנוע. בעמוד הפרופיל יש גם <span lang="en" dir="ltr">Export games</span>, שמוריד את כל המשחקים שלך בבת אחת.</li>
+        <li><strong>לייבא משחק:</strong> בעמוד <a href="https://lishogi.org/paste" rel="noopener"><span lang="en" dir="ltr">Import game</span></a> מדביקים את הטקסט של הקובץ ולוחצים על הכפתור. מקבלים עמוד משחק עם קישור לשיתוף, ואפשר לבקש ניתוח מחשב. כפתור &quot;ניתוח בליש׳וגי&quot; בצופה שלמעלה מעתיק את המשחק ופותח את העמוד הזה.</li>
+        <li><strong>בלוח הניתוח</strong> (<a href="https://lishogi.org/analysis" rel="noopener"><bdi dir="ltr">lishogi.org/analysis</bdi></a>) אפשר להדביק KIF מתחת ללוח וללחוץ <span lang="en" dir="ltr">Import KIF</span>. כאן נשמרות גם ההערות והוריאציות שבקובץ.</li>
+        <li><strong>בלימודים</strong> (<span lang="en" dir="ltr">Study</span>) אפשר לפתוח פרק חדש מקובץ KIF, ולייצא לימוד שלם כ־KIF.</li>
+      </ul>
+
+      <h3>81Dojo</h3>
+      <p>אתר השוגי הבינלאומי הוותיק, עם שחקנים מכל העולם. גם הוא שומר את רישומי המשחקים שלך בחשבון, ואפשר להוריד אותם ולפתוח אותם בכל תוכנה אחרת, כולל ליש׳וגי והצופה שלנו.</p>
+
+      <h3>אפליקציות ותוכנות</h3>
+      <ul>
+        <li><strong>KENTO</strong>: לוח ניתוח באתר, עם מנוע. מדביקים KIF ומקבלים ניתוח.</li>
+        <li><strong>ShogiHome</strong> (לשעבר Electron Shogi): תוכנה חינמית בקוד פתוח למחשב, לניתוח עם מנוע ולניהול משחקים.</li>
+        <li><strong>Piyo Shogi</strong>: אפליקציה פופולרית לטלפון שפותחת קובצי KIF.</li>
+      </ul>
+
+      <h2 id="faq">שאלות</h2>
+      <h3>פתחתי קובץ וראיתי סימנים מוזרים במקום יפנית</h3>
+      <p>קובצי KIF ישנים שמורים בקידוד יפני ישן (<span lang="en" dir="ltr">Shift_JIS</span>), ועורך טקסט רגיל לא תמיד מזהה אותו. הצופה שלנו מזהה את הקידוד לבד. הקבצים שאנחנו יוצרים, כמו אלה של ליש׳וגי, שמורים ב־<span lang="en" dir="ltr">UTF-8</span>, ונפתחים בכל מקום.</p>
+      <h3>מה ההבדל בין <bdi dir="ltr">.kif</bdi> ל־<bdi dir="ltr">.kifu</bdi>?</h3>
+      <p>אותו פורמט. בעבר <bdi dir="ltr">.kifu</bdi> סימן קובץ ב־<span lang="en" dir="ltr">UTF-8</span> ו־<bdi dir="ltr">.kif</bdi> קובץ בקידוד היפני. היום רוב התוכנות פותחות את שניהם.</p>
+      <h3>יש עוד פורמטים?</h3>
+      <p>כן. <strong>CSA</strong> הוא פורמט שתוכנות ומנועים אוהבים (ליש׳וגי מייבא גם אותו). <strong>KI2</strong> דומה ל־KIF בלי משבצות המוצא, ולכן קשה יותר לתוכנות. <strong>SFEN</strong> מתאר עמדה אחת ולא משחק שלם. KIF הוא הבחירה הבטוחה: הכי הרבה תוכנות מבינות אותו.</p>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .kif-page { padding-top: 36px; }
+  h1 { margin: 6px 0 8px; }
+  .lead { font-size: 19px; line-height: 1.7; color: var(--ink-2); }
+  .toc { margin: 8px 0 8px; font-size: 15px; color: var(--muted); }
+  .prose :global(h2) { margin: 40px 0 12px; font-size: clamp(24px, 4.5vw, 30px); scroll-margin-top: 16px; }
+  .prose h3 { margin: 24px 0 8px; }
+  .prose p, .prose li { color: var(--ink-2); line-height: 1.75; }
+  .prose p { margin: 0 0 14px; }
+  .prose ul, .prose ol { padding-inline-start: 22px; margin: 0 0 16px; }
+  .prose li { margin-bottom: 6px; }
+  .kj { font-family: var(--f-kanji); font-weight: 800; }
+  .kif-sample {
+    background: var(--washi-2); border-radius: 6px; padding: 14px 16px; overflow-x: auto;
+    font: 15px/1.6 var(--f-kanji); text-align: left; margin: 0 0 16px;
+  }
+  .kif-table { border-collapse: collapse; width: 100%; margin: 0 0 16px; font-size: 16px; }
+  .kif-table th, .kif-table td { border-bottom: 1px solid var(--rule); padding: 8px 6px; text-align: start; vertical-align: middle; }
+  .kif-table thead th { font-size: 14px; color: var(--muted); }
+  .ranks td { text-align: center; }
+  .ranks { table-layout: fixed; }
+</style>

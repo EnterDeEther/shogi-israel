@@ -1,0 +1,69 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { RULES_COURSE, pad } from '../../lib/course';
+import { accountsEnabled } from '../../lib/account-config';
+
+const entries = await getCollection('rules');
+const byId = new Map(entries.map((e) => [e.id, e]));
+---
+<Base title="חוקים בסיסיים" tabTitle="חוקי השוגי בעברית: חוקים בסיסיים" description="שמונה שיעורים קצרים ואינטראקטיביים: הלוח, תנועת הכלים, הכתרה, הצנחה, שח ומט, מהלכים לא חוקיים ואיך משחק נגמר. בעברית, בחינם, בלי הרשמה.">
+  <div class="wrap page">
+    <p class="eyebrow">8 שיעורים קצרים</p>
+    <h1>חוקים בסיסיים</h1>
+    <p class="lead measure">כל מה שצריך כדי לשחק משחק שוגי ראשון. כל שיעור הוא לוח, פסקה קצרה ומשימה אחת. {accountsEnabled ? (
+      <>
+        <span data-signed-out-only>ההתקדמות נשמרת במכשיר, ועם <a href="/account/?mode=signup">חשבון</a> (לא חובה) גם בין מכשירים.</span>
+        <span data-signed-in-only>ההתקדמות נשמרת בחשבון שלך, בכל מכשיר.</span>
+      </>
+    ) : 'ההתקדמות נשמרת במכשיר שלך.'}</p>
+    <ol class="rows course">
+      {RULES_COURSE.map((l) => {
+        const e = byId.get(l.slug);
+        return (
+          <li>
+            {e ? (
+              <a href={`/rules/${l.slug}/`} data-progress={l.slug}>
+                <span class="row-num">{pad(l.n)}</span>
+                <span class="row-title">
+                  <span class="t">{l.title}</span>
+                  <span class="d small muted">{e.data.description}</span>
+                </span>
+                <span class="row-tag" data-tag>{e.data.reading_time_min ? `${e.data.reading_time_min} דק׳` : ''}</span>
+              </a>
+            ) : (
+              <span class="row">
+                <span class="row-num">{pad(l.n)}</span>
+                <span class="row-title muted">{l.title}</span>
+                <span class="row-tag soon">בקרוב</span>
+              </span>
+            )}
+          </li>
+        );
+      })}
+    </ol>
+  </div>
+</Base>
+
+<script>
+  const markDone = () => {
+    document.querySelectorAll<HTMLElement>('[data-progress]').forEach((a) => {
+      let done = false;
+      try { done = localStorage.getItem(`done:${a.dataset.progress}`) === '1'; } catch {}
+      const tag = a.querySelector<HTMLElement>('[data-tag]');
+      if (done && tag) tag.textContent = 'הושלם ✓';
+    });
+  };
+  markDone();
+  document.addEventListener('progress-synced', markDone);
+</script>
+
+<style>
+  .page { padding-top: 36px; display: flex; flex-direction: column; gap: 14px; }
+  .lead { margin: 0 0 18px; font-size: 18px; color: var(--ink-2); }
+  .course { max-width: 760px; }
+  .course a, .course .row { padding: 12px 0; align-items: flex-start; }
+  .t { display: block; font-weight: 700; font-size: 18px; }
+  .d { display: block; line-height: 1.5; margin-top: 2px; }
+  .row-num { padding-top: 2px; }
+</style>

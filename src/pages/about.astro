@@ -1,0 +1,45 @@
+---
+import Page from '../layouts/Page.astro';
+import { pageExists } from '../lib/live';
+import { CONTACT_EMAIL, INSTAGRAM_URL } from '../lib/nav';
+import { CONTACT_FORM_LIVE } from '../lib/contact';
+import ContactForm from '../components/ContactForm.astro';
+const hasPlay = pageExists('/play/');
+---
+<Page title="אודות" eyebrow="שוגי ישראל" description="מי אנחנו, למה בנינו את האתר, ומי עזר לנו בדרך: קרדיטים, מקורות ויצירת קשר.">
+  <p>שוגי ישראל היא קהילה ישראלית של שחקני שוגי, השחמט היפני. אנחנו מתחילים מאפס: אין עדיין מועדון שוגי בישראל ואין חומר לימוד בעברית, אז אנחנו בונים את שניהם.</p>
+  <p>{hasPlay ? 'באתר לומדים ומשחקים, בחינם: חוקים בסיסיים, שיעורים אינטראקטיביים ומשחק נגד המחשב.' : 'האתר מלמד, בחינם ובלי הרשמה.'} <a href="/community/">הקהילה</a> נפגשת בוואטסאפ, באינסטגרם ובטורנירים של הקבוצה שלנו בליש׳וגי.</p>
+
+  <h2 id="principles">איך אנחנו מלמדים</h2>
+  <ul>
+    <li>לוח קודם, מילים אחר כך. כל שלב הוא לוח, פסקה קצרה ומשימה אחת.</li>
+    <li>הכלים מסומנים באותיות בעברית כברירת מחדל, ובלחיצה אפשר לעבור לאותיות באנגלית (כמו בליש׳וגי ובאתרי השוגי הבינלאומיים) או לקאנג׳י.</li>
+    <li>משבצות נכתבות בשתי ספרות, טור ואז שורה: <bdi dir="ltr" class="nt">76</bdi>. מהלכים נכתבים כך: <bdi dir="ltr" class="nt">P-76</bdi>.</li>
+    <li>הלוח לא מתהפך לעברית. הוא נראה בדיוק כמו לוח אמיתי.</li>
+  </ul>
+
+  <h2 id="credits">קרדיטים ומקורות</h2>
+  <ul>
+    <li><strong>Shogi Shack</strong> (shogishack.net): המבנה ושיטת ההוראה של האתר הזה בהשראתו. שיעורים שעובדו ממנו נכתבו מחדש בעברית ומציינים זאת בעמוד.</li>
+    <li><strong>חוקי המשחק</strong>: לפי תקנון איגוד השוגי היפני (JSA) וחוקי הפדרציה האירופית לשוגי (FESA).</li>
+    <li><strong>ליש׳וגי</strong> (lishogi.org): פלטפורמה חינמית וקוד פתוח לשוגי אונליין. שם הקבוצה שלנו מקיימת טורנירים ומשחקים פתוחים מול כל העולם.</li>
+    <li><strong>השיעורים האינטראקטיביים</strong>: מערכת השיעורים האינטראקטיבית מבוססת על הקוד ועל מבנה הלימוד של Lishogi (lishogi.org), תוכנה חופשית ברישיון AGPL-3.0. השינויים שלנו, כולל הטקסטים בעברית, פתוחים באותו רישיון ב־<a href="https://github.com/EnterDeEther/shogi-israel" rel="noopener"><bdi dir="ltr">github.com/EnterDeEther/shogi-israel</bdi></a>. תודה לצוות Lishogi.
+      <p lang="en" dir="ltr" class="small muted en">The interactive lessons are adapted from the code and lesson structure of Lishogi (lishogi.org), free software under AGPL-3.0. Our changes, including the Hebrew text, are published under the same licence at github.com/EnterDeEther/shogi-israel. Thanks to the Lishogi team. Board and rules: shogiground and shogiops (GPL-3.0).</p>
+    </li>
+    <li><strong>הלוח והחוקים בתרגילים</strong>: shogiground ו־shogiops, ברישיון GPL-3.0.</li>
+    <li><strong>הצלילים</strong>: קול הכלי על הלוח הוקלט על ידי דין, עם כלי שוגי אמיתי. שאר הצלילים (מיתרי קוטו, מקלות היושיגי ופעמון) נוצרים בקוד של האתר. אפשר לכבות אותם ב<a href="/account/">הגדרות</a>.</li>
+    <li><strong>גופנים</strong>: Frank Ruhl Libre (יאנק יונטף), Heebo (עודד עזר) ו־Shippori Mincho (FONTDASU), כולם ברישיון SIL Open Font License.</li>
+    <li><strong>הלוחות והכלים באתר</strong>: עיצוב מקורי של שוגי ישראל. קוד האתר פתוח ברישיון AGPL-3.0.</li>
+  </ul>
+
+  <h2 id="contact">⟦צור|צרי⟧ קשר</h2>
+  {CONTACT_FORM_LIVE ? (
+    <>
+      <p>מצאת טעות בשיעור, משהו לא עובד באתר, או סתם רוצה לשאול? ⟦כתוב|כתבי⟧ לנו כאן ונענה במייל.</p>
+      <ContactForm />
+      <p>אפשר גם לכתוב ישירות ל־<a href={`mailto:${CONTACT_EMAIL}`}><bdi dir="ltr">{CONTACT_EMAIL}</bdi></a>, או בהודעה פרטית באינסטגרם, <a href={INSTAGRAM_URL} rel="noopener"><bdi dir="ltr">@shogi.israel</bdi></a>.</p>
+    </>
+  ) : (
+    <p>מצאת טעות בשיעור, משהו לא עובד באתר, או סתם רוצה לשאול? ⟦כתוב|כתבי⟧ לנו במייל, <a href={`mailto:${CONTACT_EMAIL}`}><bdi dir="ltr">{CONTACT_EMAIL}</bdi></a>, או בהודעה פרטית באינסטגרם, <a href={INSTAGRAM_URL} rel="noopener"><bdi dir="ltr">@shogi.israel</bdi></a>.</p>
+  )}
+</Page>

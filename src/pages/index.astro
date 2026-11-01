@@ -1,0 +1,316 @@
+---
+import Base from '../layouts/Base.astro';
+import Board from '../components/Board.astro';
+import LearnerHome from '../components/LearnerHome.astro';
+import Icon from '../components/Icon.astro';
+import { getCollection } from 'astro:content';
+import { RULES_COURSE, pad } from '../lib/course';
+import { FIRST_GAME, firstGamePlies } from '../lib/first-game';
+import { pageExists, LISHOGI_TEAM } from '../lib/live';
+import { liveSections, isLive, ACCOUNT, FACEBOOK_GROUP_URL } from '../lib/nav';
+import { accountsEnabled, AUTH_STORAGE_KEY } from '../lib/account-config';
+import { WEEK_LENGTH } from '../tsume/week';
+import { createHash } from 'node:crypto';
+
+const live = new Set((await getCollection('rules')).map((e) => e.id));
+const START = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1';
+const plies = firstGamePlies();
+const ONE_TO_MATE = plies[plies.length - 2].sfen;
+const hasTry = pageExists('/try/');
+const first = hasTry ? '/try/' : `/rules/${RULES_COURSE[0].slug}/`;
+const hasPlay = pageExists('/play/');
+const hasAccount = pageExists('/account/');
+const accountsOn = hasAccount && accountsEnabled;
+const sections = liveSections();
+const hasCourse = pageExists('/course/');
+const tsume = import.meta.glob<{ default: unknown[] }>('../tsume/data/mate*.json', { eager: true });
+const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length ?? 0;
+const LEARNER_GUESS = `try {
+  const ls = localStorage;
+  const auth = document.currentScript.dataset.auth;
+  let on = !!(auth && ls.getItem(auth)) || ['shogi-il.learn.progress', 'shogi-il.tsume.solved', 'shogi-il.play.history'].some((k) => { const v = ls.getItem(k); return !!v && v !== '[]' && v !== '{}'; });
+  for (let i = 0; !on && i < ls.length; i++) on = (ls.key(i) || '').startsWith('done:');
+  if (on) document.documentElement.setAttribute('data-learner', '');
+} catch {}`;
+if (hasCourse) Astro.csp?.insertScriptHash(`sha256-${createHash('sha256').update(LEARNER_GUESS).digest('base64')}`);
+---
+<Base
+  title="שוגי ישראל"
+  description="השחמט היפני, בעברית ומאפס. חוקים בסיסיים בשיעורים קצרים ואינטראקטיביים, בחינם ובלי הרשמה, וקהילה ישראלית של שחקני שוגי."
+>
+  {hasCourse && (
+    <>
+      <script is:inline data-auth={accountsOn ? AUTH_STORAGE_KEY : ''} set:html={LEARNER_GUESS}></script>
+    </>
+  )}
+
+  <section class="hero wrap" data-newcomer>
+    <div class="hero-text">
+      <p class="eyebrow">הקהילה הישראלית של השוגי, השחמט היפני</p>
+      <h1>⟦ברוך הבא|ברוכה הבאה⟧ לשוגי ישראל</h1>
+      <p class="lead">הבית של שחקני השוגי בישראל. לומדים את השחמט היפני בעברית ומאפס, משחקים כאן באתר, ופוגשים שחקנים אחרים. הכול בחינם.</p>
+      <div class="cta">
+        <a class="btn" href={first} data-tour="try">
+          <span data-hero-label>{hasTry ? '⟦צפה|צפי⟧ במשחק אחד, מהלך אחרי מהלך' : '⟦התחל|התחילי⟧ בחוקים הבסיסיים'}</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
+        </a>
+        {hasPlay && <a class="btn btn-ghost" href="/play/">כבר ⟦יודע|יודעת⟧ לשחק? ⟦שחק|שחקי⟧ נגד המחשב</a>}
+        {pageExists('/chess/') && <a class="btn btn-ghost" href="/chess/">שחקני שחמט? ⟦התחל|התחילי⟧ כאן</a>}
+        <a class="btn btn-ghost" href="#offer" data-tour-start>
+          <span>מה יש באתר? סיור קצר</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"></path></svg>
+        </a>
+        {hasTry ? <p class="small muted">בלי הרשמה · בחינם · בעברית</p> : (
+          <p class="small muted">
+            8 שיעורים קצרים · בלי הרשמה ·
+            {accountsOn ? (
+              <>
+                <span data-signed-out-only>ההתקדמות נשמרת במכשיר, ועם <a href="/account/?mode=signup">חשבון</a> (לא חובה) גם בין מכשירים</span>
+                <span data-signed-in-only>ההתקדמות נשמרת בחשבון שלך, בכל מכשיר</span>
+              </>
+            ) : 'ההתקדמות נשמרת במכשיר שלך'}
+          </p>
+        )}
+      </div>
+    </div>
+    <div class="hero-board">
+      {hasTry ? (
+        <>
+          <p class="hero-board-head"><strong>הפותח בתור: מט בעוד מהלך אחד</strong><span class="small muted">משחק של {FIRST_GAME.length} מהלכים</span></p>
+          <Board sfen={ONE_TO_MATE} />
+          <p class="hero-board-cap"><a href="/try/"><strong>איך הגענו לכאן?</strong></a> ⟦לחץ|לחצי⟧, ונראה את כל המשחק מההתחלה, מהלך אחרי מהלך.</p>
+        </>
+      ) : (
+        <Board sfen={START} />
+      )}
+    </div>
+  </section>
+
+  {hasCourse && <LearnerHome weekCount={weekCount} accounts={accountsOn} />}
+
+  <section class="wrap block" aria-labelledby="three" data-newcomer>
+    <h2 id="three">שלושה דברים שעושים את השוגי לשוגי</h2>
+    <ol class="three">
+      <li>
+        <span class="num" lang="ja" aria-hidden="true">一</span>
+        <div><h3>לוח 9×9, עשרים כלים לכל צד</h3><p>מוכר מספיק כדי להתחיל, שונה מספיק כדי להפתיע.</p></div>
+      </li>
+      <li>
+        <span class="num" lang="ja" aria-hidden="true">二</span>
+        <div><h3>הצנחה</h3><p>כלי שנלכד עובר לידיים שלך. בתורך אפשר להניח אותו כמעט בכל משבצת פנויה.</p></div>
+      </li>
+      <li>
+        <span class="num" lang="ja" aria-hidden="true">三</span>
+        <div><h3>הכתרה</h3><p>רוב הכלים מתחזקים כשהם נכנסים לשלוש השורות האחרונות של היריב.</p></div>
+      </li>
+    </ol>
+  </section>
+
+  <section class="wrap block" aria-labelledby="phases" data-newcomer>
+    <h2 id="phases">איך נראה משחק: שלושה שלבים</h2>
+    <p class="phases-lead">כמו בשחמט, כל משחק שוגי עובר פתיחה, אמצע המשחק וסוף המשחק. בשיעורים נציין באיזה שלב נמצא כל נושא.</p>
+    <ol class="phases">
+      <li><h3>פתיחה</h3><p>מסדרים את הכלים ובונים מבצר סביב המלך.</p></li>
+      <li><h3>אמצע המשחק</h3><p>תוקפים לפי תוכנית, ומחליפים כלים.</p></li>
+      <li><h3>סוף המשחק</h3><p>ההתקפות הופכות למירוץ למט.</p></li>
+    </ol>
+    <p><a class="small" href="/learn/guide/#phases">הסבר על שלושת השלבים</a></p>
+  </section>
+
+  {pageExists('/course/') && (
+    <section class="wrap block" aria-labelledby="start-h" data-newcomer>
+      <div class="start">
+        <h2 id="start-h">לא ⟦בטוח|בטוחה⟧ מאיפה להתחיל?</h2>
+        <p>במסלול לימוד אישי ⟦אתה עונה|את עונה⟧ על שאלה אחת ⟦ומקבל|ומקבלת⟧ סדר לימוד ברור, מהחוקים ועד בעיות מט. עם חשבון בחינם יש גם נקודות ודרגות לימוד, מ־15 קיו ועד דאן (<a href="/ranks/">מה ההבדל מדרגה אמיתית?</a>).</p>
+        <div class="start-cta">
+          <a class="btn" href="/course/"><span>⟦ראה|ראי⟧ את המסלול</span></a>
+          {accountsOn && <a class="btn btn-ghost" href="/account/?mode=signup"><span>⟦פתח|פתחי⟧ חשבון בחינם</span></a>}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <section class="wrap block" aria-labelledby="course" data-newcomer>
+    <div class="head-row">
+      <h2 id="course">חוקים בסיסיים</h2>
+      <a class="small" href="/rules/">לכל השיעורים</a>
+    </div>
+    <ol class="rows course">
+      {RULES_COURSE.map((l, i) => (
+        <li>
+          {live.has(l.slug) ? (
+            <a href={`/rules/${l.slug}/`} data-progress={l.slug}>
+              <span class="row-num">{pad(l.n)}</span>
+              <span class="row-title">{l.title}</span>
+              <span class="row-tag" data-tag>{i === 0 ? '⟦התחל|התחילי⟧ כאן' : ''}</span>
+            </a>
+          ) : (
+            <span class="row">
+              <span class="row-num">{pad(l.n)}</span>
+              <span class="row-title muted">{l.title}</span>
+              <span class="row-tag soon">בקרוב</span>
+            </span>
+          )}
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  {hasPlay && (
+    <section id="play" class="wrap block" aria-labelledby="play-h" data-newcomer>
+      <h2 id="play-h">משחקים כאן, באתר</h2>
+      <ul class="rows links play">
+        <li><a href="/play/"><span class="row-title"><strong>⟦שחק|שחקי⟧ נגד המחשב</strong></span><span class="small muted">עשר רמות, ממתחילים ועד מתקדמים. ישר בדפדפן, בחינם</span></a></li>
+        {hasAccount && <li><a href="/account/?mode=signup"><span class="row-title"><strong>⟦פתח|פתחי⟧ חשבון בשוגי ישראל</strong></span><span class="small muted">ההתקדמות והמשחקים שלך נשמרים בכל מכשיר</span></a></li>}
+        <li><span class="row"><span class="row-title"><strong>משחק מול חבר</strong></span><span class="small muted">בקרוב: שולחים קישור הזמנה ומשחקים</span></span></li>
+      </ul>
+    </section>
+  )}
+
+  <section id="community" class="wrap block" aria-labelledby="community-h" data-newcomer>
+    <div class="community">
+      <h2 id="community-h">משחקים עם ישראלים</h2>
+      <p>אנחנו קהילה קטנה ומתחילה. ⟦בוא|בואי⟧ להיות מהראשונים.</p>
+      <ul class="rows links">
+        <li><a href="https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien" rel="noopener"><span class="row-title"><strong>קהילת הוואטסאפ</strong></span><span class="small muted">עדכונים, שאלות, ומי רוצה לשחק</span></a></li>
+        <li><a href="https://www.instagram.com/shogi.israel/" rel="noopener"><span class="row-title"><strong>אינסטגרם</strong></span><bdi dir="ltr" class="small muted">@shogi.israel</bdi></a></li>
+        <li><a href={FACEBOOK_GROUP_URL} rel="noopener"><span class="row-title"><strong>קבוצת הפייסבוק</strong></span><span class="small muted">שאלות, משחקים ושיחה</span></a></li>
+        <li><a href={LISHOGI_TEAM} rel="noopener"><span class="row-title"><strong>הקבוצה שלנו בליש׳וגי</strong></span><span class="small muted">טורנירים ויריבים מכל העולם</span></a></li>
+        <li><a href="/community/"><span class="row-title"><strong>דף הקהילה</strong></span><span class="small muted">הכול במקום אחד</span></a></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="wrap block" aria-labelledby="offer">
+    <h2 id="offer">מה יש באתר</h2>
+    <ul class="offer">
+      {sections.map((s) => (
+        <li class="card">
+          <h3>{s.icon && <span class="card-ico"><Icon name={s.icon} size={22} /></span>}{s.label}</h3>
+          {s.blurb && <p>{s.blurb}</p>}
+          <ul>
+            {s.links.map((l) => (
+              <li><a href={l.href} rel={l.external ? 'noopener' : undefined}>{l.label}{l.external && <span class="ext" aria-hidden="true"> ↗</span>}</a></li>
+            ))}
+          </ul>
+        </li>
+      ))}
+      {isLive(ACCOUNT) && (
+        <li class="card">
+          <h3>{ACCOUNT.icon && <span class="card-ico"><Icon name={ACCOUNT.icon} size={22} /></span>}החשבון שלי</h3>
+          <p>ההתקדמות והמשחקים נשמרים בכל מכשיר. לא חובה, והכול עובד גם בלי.</p>
+          <ul><li><a href="/account/">כניסה או הרשמה</a></li></ul>
+        </li>
+      )}
+    </ul>
+  </section>
+</Base>
+
+<script>
+  const markDone = () => {
+    document.querySelectorAll<HTMLElement>('[data-progress]').forEach((a) => {
+      let done = false;
+      try { done = localStorage.getItem(`done:${a.dataset.progress}`) === '1'; } catch {}
+      const tag = a.querySelector<HTMLElement>('[data-tag]');
+      if (done && tag) tag.textContent = 'הושלם ✓';
+    });
+  };
+  markDone();
+  document.addEventListener('progress-synced', markDone);
+
+  if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    document.querySelectorAll<HTMLElement>('.card').forEach((c) => c.addEventListener('pointermove', (e) => {
+      const r = c.getBoundingClientRect();
+      c.style.setProperty('--mx', `${e.clientX - r.left}px`);
+      c.style.setProperty('--my', `${e.clientY - r.top}px`);
+    }));
+  }
+</script>
+
+<style>
+  :global([data-learner-only]) { display: none; }
+  :global(html[data-learner] [data-learner-only]) { display: revert; }
+  :global(html[data-learner] [data-newcomer]) { display: none; }
+
+  .hero { display: grid; gap: 32px; padding-top: 36px; }
+  .hero-text { display: flex; flex-direction: column; gap: 16px; }
+  .hero h1 { font-size: clamp(36px, 8.5vw, 60px); line-height: 1.1; }
+  .lead { margin: 0; font-size: 18px; line-height: 1.7; color: var(--ink-2); max-width: 34em; }
+  .cta { display: flex; flex-direction: column; gap: 10px; padding-top: 8px; }
+  .cta .btn { align-self: stretch; }
+  .cta p { margin: 0; text-align: center; }
+  .hero-board :global(.board-fig) { margin: 0; }
+  .hero-board-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; margin: 0 0 8px; }
+  .hero-board-cap { margin: 10px 0 0; color: var(--ink-2); line-height: 1.6; }
+  @media (min-width: 900px) {
+    .hero { grid-template-columns: 1.1fr 1fr; align-items: center; gap: 64px; padding-top: 72px; }
+    .cta .btn { align-self: flex-start; min-width: 340px; }
+    .cta p { text-align: start; }
+    .hero-board :global(.board-fig) { margin-inline-start: auto; }
+  }
+
+  .block { margin-top: 64px; }
+  #offer { scroll-margin-top: 16px; }
+  .block > h2, .head-row { margin-bottom: 18px; }
+  .head-row { display: flex; align-items: baseline; justify-content: space-between; }
+
+  .three { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); display: grid; }
+  .three li { display: flex; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--rule); }
+  .three .num { font-size: 26px; color: var(--seal); width: 34px; flex-shrink: 0; line-height: 1.3; }
+  .three h3 { margin-bottom: 4px; }
+  .three p { margin: 0; color: var(--ink-2); line-height: 1.6; }
+  @media (min-width: 900px) {
+    .three { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; border-top: 0; }
+    .three li { flex-direction: column; border-top: 2px solid var(--ink); border-bottom: 0; }
+  }
+
+  .phases-lead { margin: 0 0 14px; color: var(--ink-2); line-height: 1.6; max-width: 40em; }
+  .phases { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 12px; counter-reset: ph; }
+  .phases li { counter-increment: ph; border: 1px solid var(--rule); border-radius: 10px; padding: 12px 16px; background: var(--surface); box-shadow: var(--shadow-1); }
+  .phases h3 { margin: 0 0 4px; }
+  .phases h3::before { content: counter(ph) ". "; color: var(--seal); }
+  .phases p { margin: 0; color: var(--ink-2); line-height: 1.55; }
+  @media (min-width: 700px) { .phases { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; } }
+
+  .offer { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .card {
+    position: relative; isolation: isolate; background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 16px 18px 12px; box-shadow: var(--shadow-1);
+    transition: box-shadow .2s var(--ease-out), border-color .15s ease;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .card::before {
+      content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; opacity: 0;
+      background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--seal) 9%, transparent), transparent 70%);
+      transition: opacity .25s ease;
+    }
+    .card:hover { box-shadow: var(--shadow-2); border-color: color-mix(in srgb, var(--seal) 30%, var(--rule)); }
+    .card:hover::before { opacity: 1; }
+  }
+  .card h3 { display: flex; align-items: center; gap: 10px; font-family: var(--f-display); font-size: 21px; font-weight: 800; margin-bottom: 6px; }
+  .card-ico {
+    flex: none; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px;
+    background: var(--washi-2); color: var(--seal); box-shadow: inset 0 0 0 1px var(--rule);
+  }
+  .card li a { transition: color .15s ease; }
+  .card p { margin: 0 0 8px; color: var(--ink-2); line-height: 1.55; font-size: 16px; }
+  .card ul { list-style: none; margin: 0; padding: 0; }
+  .card li a { display: flex; align-items: center; min-height: 44px; font-weight: 700; color: var(--ink); text-decoration: none; border-top: 1px solid var(--rule); }
+  .card li a:hover { color: var(--seal); text-decoration: underline; }
+  .ext { color: var(--muted); font-weight: 400; }
+  @media (min-width: 700px) { .offer { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 1000px) { .offer { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; } }
+
+  .start { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 24px 22px; max-width: 720px; box-shadow: var(--shadow-1); }
+  .start h2 { margin-bottom: 8px; }
+  .start p { margin: 0 0 16px; color: var(--ink-2); }
+  .start-cta { display: flex; flex-direction: column; gap: 10px; }
+  @media (min-width: 700px) { .start-cta { flex-direction: row; } }
+
+  .course, .play { max-width: 720px; }
+  .community { background: var(--washi-2); border-radius: 10px; padding: 28px 22px; max-width: 720px; box-shadow: var(--shadow-1); }
+  .community h2 { margin-bottom: 8px; }
+  .community > p { margin: 0 0 16px; color: var(--ink-2); }
+  .links { border-top-color: var(--rule); }
+  .links a, .links .row { justify-content: space-between; min-height: 52px; }
+  .play a, .play .row { flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; padding-block: 12px; }
+</style>

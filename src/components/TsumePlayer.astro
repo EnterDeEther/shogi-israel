@@ -1,0 +1,27 @@
+---
+import '../styles/shogiground.css';
+import '../styles/learn.css';
+import '../styles/play.css';
+import '../styles/tsume.css';
+
+interface Props {
+  n: number;
+}
+const { n } = Astro.props;
+---
+<section class="tsume-island" data-tsume data-n={n} aria-label="בעיית מט">
+  <noscript><p>פתרון בעיות המט על הלוח צריך JavaScript.</p></noscript>
+</section>
+<p class="small muted tsume-credit">
+  איך זה עובד ומאיפה הבעיות: <a href="/tsume/#rules">החוקים</a> · <a href="/tsume/#source">מאיפה הבעיות</a> ·
+  <a href="https://github.com/EnterDeEther/shogi-israel/tree/main/src/tsume" rel="noopener">קוד המקור</a>
+</p>
+
+<script>
+  import { bootTsume } from '../tsume/boot';
+  document.querySelectorAll<HTMLElement>('[data-tsume]').forEach((el) => bootTsume(el));
+</script>
+
+<style>
+  .tsume-credit { margin: 4px 0 0; max-width: 760px; line-height: 1.6; }
+</style>

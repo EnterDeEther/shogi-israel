@@ -1,0 +1,8 @@
+---
+import { HEBREW_FONTS } from '../lib/piece-set';
+---
+<div class="seg hfont-switch" role="group" aria-label="גופן האותיות על הכלים">
+  {HEBREW_FONTS.map((f) => (
+    <button type="button" data-hfont-set={f.id} aria-pressed={String(f.id === 'noto')}>{f.label}</button>
+  ))}
+</div>

@@ -1,0 +1,519 @@
+---
+import { ACCOUNT, isCurrent, isLive, isSection, liveNav, withChips, type NavLink } from '../lib/nav';
+import { WEEK_LENGTH } from '../tsume/week';
+import Icon from './Icon.astro';
+
+const path = Astro.url.pathname;
+const items = liveNav();
+const account = isLive(ACCOUNT) ? ACCOUNT : undefined;
+const here = (l: NavLink) => (isCurrent(l, path) ? 'page' : undefined);
+const ext = (l: NavLink) => (l.external ? { rel: 'noopener', target: '_blank' } : {});
+const tsume = import.meta.glob<{ default: unknown[] }>('../tsume/data/mate*.json', { eager: true });
+const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length ?? 0;
+const PLAY: NavLink = { href: '/play/', label: 'משחק נגד המחשב' };
+const COURSE: NavLink = { href: '/course/', label: 'מסלול לימוד אישי' };
+const quick = isLive(PLAY) && isLive(COURSE);
+const SETTINGS: NavLink = { href: '/app/#settings', label: 'הגדרות' };
+---
+<header class="site-header">
+  <div class="wrap bar">
+    <a class="brand" href="/" aria-label="שוגי ישראל, לדף הבית">
+      <img class="logo" src="/logo-132.png" width="44" height="44" alt="" />
+      <span class="brand-name">שוגי ישראל</span>
+    </a>
+
+    <nav class="nav-wide" aria-label="ראשי">
+      {items.map((i) => isSection(i) ? (
+        <details class="nav-group" data-nav-group data-tour={i.tour}>
+          <summary class={i.links.some((l) => isCurrent(l, path)) ? 'current' : undefined}>
+            {i.label}
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
+          </summary>
+          <div class="nav-menu">
+            {i.links.map((l) => (
+              <a href={l.href} class={l.sub ? 'sub' : undefined} aria-current={here(l)} {...ext(l)}>
+                {l.icon && <span class="ico"><Icon name={l.icon} /></span>}
+                <span class="label">{l.label}{l.external && <span class="ext" aria-hidden="true">↗</span>}</span>
+                {l.hint && <span class="hint">{l.hint}</span>}
+              </a>
+            ))}
+          </div>
+        </details>
+      ) : (
+        <a class="top" href={i.href} aria-current={here(i)} {...ext(i)}>{i.label}</a>
+      ))}
+      {account && <a class="account" data-tour="account" href={account.href} aria-current={here(account)}>{account.icon && <Icon name={account.icon} size={18} />}<span data-signed-in-only>{account.label}</span><span data-signed-out-only>הרשמה / כניסה</span></a>}
+    </nav>
+
+    {quick && (
+      <div class="quick" data-tour="quick">
+        <a class="quick-btn" href={PLAY.href} data-quick-play aria-current={here(PLAY)} aria-label="משחק נגד המחשב" title="משחק נגד המחשב">
+          <span class="quick-ico"><Icon name="cpu" size={22} /><span class="quick-dot" data-quick-dot hidden></span></span>
+          <span class="quick-cap" aria-hidden="true">משחק</span>
+        </a>
+        <a class="quick-btn" href={COURSE.href} data-quick-course aria-current={here(COURSE)} aria-label="מסלול לימוד אישי" title="מסלול לימוד אישי">
+          <span class="quick-ico"><Icon name="course" size={22} /></span>
+          <span class="quick-cap" aria-hidden="true">מסלול</span>
+        </a>
+      </div>
+    )}
+
+    {account && (
+      <details class="inbox" data-inbox data-signed-in-only data-week-count={weekCount} data-tour="bell">
+        <summary>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9z"></path><path d="M10 19a2 2 0 0 0 4 0"></path></svg>
+          <span class="visually-hidden" data-inbox-label>התראות</span>
+          <span class="inbox-count" data-inbox-count aria-hidden="true" hidden></span>
+        </summary>
+        <div class="inbox-panel" data-inbox-panel>
+          <p class="inbox-title">התראות</p>
+          <ul class="inbox-list" data-inbox-list aria-live="polite"></ul>
+          <p class="inbox-foot"><a href="/account/#notifications">הגדרות התראות</a></p>
+        </div>
+      </details>
+    )}
+
+    <button type="button" class="theme-btn" data-theme-toggle aria-label="מעבר למצב כהה" aria-pressed="false">
+      <svg class="i-moon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg>
+      <svg class="i-sun" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"></path></svg>
+    </button>
+
+    <details class="nav-narrow" data-nav-narrow>
+      <summary aria-label="תפריט">
+        <svg class="i-open" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"></path></svg>
+        <svg class="i-close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </summary>
+      <div class="scrim" data-scrim aria-hidden="true"></div>
+      <nav class="panel" aria-label="ראשי (נייד)" data-sheet>
+        {quick && (
+          <div class="quick-tiles">
+            <a class="tile" href={PLAY.href} data-quick-play aria-current={here(PLAY)}>
+              <span class="ico"><Icon name="cpu" /></span>
+              <span class="label" data-quick-title>משחק נגד המחשב</span>
+              <span class="hint" data-quick-hint>עשר רמות, ישר בדפדפן</span>
+            </a>
+            <a class="tile" href={COURSE.href} data-quick-course aria-current={here(COURSE)}>
+              <span class="ico"><Icon name="course" /></span>
+              <span class="label" data-quick-title>מסלול לימוד אישי</span>
+              <span class="hint" data-quick-hint>מאיפה מתחילים, ומה הצעד הבא</span>
+            </a>
+          </div>
+        )}
+        <a class="solo settings-row" href={SETTINGS.href} aria-current={here(SETTINGS)}>
+          <span class="ico"><Icon name="settings" /></span>
+          <span class="label">הגדרות</span>
+          <span class="hint">מראה, סימון הכלים, צלילים</span>
+        </a>
+        {items.map((i) => isSection(i) ? (
+          <section class="group" data-tour={i.tour}>
+            <h2 class="group-title">{i.label}</h2>
+            <ul>
+              {withChips(i.links).map((l) => Array.isArray(l) ? (
+                <li class="chips">{l.map((c) => <a href={c.href} aria-current={here(c)}>{c.label}</a>)}</li>
+              ) : (
+                <li>
+                  <a href={l.href} aria-current={here(l)} {...ext(l)}>
+                    {l.icon && <span class="ico"><Icon name={l.icon} /></span>}
+                    <span class="label">{l.label}{l.external && <span class="ext" aria-hidden="true">↗</span>}</span>
+                    {l.hint && <span class="hint">{l.hint}</span>}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : (
+          <a class="solo" href={i.href} aria-current={here(i)} {...ext(i)}>{i.icon && <span class="ico"><Icon name={i.icon} /></span>}<span class="label">{i.label}</span></a>
+        ))}
+        <button type="button" class="solo theme-row" data-theme-toggle aria-pressed="false">
+          <span class="ico"><svg class="i-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg><svg class="i-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"></path></svg></span>
+          <span class="label"><span class="t-dark">מצב כהה</span><span class="t-light">מצב בהיר</span></span>
+        </button>
+        {account && <a class="solo account" data-tour="account" href={account.href} aria-current={here(account)}>{account.icon && <Icon name={account.icon} />}<span data-signed-in-only>{account.label}</span><span data-signed-out-only>הרשמה / כניסה</span></a>}
+      </nav>
+    </details>
+  </div>
+</header>
+
+<style>
+  .site-header { position: sticky; top: 0; z-index: 20; isolation: isolate; border-bottom: 1px solid var(--rule); background: var(--washi); transition: background-color .25s ease, box-shadow .25s ease; }
+  .site-header:has(details[open]) { z-index: 45; }
+  .site-header::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0; transition: opacity .25s ease;
+    background: var(--glass); -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6);
+  }
+  .site-header.scrolled { background: transparent; box-shadow: 0 12px 28px -22px rgba(0, 0, 0, 0.55); }
+  .site-header.scrolled::before { opacity: 1; }
+  :global(body:has(.step-board, .learn__side-home)) .site-header { position: relative; }
+  :global(html) { scroll-padding-top: 80px; }
+  .bar { display: flex; align-items: center; min-height: 64px; gap: 16px; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); flex-shrink: 0; }
+  .logo { width: 44px; height: 44px; flex-shrink: 0; }
+  .brand-name { font-family: var(--f-display); font-weight: 900; font-size: 22px; letter-spacing: -0.2px; white-space: nowrap; }
+  .ext { font-size: 0.8em; margin-inline-start: 4px; color: var(--muted); }
+  .hint { display: block; font-size: 14px; font-weight: 400; color: var(--muted); line-height: 1.4; }
+
+  .theme-btn {
+    appearance: none; position: relative; background: transparent; border: 0; color: var(--ink); cursor: pointer;
+    width: 44px; height: 44px; border-radius: 999px; display: grid; place-items: center;
+    margin-inline-start: auto; flex-shrink: 0;
+  }
+  .theme-btn svg { grid-area: 1 / 1; transition: opacity .2s ease, transform .3s var(--ease-out); }
+  .theme-btn .i-sun, :global(html[data-theme="dark"]) .theme-btn .i-moon { opacity: 0; transform: rotate(-90deg) scale(0.6); }
+  :global(html[data-theme="dark"]) .theme-btn .i-sun { opacity: 1; transform: none; }
+  .theme-btn:hover, .inbox summary:hover, .inbox[open] summary { background: color-mix(in srgb, var(--ink) 7%, transparent); }
+  .theme-btn, .inbox summary, .nav-narrow summary {
+    transition: background-color .15s ease, transform .16s var(--ease-out); -webkit-tap-highlight-color: transparent;
+  }
+  .theme-btn:active, .inbox summary:active, .nav-narrow summary:active { transform: scale(0.88); transition-duration: .1s; }
+
+  .inbox { position: static; margin-inline-start: auto; flex-shrink: 0; }
+  :global(html[data-signed-in]) .theme-btn { margin-inline-start: 0; }
+  .inbox summary {
+    list-style: none; position: relative; width: 44px; height: 44px; border-radius: 999px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; color: var(--ink);
+  }
+  .inbox summary::-webkit-details-marker { display: none; }
+  .inbox-count {
+    position: absolute; top: 4px; inset-inline-end: 2px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+    background: var(--seal); color: var(--on-seal); font: 700 11px/18px var(--f-body); text-align: center;
+  }
+  .inbox-panel {
+    position: absolute; top: 100%; inset-inline: 0; z-index: 30; max-height: calc(100dvh - 64px); overflow-y: auto; overscroll-behavior: contain;
+    background: var(--glass-hi); -webkit-backdrop-filter: blur(24px) saturate(1.6); backdrop-filter: blur(24px) saturate(1.6);
+    border-top: 1px solid var(--rule); padding: 12px var(--gutter) 14px; box-shadow: var(--shadow-glass);
+  }
+  .inbox-title { margin: 0 0 6px; font-size: 13px; font-weight: 700; letter-spacing: 0.4px; color: var(--seal); }
+  .inbox-list { list-style: none; margin: 0; padding: 0; }
+  .inbox-list :global(.inbox-item) { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--rule); align-items: flex-start; }
+  .inbox-list :global(.inbox-item p) { margin: 0 0 2px; line-height: 1.5; }
+  .inbox-list :global(.inbox-item a) { color: var(--seal); font-weight: 700; }
+  .inbox-list :global(.inbox-sub) { color: var(--muted); font-size: 14px; }
+  .inbox-list :global(.inbox-kanji) {
+    flex: none; display: grid; place-items: center; min-width: 36px; height: 36px; padding: 0 4px; border-radius: 18px;
+    background: var(--washi-2); border: 1px solid var(--rule); color: var(--ink); font: 700 15px/1 var(--f-kanji);
+  }
+  .inbox-list :global(.inbox-item.new .inbox-kanji) { background: var(--seal); border-color: var(--seal); color: var(--on-seal); }
+  .inbox-list :global(.inbox-item.new p) { font-weight: 700; }
+  .inbox-list :global(.inbox-empty) { padding: 14px 0; color: var(--muted); }
+  .inbox-foot { margin: 10px 0 0; font-size: 15px; }
+  .inbox-foot a { color: var(--ink-2); }
+
+  .quick { display: flex; gap: 2px; margin-inline-start: auto; flex-shrink: 0; }
+  .quick-btn {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    min-width: 44px; height: 48px; padding: 0 4px; border-radius: 12px; color: var(--ink); text-decoration: none;
+    -webkit-tap-highlight-color: transparent; transition: background-color .15s ease, transform .16s var(--ease-out);
+  }
+  .quick-btn:hover { background: color-mix(in srgb, var(--ink) 7%, transparent); }
+  .quick-btn:active { transform: scale(0.9); transition-duration: .1s; }
+  .quick-btn[aria-current="page"] { color: var(--seal); }
+  .quick-ico { position: relative; display: grid; place-items: center; }
+  .quick-dot {
+    position: absolute; top: -2px; inset-inline-start: -4px; width: 9px; height: 9px; border-radius: 50%;
+    background: var(--seal); box-shadow: 0 0 0 2px var(--washi);
+  }
+  .site-header.scrolled .quick-dot { box-shadow: 0 0 0 2px var(--glass-hi); }
+  .quick-dot[hidden] { display: none; }
+  .quick-cap { font-size: 11px; font-weight: 700; line-height: 1; letter-spacing: 0.2px; white-space: nowrap; }
+  :global(html[data-signed-in]) .inbox, .quick ~ .inbox { margin-inline-start: 0; }
+  .quick ~ .theme-btn { margin-inline-start: 0; }
+  @media (prefers-reduced-motion: reduce) { .quick-btn:active { transform: none; } }
+
+  .quick-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
+  .quick-tiles .tile {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-height: 112px; padding: 12px;
+    border-radius: 16px; background: var(--surface); border: 1px solid var(--glass-edge); box-shadow: var(--shadow-1);
+    color: var(--ink); text-decoration: none; -webkit-tap-highlight-color: transparent; transition: transform .16s var(--ease-out);
+  }
+  .quick-tiles .tile:active { transform: scale(0.97); }
+  .quick-tiles .label { font-size: 16px; font-weight: 700; line-height: 1.3; }
+  .quick-tiles .hint { font-size: 13px; line-height: 1.35; }
+  .quick-tiles .tile[aria-current="page"] { border-color: color-mix(in srgb, var(--seal) 45%, transparent); }
+  @media (prefers-reduced-motion: reduce) { .quick-tiles .tile:active { transform: none; } }
+
+  .panel .settings-row .ico { grid-row: span 2; }
+  .panel .settings-row > :not(.ico) { grid-column: 2; }
+
+  .theme-row { appearance: none; background: none; border: 0; width: 100%; font: inherit; text-align: start; cursor: pointer; }
+  .theme-row .ico svg { grid-area: 1 / 1; }
+  .theme-row .i-sun, .theme-row .t-light, :global(html[data-theme="dark"]) .theme-row .i-moon, :global(html[data-theme="dark"]) .theme-row .t-dark { display: none; }
+  :global(html[data-theme="dark"]) .theme-row .i-sun, :global(html[data-theme="dark"]) .theme-row .t-light { display: inline; }
+  .bar:has(.quick) > .theme-btn { display: none; }
+  @media (max-width: 374px) { .bar:has(.quick) .brand-name { display: none; } }
+
+  .nav-wide { display: none; }
+  .nav-narrow summary {
+    list-style: none; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--ink); border-radius: 999px; margin-inline-end: -10px;
+  }
+  .nav-narrow summary::-webkit-details-marker { display: none; }
+  .nav-narrow .i-close, .nav-narrow[open] .i-open { display: none; }
+  .nav-narrow[open] .i-close { display: block; }
+  .scrim { position: fixed; inset: 0; z-index: 1; background: rgba(10, 8, 4, 0.38); }
+  .panel {
+    position: fixed; inset-inline: 0; bottom: 0; z-index: 2; height: min(82dvh, 720px); overflow-y: auto; overscroll-behavior: contain;
+    background: var(--glass-hi); -webkit-backdrop-filter: blur(24px) saturate(1.8); backdrop-filter: blur(24px) saturate(1.8);
+    border-radius: 22px 22px 0 0; box-shadow: 0 -1px 0 var(--glass-edge), var(--shadow-glass); touch-action: pan-y;
+    padding: 26px var(--gutter) env(safe-area-inset-bottom, 0px); display: flex; flex-direction: column;
+  }
+  .panel::before {
+    content: ""; position: absolute; top: 9px; left: 50%; width: 44px; height: 5px; margin-left: -22px; border-radius: 3px;
+    background: color-mix(in srgb, var(--ink) 25%, transparent);
+  }
+  .panel.dragging { animation: none !important; transition: none; }
+  .panel.settle { transition: transform .32s var(--ease-drawer); }
+  .ico {
+    flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px;
+    background: color-mix(in srgb, var(--seal) 10%, transparent); color: var(--seal);
+  }
+  a[aria-current="page"] .ico { background: var(--seal); color: var(--on-seal); }
+  .group { padding: 16px 0 8px; border-bottom: 1px solid var(--rule); }
+  .group-title {
+    margin: 0 0 4px; font-family: inherit; font-size: 13px; font-weight: 700; letter-spacing: 0.4px; color: var(--seal);
+  }
+  .group ul { list-style: none; margin: 0; padding: 0; }
+  .group a, .panel .solo {
+    display: flex; flex-direction: column; justify-content: center; min-height: 48px; padding: 6px 0;
+    color: var(--ink); text-decoration: none; font-size: 18px; font-weight: 500; line-height: 1.35;
+  }
+  .group a:has(.ico), .panel .solo:has(.ico) {
+    display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 14px;
+  }
+  .group a:has(.ico) .ico { grid-row: span 2; }
+  .group a:has(.ico) > :not(.ico) { grid-column: 2; }
+  .group a, .panel .solo, .group .chips a { -webkit-tap-highlight-color: transparent; transition: background-color .15s ease, transform .16s var(--ease-out); }
+  .group a:active .ico, .panel .solo:active .ico { transform: scale(0.92); }
+  .ico { transition: color .15s ease, background-color .15s ease, transform .16s var(--ease-out); }
+  .group .chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 2px 0 10px; }
+  .group li:has(.ico) + .chips { padding-inline-start: 48px; }
+  .group .chips a {
+    min-height: 40px; padding: 0 14px; font-size: 16px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 6%, transparent);
+  }
+  .panel .solo { min-height: 60px; font-weight: 700; border-bottom: 1px solid var(--rule); }
+  .panel .solo.account {
+    position: sticky; bottom: 0; margin: auto calc(-1 * var(--gutter)) 0; padding: 12px var(--gutter) calc(12px + env(safe-area-inset-bottom, 0px));
+    min-height: 0; flex-direction: row; gap: 8px; justify-content: center; align-items: center; border: 0;
+    background: linear-gradient(to bottom, transparent, var(--surface) 30%); color: var(--ink);
+  }
+  .panel .solo.account::before {
+    content: ""; position: absolute; inset: 12px var(--gutter) calc(12px + env(safe-area-inset-bottom, 0px)); z-index: -1;
+    border-radius: 14px; background: var(--ink); box-shadow: var(--shadow-2);
+  }
+  .panel .solo.account { isolation: isolate; color: var(--washi); min-height: 74px; }
+  .panel .solo.account:active { transform: scale(0.98); }
+  .panel a[aria-current="page"] { color: var(--seal); font-weight: 700; }
+  .panel .solo.account[aria-current="page"] { color: var(--washi); }
+  .panel a[aria-current="page"]:not(:has(.ico)):not(.account) .label::before { content: '● '; font-size: 0.6em; vertical-align: middle; }
+
+  @keyframes sheet-in { from { transform: translateY(100%); } }
+  @keyframes sheet-out { to { transform: translateY(100%); } }
+  @keyframes materialize { from { opacity: 0; transform: translateY(-6px) scale(0.97); } }
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html:not(.tour-on)) .nav-narrow[open] .panel { animation: sheet-in .32s var(--ease-drawer); }
+    :global(html:not(.tour-on)) .nav-narrow[open] .scrim { animation: fade-in .32s ease; }
+    .nav-narrow.closing .panel { animation: sheet-out .2s cubic-bezier(0.4, 0, 1, 1) forwards; }
+    .nav-narrow.closing .scrim { opacity: 0; transition: opacity .2s ease; }
+    :global(html:not(.tour-on)) .nav-group[open]:not(.instant) .nav-menu,
+    :global(html:not(.tour-on)) .inbox[open] .inbox-panel { animation: materialize .22s var(--ease-out); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :global(html:not(.tour-on)) .nav-narrow[open] .panel,
+    :global(html:not(.tour-on)) .nav-narrow[open] .scrim,
+    :global(html:not(.tour-on)) .nav-group[open]:not(.instant) .nav-menu,
+    :global(html:not(.tour-on)) .inbox[open] .inbox-panel { animation: fade-in .15s ease-out; }
+    .nav-narrow.closing .panel, .nav-narrow.closing .scrim { opacity: 0; transition: opacity .15s ease; }
+    .theme-btn svg { transition: opacity .2s ease; }
+    .theme-btn .i-sun, :global(html[data-theme="dark"]) .theme-btn .i-moon { transform: none; }
+    .theme-btn:active, .inbox summary:active, .nav-narrow summary:active, .group a:active .ico, .panel .solo:active .ico, .panel .solo.account:active { transform: none; }
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .site-header::before, .panel, .nav-menu, .inbox-panel { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--surface); }
+    .site-header.scrolled { background: var(--washi); }
+  }
+
+  @media (min-width: 1040px) {
+    .nav-narrow { display: none; }
+    .bar:has(.quick) > .theme-btn { display: grid; }
+    .quick { margin-inline-start: 4px; }
+    .nav-wide { display: flex; align-items: center; gap: 22px; margin-inline-start: auto; }
+    .theme-btn { margin-inline-start: 0; }
+    .inbox { position: relative; margin-inline-start: 0; }
+    .inbox-panel {
+      top: calc(100% + 10px); inset-inline: auto -8px; width: 380px; max-height: 70vh; padding: 10px 16px 12px;
+      border: 1px solid var(--glass-edge); border-radius: 16px; transform-origin: top left;
+    }
+  }
+  @media (min-width: 1040px) { .bar:has(.quick) { gap: 10px; } .bar:has(.quick) .nav-wide { gap: 18px; } }
+  @media (min-width: 1040px) and (max-width: 1279px) {
+    .bar:has(.quick) .nav-wide { gap: 11px; }
+    .bar:has(.quick) > .theme-btn, .bar:has(.quick) .inbox summary { width: 40px; }
+  }
+  .nav-wide .account :global(svg) { flex-shrink: 0; }
+  .nav-wide .top, .nav-group summary {
+    color: var(--ink); text-decoration: none; font-weight: 500; padding: 8px 0; border-bottom: 2px solid transparent; white-space: nowrap;
+    transition: border-color .15s ease, color .15s ease;
+  }
+  .nav-wide .top:hover, .nav-wide .top[aria-current="page"] { border-bottom-color: var(--seal); }
+  .nav-group { position: relative; }
+  .nav-group summary { list-style: none; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .nav-group summary::-webkit-details-marker { display: none; }
+  .nav-group summary:hover { border-bottom-color: var(--seal); }
+  .nav-group summary.current { border-bottom-color: color-mix(in srgb, var(--seal) 45%, transparent); }
+  .nav-group summary svg { transition: transform .3s var(--ease-out); }
+  .nav-group[open] summary svg { transform: rotate(180deg); }
+  .nav-menu {
+    position: absolute; top: calc(100% + 10px); inset-inline-start: -14px; width: max-content; min-width: 280px; max-width: 360px; z-index: 30;
+    display: flex; flex-direction: column; padding: 8px;
+    background: var(--glass-hi); -webkit-backdrop-filter: blur(24px) saturate(1.8); backdrop-filter: blur(24px) saturate(1.8);
+    border: 1px solid var(--glass-edge); border-radius: 16px; box-shadow: var(--shadow-glass);
+    transform-origin: top right;
+  }
+  .nav-menu a {
+    display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 12px;
+    padding: 8px 12px; border-radius: 10px; color: var(--ink); text-decoration: none; font-weight: 500;
+    transition: background-color .12s ease;
+  }
+  .nav-menu a > :not(.ico) { grid-column: 2; }
+  .nav-menu a .ico { grid-row: span 2; width: 32px; height: 32px; }
+  .nav-menu a.sub { padding-block: 5px; padding-inline-start: 56px; font-size: 15px; }
+  .nav-menu a:hover { background: color-mix(in srgb, var(--ink) 7%, transparent); }
+  .nav-menu a[aria-current="page"] .label, .nav-menu a.sub[aria-current="page"] { color: var(--seal); font-weight: 700; }
+  .nav-wide .account {
+    display: inline-flex; align-items: center; gap: 7px;
+    color: var(--ink); text-decoration: none; font-weight: 700; padding: 7px 16px; border: 1px solid var(--ink); border-radius: 999px; white-space: nowrap;
+    transition: background-color .15s ease, transform .16s var(--ease-out);
+  }
+  .nav-wide .account:active { transform: scale(0.96); }
+  @media (prefers-reduced-motion: reduce) { .nav-wide .account:active { transform: none; } }
+  .nav-wide .account:hover, .nav-wide .account[aria-current="page"] { background: color-mix(in srgb, var(--ink) 7%, transparent); }
+</style>
+
+<script>
+  import { gameInProgress } from '../play/record';
+
+  const setAll = (sel: string, f: (a: HTMLAnchorElement) => void) => document.querySelectorAll<HTMLAnchorElement>(sel).forEach(f);
+  const say = (a: HTMLAnchorElement, title: string, hint: string) => {
+    a.removeAttribute('data-g-aria-label'); a.removeAttribute('data-g-title');
+    a.setAttribute('aria-label', hint ? `${title}: ${hint}` : title);
+    a.setAttribute('title', hint ? `${title}: ${hint}` : title);
+    const t = a.querySelector('[data-quick-title]');
+    const h = a.querySelector('[data-quick-hint]');
+    if (t) t.textContent = title;
+    if (h) h.textContent = hint;
+  };
+
+  function playLink() {
+    const game = gameInProgress();
+    setAll('[data-quick-play]', (a) => {
+      a.href = game ? '/play/' : '/play/?new';
+      if (game) say(a, '⟦המשך|המשיכי⟧ את המשחק', game.moves ? `רמה ${game.level}, אחרי ${game.moves} מהלכים` : `רמה ${game.level}, לפני המהלך הראשון`);
+      else say(a, 'משחק נגד המחשב', 'עשר רמות, ישר בדפדפן');
+    });
+    document.querySelector('[data-quick-dot]')?.toggleAttribute('hidden', !game);
+  }
+
+  async function courseLink() {
+    if (!document.documentElement.hasAttribute('data-signed-in')) {
+      setAll('[data-quick-course]', (a) => say(a, 'מסלול לימוד אישי', 'מאיפה מתחילים, ומה הצעד הבא'));
+      return;
+    }
+    const [{ nextStep, stepHref }, { LEVEL_COUNTS }, { readLocal }] = await Promise.all([
+      import('../lib/curriculum'), import('../lib/level-counts'), import('../lib/progress-local'),
+    ]);
+    const p = readLocal();
+    const next = p.course.route ? nextStep(p, LEVEL_COUNTS) : undefined;
+    setAll('[data-quick-course]', (a) => {
+      if (!p.course.route) { a.href = '/course/'; say(a, 'מסלול לימוד אישי', 'מאיפה מתחילים? שתי שאלות קצרות'); }
+      else if (!next) { a.href = '/course/'; say(a, 'מסלול לימוד אישי', 'סיימת את כל המסלול'); }
+      else { a.href = stepHref(next.step, p, LEVEL_COUNTS); say(a, 'הצעד הבא במסלול', next.step.title); }
+    });
+  }
+
+  const refresh = () => { playLink(); void courseLink(); };
+  refresh();
+  document.addEventListener('progress-synced', () => void courseLink());
+  document.addEventListener('shogi-il:game-end', playLink);
+  addEventListener('pageshow', refresh);
+  addEventListener('storage', (e) => { if (!e.key || e.key.startsWith('shogi-il.')) refresh(); });
+</script>
+
+<script>
+  const header = document.querySelector<HTMLElement>('.site-header');
+  if (header) {
+    const onScroll = () => header.classList.toggle('scrolled', scrollY > 4);
+    addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  }
+
+  const groups = document.querySelectorAll<HTMLDetailsElement>('[data-nav-group]');
+  groups.forEach((d) => {
+    d.addEventListener('toggle', () => {
+      if (!d.open) { d.classList.remove('instant'); return; }
+      let swapped = false;
+      groups.forEach((o) => { if (o !== d && o.open) { o.open = false; swapped = true; } });
+      d.classList.toggle('instant', swapped);
+    });
+    d.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && d.open) { d.open = false; d.querySelector('summary')?.focus(); }
+    });
+  });
+  document.addEventListener('click', (e) => {
+    groups.forEach((d) => { if (d.open && !d.contains(e.target as Node)) d.open = false; });
+  });
+
+  const narrow = document.querySelector<HTMLDetailsElement>('[data-nav-narrow]');
+  const sheet = narrow?.querySelector<HTMLElement>('[data-sheet]');
+  if (narrow && sheet) {
+    const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let closing = false;
+    const close = (focus = false) => {
+      if (!narrow.open || closing) return;
+      const done = () => {
+        narrow.classList.remove('closing'); sheet.classList.remove('settle'); sheet.style.transform = ''; closing = false;
+        narrow.open = false;
+        if (focus) narrow.querySelector('summary')?.focus();
+      };
+      if (document.documentElement.classList.contains('tour-on')) { done(); return; }
+      closing = true;
+      narrow.classList.add('closing');
+      setTimeout(done, still() ? 150 : 200);
+    };
+    narrow.addEventListener('toggle', () => { document.documentElement.style.overflow = narrow.open ? 'hidden' : ''; });
+    narrow.querySelector('summary')?.addEventListener('click', (e) => { if (narrow.open) { e.preventDefault(); close(); } });
+    narrow.querySelector('[data-scrim]')?.addEventListener('click', () => close());
+    narrow.addEventListener('keydown', (e) => { if (e.key === 'Escape' && narrow.open) close(true); });
+    sheet.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => close()));
+
+    let y0 = 0, t0 = 0, dy = 0, tracking = false, dragging = false;
+    sheet.addEventListener('touchstart', (e) => {
+      if (e.touches.length !== 1 || sheet.scrollTop > 0 || document.documentElement.classList.contains('tour-on')) return;
+      tracking = true; dragging = false; y0 = e.touches[0].clientY; t0 = e.timeStamp; dy = 0;
+    }, { passive: true });
+    sheet.addEventListener('touchmove', (e) => {
+      if (!tracking) return;
+      dy = e.touches[0].clientY - y0;
+      if (!dragging && (dy < 0 || sheet.scrollTop > 0)) { tracking = false; return; }
+      if (!dragging && dy > 10) { dragging = true; sheet.classList.add('dragging'); }
+      if (dragging) { e.preventDefault(); sheet.style.transform = `translateY(${Math.max(0, dy)}px)`; }
+    }, { passive: false });
+    const end = (e: TouchEvent) => {
+      if (!tracking) return;
+      tracking = false;
+      if (!dragging) return;
+      dragging = false;
+      sheet.classList.remove('dragging');
+      sheet.classList.add('settle');
+      const v = dy / Math.max(1, e.timeStamp - t0);
+      if (dy > 120 || v > 0.11) {
+        closing = true;
+        sheet.style.transform = 'translateY(100%)';
+        setTimeout(() => { closing = false; sheet.classList.remove('settle'); sheet.style.transform = ''; narrow.open = false; }, still() ? 0 : 320);
+      } else {
+        sheet.style.transform = '';
+        setTimeout(() => sheet.classList.remove('settle'), 320);
+      }
+    };
+    sheet.addEventListener('touchend', end);
+    sheet.addEventListener('touchcancel', end);
+  }
+</script>

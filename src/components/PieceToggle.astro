@@ -1,0 +1,26 @@
+---
+import InfoTip from './InfoTip.astro';
+
+interface Props { tip?: boolean }
+const { tip = false } = Astro.props;
+---
+{tip ? (
+  <div class="seg-tip">
+    <div class="seg" role="group" aria-label="סימון הכלים">
+      <button type="button" data-pieces-set="hebrew" aria-pressed="true">עברית</button>
+      <button type="button" data-pieces-set="letters" aria-pressed="false">אנגלית</button>
+      <button type="button" data-pieces-set="kanji" aria-pressed="false">קאנג׳י</button>
+    </div>
+    <InfoTip id="pieces" />
+  </div>
+) : (
+  <div class="seg" role="group" aria-label="סימון הכלים">
+    <button type="button" data-pieces-set="hebrew" aria-pressed="true">עברית</button>
+    <button type="button" data-pieces-set="letters" aria-pressed="false">אנגלית</button>
+    <button type="button" data-pieces-set="kanji" aria-pressed="false">קאנג׳י</button>
+  </div>
+)}
+
+<style>
+  .seg-tip { display: inline-flex; align-items: center; }
+</style>

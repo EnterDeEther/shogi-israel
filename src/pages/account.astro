@@ -1,0 +1,793 @@
+---
+import Base from '../layouts/Base.astro';
+import SoundSetting from '../components/SoundSetting.astro';
+import ThemeSetting from '../components/ThemeSetting.astro';
+import PieceToggle from '../components/PieceToggle.astro';
+import HebrewFontSwitch from '../components/HebrewFontSwitch.astro';
+import PasswordField from '../components/PasswordField.astro';
+import GenderSetting from '../components/GenderSetting.astro';
+import InfoTip from '../components/InfoTip.astro';
+import { accountsEnabled } from '../lib/account-config';
+import { stages } from '../learn/categories';
+import { GROUP_LABEL } from '../lib/inbox';
+import { INBOX_GROUPS } from '../lib/progress-sync';
+import { CONSENT_TEXT } from '../lib/consent';
+import { ACCOUNT_TOUR_URL } from '../lib/tour';
+
+const PASS_RULES = [
+  ['len', 'לפחות 8 תווים'],
+  ['letter', 'לפחות אות אחת, בעברית או באנגלית'],
+  ['digit', 'לפחות ספרה אחת'],
+];
+
+const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length]));
+---
+<Base title="החשבון שלי" description="כניסה לחשבון בשוגי ישראל: ההתקדמות בשיעורים ובמסלול נשמרת בכל מכשיר." noindex>
+  <div class="wrap page" data-account data-level-counts={JSON.stringify(levelCounts)}>
+    {!accountsEnabled && (
+      <section>
+        <h1>החשבון שלי</h1>
+        <p class="lead">החשבונות בדרך. בינתיים ההתקדמות שלך נשמרת בדפדפן הזה, בלי הרשמה.</p>
+        <h2>הגדרות</h2>
+        <div class="setting"><p class="setting-label">מראה האתר</p><ThemeSetting /></div>
+        <div class="setting"><p class="setting-label">סימון הכלים</p><PieceToggle /></div>
+        <div class="setting hfont-row"><p class="setting-label">גופן האותיות על הכלים</p><HebrewFontSwitch /></div>
+        <div class="setting"><p class="setting-label">איך לפנות אליי באתר</p><GenderSetting label="איך לפנות אליי באתר" /></div>
+        <div class="setting"><SoundSetting /></div>
+      </section>
+    )}
+
+    {accountsEnabled && (
+      <>
+        <p class="muted" data-view="loading">טוען…</p>
+
+        <section data-view="signin" hidden>
+          <h1 data-signin-title>כניסה לחשבון</h1>
+          <p class="lead">עם חשבון (בחינם), ההתקדמות בשיעורים, בבעיות המט ובמסלול שלך נשמרת ועוברת איתך לכל מכשיר. ⟦תקבל|תקבלי⟧ מסלול לימוד אישי, ⟦תצבור|תצברי⟧ נקודות ודרגות, והמשחקים שלך נגד המחשב יישמרו.</p>
+          <div class="seg tabs" role="group" aria-label="כניסה או הרשמה">
+            <button type="button" data-mode="signin" aria-pressed="true">כניסה</button>
+            <button type="button" data-mode="signup" aria-pressed="false">הרשמה</button>
+          </div>
+          <form class="form" data-auth-form novalidate>
+            <label for="acc-email">כתובת מייל</label>
+            <input id="acc-email" name="email" type="email" dir="ltr" autocomplete="email" inputmode="email" required />
+            <label for="acc-pass">סיסמה</label>
+            <PasswordField id="acc-pass" autocomplete="current-password" describedby="acc-pass-help" />
+            <div id="acc-pass-help" class="rules" data-signup-only hidden>
+              <ul data-rules-for="acc-pass">
+                {PASS_RULES.map(([k, t]) => <li data-rule={k}>{t}</li>)}
+              </ul>
+              <p class="small muted">מותר כל תו, גם רווח וסימנים. משפט קצר ⟦שתזכור|שתזכרי⟧ בקלות הוא סיסמה טובה.</p>
+            </div>
+            <div class="gender-pick" data-signup-only hidden>
+              <p class="setting-label">איך לפנות אליך באתר?</p>
+              <GenderSetting label="איך לפנות אליך באתר?" />
+            </div>
+            <label class="check" for="acc-weekly" data-signup-only hidden>
+              <input type="checkbox" id="acc-weekly" />
+              <span>{CONSENT_TEXT.week}. אפשר להפסיק בכל רגע.</span>
+            </label>
+            <div class="captcha" data-captcha></div>
+            <button type="submit" class="btn wide"><span data-submit-label>כניסה</span></button>
+            <p class="err" role="alert" data-err></p>
+          </form>
+          <p class="small" data-signin-only><button type="button" class="link" data-forgot>שכחת סיסמה?</button></p>
+          <p class="small muted">מה שכבר עשית בדפדפן הזה יישמר בחשבון. בהרשמה ⟦אתה|את⟧ ⟦מסכים|מסכימה⟧ ל<a href="/privacy/">מדיניות הפרטיות</a>. אנחנו שומרים רק את המייל, הכינוי, איך לפנות אליך וההתקדמות שלך.</p>
+        </section>
+
+        <section data-view="forgot" hidden>
+          <h1>איפוס סיסמה</h1>
+          <p class="lead">⟦הכנס|הכניסי⟧ את המייל של החשבון, ונשלח לך קישור לבחירת סיסמה חדשה.</p>
+          <form class="form" data-forgot-form novalidate>
+            <label for="acc-forgot-email">כתובת מייל</label>
+            <input id="acc-forgot-email" name="email" type="email" dir="ltr" autocomplete="email" inputmode="email" required />
+            <div class="captcha" data-captcha></div>
+            <button type="submit" class="btn wide"><span>⟦שלח|שלחי⟧ לי קישור</span></button>
+            <p class="err" role="alert" data-err></p>
+          </form>
+          <p class="small"><button type="button" class="link" data-back>חזרה לכניסה</button></p>
+        </section>
+
+        <section data-view="sent" hidden>
+          <h1>⟦בדוק|בדקי⟧ את המייל</h1>
+          <p class="lead" data-sent-text></p>
+          <form class="form" data-code-form novalidate hidden>
+            <label for="acc-code">הקוד מהמייל</label>
+            <input id="acc-code" name="code" dir="ltr" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="10" required />
+            <button type="submit" class="btn wide">אישור</button>
+            <p class="err" role="alert" data-err></p>
+          </form>
+          <p class="muted small">לא הגיע? ⟦בדוק|בדקי⟧ בתיקיית הספאם, או ⟦חכה|חכי⟧ כמה דקות ⟦ונסה|ונסי⟧ שוב.</p>
+          <p class="small"><button type="button" class="link" data-back>חזרה לכניסה</button></p>
+        </section>
+
+        <section data-view="newpass" hidden>
+          <h1>סיסמה חדשה</h1>
+          <form class="form" data-newpass-form novalidate>
+            <label for="acc-newpass">הסיסמה החדשה</label>
+            <PasswordField id="acc-newpass" autocomplete="new-password" describedby="acc-newpass-help" />
+            <div id="acc-newpass-help" class="rules">
+              <ul data-rules-for="acc-newpass">
+                {PASS_RULES.map(([k, t]) => <li data-rule={k}>{t}</li>)}
+              </ul>
+              <p class="small muted">מותר כל תו, גם רווח וסימנים. משפט קצר ⟦שתזכור|שתזכרי⟧ בקלות הוא סיסמה טובה.</p>
+            </div>
+            <div class="form" data-nonce hidden>
+              <label for="acc-nonce">הקוד ששלחנו למייל</label>
+              <p class="small muted">כדי לשנות סיסמה בחשבון שנכנסת אליו לפני יותר מיום, שלחנו לך מייל עם קוד. ⟦הקלד|הקלידי⟧ אותו כאן.</p>
+              <input id="acc-nonce" name="nonce" dir="ltr" inputmode="numeric" autocomplete="one-time-code" maxlength="10" />
+            </div>
+            <button type="submit" class="btn wide"><span data-label="שמירה">שמירה</span></button>
+            <p class="err" role="alert" data-err></p>
+          </form>
+          <p class="small" data-newpass-cancel hidden><button type="button" class="link">ביטול</button></p>
+        </section>
+
+        <section data-view="email" hidden>
+          <h1>שינוי כתובת המייל</h1>
+          <p class="lead">הכתובת הנוכחית: <bdi dir="ltr" data-email></bdi></p>
+          <form class="form" data-email-form novalidate>
+            <label for="acc-newemail">הכתובת החדשה</label>
+            <input id="acc-newemail" name="email" type="email" dir="ltr" autocomplete="email" inputmode="email" required aria-describedby="acc-newemail-help" />
+            <p id="acc-newemail-help" class="small muted">נשלח קישור אישור לכתובת החדשה (ואולי גם לישנה). הכתובת תתעדכן רק אחרי ⟦שתלחץ|שתלחצי⟧ על הקישור, באותו דפדפן.</p>
+            <button type="submit" class="btn wide"><span data-label="שליחת קישור אישור">שליחת קישור אישור</span></button>
+            <p class="err" role="alert" data-err></p>
+            <p class="ok" role="status" data-ok></p>
+          </form>
+          <p class="small"><button type="button" class="link" data-to-home>חזרה לחשבון</button></p>
+        </section>
+
+        <section data-view="nickname" hidden>
+          <h1 data-nick-title>⟦בחר|בחרי⟧ כינוי</h1>
+          <p class="lead">הכינוי גלוי לכולם, ובהמשך יופיע גם במשחקים מול חברים. עדיף לא להשתמש בשם המלא.</p>
+          <form class="form" data-nick-form novalidate>
+            <label for="acc-nick">כינוי</label>
+            <input id="acc-nick" name="nickname" autocomplete="nickname" minlength="3" maxlength="16" required aria-describedby="acc-nick-help" />
+            <p id="acc-nick-help" class="small muted">3 עד 16 תווים: אותיות בעברית או באנגלית, ספרות, <bdi dir="ltr">_</bdi> או <bdi dir="ltr">-</bdi>.</p>
+            <button type="submit" class="btn wide"><span>שמירה</span></button>
+            <p class="err" role="alert" data-err></p>
+          </form>
+          <p class="small" data-nick-cancel hidden><button type="button" class="link">ביטול</button></p>
+        </section>
+
+        <section data-view="home" hidden>
+          <p class="eyebrow">החשבון שלי</p>
+          <h1><bdi data-nickname></bdi></h1>
+          <p class="muted small">⟦מחובר|מחוברת⟧ בתור <bdi dir="ltr" data-email></bdi></p>
+          <p class="ok" role="status" data-home-ok></p>
+          <div class="welcome" data-welcome role="region" aria-labelledby="welcome-h" hidden>
+            <h2 id="welcome-h">⟦ברוך הבא|ברוכה הבאה⟧!</h2>
+            <p>רוצה סיור קצר במה שהחשבון נותן לך? פחות מדקה, ⟦ואתה|ואת⟧ ⟦מחליט|מחליטה⟧ מתי להמשיך.</p>
+            <p class="welcome-cta"><a class="btn" href={ACCOUNT_TOUR_URL}><span>⟦הראה|הראי⟧ לי</span></a> <button type="button" class="btn btn-ghost" data-welcome-close><span>לא עכשיו</span></button></p>
+          </div>
+
+          <h2>מסלול לימוד אישי</h2>
+          <div class="course-card" data-course-card>
+            <p class="small muted" data-course-where></p>
+            <p class="course-rank"><span class="course-kanji" lang="ja" aria-hidden="true" data-course-kanji></span> <span><strong data-course-rank></strong><InfoTip id="rank" /></span> <span><span class="small muted" data-course-xp></span><InfoTip id="points" /></span></p>
+            <p class="small"><a href="/ranks/#site">דרגה של לימוד באתר, לא דרגה רשמית</a></p>
+            <p class="course-title" data-course-title></p>
+            <div class="bar" aria-hidden="true"><span data-course-bar></span></div>
+            <p class="small muted" data-course-count></p>
+            <p class="course-links"><a class="btn" data-course-next href="/course/"><span>לצעד הבא</span></a> <a href="/course/">לכל המסלול</a></p>
+          </div>
+
+          <h2>ההתקדמות שלי</h2>
+          <dl class="stats">
+            <div><dt>כוכבים בשיעורים</dt><dd><bdi dir="ltr" data-stat="stars"></bdi></dd></div>
+            <div><dt>תרגילים שפתרת</dt><dd><bdi dir="ltr" data-stat="levels"></bdi></dd></div>
+            <div><dt>שלבים שהשלמת</dt><dd><bdi dir="ltr" data-stat="stages"></bdi></dd></div>
+            <div><dt>שיעורים בחוקים בסיסיים</dt><dd><bdi dir="ltr" data-stat="rules"></bdi></dd></div>
+          </dl>
+          <p class="small muted" data-synced>ההתקדמות נשמרת בחשבון ומתעדכנת בכל מכשיר שבו ⟦אתה|את⟧ ⟦מחובר|מחוברת⟧.</p>
+
+          <h2>משחקים</h2>
+          <dl class="stats" data-games hidden>
+            <div><dt>משחקים</dt><dd data-stat="played"></dd></div>
+            <div><dt>ניצחונות</dt><dd data-stat="wins"></dd></div>
+            <div><dt>הפסדים</dt><dd data-stat="losses"></dd></div>
+          </dl>
+          <p class="muted" data-no-games>עוד לא שיחקת. משחקים <a href="/play/">נגד המחשב</a> נשמרים כאן אוטומטית.</p>
+
+          <h2 id="notifications">התראות</h2>
+          <fieldset class="notify" data-notify>
+            <legend>מה יופיע בפעמון שבראש העמוד</legend>
+            {INBOX_GROUPS.map((g) => (
+              <label class="switch-row" for={`notify-${g}`}>
+                <span><strong>{GROUP_LABEL[g].title}</strong><span class="small muted">{GROUP_LABEL[g].sub}</span></span>
+                <input type="checkbox" class="switch" id={`notify-${g}`} data-notify-group={g} checked />
+              </label>
+            ))}
+          </fieldset>
+          <p class="small muted" data-notify-saved>ההגדרות נשמרות בחשבון ועוברות איתך לכל מכשיר.</p>
+          <fieldset class="notify" data-email-prefs>
+            <legend>מיילים (רק אם ⟦תבקש|תבקשי⟧)</legend>
+            <label class="switch-row" for="email-week">
+              <span><strong>בעיית השבוע במייל</strong><span class="small muted">{CONSENT_TEXT.week}</span></span>
+              <input type="checkbox" class="switch" id="email-week" data-email-kind="week" />
+            </label>
+            <label class="switch-row" for="email-return">
+              <span><strong>תזכורת לחזור</strong><span class="small muted">{CONSENT_TEXT.return}</span></span>
+              <input type="checkbox" class="switch" id="email-return" data-email-kind="return" />
+            </label>
+          </fieldset>
+          <p class="small err" data-email-paused hidden>המיילים הושהו כי המייל האחרון לא הגיע אליך (או סומן כספאם). ⟦הדלק|הדליקי⟧ שוב כדי לחדש.</p>
+          <p class="small muted" data-email-note>לכל היותר מייל אחד בשבוע, אף פעם לא בשישי ובשבת, ובכל מייל יש קישור להפסקה בלחיצה אחת. מיילי החשבון (אישור כתובת, איפוס סיסמה) נשלחים רק ⟦כשאתה|כשאת⟧ ⟦מבקש|מבקשת⟧. פרטים ב<a href="/privacy/#emails">מדיניות הפרטיות</a>.</p>
+
+          <h2>הגדרות</h2>
+          <div class="setting">
+            <p class="setting-label" id="theme-label">מראה האתר</p>
+            <ThemeSetting />
+            <p class="small muted">נשמר במכשיר הזה. אפשר גם להחליף בכל עמוד עם הכפתור בראש העמוד.</p>
+          </div>
+          <div class="setting">
+            <p class="setting-label">איך לפנות אליי באתר ובמיילים</p>
+            <GenderSetting label="איך לפנות אליי באתר ובמיילים" />
+            <p class="small muted" data-gender-note>נשמר בחשבון ועובר איתך לכל מכשיר.</p>
+          </div>
+          <div class="setting" id="pieces">
+            <p class="setting-label">סימון הכלים</p>
+            <PieceToggle />
+          </div>
+          <div class="setting hfont-row">
+            <p class="setting-label">גופן האותיות על הכלים</p>
+            <HebrewFontSwitch />
+            <p class="small muted">נשמר במכשיר הזה.</p>
+          </div>
+          <div class="setting" id="sound"><SoundSetting /></div>
+          <p><a href={ACCOUNT_TOUR_URL}>הצגת הסיור בחשבון שוב</a></p>
+
+          <h2>פרטי החשבון</h2>
+          <dl class="details">
+            <div><dt>כינוי</dt><dd><bdi data-nickname></bdi></dd><button type="button" class="link" data-rename>שינוי כינוי</button></div>
+            <div><dt>מייל</dt><dd><bdi dir="ltr" data-email></bdi></dd><button type="button" class="link" data-change-email>שינוי מייל</button></div>
+            <div><dt>סיסמה</dt><dd aria-label="מוסתרת">••••••••</dd><button type="button" class="link" data-changepass>שינוי סיסמה</button></div>
+          </dl>
+          <div class="actions">
+            <button type="button" class="btn btn-ghost" data-signout><span>יציאה</span></button>
+          </div>
+          <p class="small muted">ביציאה, ההתקדמות נמחקת מהדפדפן הזה ונשארת שמורה בחשבון.</p>
+          <details class="danger">
+            <summary>מחיקת החשבון</summary>
+            <p>המחיקה סופית: הכינוי, ההתקדמות וכל המשחקים יימחקו מהשרת ולא יהיה אפשר לשחזר אותם.</p>
+            <button type="button" class="btn danger-btn" data-delete><span>⟦מחק|מחקי⟧ את החשבון שלי</span></button>
+            <p class="err" role="alert" data-err></p>
+          </details>
+        </section>
+      </>
+    )}
+  </div>
+</Base>
+
+<script>
+  import { accountsEnabled } from '../lib/account-config';
+  import { stats, type InboxGroup, type SyncedProgress } from '../lib/progress-sync';
+  import { updateInbox } from '../lib/progress-local';
+  import { KIND_LABEL, nextStep, pathProgress, placeLabel, stepHref, whereLabel } from '../lib/curriculum';
+  import { rankFor, xpBreakdown } from '../lib/xp';
+  import { savedGender } from '../lib/gender';
+  import { isIos, isStandalone } from '../lib/install';
+
+  const root = document.querySelector<HTMLElement>('[data-account]')!;
+  if (accountsEnabled) void start();
+
+  async function start() {
+    const acc = await import('../lib/account');
+    const { mountCaptcha, captchaEnabled } = await import('../lib/captcha');
+    const noCaptcha = { token: () => undefined, reset: () => {} };
+    const [authCaptcha, forgotCaptcha] = await Promise.all(
+      [...root.querySelectorAll<HTMLElement>('[data-captcha]')].map((el) => mountCaptcha(el).catch(() => noCaptcha)));
+    const needCaptcha = (c: typeof authCaptcha) => captchaEnabled && !c.token();
+    const levelCounts = JSON.parse(root.dataset.levelCounts || '{}');
+    const $ = <T extends HTMLElement>(sel: string, scope: ParentNode = root) => scope.querySelector<T>(sel)!;
+    const views = [...root.querySelectorAll<HTMLElement>('[data-view]')];
+    const show = (name: string) => {
+      views.forEach((v) => { v.hidden = v.dataset.view !== name; });
+      const v = views.find((x) => x.dataset.view === name);
+      v?.querySelector<HTMLElement>('input, h1')?.focus({ preventScroll: true });
+    };
+    const fail = (view: string, msg: string) => { $(`[data-view="${view}"] [data-err]`).textContent = msg; };
+    const busy = (form: HTMLElement, on: boolean) => form.querySelector<HTMLButtonElement>('button[type=submit], [data-delete]')!.disabled = on;
+    const saving = (form: HTMLElement, on: boolean, text = 'שומר…') => {
+      busy(form, on);
+      const label = form.querySelector<HTMLElement>('button[type=submit] [data-label]');
+      if (label) label.textContent = on ? text : label.dataset.label!;
+    };
+    let profile: Awaited<ReturnType<typeof acc.getProfile>> = null;
+
+    let recovering = false;
+    const { data: { subscription } } = acc.supabase().auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') { recovering = true; setTimeout(() => askNewPassword(true)); }
+      else if (event === 'SIGNED_IN' && !recovering) setTimeout(() => void route());
+      else if (event === 'USER_UPDATED' && session?.user.email) {
+        const email = session.user.email;
+        setTimeout(() => root.querySelectorAll('[data-email]').forEach((e) => { e.textContent = email; }));
+      }
+    });
+    window.addEventListener('pagehide', () => subscription.unsubscribe());
+
+    async function route() {
+      const session = await acc.getSession();
+      if (!session) return show('signin');
+      if (recovering) return;
+      try { localStorage.setItem('shogi-il.account.seen', '1'); } catch {}
+      root.querySelectorAll('[data-email]').forEach((e) => { e.textContent = session.user.email ?? ''; });
+      profile = await acc.getProfile(session.user.id);
+      const progress = (await acc.syncProgress()) ?? acc.readLocal();
+      if (!profile) return askNickname(true);
+      const s = stats(progress, levelCounts);
+      root.querySelectorAll('[data-nickname]').forEach((e) => { e.textContent = profile!.nickname; });
+      $('[data-stat="stars"]').textContent = `${s.stars} / ${s.maxStars}`;
+      $('[data-stat="levels"]').textContent = `${s.levelsDone} / ${s.levels}`;
+      $('[data-stat="stages"]').textContent = `${s.stagesDone} / ${s.stages}`;
+      $('[data-stat="rules"]').textContent = String(s.rulesDone);
+      showCourse(progress);
+      showNotify(progress);
+      await acc.applySignupConsent(session);
+      await acc.syncGender(session);
+      void acc.touchLastSeen();
+      void showEmail();
+      await acc.syncGames();
+      const g = await acc.gameSummary();
+      $('[data-games]').hidden = g.played === 0;
+      $('[data-no-games]').hidden = g.played > 0;
+      $('[data-stat="played"]').textContent = String(g.played);
+      $('[data-stat="wins"]').textContent = String(g.wins);
+      $('[data-stat="losses"]').textContent = String(g.losses);
+      if (recovering) return;
+      show('home');
+      if (location.hash === '#notifications') document.getElementById('notifications')?.scrollIntoView();
+    }
+
+    function showCourse(p: SyncedProgress) {
+      const next = nextStep(p, levelCounts);
+      const total = pathProgress(p, levelCounts);
+      const placed = !!p.course.route;
+      const xp = xpBreakdown(p, levelCounts).total;
+      const r = rankFor(xp);
+      $('[data-course-kanji]').textContent = r.rank.kanji;
+      $('[data-course-rank]').textContent = `דרגה ${r.rank.name}`;
+      $('[data-course-xp]').textContent = `${xp.toLocaleString('he-IL')} נקודות${r.next ? ` · עוד ${(r.next.min - xp).toLocaleString('he-IL')} לדרגה ${r.next.name}` : ''}`;
+      $('[data-course-where]').textContent = placed
+        ? `נקודת ההתחלה: ${placeLabel(p.course)}${next ? ` · עכשיו ב${whereLabel(next.unit)}` : ''}`
+        : 'עוד לא בחרת מאיפה להתחיל.';
+      $('[data-course-title]').textContent = next ? `הצעד הבא: ${next.step.title} (${KIND_LABEL[next.step.kind]})` : 'סיימת את כל המסלול!';
+      $('[data-course-bar]').style.width = `${total.of ? Math.round((100 * total.done) / total.of) : 0}%`;
+      $('[data-course-count]').textContent = `${total.done} מתוך ${total.of} צעדים`;
+      const link = $<HTMLAnchorElement>('[data-course-next]');
+      link.hidden = !next;
+      link.href = placed && next ? stepHref(next.step, p, levelCounts) : '/course/';
+      $('span', link).textContent = placed ? 'לצעד הבא' : '⟦בחר|בחרי⟧ מאיפה להתחיל';
+    }
+
+    const notifyBoxes = [...root.querySelectorAll<HTMLInputElement>('[data-notify-group]')];
+    function showNotify(p: SyncedProgress) {
+      notifyBoxes.forEach((b) => { b.checked = !p.inbox.off.includes(b.dataset.notifyGroup as InboxGroup); });
+    }
+    notifyBoxes.forEach((b) => b.addEventListener('change', async () => {
+      const off = notifyBoxes.filter((x) => !x.checked).map((x) => x.dataset.notifyGroup as InboxGroup);
+      updateInbox((i) => { i.off = off; i.offAt = new Date().toISOString(); });
+      const ok = await acc.syncProgress();
+      $('[data-notify-saved]').textContent = ok ? 'נשמר. ההגדרות עוברות איתך לכל מכשיר.' : 'נשמר במכשיר הזה. נעדכן את החשבון בפעם הבאה ⟦שתהיה מחובר|שתהיי מחוברת⟧.';
+    }));
+
+    const emailBoxes = [...root.querySelectorAll<HTMLInputElement>('[data-email-kind]')];
+    const emailBox = (k: string) => emailBoxes.find((b) => b.dataset.emailKind === k)!;
+    async function showEmail() {
+      const prefs = await acc.getEmailPrefs();
+      $('[data-email-prefs]').hidden = !prefs;
+      if (!prefs) return;
+      emailBox('week').checked = prefs.email_week;
+      emailBox('return').checked = prefs.email_return;
+      $('[data-email-paused]').hidden = !prefs.paused_reason || !(prefs.email_week || prefs.email_return);
+    }
+    emailBoxes.forEach((b) => b.addEventListener('change', async () => {
+      emailBoxes.forEach((x) => { x.disabled = true; });
+      const ok = await acc.setEmailPrefs(emailBox('week').checked, emailBox('return').checked, 'settings');
+      emailBoxes.forEach((x) => { x.disabled = false; });
+      $('[data-email-note]').textContent = ok
+        ? (emailBox('week').checked || emailBox('return').checked ? 'נשמר. אפשר להפסיק בכל רגע, כאן או מהקישור שבתחתית כל מייל.' : 'נשמר. לא נשלח לך מיילים כאלה.')
+        : 'השמירה לא הצליחה. ⟦נסה|נסי⟧ שוב בעוד רגע.';
+      if (!ok) b.checked = !b.checked;
+      else $('[data-email-paused]').hidden = true;
+    }));
+
+    function askNickname(isNew: boolean) {
+      $('[data-nick-title]').textContent = isNew ? '⟦בחר|בחרי⟧ כינוי' : 'שינוי כינוי';
+      $<HTMLInputElement>('#acc-nick').value = profile?.nickname ?? '';
+      $('[data-nick-cancel]').hidden = isNew;
+      fail('nickname', '');
+      show('nickname');
+    }
+
+    let mode: 'signin' | 'signup' = 'signin';
+    const setMode = (m: typeof mode) => {
+      mode = m;
+      root.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
+      $('[data-signin-title]').textContent = m === 'signin' ? 'כניסה לחשבון' : 'פתיחת חשבון';
+      $('[data-submit-label]').textContent = m === 'signin' ? 'כניסה' : 'פתיחת חשבון';
+      root.querySelectorAll<HTMLElement>('[data-signup-only]').forEach((e) => { e.hidden = m === 'signin'; });
+      $('[data-signin-only]').hidden = m === 'signup';
+      $<HTMLInputElement>('#acc-pass').autocomplete = m === 'signin' ? 'current-password' : 'new-password';
+      fail('signin', '');
+    };
+    const NO_GENDER = 'נשאר לבחור איך לפנות אליך: בלשון זכר או בלשון נקבה.';
+    document.addEventListener('gender-changed', () => {
+      if ($('[data-view="signin"] [data-err]').textContent === NO_GENDER) fail('signin', '');
+    });
+    root.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach((b) =>
+      b.addEventListener('click', () => setMode(b.dataset.mode as typeof mode)));
+    const SEEN = 'shogi-il.account.seen';
+    let seen = false;
+    try { seen = localStorage.getItem(SEEN) === '1'; } catch {}
+    const asked = new URLSearchParams(location.search).get('mode');
+    if (asked === 'signup' || (asked !== 'signin' && !seen)) setMode('signup');
+    root.querySelectorAll<HTMLButtonElement>('[data-eye]').forEach((eye) => {
+      const input = document.getElementById(eye.getAttribute('aria-controls')!) as HTMLInputElement;
+      eye.addEventListener('click', () => {
+        const reveal = input.type === 'password';
+        input.type = reveal ? 'text' : 'password';
+        const label = reveal ? 'הסתרת הסיסמה' : 'הצגת הסיסמה';
+        eye.setAttribute('aria-pressed', String(reveal));
+        eye.setAttribute('aria-label', label);
+        eye.title = label;
+        input.focus();
+      });
+    });
+    const hidePasswords = () => root.querySelectorAll<HTMLButtonElement>('[data-eye][aria-pressed="true"]').forEach((e) => e.click());
+    const tooLong = (p: string) => new TextEncoder().encode(p).length > 72;
+    const RULES: Record<string, (p: string) => boolean> = {
+      len: (p) => p.length >= 8,
+      letter: (p) => /[A-Za-z\u05D0-\u05EA]/.test(p),
+      digit: (p) => /\d/.test(p),
+    };
+    const ruleItems = (id: string) => [...root.querySelectorAll<HTMLElement>(`[data-rules-for="${id}"] [data-rule]`)];
+    const checkRules = (id: string, strict = false) => {
+      const p = $<HTMLInputElement>(`#${id}`).value;
+      let ok = true;
+      ruleItems(id).forEach((li) => {
+        const met = RULES[li.dataset.rule!](p);
+        ok &&= met;
+        li.classList.toggle('met', met);
+        li.classList.toggle('miss', strict && !met);
+      });
+      return ok;
+    };
+    const RULES_MISSING = 'הסיסמה עוד לא עומדת בכללים שמתחת לשדה (מסומנים באדום).';
+    for (const [id, view] of [['acc-pass', 'signin'], ['acc-newpass', 'newpass']]) {
+      $(`#${id}`).addEventListener('input', () => {
+        const strict = ruleItems(id).some((li) => li.classList.contains('miss'));
+        if (checkRules(id, strict) && $(`[data-view="${view}"] [data-err]`).textContent === RULES_MISSING) fail(view, '');
+      });
+    }
+    const TOO_LONG = 'הסיסמה ארוכה מדי: עד 72 תווים באנגלית, או 36 בעברית.';
+
+    const validEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+    const authForm = $<HTMLFormElement>('[data-auth-form]');
+    authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = $<HTMLInputElement>('#acc-email').value.trim();
+      const password = $<HTMLInputElement>('#acc-pass').value;
+      if (!validEmail(email)) return fail('signin', 'הכתובת לא נראית תקינה. ⟦בדוק|בדקי⟧ אותה ⟦ונסה|ונסי⟧ שוב.');
+      if (mode === 'signin' && password.length < 8) return fail('signin', 'הסיסמה צריכה לפחות 8 תווים.');
+      if (mode === 'signup' && !checkRules('acc-pass', true)) return fail('signin', RULES_MISSING);
+      if (mode === 'signup' && tooLong(password)) return fail('signin', TOO_LONG);
+      const gender = savedGender();
+      if (mode === 'signup' && !gender) return fail('signin', NO_GENDER);
+      if (needCaptcha(authCaptcha)) return fail('signin', 'רגע, עוד לא סיימנו לבדוק ⟦שאתה|שאת⟧ לא רובוט. ⟦נסה|נסי⟧ שוב בעוד שנייה.');
+      const captchaToken = authCaptcha.token();
+      busy(authForm, true);
+      if (mode === 'signin') {
+        const { error } = await acc.signIn(email, password, captchaToken);
+        authCaptcha.reset();
+        busy(authForm, false);
+        if (!error) return;
+        if (error.code === 'captcha_failed') return fail('signin', 'בדיקת הרובוט נכשלה. ⟦רענן|רענני⟧ את העמוד ⟦ונסה|ונסי⟧ שוב.');
+        if (error.code === 'email_not_confirmed') return fail('signin', 'עוד לא אישרת את המייל. ⟦חפש|חפשי⟧ אצלך מייל מאיתנו ⟦ולחץ|ולחצי⟧ על הקישור שבו.');
+        if (error.status === 429) return fail('signin', 'יותר מדי ניסיונות. ⟦חכה|חכי⟧ כמה דקות ⟦ונסה|ונסי⟧ שוב.');
+        return fail('signin', 'המייל או הסיסמה לא נכונים.');
+      }
+      const { data, error } = await acc.signUp(email, password, captchaToken, $<HTMLInputElement>('#acc-weekly').checked, gender ?? undefined);
+      authCaptcha.reset();
+      busy(authForm, false);
+      if (error) {
+        if (error.code === 'captcha_failed') return fail('signin', 'בדיקת הרובוט נכשלה. ⟦רענן|רענני⟧ את העמוד ⟦ונסה|ונסי⟧ שוב.');
+        if (error.code === 'weak_password') return fail('signin', weakMessage(error));
+        if (error.code === 'user_already_exists' || error.code === 'email_exists') return fail('signin', 'כבר יש חשבון עם המייל הזה. ⟦עבור|עברי⟧ ל"כניסה", או ⟦אפס|אפסי⟧ את הסיסמה.');
+        if (error.status === 429) return fail('signin', 'נשלחו יותר מדי מיילים. ⟦חכה|חכי⟧ כמה דקות ⟦ונסה|ונסי⟧ שוב.');
+        return fail('signin', 'ההרשמה לא הצליחה. ⟦נסה|נסי⟧ שוב בעוד רגע.');
+      }
+      if (data.session) return;
+      if (data.user && data.user.identities?.length === 0) return fail('signin', 'כבר יש חשבון עם המייל הזה. ⟦עבור|עברי⟧ ל"כניסה", או ⟦אפס|אפסי⟧ את הסיסמה.');
+      codeEmail = email;
+      sent(`שלחנו מייל ל־${email} עם קוד אישור. ⟦הקלד|הקלידי⟧ אותו כאן, ⟦ותגיע|ותגיעי⟧ ישר לבחירת כינוי. אפשר גם ללחוץ על הקישור שבמייל.`, true);
+    });
+
+    let codeEmail = '';
+    const codeForm = $<HTMLFormElement>('[data-code-form]');
+    codeForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const code = $<HTMLInputElement>('#acc-code').value.replace(/\D/g, '');
+      if (code.length < 6) return fail('sent', 'הקוד הוא 6 ספרות. ⟦העתק|העתיקי⟧ אותו מהמייל ⟦ונסה|ונסי⟧ שוב.');
+      busy(codeForm, true);
+      const { error } = await acc.verifySignupCode(codeEmail, code);
+      busy(codeForm, false);
+      if (!error) return;
+      if (error.status === 429) return fail('sent', 'יותר מדי ניסיונות. ⟦חכה|חכי⟧ כמה דקות ⟦ונסה|ונסי⟧ שוב.');
+      fail('sent', 'הקוד לא נכון, או שעבר זמנו. ⟦בדוק|בדקי⟧ שהעתקת את הקוד מהמייל האחרון.');
+    });
+
+    const sent = (text: string, withCode = false) => {
+      const p = $('[data-sent-text]');
+      p.textContent = text;
+      codeForm.hidden = !withCode;
+      fail('sent', '');
+      show('sent');
+      if (withCode) $<HTMLInputElement>('#acc-code').focus();
+    };
+
+    $('[data-forgot]').addEventListener('click', () => {
+      $<HTMLInputElement>('#acc-forgot-email').value = $<HTMLInputElement>('#acc-email').value;
+      fail('forgot', '');
+      show('forgot');
+    });
+    const forgotForm = $<HTMLFormElement>('[data-forgot-form]');
+    forgotForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = $<HTMLInputElement>('#acc-forgot-email').value.trim();
+      if (!validEmail(email)) return fail('forgot', 'הכתובת לא נראית תקינה. ⟦בדוק|בדקי⟧ אותה ⟦ונסה|ונסי⟧ שוב.');
+      if (needCaptcha(forgotCaptcha)) return fail('forgot', 'רגע, עוד לא סיימנו לבדוק ⟦שאתה|שאת⟧ לא רובוט. ⟦נסה|נסי⟧ שוב בעוד שנייה.');
+      busy(forgotForm, true);
+      const { error } = await acc.sendPasswordReset(email, forgotCaptcha.token());
+      forgotCaptcha.reset();
+      busy(forgotForm, false);
+      if (error) return fail('forgot', error.status === 429 ? 'נשלחו יותר מדי מיילים. ⟦חכה|חכי⟧ כמה דקות ⟦ונסה|ונסי⟧ שוב.' : 'השליחה לא הצליחה. ⟦נסה|נסי⟧ שוב בעוד רגע.');
+      const inIosApp = isIos() && isStandalone();
+      sent(`אם יש חשבון עם ${email}, שלחנו אליו קישור לבחירת סיסמה חדשה.` + (inIosApp
+        ? ' באייפון הקישור ייפתח בדפדפן ולא באפליקציה. ⟦בחר|בחרי⟧ שם סיסמה חדשה, ואז ⟦חזור|חזרי⟧ לאפליקציה ⟦והיכנס|והיכנסי⟧ איתה.' : ''));
+    });
+    root.querySelectorAll('[data-back]').forEach((b) => b.addEventListener('click', () => { setMode('signin'); show('signin'); }));
+
+    const askNewPassword = (fromRecovery: boolean) => {
+      $<HTMLInputElement>('#acc-newpass').value = '';
+      $<HTMLInputElement>('#acc-nonce').value = '';
+      $('[data-nonce]').hidden = true;
+      $('[data-newpass-cancel]').hidden = fromRecovery;
+      hidePasswords();
+      checkRules('acc-newpass');
+      fail('newpass', '');
+      show('newpass');
+    };
+    function weakMessage(error: { message?: string; reasons?: string[] }) {
+      const reasons = error.reasons ?? [];
+      if (reasons.includes('pwned')) return 'הסיסמה הזאת הופיעה בדליפת מידע ידועה, ולכן לא בטוחה. ⟦בחר|בחרי⟧ סיסמה אחרת.';
+      if (reasons.includes('characters')) return 'השרת דורש גם אותיות באנגלית (a-z, A-Z) וגם ספרות. ⟦הוסף|הוסיפי⟧ אות באנגלית ⟦ונסה|ונסי⟧ שוב.';
+      if (reasons.includes('length')) return 'הסיסמה קצרה מדי. ⟦נסה|נסי⟧ סיסמה ארוכה יותר.';
+      return 'הסיסמה חלשה מדי. ⟦נסה|נסי⟧ סיסמה ארוכה יותר.';
+    }
+    function saveError(error: unknown, what: string) {
+      const e = error as { code?: string; status?: number; name?: string; message?: string };
+      console.error(what, error);
+      if (e?.message === 'timeout') return 'השרת לא ענה. ⟦בדוק|בדקי⟧ את החיבור לאינטרנט, ⟦רענן|רענני⟧ את העמוד ⟦ונסה|ונסי⟧ שוב.';
+      if (e?.name === 'AuthRetryableFetchError' || e?.status === 0) return 'אין חיבור לשרת כרגע. ⟦בדוק|בדקי⟧ את החיבור לאינטרנט ⟦ונסה|ונסי⟧ שוב.';
+      if (e?.status === 429) return 'יותר מדי ניסיונות. ⟦חכה|חכי⟧ כמה דקות ⟦ונסה|ונסי⟧ שוב.';
+      return `${what} לא הצליחה (${e?.code || e?.status || e?.name || 'שגיאה'}). ⟦נסה|נסי⟧ שוב בעוד רגע, או ⟦כתוב|כתבי⟧ לנו.`;
+    }
+    const sessionGone = (e: { code?: string; name?: string; status?: number }) =>
+      e.name === 'AuthSessionMissingError' || e.code === 'session_not_found' || e.code === 'session_expired' || e.code === 'bad_jwt' || e.status === 401;
+    const homeNote = (text: string) => { $('[data-home-ok]').textContent = text; };
+
+    const newpassForm = $<HTMLFormElement>('[data-newpass-form]');
+    newpassForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const password = $<HTMLInputElement>('#acc-newpass').value;
+      if (!checkRules('acc-newpass', true)) return fail('newpass', RULES_MISSING);
+      if (tooLong(password)) return fail('newpass', TOO_LONG);
+      const asking = !$('[data-nonce]').hidden;
+      const nonce = $<HTMLInputElement>('#acc-nonce').value.replace(/\s/g, '');
+      if (asking && !nonce) return fail('newpass', 'חסר הקוד ששלחנו למייל.');
+      fail('newpass', '');
+      saving(newpassForm, true);
+      let error;
+      try { ({ error } = await acc.setPassword(password, asking ? nonce : undefined)); } catch (err) { error = err as Error; }
+      saving(newpassForm, false);
+      if (error) {
+        const code = (error as { code?: string }).code;
+        if (code === 'same_password') return fail('newpass', 'זו הסיסמה הנוכחית. ⟦בחר|בחרי⟧ סיסמה אחרת.');
+        if (code === 'weak_password') return fail('newpass', weakMessage(error as { reasons?: string[] }));
+        if (code === 'reauthentication_needed' || code === 'reauthentication_not_valid') {
+          if (code === 'reauthentication_not_valid') return fail('newpass', 'הקוד לא נכון, או שעבר זמנו. ⟦בדוק|בדקי⟧ את המייל האחרון מאיתנו.');
+          const { error: sendError } = await acc.reauthenticate().catch((err) => ({ error: err as Error }));
+          if (sendError) return fail('newpass', saveError(sendError, 'שליחת הקוד'));
+          $('[data-nonce]').hidden = false;
+          $<HTMLInputElement>('#acc-nonce').focus();
+          return fail('newpass', 'שלחנו לך מייל עם קוד. ⟦הקלד|הקלידי⟧ אותו ⟦ולחץ|ולחצי⟧ שוב "שמירה".');
+        }
+        if (sessionGone(error as { code?: string })) return fail('newpass', 'הקישור לאיפוס כבר לא בתוקף. ⟦בקש|בקשי⟧ קישור חדש דרך "שכחת סיסמה?" במסך הכניסה.');
+        return fail('newpass', saveError(error, 'שמירת הסיסמה'));
+      }
+      const backToApp = recovering && isIos() && !isStandalone();
+      recovering = false;
+      hidePasswords();
+      homeNote('הסיסמה החדשה נשמרה.' + (backToApp
+        ? ' אם ביקשת אותה מהאפליקציה של שוגי ישראל במסך הבית, ⟦חזור|חזרי⟧ אליה עכשיו ⟦והיכנס|והיכנסי⟧ עם הסיסמה החדשה.' : ''));
+      void route();
+    });
+    $('[data-newpass-cancel] button').addEventListener('click', () => show('home'));
+    $('[data-changepass]').addEventListener('click', () => { homeNote(''); askNewPassword(false); });
+
+    const emailForm = $<HTMLFormElement>('[data-email-form]');
+    $('[data-change-email]').addEventListener('click', () => {
+      homeNote('');
+      $<HTMLInputElement>('#acc-newemail').value = '';
+      fail('email', '');
+      $('[data-view="email"] [data-ok]').textContent = '';
+      show('email');
+    });
+    emailForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = $<HTMLInputElement>('#acc-newemail').value.trim();
+      const ok = $('[data-view="email"] [data-ok]');
+      ok.textContent = '';
+      if (!validEmail(email)) return fail('email', 'הכתובת לא נראית תקינה. ⟦בדוק|בדקי⟧ אותה ⟦ונסה|ונסי⟧ שוב.');
+      const session = await acc.getSession();
+      if (!session) return show('signin');
+      if (email.toLowerCase() === session.user.email?.toLowerCase()) return fail('email', 'זו הכתובת הנוכחית.');
+      fail('email', '');
+      saving(emailForm, true, 'שולח…');
+      let error;
+      try { ({ error } = await acc.changeEmail(email)); } catch (err) { error = err as Error; }
+      saving(emailForm, false);
+      if (error) {
+        const code = (error as { code?: string }).code;
+        if (code === 'email_exists' || code === 'user_already_exists') return fail('email', 'יש כבר חשבון עם הכתובת הזאת.');
+        if (code === 'email_address_invalid') return fail('email', 'אי אפשר להשתמש בכתובת הזאת. ⟦נסה|נסי⟧ כתובת אחרת.');
+        if (sessionGone(error as { code?: string })) return show('signin');
+        return fail('email', saveError(error, 'שליחת הקישור'));
+      }
+      ok.textContent = `שלחנו קישור אישור ל־\u2068${email}\u2069. ⟦פתח|פתחי⟧ אותו בדפדפן הזה, והכתובת תתעדכן. אם הגיע מייל גם לכתובת הישנה, צריך לאשר גם אותו.`;
+    });
+    $('[data-to-home]').addEventListener('click', () => show('home'));
+
+    const nickForm = $<HTMLFormElement>('[data-nick-form]');
+    nickForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nickname = $<HTMLInputElement>('#acc-nick').value.trim();
+      const { NICKNAME_RE, RESERVED_RE } = await import('../lib/progress-sync');
+      if (!NICKNAME_RE.test(nickname)) return fail('nickname', 'הכינוי צריך 3 עד 16 תווים: אותיות, ספרות, _ או -, בלי רווחים.');
+      if (RESERVED_RE.test(nickname)) return fail('nickname', 'הכינוי הזה שמור (נראה כמו שם של צוות האתר). ⟦בחר|בחרי⟧ כינוי אחר.');
+      const session = await acc.getSession();
+      if (!session) return show('signin');
+      busy(nickForm, true);
+      const res = await acc.saveNickname(session.user.id, nickname, !profile);
+      busy(nickForm, false);
+      if (res === 'taken') return fail('nickname', 'הכינוי הזה כבר תפוס. ⟦נסה|נסי⟧ אחר.');
+      if (res === 'reserved') return fail('nickname', 'הכינוי הזה שמור (נראה כמו שם של צוות האתר). ⟦בחר|בחרי⟧ כינוי אחר.');
+      if (res === 'error') return fail('nickname', 'השמירה לא הצליחה. ⟦נסה|נסי⟧ שוב בעוד רגע.');
+      if (!profile) $('[data-welcome]').hidden = false;
+      else homeNote('הכינוי נשמר.');
+      void route();
+    });
+    $('[data-nick-cancel] button').addEventListener('click', () => show('home'));
+    $('[data-welcome-close]').addEventListener('click', () => { $('[data-welcome]').hidden = true; });
+    $('[data-rename]').addEventListener('click', () => { homeNote(''); askNickname(false); });
+
+    $('[data-signout]').addEventListener('click', async () => {
+      await acc.signOut();
+      show('signin');
+    });
+    const danger = $<HTMLElement>('.danger');
+    $('[data-delete]').addEventListener('click', async () => {
+      if (!confirm('למחוק את החשבון לצמיתות? אי אפשר לבטל את זה.')) return;
+      busy(danger, true);
+      const { error } = await acc.deleteAccount();
+      busy(danger, false);
+      if (error) return fail('home', 'המחיקה לא הצליחה. ⟦נסה|נסי⟧ שוב, או ⟦כתוב|כתבי⟧ לנו באינסטגרם.');
+      show('signin');
+      fail('signin', 'החשבון נמחק.');
+    });
+
+    const params = new URLSearchParams(location.search);
+    const resetToken = params.get('type') === 'recovery' ? params.get('token_hash') : null;
+    if (resetToken) {
+      history.replaceState(null, '', location.pathname + location.hash);
+      recovering = true;
+      const { error } = await acc.verifyResetLink(resetToken).catch((err) => ({ error: err as Error }));
+      if (!error) return;
+      recovering = false;
+      setMode('signin');
+      show('forgot');
+      return fail('forgot', 'הקישור לאיפוס כבר לא בתוקף, או שכבר השתמשת בו. ⟦הכנס|הכניסי⟧ את המייל ונשלח קישור חדש.');
+    }
+    await route();
+  }
+</script>
+
+<style>
+  .page { padding-top: 36px; max-width: 560px; }
+  section { display: flex; flex-direction: column; gap: 14px; }
+  [hidden] { display: none !important; }
+  h1 { margin: 6px 0 4px; }
+  h2 { font-size: 24px; margin-top: 24px; }
+  .lead { margin: 0; font-size: 18px; color: var(--ink-2); }
+  section > p { margin: 0; }
+  .form { display: flex; flex-direction: column; gap: 8px; }
+  .form label { font-weight: 700; }
+  .form :global(input) {
+    min-height: 52px; padding: 0 14px; font: 18px/1.2 var(--f-body); color: var(--ink);
+    background: var(--washi); border: 1.5px solid var(--ink); border-radius: 6px;
+  }
+  .form :global(input:focus-visible) { outline-offset: 0; }
+  .form p { margin: 0; }
+  .wide { justify-content: center; width: 100%; margin-top: 6px; }
+  .tabs { align-self: flex-start; }
+  .captcha:empty { display: none; }
+  .captcha { margin-top: 4px; }
+  .err { color: var(--seal); font-weight: 500; min-height: 1.5em; }
+  .err:empty { min-height: 0; }
+  .link { appearance: none; background: none; border: 0; padding: 0; font: inherit; color: var(--seal); text-decoration: underline; cursor: pointer; }
+  [data-account] { min-height: 100vh; min-height: 100svh; }
+  .rules ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; font-size: 15px; }
+  .rules li::before { content: '○'; display: inline-block; width: 1.4em; color: var(--muted); }
+  .rules li.met::before { content: '✓'; color: var(--ink); font-weight: 700; }
+  .rules li.met { color: var(--ink-2); }
+  .rules li.miss { color: var(--seal); font-weight: 500; }
+  .ok { color: var(--ink); font-weight: 500; }
+  .ok:empty { display: none; }
+  .details { margin: 0; display: flex; flex-direction: column; border: 1px solid var(--rule); border-radius: 8px; padding: 4px 16px; background: var(--washi-2); }
+  .details div { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 2px 12px; padding: 10px 0; border-bottom: 1px solid var(--rule); }
+  .details div:last-child { border-bottom: 0; }
+  .details dt { font-weight: 700; }
+  .details dd { grid-row: 2; grid-column: 1 / -1; margin: 0; min-width: 0; overflow-wrap: anywhere; }
+  .details .link { min-height: 32px; font-size: 15px; }
+  .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 0; }
+  .stats[data-games] { grid-template-columns: repeat(3, 1fr); }
+  .stats div { border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px; background: var(--washi-2); }
+  .stats dt { font-size: 14px; color: var(--muted); }
+  .stats dd { margin: 2px 0 0; font: 700 26px/1.2 var(--f-display); font-variant-numeric: tabular-nums; }
+  .course-card { border: 1px solid var(--rule); border-inline-start: 4px solid var(--seal); border-radius: 8px; padding: 14px 16px; background: var(--washi-2); display: flex; flex-direction: column; gap: 6px; }
+  .course-card p { margin: 0; }
+  .welcome { border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; margin-top: 16px; background: var(--washi-2); }
+  .welcome h2 { margin: 0 0 4px; }
+  .welcome p { margin: 0; }
+  .welcome-cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px !important; }
+  .welcome-cta .btn { min-height: 48px; font-size: 16px; }
+  .course-title { font-weight: 700; font-size: 18px; }
+  .course-rank { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+  .course-rank strong { font: 800 22px/1.2 var(--f-display); }
+  .course-kanji { display: inline-grid; place-items: center; min-width: 44px; height: 44px; padding: 0 6px; border-radius: 22px; background: var(--seal); color: var(--on-seal); font: 700 17px/1 var(--f-kanji); }
+  .course-links { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 6px !important; }
+  .course-links .btn { min-height: 48px; font-size: 16px; }
+  .bar { height: 8px; border-radius: 999px; background: var(--rule); overflow: hidden; }
+  .bar span { display: block; height: 100%; width: 0; background: var(--seal); border-radius: inherit; }
+  .check { display: flex; gap: 10px; align-items: flex-start; font-weight: 400 !important; font-size: 16px; line-height: 1.5; cursor: pointer; margin-top: 6px; }
+  .form .check input { width: 20px; height: 20px; min-height: 0; padding: 0; border: revert; background: revert; margin: 2px 0 0; flex: none; accent-color: var(--seal); }
+  [data-email-prefs] { margin-top: 10px; }
+  .notify { border: 1px solid var(--rule); border-radius: 8px; padding: 4px 16px; margin: 0; background: var(--washi-2); }
+  .notify legend { padding: 0 6px; margin-inline-start: -6px; font-weight: 700; }
+  .switch-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 56px; padding: 8px 0; border-bottom: 1px solid var(--rule); cursor: pointer; }
+  .switch-row:last-child { border-bottom: 0; }
+  .switch-row > span { display: flex; flex-direction: column; }
+  .switch {
+    appearance: none; flex: none; width: 44px; height: 26px; border-radius: 13px; margin: 0; cursor: pointer; position: relative;
+    background: var(--rule); border: 1.5px solid var(--ink-2); transition: background 0.15s;
+  }
+  .switch::after {
+    content: ''; position: absolute; top: 2px; inset-inline-start: 2px; width: 19px; height: 19px; border-radius: 50%;
+    background: var(--washi); border: 1px solid var(--ink-2); transition: inset-inline-start 0.15s;
+  }
+  .switch:checked { background: var(--seal); border-color: var(--seal); }
+  .switch:checked::after { inset-inline-start: 19px; border-color: var(--seal); }
+  .switch:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .switch, .switch::after { transition: none; } }
+  .setting { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+  .setting-label { margin: 0; font-weight: 700; }
+  .gender-pick { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 6px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .actions .btn { min-height: 48px; font-size: 16px; }
+  .danger { border-top: 1px solid var(--rule); padding-top: 14px; margin-top: 10px; }
+  .danger summary { cursor: pointer; color: var(--seal); font-weight: 700; }
+  .danger p { margin: 10px 0; color: var(--ink-2); }
+  .danger-btn { background: var(--seal); color: var(--on-seal); min-height: 48px; font-size: 16px; }
+  .danger-btn:hover { background: var(--seal-hover); color: var(--on-seal); }
+</style>

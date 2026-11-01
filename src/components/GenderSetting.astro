@@ -1,0 +1,8 @@
+---
+interface Props { label: string }
+const { label } = Astro.props;
+---
+<div class="seg" role="group" aria-label={label}>
+  <button type="button" data-gender-set="m" aria-pressed="false">בלשון זכר</button>
+  <button type="button" data-gender-set="f" aria-pressed="false">בלשון נקבה</button>
+</div>

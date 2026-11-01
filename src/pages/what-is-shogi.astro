@@ -1,0 +1,45 @@
+---
+import Page from '../layouts/Page.astro';
+import { FAQ } from '../lib/shogi-faq';
+
+const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>';
+---
+<Page
+  title="מה זה שוגי?"
+  eyebrow="⟦הכר|הכירי⟧ את השוגי"
+  description="שוגי הוא השחמט היפני: לוח 9 על 9, 20 כלים לכל צד, וכלי שלכדת עובר לצד שלך. תשובות קצרות בעברית: חוקים, הבדלים משחמט, איך מתחילים ואיפה משחקים בישראל."
+>
+  <nav class="toc" aria-label="השאלות בדף">
+    <ul>{FAQ.map((f) => <li><a href={`#${f.id}`}>{f.q}</a></li>)}</ul>
+  </nav>
+
+  {FAQ.map((f) => (
+    <section class="qa" id={f.id} aria-labelledby={`${f.id}-h`}>
+      <h2 id={`${f.id}-h`}>{f.q}</h2>
+      <p set:html={f.a} />
+    </section>
+  ))}
+
+  <div class="cta">
+    <a class="btn" href="/try/"><span>⟦צפה|צפי⟧ במשחק אחד, מהלך אחרי מהלך</span><Fragment set:html={arrow} /></a>
+    <a class="btn btn-ghost" href="/rules/">חוקים בסיסיים</a>
+  </div>
+</Page>
+
+<style>
+  .toc { margin: 8px 0 20px; }
+  .toc ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  nav.toc li { margin: 0; }
+  .toc a {
+    display: inline-block; padding: 5px 14px; border: 1px solid var(--rule); border-radius: 999px; background: var(--surface);
+    color: var(--ink); text-decoration: none; font-size: 15px; box-shadow: var(--shadow-1);
+    transition: border-color .15s ease, color .15s ease;
+  }
+  @media (hover: hover) and (pointer: fine) { .toc a:hover { border-color: var(--seal); color: var(--seal); } }
+  .qa {
+    margin: 0 0 14px; padding: 16px 20px 6px; background: var(--surface); border: 1px solid var(--rule); border-radius: 12px;
+    box-shadow: var(--shadow-1); scroll-margin-top: 84px;
+  }
+  section.qa :global(h2) { margin: 0 0 8px; font-size: clamp(21px, 4vw, 25px); }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; margin: 28px 0 8px; }
+</style>

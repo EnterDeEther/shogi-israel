@@ -1,0 +1,177 @@
+---
+import Base from '../../layouts/Base.astro';
+import Piece from '../../components/Piece.astro';
+import PieceToggle from '../../components/PieceToggle.astro';
+import { pageExists } from '../../lib/live';
+import { WHATSAPP_URL } from '../../lib/nav';
+import { TOUR_URL } from '../../lib/tour';
+import '../../styles/shogiground.css';
+import '../../styles/learn.css';
+
+const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>';
+const names = ['צריח', 'רץ', 'רגלי'];
+const hasCourse = pageExists('/course/');
+const hasPlay = pageExists('/play/');
+---
+<Base
+  title="שלוש דקות, שלושה כלים: ⟦נסה|נסי⟧ שוגי בעצמך"
+  description="הצעד השני בשוגי: ⟦הזז|הזיזי⟧ צריח, רץ ורגלי, ⟦ולכוד|ולכדי⟧ עם כל אחד מהם כלי של היריב. בשוגי כלי שלכדת לא נעלם, הוא נשאר ביד שלך. בלי הרשמה."
+>
+  <div class="wrap trypc" data-try data-state="ask">
+    <header class="trypc__head">
+      <p class="eyebrow">ועכשיו ⟦אתה|את⟧ · שלוש דקות · שלושה כלים · בלי הרשמה</p>
+      <h1>עכשיו ⟦תנסה|תנסי⟧ בעצמך.</h1>
+      <p class="lead trypc__lead">ראית משחק שלם. עכשיו נתחיל בכלי אחד: ⟦תראה|תראי⟧ איך הוא זז ⟦ותלכוד|ותלכדי⟧ איתו, ואז נעבור לכלי הבא. בסך הכול שלושה כלים, ⟦ואתה|ואת⟧ ⟦מחליט|מחליטה⟧ מתי להמשיך.</p>
+      <ol class="trypc__chips" aria-label="שלושת הכלים">
+        {names.map((n, i) => <li data-chip><span class="n">{i + 1} · </span>{n}</li>)}
+      </ol>
+    </header>
+    <noscript><p>התרגול צריך JavaScript. אפשר ללמוד את אותו חומר בשיעור <a href="/rules/02-how-pieces-move/">איך כל כלי זז</a>.</p></noscript>
+
+    <div class="trypc__grid" data-play>
+      <div class="trypc__side">
+        <div data-pane="ask">
+          <div class="box">
+            <h2 class="sm">מה נלמד</h2>
+            <p data-learn></p>
+          </div>
+          <h2 class="title" data-title tabindex="-1" data-ask-focus></h2>
+          <p data-task></p>
+          <div class="tip"><strong>טיפ</strong><span data-tip></span></div>
+          <p class="feedback" data-feedback role="status" hidden></p>
+          <div class="row">
+            <button type="button" class="btn btn-ghost" data-hint>רמז</button>
+            <button type="button" class="btn btn-ghost" data-show>⟦הראה|הראי⟧ לי</button>
+            <button type="button" class="btn btn-ghost" data-restart>מההתחלה</button>
+          </div>
+        </div>
+        <div data-pane="done" hidden>
+          <div class="done">
+            <h2 data-done-title></h2>
+            <p data-done-text></p>
+          </div>
+          <div>
+            <h2 class="sm">מה למדנו</h2>
+            <p data-recap></p>
+          </div>
+          <div class="row">
+            <button type="button" class="btn" data-next><span data-next-label></span><Fragment set:html={arrow} /></button>
+            <button type="button" class="btn btn-ghost" data-again>עוד פעם</button>
+          </div>
+          <p class="small muted">אין מעבר אוטומטי. ⟦המשך|המשיכי⟧ ⟦כשאתה|כשאת⟧ ⟦מוכן|מוכנה⟧.</p>
+        </div>
+      </div>
+      <div class="trypc__boardcol">
+        <div class="trypc__tools"><span class="small" data-board-label>תורך</span><PieceToggle tip /></div>
+        <div class="learn trypc__learn">
+          <div class="learn__board" dir="ltr" aria-roledescription="לוח שוגי" aria-label="לוח התרגול. הכלים שבידך מופיעים מתחת ללוח" data-board>
+            <div class="learn__sgbox"><div class="learn__sg" data-sg></div></div>
+          </div>
+        </div>
+        <p class="small muted">כלים שלכדת מופיעים מתחת ללוח: אלה הכלים שביד שלך.</p>
+      </div>
+    </div>
+
+    <section data-pane="end" class="end" aria-labelledby="end-h" hidden>
+      <p class="eyebrow">שלושה כלים · סיימת</p>
+      <h2 id="end-h" tabindex="-1">שלושה כלים, שלוש לכידות.</h2>
+      <div class="end__grid">
+        <div class="end__hand">
+          <strong>ביד שלך</strong>
+          <ul>
+            <li><span class="big-piece" aria-hidden="true"><Piece>P</Piece></span>רגלי</li>
+            <li><span class="big-piece" aria-hidden="true"><Piece>S</Piece></span>גנרל כסף</li>
+            <li><span class="big-piece" aria-hidden="true"><Piece>B</Piece></span>רץ</li>
+          </ul>
+        </div>
+        <div class="end__text">
+          <p class="big">בשוגי כלי שלכדת לא נעלם. הוא נשאר ביד שלך, ואפשר להצניח אותו בחזרה ללוח, בצד שלך.</p>
+          <p>זה אחד הדברים שמייחדים את השוגי, והתרגול הבא מראה איך עושים את זה.</p>
+          <a class="btn" href="/learn/drop/"><span>להצניח את הכלי הראשון</span><Fragment set:html={arrow} /></a>
+          {hasCourse && <p class="small muted">רוצה לשמור את ההתקדמות? אפשר <a href="/account/?mode=signup">להירשם בחינם</a>, ואפשר גם לא.</p>}
+        </div>
+      </div>
+
+      <h2 class="then">ואחר כך? ⟦אתה|את⟧ ⟦מחליט|מחליטה⟧</h2>
+      <ul class="then__grid">
+        <li><a href="/rules/"><strong>שאר הכלים</strong><span>חוקים בסיסיים: איך כל כלי זז, בשיעורים קצרים שמסבירים גם למה.</span><em>לשיעורים</em></a></li>
+        {hasCourse && <li><a href="/course/"><strong>מסלול לימוד אישי</strong><span>מתאים את עצמו למי ⟦שאתה|שאת⟧ ועובר על פתיחה, אמצע המשחק וסוף המשחק. ההרשמה היא רק כדי לשמור התקדמות.</span><em>לפתוח את המסלול</em></a></li>}
+        <li><a href={WHATSAPP_URL} rel="noopener"><strong>קהילת הוואטסאפ</strong><span>קהילה קטנה ובתחילת הדרך. ⟦כתוב|כתבי⟧ "חדש" ואענה לך אישית.</span><em>להצטרף</em></a></li>
+      </ul>
+      {hasPlay && <p class="jump"><strong>כבר ⟦יודע|יודעת⟧ לשחק?</strong> אפשר לדלג ו<a href="/play/">לשחק נגד המחשב</a>, מרמה 1.</p>}
+      <p class="tour-offer small muted">רוצה לראות מה עוד יש באתר? <a href={TOUR_URL} data-tour-start>סיור קצר באתר</a></p>
+    </section>
+    <div class="sr-only" aria-live="polite" data-live></div>
+  </div>
+</Base>
+
+<script>
+  import { bootTryPieces } from '../../scripts/try-pieces';
+  document.querySelectorAll<HTMLElement>('[data-try]').forEach((el) => bootTryPieces(el));
+</script>
+
+<style>
+  .trypc { padding-top: 28px; padding-bottom: 24px; max-width: 1100px; }
+  .trypc__head { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+  .trypc__head h1 { margin: 0; font-size: clamp(32px, 7vw, 52px); line-height: 1.1; }
+  .trypc__lead { margin: 0; font-size: 18px; line-height: 1.6; color: var(--ink-2); max-width: 36em; }
+  .trypc:not([data-state="ask"]) .trypc__lead, .trypc[data-state="end"] .trypc__head h1 { display: none; }
+  .trypc__chips { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .trypc__chips li { background: var(--washi-2); border-radius: 99px; padding: 6px 14px; font-weight: 700; font-size: 14px; color: var(--ink-2); }
+  .trypc__chips li[data-state="now"] { background: var(--ink); color: var(--washi); }
+  .trypc__chips li[data-state="done"] { color: var(--muted); }
+  .trypc__chips li[data-state="done"] .n { display: none; }
+  .trypc__chips li[data-state="done"]::before { content: '✓ '; }
+
+  .trypc__grid { display: grid; gap: 16px 40px; grid-template-columns: minmax(0, 1fr); }
+  .trypc__grid[hidden] { display: none; }
+  .trypc__boardcol { order: -1; min-width: 0; }
+  @media (min-width: 900px) {
+    .trypc__grid { grid-template-columns: minmax(280px, 1fr) minmax(0, 480px); align-items: start; }
+    .trypc__boardcol { order: 0; }
+    .trypc__side { margin-top: 74px; }
+  }
+  .trypc__tools { position: relative; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; }
+  .trypc__learn { margin: 0; }
+  .trypc__learn .learn__board { padding-top: 30px; }
+  .trypc__side, .trypc__side [data-pane] { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .trypc__side [data-pane][hidden] { display: none; }
+  .trypc__side p { margin: 0; line-height: 1.65; color: var(--ink-2); }
+  .trypc__side h2 { margin: 0; }
+  .sm { font-size: 18px; margin-bottom: 4px !important; }
+  .title { font-size: clamp(24px, 4vw, 30px); }
+  .title:focus { outline: none; }
+  .box { background: var(--washi-2); border-radius: 8px; padding: 14px 18px; }
+  .tip { background: var(--washi); border: 1.5px solid var(--ink); border-radius: 12px; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; }
+  .tip strong { color: var(--seal); font-size: 14px; }
+  .feedback { font-weight: 700; color: var(--ink) !important; }
+  .feedback[hidden] { display: none; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .row .btn { min-height: 48px; }
+  .done { border-inline-start: 5px solid var(--seal); background: var(--washi-2); border-radius: 6px; padding: 14px 18px; }
+  .done h2 { color: var(--seal); font-size: clamp(26px, 4vw, 32px); margin-bottom: 4px !important; }
+
+  .end { display: flex; flex-direction: column; gap: 16px; }
+  .end[hidden] { display: none; }
+  .end > h2 { font-size: clamp(32px, 6vw, 52px); margin: 0; line-height: 1.1; }
+  .end > h2:focus { outline: none; }
+  .end__grid { display: grid; gap: 20px 40px; align-items: center; }
+  @media (min-width: 800px) { .end__grid { grid-template-columns: 340px 1fr; } }
+  .end__hand { background: var(--washi-2); border-radius: 8px; padding: 18px 20px; }
+  .end__hand ul { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 16px; }
+  .end__hand li { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 14px; }
+  .big-piece { font-size: 30px; }
+  .end__text { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+  .end__text p { margin: 0; color: var(--ink-2); line-height: 1.6; }
+  .end__text .big { font-family: var(--f-display); font-size: clamp(21px, 3vw, 25px); line-height: 1.5; color: var(--ink); }
+  .end__text .btn { min-height: 54px; font-size: 17px; }
+  .then { margin: 24px 0 0; font-size: clamp(24px, 4vw, 30px); }
+  .then__grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .then__grid a { display: flex; flex-direction: column; gap: 6px; border-top: 4px solid var(--seal); padding-top: 12px; color: var(--ink); text-decoration: none; height: 100%; }
+  .then__grid strong { font-family: var(--f-display); font-size: 21px; }
+  .then__grid span { color: var(--ink-2); line-height: 1.6; }
+  .then__grid em { font-style: normal; color: var(--seal); font-weight: 700; }
+  .then__grid a:hover strong { text-decoration: underline; }
+  .jump { background: var(--washi-2); border-radius: 6px; padding: 14px 18px; margin: 0; }
+  .tour-offer { margin: 14px 0 0; }
+</style>

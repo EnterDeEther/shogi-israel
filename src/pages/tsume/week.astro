@@ -1,0 +1,20 @@
+---
+import Base from '../../layouts/Base.astro';
+import { WEEK_LENGTH } from '../../tsume/week';
+const data = import.meta.glob<{ default: unknown[] }>('../../tsume/data/mate*.json', { eager: true });
+const count = data[`../../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length ?? 0;
+---
+<Base title="בעיית השבוע" description="בעיית מט אחת בכל שבוע, אותה בעיה לכולם. פותרים על הלוח, בעברית ובחינם." noindex>
+  <div class="wrap page" data-count={count}>
+    <h1>בעיית השבוע</h1>
+    <p class="lead">מעבירים אותך לבעיה של השבוע… <a href={`/tsume/${WEEK_LENGTH}/`} data-go>⟦לחץ|לחצי⟧ כאן אם זה לא קורה</a>.</p>
+  </div>
+</Base>
+
+<script>
+  import { weekIndex, weekPuzzle, WEEK_LENGTH } from '../../tsume/week';
+  const count = Number(document.querySelector<HTMLElement>('[data-count]')?.dataset.count);
+  const url = `/tsume/${WEEK_LENGTH}/#${weekPuzzle(weekIndex(), count)}`;
+  document.querySelector<HTMLAnchorElement>('[data-go]')!.href = url;
+  location.replace(url);
+</script>

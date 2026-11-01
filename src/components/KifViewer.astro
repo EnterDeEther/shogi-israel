@@ -1,0 +1,105 @@
+---
+import '../styles/shogiground.css';
+import '../styles/learn.css';
+import sample from '../lib/sample-game.kif?raw';
+import PieceToggle from './PieceToggle.astro';
+---
+<section class="kifv" data-kif-viewer aria-labelledby="kifv-title">
+  <h2 id="kifv-title">צופה KIF</h2>
+  <p>בצופה כבר מחכה משחק לדוגמה. אפשר גם להדביק רישום משחק משלך בתיבה שמתחת ללוח, או לבחור קובץ <bdi dir="ltr">.kif</bdi> מהמכשיר, ולעבור עליו מהלך אחרי מהלך.</p>
+  <noscript><p>הצופה צריך JavaScript.</p></noscript>
+
+  <div class="kifv__grid">
+    <div class="kifv__boardcol">
+      <div class="kifv__tools"><PieceToggle /><button type="button" class="kifv__small" data-flip>הפיכת הלוח</button></div>
+      <div class="learn kifv__learn">
+        <div class="learn__board" dir="ltr" tabindex="0" role="application" aria-roledescription="לוח שוגי" aria-label="לוח המשחק. חצים ימינה ושמאלה: מהלך הבא והקודם" data-board>
+          <div class="learn__sgbox"><div class="learn__sg" data-sg></div></div>
+        </div>
+      </div>
+      <div class="kifv__nav" dir="ltr">
+        <button type="button" data-go="first" aria-label="לעמדת הפתיחה">⏮</button>
+        <button type="button" data-go="prev" aria-label="מהלך קודם">◀</button>
+        <button type="button" data-go="next" aria-label="מהלך הבא">▶</button>
+        <button type="button" data-go="last" aria-label="למהלך האחרון">⏭</button>
+      </div>
+      <p class="kifv__counter small muted" data-counter></p>
+    </div>
+
+    <div class="kifv__side">
+      <div class="kifv__players" data-players></div>
+      <ol class="kifv__moves" data-moves aria-label="רשימת המהלכים"></ol>
+      <div class="kifv__actions">
+        <button type="button" class="btn" data-download>הורדת קובץ KIF</button>
+        <button type="button" class="btn btn-ghost" data-copy>העתקה</button>
+        <button type="button" class="btn btn-ghost" data-lishogi>ניתוח בליש׳וגי</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="kifv__status" role="status" data-status></p>
+  <div class="sr-only" aria-live="polite" data-live></div>
+
+  <div class="kifv__load">
+    <label for="kifv-input">רישום משחק (KIF)</label>
+    <textarea id="kifv-input" dir="ltr" lang="ja" rows="8" spellcheck="false" data-input>{sample}</textarea>
+    <div class="kifv__loadrow">
+      <button type="button" class="btn" data-load>הצגת המשחק</button>
+      <label class="btn btn-ghost kifv__file">בחירת קובץ<input type="file" accept=".kif,.kifu,.txt,text/plain" data-file /></label>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { bootKifViewer } from '../scripts/kif-viewer';
+  document.querySelectorAll<HTMLElement>('[data-kif-viewer]').forEach((el) => bootKifViewer(el));
+</script>
+
+<style>
+  .kifv { margin: 32px 0; padding: 20px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .kifv__grid { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 900px) {
+    .kifv__grid { grid-template-columns: minmax(0, 480px) minmax(240px, 1fr); align-items: start; }
+  }
+  .kifv__learn { margin: 0; }
+  .kifv__learn .learn__board { padding-top: 64px; }
+  .kifv__tools { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .kifv__small, .kifv__nav button {
+    appearance: none; border: 1.5px solid var(--ink); background: transparent; color: var(--ink);
+    border-radius: 6px; min-height: 44px; padding: 0 14px; font: 700 15px/1 var(--f-body); cursor: pointer;
+  }
+  .kifv__nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-width: 480px; }
+  .kifv__nav button { font-size: 18px; }
+  .kifv__nav button:hover, .kifv__small:hover { background: var(--washi-2); }
+  .kifv__counter { margin: 8px 0 0; text-align: center; max-width: 480px; }
+  .kifv__players :global(p) { margin: 0 0 4px; }
+  .kifv__moves {
+    list-style: none; margin: 12px 0; padding: 0; max-height: 360px; overflow-y: auto;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 2px; border: 1px solid var(--rule); border-radius: 6px;
+    counter-reset: mv;
+  }
+  .kifv__moves :global(li) { counter-increment: mv; margin: 0; }
+  .kifv__moves :global(button) {
+    width: 100%; display: flex; align-items: baseline; gap: 8px; min-height: 40px; padding: 4px 10px;
+    border: 0; background: transparent; color: var(--ink); text-align: start; cursor: pointer; font: 500 15px/1.3 var(--f-body);
+  }
+  .kifv__moves :global(button::before) { content: counter(mv) '.'; color: var(--muted); min-width: 2.2em; font-variant-numeric: tabular-nums; }
+  .kifv__moves :global(button:hover) { background: var(--washi-2); }
+  .kifv__moves :global(button[aria-current]) { background: var(--ink); color: var(--washi); }
+  .kifv__moves :global(button[aria-current]::before) { color: inherit; }
+  .kifv__moves :global(.w) { font-weight: 700; }
+  .kifv__moves :global(.k) { font-family: var(--f-kanji); font-size: 13px; opacity: 0.75; white-space: nowrap; }
+  .kifv__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .kifv__actions .btn, .kifv__loadrow .btn { min-height: 48px; font-size: 16px; padding: 0 16px; }
+  .kifv__status { min-height: 1.6em; margin: 12px 0; font-weight: 700; }
+  .kifv__status[data-kind="error"] { color: var(--seal); }
+  .kifv__load label[for] { display: block; font-weight: 700; margin-bottom: 6px; }
+  .kifv__load textarea {
+    width: 100%; box-sizing: border-box; font: 14px/1.5 ui-monospace, 'Noto Sans JP', monospace; padding: 10px;
+    border: 1.5px solid var(--rule); border-radius: 6px; background: var(--washi); color: var(--ink); resize: vertical;
+  }
+  .kifv__loadrow { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .kifv__file { position: relative; overflow: hidden; }
+  .kifv__file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .kifv__file:focus-within { outline: 3px solid var(--focus); outline-offset: 2px; }
+</style>

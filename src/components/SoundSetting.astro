@@ -1,0 +1,49 @@
+---
+
+---
+<div class="sound-setting" data-sound-setting>
+  <p class="setting-label">צלילים באתר</p>
+  <p class="small muted">קול הכלי על הלוח, משחקים, שיעורים, בעיות, נקודות וכפתורים. אף פעם לא בפתיחת עמוד.</p>
+  <div data-sound-mount></div>
+  <button type="button" class="btn btn-ghost" data-sound-test><span>השמעת דוגמה</span></button>
+  <p class="small muted">נשמר במכשיר הזה. באייפון, כשהמתג השקט דלוק, אתרים לא משמיעים צלילים, אבל הרטט עדיין עובד (באייפון מ־iOS 18).</p>
+</div>
+
+<script>
+  import { play, preloadSounds } from '../learn/sound';
+  import { soundControls } from '../learn/sound-prefs';
+
+  for (const box of document.querySelectorAll<HTMLElement>('[data-sound-setting]')) {
+    box.querySelector('[data-sound-mount]')!.replaceWith(soundControls('acct-snd', 'acct-row', 'sw'));
+    box.querySelector('[data-sound-test]')!.addEventListener('click', () => void preloadSounds().then(() => play('move')));
+  }
+</script>
+
+<style>
+  .sound-setting { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 100%; }
+  .sound-setting > p { margin: 0; }
+  .sound-setting > .setting-label { font-weight: 700; }
+  .sound-setting :global(.sound-controls), .sound-setting :global(.sound-rest) { width: 100%; }
+  .sound-setting :global(.acct-row) {
+    display: flex; flex-direction: row-reverse; align-items: center; justify-content: space-between; gap: 16px;
+    min-height: 52px; border-bottom: 1px solid var(--rule); cursor: pointer;
+  }
+  .sound-setting :global(.acct-row > span) { font-weight: 700; }
+  .sound-setting :global(.sound-sub > span) { font-weight: 400; padding-inline-start: 14px; }
+  .sound-setting :global(.sound-vol) { display: flex; align-items: center; gap: 14px; min-height: 52px; border-bottom: 1px solid var(--rule); }
+  .sound-setting :global(.sound-vol label) { font-weight: 700; }
+  .sound-setting :global(.sound-vol input) { flex: 1; max-width: 260px; accent-color: var(--seal); }
+  .sound-setting :global(.sw) {
+    appearance: none; flex: none; width: 44px; height: 26px; border-radius: 13px; margin: 0; cursor: pointer; position: relative;
+    background: var(--rule); border: 1.5px solid var(--ink-2); transition: background 0.15s;
+  }
+  .sound-setting :global(.sw::after) {
+    content: ''; position: absolute; top: 2px; inset-inline-start: 2px; width: 19px; height: 19px; border-radius: 50%;
+    background: var(--washi); border: 1px solid var(--ink-2); transition: inset-inline-start 0.15s;
+  }
+  .sound-setting :global(.sw:checked) { background: var(--seal); border-color: var(--seal); }
+  .sound-setting :global(.sw:checked::after) { inset-inline-start: 19px; border-color: var(--seal); }
+  .sound-setting :global(.sw:focus-visible) { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .sound-setting .btn { min-height: 44px; font-size: 15px; margin-top: 4px; }
+  @media (prefers-reduced-motion: reduce) { .sound-setting :global(.sw), .sound-setting :global(.sw::after) { transition: none; } }
+</style>

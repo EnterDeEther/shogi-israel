@@ -1,0 +1,12 @@
+---
+import Piece from '../Piece.astro';
+interface Props { id?: string; first?: boolean }
+const { id = '' } = Astro.props;
+const raw = (await Astro.slots.render('default')).replace(/<[^>]+>/g, '').trim();
+const m = raw.match(/^(.*?)\s*\((\S+)\s+([^)]*)\)\s*$/);
+---
+{m ? (
+  <span class="term"><strong>{m[1]}</strong> <bdi>({id.startsWith('piece.') ? <Piece>{m[2]}</Piece> : <span lang="ja">{m[2]}</span>} {m[3]})</bdi></span>
+) : (
+  <span class="term"><strong>{raw}</strong></span>
+)}

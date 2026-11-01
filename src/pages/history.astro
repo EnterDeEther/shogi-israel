@@ -1,0 +1,180 @@
+---
+import Page from '../layouts/Page.astro';
+import Piece from '../components/Piece.astro';
+import { pageExists } from '../lib/live';
+
+const playLive = pageExists('/play/');
+const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>';
+
+const timeline = [
+  { when: 'המאות ה־6 וה־7', what: 'בהודו משחקים צ׳טורנגה, הסבא המשותף של השחמט ושל השוגי', to: 'origins' },
+  { when: '1058', what: 'הכלים העתיקים ביותר שנמצאו ביפן, במקדש בנארה', to: 'nara' },
+  { when: 'המאה ה־13', what: 'אנציקלופדיה יפנית מתארת "שוגי קטן" ו"שוגי גדול"', to: 'nara' },
+  { when: 'המאה ה־16', what: 'הפיל השיכור יוצא מהמשחק, ונולד השוגי שאנחנו משחקים היום', to: 'modern-rules' },
+  { when: '1612', what: 'מתחילה שושלת המייג׳ינים: התואר עובר בירושה במשפחות השוגי', to: 'edo' },
+  { when: '1924', what: 'נוסד הגוף שהפך לאיגוד השוגי היפני', to: 'newspapers' },
+  { when: '1937', what: 'לראשונה, המייג׳ין נקבע לפי ניצחונות ולא לפי ירושה', to: 'newspapers' },
+  { when: '1996', what: 'האבו יושיהרו מחזיק בכל שבעת התארים הגדולים בבת אחת', to: 'champions' },
+  { when: '2017', what: 'מחשב מנצח את המייג׳ין, וקרולינה מפולין הופכת לשחקנית המקצועית הראשונה שאינה יפנית', to: 'computers' },
+  { when: '2023', what: 'פוג׳יי סוטה הוא הראשון שמחזיק בכל שמונת התארים', to: 'champions' },
+];
+---
+<Page
+  title="ההיסטוריה של השוגי"
+  eyebrow="⟦הכר|הכירי⟧ את השוגי"
+  description="איך משחק הודי עתיק הפך לשוגי: הכלים מ־1058, הפיל השיכור שנעלם, אלופי השוגון, האבו ופוג׳יי, והמחשב שניצח את המייג׳ין. ציר זמן קצר ומקורות לכל עובדה."
+>
+  <p class="lead">לשוגי יש יותר מ־950 שנות היסטוריה ביפן. הוא התחיל כבן דוד של השחמט, ובדרך קיבל רעיון אחד שהפך אותו למשחק שונה מכל קרוביו: כלי שלכדת חוזר ללוח בצד שלך.</p>
+
+  <h2 id="timeline">ציר הזמן בקצרה</h2>
+  <ol class="timeline">
+    {timeline.map((t) => (
+      <li>
+        <a href={`#${t.to}`}>
+          <span class="when">{t.when}</span>
+          <span class="what">{t.what}</span>
+        </a>
+      </li>
+    ))}
+  </ol>
+
+  <h2 id="origins">מהודו ליפן</h2>
+  <p>שחמט, שיאנגצ׳י הסיני, מקרוק התאילנדי ושוגי הם בני דודים. כולם צאצאים של <strong>צ׳טורנגה</strong>, משחק מלחמה מהודו של המאות השישית והשביעית.</p>
+  <p>איך ומתי המשחק הגיע ליפן, אף אחד לא יודע בוודאות. יש חוקרים שחושבים שהוא הגיע דרך סין או קוריאה, ויש שחושבים שדרך דרום־מזרח אסיה, במאות העשירית והאחת־עשרה. גם מי קבע את החוקים הסופיים לא ידוע.</p>
+
+  <h2 id="nara">הכלים מנארה</h2>
+  <p>ב־1993 מצאו ארכאולוגים במקדש <strong>קופוקו־ג׳י</strong> שבנארה כלי שוגי מעץ, ולצידם לוח עם תאריך: 1058. אלה הכלים העתיקים ביותר שנמצאו ביפן, ויש להם כבר הצורה המחומשת של היום. מאותן שנים יש גם את האזכור הכתוב הראשון של המשחק, בספר של המלומד פוג׳יווארה נו אקיהירה.</p>
+  <p>אנציקלופדיה מתחילת המאה ה־13, <span lang="ja-Latn">ניצ׳ורקי</span>, מתארת שני משחקים: "שוגי גדול" ו"שוגי קטן". השוגי הקטן הוא האב של השוגי של היום, אבל היו בו רק שישה סוגי כלים:</p>
+  <ul class="set" aria-label="הכלים בשוגי הקטן הקדום">
+    <li><Piece>玉</Piece><span>מלך</span></li>
+    <li><Piece>金</Piece><span>זהב</span></li>
+    <li><Piece>銀</Piece><span>כסף</span></li>
+    <li><Piece>桂</Piece><span>פרש</span></li>
+    <li><Piece>香</Piece><span>רומח</span></li>
+    <li><Piece>歩</Piece><span>רגלי</span></li>
+  </ul>
+  <p>בלי צריח, בלי רץ, וגם בלי הצנחה: ניצחת אם לכדת את המלך של היריב או השארת לו רק את המלך.</p>
+
+  <h2 id="modern-rules">הפיל השיכור, וההצנחה</h2>
+  <p>בימי הביניים היפנים אהבו גרסאות ענק. <strong>דאי שוגי</strong> ("שוגי גדול") הופיע בסביבות המאה ה־13, וממנו נולד <strong>צ׳ו שוגי</strong> ("שוגי בינוני") במאה ה־15, ששיחקו בו בקיוטו עד מלחמת העולם השנייה.</p>
+  <p>גם השוגי הקטן גדל. הוא קיבל את הצריח, את הרץ, וכלי מוזר בשם <strong>פיל שיכור</strong>:</p>
+  <ul class="set" aria-label="הכלים שנוספו">
+    <li><Piece>飛</Piece><span>צריח</span></li>
+    <li><Piece>角</Piece><span>רץ</span></li>
+    <li class="gone"><Piece>酔</Piece><span>פיל שיכור</span></li>
+  </ul>
+  <p>הפיל השיכור הוכתר ל"נסיך ⟦הכתר|הכתירי⟧", שהיה בעצם מלך שני: כדי לנצח היה צריך ללכוד את שניהם. לפי מקור יפני ישן, הקיסר <strong>גו־נארה</strong>, שמלך בין 1526 ל־1557, הוציא את הפיל השיכור מהמשחק. בערך באותה תקופה, במאה ה־16, התקבע גם חוק ההצנחה, ואיתו השוגי שאנחנו משחקים היום.</p>
+  <p>למה דווקא ביפן כלי שנלכד מחליף צד? יש השערה פופולרית: שכירי חרב בתקופת המלחמות עברו בקלות מצד לצד, והמשחק פשוט שיקף את המציאות. זה סיפור יפה, אבל אין לו הוכחה.</p>
+
+  <h2 id="edo">תקופת אדו: שוגי של השוגון</h2>
+  <p>השוגון <strong>טוקוגאווה איאיאסו</strong> אהב שוגי, והתחיל לשלם משכורות לשחקנים הטובים ביותר. אחד מהם, <strong>אוהאשי סוקיי</strong> (1555–1634), היה המייג׳ין הראשון. שושלת המייג׳ינים בירושה נמנית מ־1612.</p>
+  <ul>
+    <li><strong>שלושה בתים.</strong> משפחת אוהאשי, הענף שלה ומשפחת איטו הפכו ל"שלושת בתי השוגי". תואר המייג׳ין עבר ביניהן בירושה, כמעט בלי יוצא מן הכלל, עד סוף תקופת השוגונים.</li>
+    <li><strong>17 בנובמבר.</strong> מימי השוגון יושימונה נערכו בטירה משחקים מול השוגון פעם בשנה, בתאריך שמצוין היום כ־17 בנובמבר. לכן 17 בנובמבר הוא "יום השוגי" ביפן.</li>
+    <li><strong>הכלים מטנדו.</strong> בסוף התקופה עודדו בממלכת טנדו שבצפון יפן סמוראים עניים להכין כלי שוגי. ב־1996 הכירה ממשלת יפן בכלים מטנדו כמלאכה מסורתית.</li>
+  </ul>
+
+  <h2 id="newspapers">העיתונים, האיגוד, ומייג׳ין לפי כישרון</h2>
+  <p>ב־1868 נפל השוגונאט, המשכורות נעצרו והבתים איבדו את כוחם. את השוגי הצילו העיתונים: מסביבות 1899 הם פרסמו רישומי משחקים ובעיות מט, ושמרו על קהל השוגי.</p>
+  <ul>
+    <li><strong>1924:</strong> נוסד איגוד השוגי של טוקיו. איגוד השוגי היפני רואה בשנה הזו את שנת ההקמה שלו.</li>
+    <li><strong>1935–1937:</strong> המייג׳ין האחרון בירושה, סקינה קינג׳ירו, ויתר על התואר. ב־1937 זכה בו קימורה יושיו, המייג׳ין הראשון שנקבע לפי תוצאות.</li>
+    <li><strong>אחרי המלחמה:</strong> לפי סיפורו של השחקן מסודה קוזו, שלטונות הכיבוש האמריקאיים שקלו לאסור את השוגי, כי שימוש בכלים שנלכדו נראה להם כמו התעללות בשבויים. מסודה ענה שבשחמט יש בעיות דומות, ושהוא אפילו סותר שוויון בין המינים. לדבריו, הטענות האלה הן שהצילו את המשחק.</li>
+    <li><strong>1974:</strong> מתחילים טורנירי תארים לנשים.</li>
+    <li><strong>1988 ו־2015:</strong> נוסדו תואר הריואו, ואחריו האייאו, השמיני. מאז יש שמונה תארים גדולים, ואלוף שוגי נמדד לפי כמה מהם הוא מחזיק.</li>
+  </ul>
+
+  <h2 id="champions">האלופים של הדור</h2>
+  <div class="cards">
+    <article>
+      <h3>האבו יושיהרו</h3>
+      <p>הפך למקצוען ב־1985, בגיל 15. בין פברואר ליולי 1996 החזיק בכל שבעת התארים הגדולים של אז בבת אחת, ראשון בהיסטוריה. זכה ב־99 תארים גדולים, וב־2018 קיבל את פרס הכבוד של ראש ממשלת יפן.</p>
+    </article>
+    <article>
+      <h3>פוג׳יי סוטה</h3>
+      <p>הפך למקצוען ב־2016, בגיל 14, הצעיר אי פעם. היה גם המייג׳ין הצעיר ביותר, ובאוקטובר 2023 הפך לשחקן הראשון שמחזיק בכל שמונת התארים בבת אחת.</p>
+    </article>
+  </div>
+
+  <h2 id="computers">המחשב נכנס למשחק</h2>
+  <p>תוכנות שוגי נכתבות מאז שנות ה־60. בגלל ההצנחה, בכל עמדה יש כמעט פי שניים מהלכים אפשריים מאשר בשחמט, ולכן לקח להן הרבה יותר זמן להגיע לרמה של האלופים.</p>
+  <ol class="steps">
+    <li><span class="when">2013</span>התוכנה GPS Shogi מנצחת שחקן מקצועי בדרגת 8 דאן.</li>
+    <li><span class="when">2017</span>התוכנה Ponanza מנצחת את המייג׳ין סאטו אמהיקו, 2–0. עשרים שנה אחרי Deep Blue בשחמט.</li>
+    <li><span class="when">2017</span>לפי DeepMind, התוכנה AlphaZero לימדה את עצמה שוגי וניצחה את התוכנה החזקה Elmo.</li>
+  </ol>
+  <p>כבר משנות ה־2000 התוכנות הן כלי לימוד של השחקנים המקצועיים, לא רק יריבות. רוצה להשוות לשחמט? יש לנו <a href="/chess/">עמוד לשחקני שחמט</a>.</p>
+
+  <h2 id="world">שוגי בעולם</h2>
+  <p>הפדרציה האירופית לשוגי (FESA) נוסדה ב־1985, והיא עורכת את אליפות אירופה כל שנה. ב־2017 הפכה <strong>קרולינה סטיצ׳ינסקה</strong> מפולין לשחקנית המקצועית הראשונה שאינה יפנית. היא גילתה את השוגי כנערה, בחוברת של המנגה <span lang="en">Naruto</span>, ולמדה לבד מהאינטרנט.</p>
+
+  <h2 id="israel">ובישראל?</h2>
+  <p>כאן הסיפור רק מתחיל, ⟦ואתה|ואת⟧ חלק ממנו. אפשר ללמוד את החוקים בעברית, לשחק ישר בדפדפן ולהכיר שחקנים ישראלים.</p>
+  <div class="cta">
+    {playLive ? (
+      <a class="btn" href="/play/"><span>⟦שחק|שחקי⟧ נגד המחשב</span><Fragment set:html={arrow} /></a>
+    ) : (
+      <a class="btn" href="/rules/"><span>⟦למד|למדי⟧ את החוקים</span><Fragment set:html={arrow} /></a>
+    )}
+    <a class="btn btn-ghost" href="/community/">⟦הצטרף|הצטרפי⟧ לקהילה</a>
+  </div>
+
+  <details class="more sources">
+    <summary>מקורות</summary>
+    <ul class="small">
+      <li>צ׳טורנגה, הדרכים ליפן, ניצ׳ורקי, שוגי גדול וקטן, דאי שוגי וצ׳ו שוגי, השערת שכירי החרב, משפחות אדו ו־17 בנובמבר, העיתונים, 1924, 1935–1937, סיפורו של מסודה, תארי נשים מ־1974, ריואו 1988, ותוכנות השוגי: <a href="https://en.wikipedia.org/wiki/Shogi" rel="noopener" lang="en">Wikipedia: Shogi</a>.</li>
+      <li>הכלים מקופוקו־ג׳י (נמצאו ב־1993, לוח מ־1058): <a href="https://www.pref.nara.jp/secure/292352/R4-6-shogikoma.pdf" rel="noopener">מחוז נארה, דף מורשת תרבותית (יפנית)</a>; <a href="https://www.fun-japan.jp/en/articles/13810" rel="noopener" lang="en">Fun Japan: What is Shogi?</a></li>
+      <li>הכלים בשוגי הקטן הקדום ותנאי הניצחון: <a href="https://en.wikipedia.org/wiki/Heian_shogi" rel="noopener" lang="en">Wikipedia: Heian shogi</a>.</li>
+      <li>הפיל השיכור, נסיך ⟦הכתר|הכתירי⟧ והקיסר גו־נארה (לפי <span lang="en">Sho Shōgi Zushiki</span>): <a href="https://en.wikipedia.org/wiki/Sho_shogi" rel="noopener" lang="en">Wikipedia: Sho shogi</a>.</li>
+      <li>איאיאסו, אוהאשי סוקיי (1555–1634), שלושת הבתים, טנדו ו־1996, שנות ההקמה של התארים: <a href="https://www.fun-japan.jp/en/articles/13810" rel="noopener" lang="en">Fun Japan: What is Shogi?</a></li>
+      <li>1612, רשימת המייג׳ינים בירושה, סקינה וקימורה: <a href="https://en.wikipedia.org/wiki/Meijin_(shogi)" rel="noopener" lang="en">Wikipedia: Meijin (shogi)</a>.</li>
+      <li>האבו יושיהרו: <a href="https://en.wikipedia.org/wiki/Yoshiharu_Habu" rel="noopener" lang="en">Wikipedia: Yoshiharu Habu</a>; <a href="https://guinnessworldrecords.com/world-records/504591-first-shogi-player-to-hold-the-seven-major-titles-simultaneously-traditional-tit" rel="noopener" lang="en">Guinness World Records</a>.</li>
+      <li>פוג׳יי סוטה (מקצוען ב־1 באוקטובר 2016, שמונה תארים ב־11 באוקטובר 2023): <a href="https://en.wikipedia.org/wiki/S%C5%8Dta_Fujii" rel="noopener" lang="en">Wikipedia: Sōta Fujii</a>; <a href="https://www.fun-japan.jp/en/articles/13810" rel="noopener" lang="en">Fun Japan</a>.</li>
+      <li>Ponanza מול סאטו אמהיקו: <a href="https://en.wikipedia.org/wiki/Amahiko_Sat%C5%8D" rel="noopener" lang="en">Wikipedia: Amahiko Satō</a>. מספר המהלכים בעמדה: ⟦ראה|ראי⟧ את המקורות ב<a href="/chess/">עמוד לשחקני שחמט</a>.</li>
+      <li>FESA, נוסדה ב־26 באוגוסט 1985: <a href="https://fesashogi.eu/old/index.php?mid=1" rel="noopener" lang="en">FESA: About</a>.</li>
+      <li>קרולינה סטיצ׳ינסקה (היום פורטין): <a href="https://en.wikipedia.org/wiki/Karolina_Fortin" rel="noopener" lang="en">Wikipedia: Karolina Fortin</a>.</li>
+    </ul>
+  </details>
+</Page>
+
+<style>
+  .lead { font-size: 19px; color: var(--ink); }
+
+  :global(.prose) .timeline { list-style: none; padding: 0; margin: 0 0 8px; position: relative; }
+  .timeline::before { content: ""; position: absolute; inset-block: 10px; inset-inline-start: 7px; width: 2px; background: var(--rule); }
+  :global(.prose) .timeline li { margin: 0; position: relative; padding-inline-start: 30px; }
+  .timeline li::before {
+    content: ""; position: absolute; inset-inline-start: 2px; top: 17px; width: 12px; height: 12px;
+    border-radius: 50%; background: var(--washi); border: 2px solid var(--seal); box-sizing: border-box;
+  }
+  .timeline a { display: flex; flex-direction: column; gap: 1px; padding: 10px 0; text-decoration: none; color: inherit; border-bottom: 1px solid var(--rule); }
+  .timeline li:last-child a { border-bottom: 0; }
+  .timeline a:hover .what { color: var(--seal); }
+  .when { font: 700 18px/1.3 var(--f-display); color: var(--seal); }
+  .what { color: var(--ink-2); line-height: 1.5; }
+  @media (min-width: 640px) {
+    .timeline a { flex-direction: row; align-items: baseline; gap: 16px; }
+    .timeline .when { flex: 0 0 120px; }
+  }
+
+  :global(.prose) .set { list-style: none; padding: 0; margin: 4px 0 16px; display: flex; flex-wrap: wrap; gap: 8px 4px; }
+  :global(.prose) .set li { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 64px; font-size: 32px; }
+  .set li span:not(:global(.piece-chip *)) { font-size: 14px; color: var(--muted); line-height: 1.2; }
+  .set li.gone > :global(.piece-chip) { opacity: 0.55; }
+  .set li.gone > span:last-child { text-decoration: line-through; }
+
+  .cards { display: grid; gap: 12px; margin: 0 0 16px; }
+  @media (min-width: 640px) { .cards { grid-template-columns: 1fr 1fr; } }
+  .cards article { background: var(--washi-2); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px 4px; }
+  .cards h3 { margin: 0 0 6px; font-size: 20px; color: var(--ink); }
+
+  :global(.prose) .steps { list-style: none; padding: 0; margin: 0 0 16px; border-top: 1px solid var(--rule); }
+  :global(.prose) .steps li { display: flex; gap: 14px; align-items: baseline; margin: 0; padding: 10px 0; border-bottom: 1px solid var(--rule); }
+  .steps .when { flex: 0 0 48px; }
+
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; margin: 18px 0 8px; }
+
+  .more { margin: 32px 0 16px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .more summary { cursor: pointer; padding: 14px 0; font-weight: 500; color: var(--muted); font-size: 15px; min-height: 24px; }
+  :global(.prose) .sources ul { padding-inline-start: 22px; }
+</style>

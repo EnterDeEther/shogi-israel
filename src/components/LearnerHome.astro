@@ -1,0 +1,334 @@
+---
+import { LEVELS, LEVEL_INFO } from '../lib/curriculum';
+import { WEEK_LENGTH } from '../tsume/week';
+import InfoTip from './InfoTip.astro';
+
+interface Props { weekCount: number; accounts?: boolean }
+const { weekCount, accounts = false } = Astro.props;
+const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
+---
+<section class="me wrap" data-learner-only data-me data-week-count={weekCount} aria-labelledby="me-h">
+  <div class="me-top">
+    <div class="me-main">
+      <p class="eyebrow">⟦ברוך השב|ברוכה השבה⟧</p>
+      <h1 id="me-h"><span data-me-hello>טוב לראות אותך שוב</span>.</h1>
+      <p class="lead" data-me-lead>הנה הצעד הבא שלך.</p>
+
+      <div class="next" aria-labelledby="next-title">
+        <p class="next-where" data-next-where>הצעד הבא במסלול</p>
+        <p class="next-title" id="next-title" data-next-title>המסלול שלך</p>
+        <p class="next-why" data-next-why></p>
+        <div class="next-progress" data-next-progress hidden>
+          <div class="bar" aria-hidden="true"><span></span></div>
+          <span class="small"></span>
+        </div>
+        <a class="btn next-btn" href="/course/" data-next-link data-tour="next"><span data-next-cta>למסלול</span></a>
+
+        {accounts && (
+          <div class="invite" data-signed-out-only data-invite aria-labelledby="invite-h">
+            <p class="invite-head" id="invite-h">כרגע ההתקדמות שלך שמורה רק בדפדפן הזה. עם חשבון בחינם:</p>
+            <ul class="invite-list">
+              <li>ההתקדמות נשמרת בכל מכשיר, בטלפון ובמחשב.</li>
+              <li>מסלול אישי: עונה על שתי שאלות קצרות ⟦ומקבל|ומקבלת⟧ נקודת התחלה שמתאימה לך.</li>
+              <li>הנקודות ודרגת הלימוד שלך נשמרות בחשבון ולא הולכות לאיבוד.</li>
+              <li>אם ⟦תרצה|תרצי⟧, בעיית השבוע במייל, פעם בשבוע לכל היותר.</li>
+            </ul>
+            <p class="invite-note">מה שכבר עשית כאן נכנס לחשבון ונספר. אפשר גם להמשיך בלי חשבון.</p>
+            <div class="invite-actions">
+              <a class="btn invite-btn" href="/account/?mode=signup"><span>⟦פתח|פתחי⟧ חשבון בחינם</span></a>
+              <a class="invite-link" href="/account/?mode=signin">כבר יש לך חשבון? כניסה</a>
+              <button type="button" class="invite-link invite-later" data-invite-later>לא עכשיו</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+
+    <aside class="rank" aria-labelledby="rank-h" data-tour="rank">
+      <p class="rank-head" id="rank-h">דרגת הלימוד שלך · במסלול</p>
+      <div class="rank-row">
+        <span class="rank-kanji" lang="ja" aria-hidden="true" data-rank-kanji>十五級</span>
+        <p class="rank-name" data-rank-name>15 קיו</p>
+        <InfoTip id="rank" />
+      </div>
+      <p class="rank-points" data-rank-points>0 נקודות</p>
+      <div class="bar" aria-hidden="true"><span data-rank-bar></span></div>
+      <p class="small rank-text" data-rank-text>נקודות נצברות פעם אחת על כל שיעור, בעיה או משחק.</p>
+      <p class="small rank-guest" data-signed-out-only>{accounts ? 'הנקודות נשמרות רק בדפדפן הזה, עד שיש חשבון.' : 'הנקודות נשמרות בדפדפן הזה.'}</p>
+      <p class="small"><a href="/ranks/#site">דרגה של לימוד באתר, לא דרגה רשמית</a></p>
+    </aside>
+  </div>
+
+  <section class="block-sm" aria-labelledby="path-h">
+    <div class="head-row">
+      <h2 id="path-h">המסלול שלך</h2>
+      <a class="small" href="/course/">למסלול המלא</a>
+    </div>
+    <ol class="units">
+      {LEVELS.map((l, i) => (
+        <li>
+          <a class="unit" href={`/course/#${l}`} data-level={l}>
+            <span class="unit-tag small">רמה {i + 1} מתוך {LEVELS.length}</span>
+            <strong class="unit-title">{LEVEL_INFO[l].title}</strong>
+            <span class="unit-goal small">{LEVEL_INFO[l].goal}</span>
+            <span class="unit-count small" data-unit-count></span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="block-sm" aria-labelledby="today-h">
+    <h2 id="today-h">להיום</h2>
+    <ul class="today">
+      <li class="today-card">
+        <h3>בעיית השבוע</h3>
+        <p data-week-text>בעיית מט ב־{WEEK_LENGTH} מהלכים<InfoTip id="mate" />, אותה בעיה לכולם. בעיה חדשה בכל יום ראשון.</p>
+        <a class="today-link" href="/tsume/week/" data-week-link><span data-week-cta>לפתור</span> ←</a>
+      </li>
+      <li class="today-card">
+        <h3>⟦שחק|שחקי⟧ נגד המחשב</h3>
+        <p data-play-text>עשר רמות, ממתחילים ועד מתקדמים. רמה 1 סלחנית, והמטרה רק לסיים משחק שלם.</p>
+        <a class="today-link" href="/play/" data-play-link><span data-play-cta>לשחק</span> ←</a>
+      </li>
+      <li class="today-card">
+        <h3>הקהילה בוואטסאפ</h3>
+        <p>עדכונים, שאלות על שיעורים ובעיות, ומי רוצה לשחק. אנחנו קהילה קטנה ומתחילה.</p>
+        <a class="today-link" href={WHATSAPP} rel="noopener">להצטרף לקבוצה ←</a>
+      </li>
+    </ul>
+  </section>
+
+  <section class="part" aria-labelledby="part-h">
+    <div>
+      <h2 id="part-h">⟦אתה|את⟧ חלק מזה</h2>
+      <p>מצאת שיעור מבלבל, או מונח שאפשר לומר טוב יותר בעברית? ⟦כתוב|כתבי⟧ לי, ואני אתקן. ככה האתר משתפר לכולם.</p>
+    </div>
+    <a class="btn btn-ghost" href="/about/#contact"><span>⟦כתוב|כתבי⟧ לנו</span></a>
+  </section>
+</section>
+
+<script>
+  import { accountsEnabled, hasStoredSession } from '../lib/account-config';
+  import { hasAnyProgress, KIND_LABEL, LEVELS, levelInfoFor, nextStep, pathProgress, stepCount, stepHref, unitProgress, unitsOf, whereLabel } from '../lib/curriculum';
+  import { LEVEL_COUNTS } from '../lib/level-counts';
+  import { readLocal } from '../lib/progress-local';
+  import { rankFor, xpBreakdown } from '../lib/xp';
+  import { weekIndex, weekPuzzle, weekStreak, weeksHe, WEEK_LENGTH } from '../tsume/week';
+  import { tipEl } from '../lib/info-tip-dom';
+
+  const root = document.querySelector<HTMLElement>('[data-me]');
+  const html = document.documentElement;
+  const signedIn = () => accountsEnabled && hasStoredSession();
+  const $ = <T extends HTMLElement = HTMLElement>(sel: string, el: ParentNode = root!) => el.querySelector<T>(sel)!;
+  const text = (sel: string, t: string) => { $(sel).textContent = t; };
+  const pct = (a: number, b: number) => `${b ? Math.round((100 * a) / b) : 0}%`;
+
+  function render() {
+    if (!root) return;
+    const p = readLocal();
+    if (!signedIn() && !hasAnyProgress(p)) { html.removeAttribute('data-learner'); return; }
+    html.setAttribute('data-learner', '');
+
+    const placed = !!p.course.route;
+    const next = signedIn() && !placed ? undefined : nextStep(p, LEVEL_COUNTS);
+    const link = $<HTMLAnchorElement>('[data-next-link]');
+    const prog = $('[data-next-progress]');
+    prog.hidden = true;
+    if (signedIn() && !placed) {
+      text('[data-next-where]', 'מסלול לימוד אישי');
+      text('[data-next-title]', 'מאיפה מתחילים?');
+      text('[data-next-why]', '⟦ענה|עני⟧ על שתי שאלות קצרות, ⟦ותקבל|ותקבלי⟧ נקודת התחלה: מתחילים, בינוניים או מתקדמים.');
+      text('[data-next-cta]', 'לבחירת נקודת ההתחלה');
+      link.href = '/course/';
+    } else if (!next) {
+      text('[data-next-where]', 'מסלול לימוד אישי');
+      text('[data-next-title]', 'סיימת את כל המסלול!');
+      text('[data-next-why]', 'מכאן ממשיכים להשתפר: בעיות מט ארוכות יותר, ומשחקים ברמות גבוהות יותר.');
+      text('[data-next-cta]', 'לבעיות המט');
+      link.href = '/tsume/';
+    } else {
+      const { unit, step } = next;
+      text('[data-next-where]', `הצעד הבא במסלול · ${whereLabel(unit)} · ${KIND_LABEL[step.kind]}, ${step.minutes} דק׳`);
+      text('[data-next-title]', step.title);
+      text('[data-next-why]', step.why);
+      const started = hasAnyProgress(p);
+      text('[data-next-cta]', started ? '⟦המשך|המשיכי⟧ מאיפה שעצרת' : '⟦התחל|התחילי⟧');
+      link.href = stepHref(step, p, LEVEL_COUNTS);
+      const inStep = stepCount(step, p, LEVEL_COUNTS);
+      const up = inStep ?? unitProgress(unit, p, LEVEL_COUNTS);
+      if (up.of > 0) {
+        prog.hidden = false;
+        $('.bar span', prog).style.width = pct(up.done, up.of);
+        $('.small', prog).textContent = inStep ? `${up.done} מתוך ${up.of} בצעד הזה` : `${up.done} מתוך ${up.of} צעדים ב${unit.title}`;
+      }
+    }
+    text('[data-me-lead]', next || (signedIn() && !placed) ? 'הנה הצעד הבא שלך.' : 'עשית את כל הדרך. כל הכבוד.');
+
+    const xp = xpBreakdown(p, LEVEL_COUNTS).total;
+    const r = rankFor(xp);
+    text('[data-rank-kanji]', r.rank.kanji);
+    text('[data-rank-name]', r.rank.name);
+    text('[data-rank-points]', `${xp.toLocaleString('he-IL')} נקודות`);
+    $('[data-rank-bar]').style.width = r.next ? pct(r.into, r.span) : '100%';
+    text('[data-rank-text]', r.next
+      ? `עוד ${(r.next.min - xp).toLocaleString('he-IL')} נקודות ל־${r.next.name}. נקודות נצברות פעם אחת על כל שיעור, בעיה או משחק.`
+      : 'הגעת לדרגה הגבוהה ביותר במסלול.');
+
+    const path = pathProgress(p, LEVEL_COUNTS);
+    for (const l of LEVELS) {
+      const a = $<HTMLAnchorElement>(`[data-level="${l}"]`);
+      const up = unitsOf(l, p.course.route).map((u) => unitProgress(u, p, LEVEL_COUNTS)).reduce((x, y) => ({ done: x.done + y.done, of: x.of + y.of }), { done: 0, of: 0 });
+      $('[data-unit-count]', a).textContent = up.of === 0 && p.course.route ? 'כבר מוכר' : up.done === up.of && up.of > 0 ? 'הושלם ✓' : up.done > 0 ? `${up.done} מתוך ${up.of} צעדים` : '';
+      a.toggleAttribute('data-current', !!next && next.unit.level === l);
+      $('.unit-goal', a).textContent = levelInfoFor(p.course.route)[l].goal;
+    }
+    root.dataset.pathDone = String(path.done);
+
+    const weekCount = Number(root.dataset.weekCount) || 0;
+    if (weekCount > 0) {
+      const week = weekIndex();
+      const solved = p.tsume[String(WEEK_LENGTH)] ?? [];
+      const id = weekPuzzle(week, weekCount);
+      const streak = weekStreak(solved, weekCount, week);
+      const streakText = streak > 1 ? ` רצף של ${weeksHe(streak)}.` : '';
+      if (solved.includes(id)) {
+        text('[data-week-text]', `פתרת את בעיית השבוע ✓${streakText} בעיה חדשה מחכה ביום ראשון, ועד אז יש עוד אלפי בעיות.`);
+        text('[data-week-cta]', 'לעוד בעיות מט');
+        $<HTMLAnchorElement>('[data-week-link]').href = '/tsume/';
+      } else {
+        $('[data-week-text]').replaceChildren(`בעיית מט ב־${WEEK_LENGTH} מהלכים`, tipEl('mate'), `, אותה בעיה לכולם. בעיה חדשה בכל יום ראשון.${streakText}`);
+        text('[data-week-cta]', streak > 0 ? 'לשמור על הרצף' : 'לפתור');
+        $<HTMLAnchorElement>('[data-week-link]').href = '/tsume/week/';
+      }
+    }
+
+    const { played, won } = p.course;
+    let level = 1;
+    if (won > 0) {
+      level = Math.min(10, won + 1);
+      text('[data-play-text]', won >= 10 ? 'ניצחת את המחשב ברמה הגבוהה ביותר. ⟦נסה|נסי⟧ לנצח שוב, הפעם עם צבע אחר.' : `ניצחת את המחשב ברמה ${won}. ⟦מוכן|מוכנה⟧ לנסות את רמה ${level}?`);
+    } else if (played > 0) {
+      level = played;
+      text('[data-play-text]', `כבר שיחקת ברמה ${played}. הפעם ⟦נסה|נסי⟧ לנצח בה: קודם מבצר, אחר כך התקפה.`);
+    }
+    $<HTMLAnchorElement>('[data-play-link]').href = `/play/?level=${level}`;
+    text('[data-play-cta]', `לשחק ברמה ${level}`);
+  }
+
+  async function hello() {
+    if (!signedIn()) return;
+    try {
+      const { getSession, getProfile } = await import('../lib/account');
+      const s = await getSession();
+      const prof = s && (await getProfile(s.user.id));
+      if (!prof?.nickname) return;
+      const el = $('[data-me-hello]');
+      el.textContent = 'שלום, ';
+      const b = document.createElement('bdi');
+      b.textContent = prof.nickname;
+      el.append(b);
+    } catch { }
+  }
+
+  const LATER_KEY = 'shogi-il.invite-later';
+  const LATER_MS = 14 * 24 * 60 * 60 * 1000;
+  function invite() {
+    const box = root?.querySelector<HTMLElement>('[data-invite]');
+    if (!box) return;
+    let until = 0;
+    try { until = Number(localStorage.getItem(LATER_KEY)) || 0; } catch { }
+    box.hidden = until > Date.now();
+    box.querySelector('[data-invite-later]')?.addEventListener('click', () => {
+      try { localStorage.setItem(LATER_KEY, String(Date.now() + LATER_MS)); } catch { }
+      box.hidden = true;
+    });
+  }
+
+  render();
+  invite();
+  void hello();
+  document.addEventListener('progress-synced', render);
+</script>
+
+<style>
+  .me { padding-top: 32px; }
+  .me-top { display: grid; gap: 20px; }
+  .me-main { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .me h1 { font-size: clamp(34px, 7vw, 56px); line-height: 1.1; }
+  .me .lead { margin: 0; font-size: 18px; line-height: 1.6; color: var(--ink-2); }
+
+  .bar { height: 8px; border-radius: 999px; background: var(--rule); overflow: hidden; }
+  .bar span { display: block; height: 100%; width: 0; background: var(--seal); border-radius: inherit; transition: width .3s; }
+
+  .next { background: var(--ink); color: var(--washi); border-radius: 8px; padding: 22px 20px; display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+  .next p { margin: 0; }
+  .next-where { font-size: 14px; font-weight: 700; line-height: 1.5; opacity: .8; }
+  .next-title { font-family: var(--f-display); font-size: clamp(26px, 5vw, 32px); font-weight: 800; line-height: 1.15; }
+  .next-why { font-size: 16.5px; line-height: 1.6; opacity: .88; max-width: 36em; }
+  .next-why:empty { display: none; }
+  .next-progress { display: flex; align-items: center; gap: 12px; }
+  .next-progress .bar { flex: 1; max-width: 280px; background: color-mix(in srgb, var(--washi) 25%, transparent); }
+  .next-btn { align-self: stretch; background: var(--washi); color: var(--ink); border-color: var(--washi); margin-top: 4px; }
+  .next-btn:hover { background: var(--kaya); color: #1C1B19; border-color: var(--kaya); }
+
+  .invite { border-top: 1px solid color-mix(in srgb, var(--washi) 22%, transparent); margin-top: 10px; padding-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .invite[hidden] { display: none; }
+  .invite-head { font-weight: 700; font-size: 16px; line-height: 1.5; }
+  .invite-list { margin: 0; padding-inline-start: 20px; display: flex; flex-direction: column; gap: 4px; font-size: 15.5px; line-height: 1.55; opacity: .9; }
+  .invite-note { font-size: 14px; line-height: 1.5; opacity: .75; }
+  .invite-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 18px; margin-top: 2px; }
+  .invite-btn { background: transparent; color: inherit; border-color: color-mix(in srgb, var(--washi) 55%, transparent); }
+  .invite-btn:hover { background: var(--washi); color: var(--ink); border-color: var(--washi); }
+  .invite-link { color: inherit; font: inherit; font-size: 15px; font-weight: 700; background: none; border: 0; padding: 0; min-height: 44px; display: inline-flex; align-items: center; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .invite-later { font-weight: 400; opacity: .75; }
+
+  .rank { background: var(--washi-2); border: 1px solid var(--rule); border-radius: 8px; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+  .rank p { margin: 0; }
+  .rank-head { font-size: 14px; font-weight: 700; color: var(--muted); }
+  .rank-row { display: flex; align-items: center; gap: 14px; }
+  .rank-row :global(.info-tip__btn) { margin-inline-start: -6px; }
+  .rank-kanji { font-family: var(--f-kanji); font-size: 22px; font-weight: 800; color: var(--on-seal); background: var(--seal); border-radius: 999px; min-width: 56px; height: 56px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; }
+  .rank-name { font-family: var(--f-display); font-size: 44px; font-weight: 800; line-height: 1; }
+  .rank-points { font-size: 16px; color: var(--ink-2); }
+  .rank-text, .rank-guest { color: var(--ink-2); line-height: 1.55; }
+
+  .block-sm { margin-top: 48px; }
+  .block-sm > h2, .head-row { margin-bottom: 16px; }
+  .head-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+
+  .units { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .unit { display: flex; flex-direction: column; gap: 2px; min-height: 44px; padding: 14px 16px; border: 1px solid var(--rule); border-radius: 8px; color: var(--ink); text-decoration: none; background: var(--washi); }
+  .unit:hover { border-color: var(--seal); }
+  .unit[data-current] { background: var(--ink); color: var(--washi); border-color: var(--ink); }
+  .unit-tag { color: var(--seal); font-weight: 700; }
+  .unit[data-current] .unit-tag { color: inherit; opacity: .8; }
+  .unit-title { font-family: var(--f-display); font-size: 21px; }
+  .unit-goal { opacity: .85; }
+  .unit-count { font-weight: 700; }
+  .unit-count:empty { display: none; }
+
+  .today { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .today-card { background: var(--washi-2); border-top: 4px solid var(--seal); border-radius: 4px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
+  .today-card h3 { font-family: var(--f-display); font-size: 22px; font-weight: 800; margin: 0; }
+  .today-card p { margin: 0; color: var(--ink-2); line-height: 1.6; flex: 1; }
+  .today-link { display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; color: var(--seal); text-decoration: none; align-self: flex-start; }
+  .today-link:hover { text-decoration: underline; }
+
+  .part { margin-top: 48px; display: flex; flex-direction: column; gap: 14px; border-top: 1px solid var(--rule); padding-top: 28px; }
+  .part h2 { margin-bottom: 6px; }
+  .part p { margin: 0; color: var(--ink-2); line-height: 1.6; max-width: 40em; }
+
+  @media (min-width: 700px) {
+    .units { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .next-btn { align-self: flex-start; }
+    .part { flex-direction: row; align-items: center; justify-content: space-between; gap: 32px; }
+    .part .btn { flex-shrink: 0; }
+  }
+  @media (min-width: 900px) {
+    .me { padding-top: 56px; }
+    .me-top { grid-template-columns: 2fr 1fr; gap: 32px; align-items: end; }
+    .units { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .today { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+  }
+</style>

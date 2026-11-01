@@ -1,0 +1,41 @@
+---
+const html = await Astro.slots.render('default');
+const m = html.match(/<figure[^>]*data-board[\s\S]*?<\/figure>/);
+const board = m ? m[0] : '';
+const rest = m ? html.replace(m[0], '') : html;
+const extras = (board.match(/<figcaption[\s\S]*?<\/figcaption>/)?.[0] ?? '') + (board.match(/<details[\s\S]*?<\/details>/)?.[0] ?? '');
+---
+<div class:list={['step', { 'has-board': !!board }]}>
+  {board && <div class="step-board" set:html={board} />}
+  <div class="step-text">
+    {extras && <div class="step-extras" set:html={extras} />}
+    <Fragment set:html={rest} />
+  </div>
+</div>
+
+<style>
+  .step-board :global(.board-fig) { margin: 0; }
+  .step-extras { display: none; }
+  @media (min-width: 900px) {
+    .step.has-board { display: flex; flex-direction: row-reverse; gap: 40px; align-items: flex-start; }
+    .step-board { flex: 0 0 min(500px, 55%); position: sticky; top: 16px; }
+    .step-text { flex: 1 1 auto; min-width: 0; }
+    .step.has-board :global(.board-fb) { display: none; }
+  }
+  @media (max-width: 899.98px) {
+    .step-board {
+      position: sticky; top: 0; z-index: 5; margin: 0 calc(-1 * var(--gutter)) 16px;
+      padding: 8px var(--gutter) 6px; background: var(--washi); border-bottom: 1px solid var(--rule);
+    }
+    .step-board :global(.board-head) { margin-bottom: 4px; }
+    .step-board :global(.cap), .step-board :global(.alt) { display: none; }
+    .step-extras { display: block; margin-bottom: 14px; }
+    .step-extras :global(.cap) { margin-top: 0; }
+    .step :global(.task[data-kind="board"] .task-fb) { display: none; }
+  }
+  .step-text > :global(p), .step-text > :global(ul > li), .step-text > :global(ol > li) { font-size: 17px; line-height: 1.75; color: var(--ink-2); }
+  .step-text > :global(p) { margin: 0 0 14px; }
+  .step-text > :global(ul), .step-text > :global(ol) { padding-inline-start: 22px; margin: 0 0 16px; }
+  .step-text > :global(ul > li), .step-text > :global(ol > li) { margin-bottom: 6px; }
+  .step-text > :global(:first-child) { margin-top: 0; }
+</style>

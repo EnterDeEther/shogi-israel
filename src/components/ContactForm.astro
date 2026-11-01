@@ -1,0 +1,114 @@
+---
+import { LIMITS, TURNSTILE_SITE_KEY } from '../lib/contact';
+---
+<form class="contact" method="post" action="/api/contact" novalidate data-contact>
+  <div class="contact__field">
+    <label for="contact-name">שם</label>
+    <input id="contact-name" name="name" type="text" autocomplete="name" required maxlength={LIMITS.name} />
+  </div>
+  <div class="contact__field">
+    <label for="contact-email">מייל לתשובה</label>
+    <input id="contact-email" name="email" type="email" dir="ltr" autocomplete="email" required maxlength={LIMITS.email} />
+  </div>
+  <div class="contact__field">
+    <label for="contact-message">ההודעה</label>
+    <textarea id="contact-message" name="message" rows="6" required minlength={LIMITS.minMessage} maxlength={LIMITS.message}></textarea>
+  </div>
+  <div class="contact__hp" aria-hidden="true">
+    <label for="contact-website">אתר</label>
+    <input id="contact-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+  </div>
+  <input type="hidden" name="startedAt" value="" />
+  <p class="small muted">נשתמש בשם ובמייל רק כדי לענות לך. <a href="/privacy/#contact-form">מדיניות פרטיות</a></p>
+  <div class="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} data-language="he" data-theme="auto" data-size="flexible"></div>
+  <button type="submit" class="btn">שליחה</button>
+  <p class="contact__status" role="status" data-status></p>
+</form>
+
+<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<script>
+  type WithTurnstile = Window & { turnstile?: { reset: (el?: Element) => void } };
+  const messages = {
+    sent: 'ההודעה נשלחה. תודה! נענה לך במייל.',
+    name: '⟦כתוב|כתבי⟧ את השם שלך.',
+    email: '⟦בדוק|בדקי⟧ את כתובת המייל.',
+    message: 'ההודעה קצרה מדי. ⟦כתוב|כתבי⟧ לפחות כמה מילים.',
+    captcha: 'רגע, Cloudflare עדיין בודק ⟦שאתה|שאת⟧ לא רובוט. ⟦חכה|חכי⟧ שהבדיקה תסתיים ⟦ונסה|ונסי⟧ שוב, או ⟦כתוב|כתבי⟧ לנו ישירות במייל.',
+    error: 'משהו השתבש והשליחה לא הצליחה. ⟦נסה|נסי⟧ שוב, או ⟦כתוב|כתבי⟧ לנו ישירות במייל.',
+    sending: 'שולחים…',
+  } as const;
+
+  document.querySelectorAll<HTMLFormElement>('[data-contact]').forEach((form) => {
+    const status = form.querySelector<HTMLElement>('[data-status]')!;
+    const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+    const show = (key: keyof typeof messages, ok = false) => {
+      status.textContent = messages[key];
+      status.classList.toggle('ok', ok);
+    };
+    form.elements.namedItem('startedAt')!.setAttribute('value', String(Date.now()));
+
+    const back = new URLSearchParams(location.search).get('contact');
+    if (back === 'sent') show('sent', true);
+    else if (back === 'invalid' || back === 'error') show('error');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const field = (['name', 'email', 'message'] as const).find(
+        (n) => !(form.elements.namedItem(n) as HTMLInputElement).checkValidity(),
+      );
+      if (field) {
+        show(field);
+        (form.elements.namedItem(field) as HTMLElement).focus();
+        return;
+      }
+      const captcha = form.querySelector<HTMLInputElement>('[name="cf-turnstile-response"]');
+      if (form.querySelector('.cf-turnstile') && !captcha?.value) {
+        show('captcha');
+        return;
+      }
+      button.disabled = true;
+      show('sending');
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          headers: { Accept: 'application/json' },
+          body: new FormData(form),
+        });
+        const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+        if (data.ok) {
+          form.reset();
+          show('sent', true);
+        } else if (data.error === 'name' || data.error === 'email' || data.error === 'message' || data.error === 'captcha') {
+          show(data.error);
+        } else {
+          show('error');
+        }
+      } catch {
+        show('error');
+      } finally {
+        (window as WithTurnstile).turnstile?.reset(form.querySelector('.cf-turnstile') ?? undefined);
+        button.disabled = false;
+      }
+    });
+  });
+</script>
+
+<style>
+  .contact { display: grid; gap: 14px; max-width: var(--text); margin-top: 12px; }
+  .contact__field { display: grid; gap: 6px; }
+  .contact label { font-weight: 700; }
+  .contact input, .contact textarea {
+    width: 100%; box-sizing: border-box; min-height: 48px; padding: 10px 12px;
+    font: 17px/1.5 var(--f-body); color: var(--ink); background: var(--washi);
+    border: 1.5px solid var(--rule); border-radius: 6px;
+  }
+  .contact textarea { resize: vertical; }
+  .contact input:focus-visible, .contact textarea:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; border-color: var(--ink); }
+  .contact .btn { justify-self: start; }
+  .contact .btn:disabled { opacity: 0.6; cursor: progress; }
+  .contact p { margin: 0; }
+  .contact__status:empty { display: none; }
+  .contact__status { font-weight: 700; color: var(--seal); }
+  .contact__status.ok { color: var(--ink); }
+  .contact__hp { position: absolute; inset-inline-start: -10000px; width: 1px; height: 1px; overflow: hidden; }
+</style>

@@ -1,0 +1,258 @@
+---
+import Page from '../layouts/Page.astro';
+import Piece from '../components/Piece.astro';
+import { pageExists } from '../lib/live';
+
+const playLive = pageExists('/play/');
+const guideLive = pageExists('/lishogi/');
+const courseLive = pageExists('/course/');
+const tryLive = pageExists('/try/');
+const ranksLive = pageExists('/ranks/');
+const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>';
+---
+<Page
+  title="⟦יודע|יודעת⟧ שחמט? חצי מהשוגי כבר אצלך"
+  eyebrow="⟦הכר|הכירי⟧ את השוגי"
+  description="⟦משחק|משחקת⟧ שחמט ורוצה לנסות משהו חדש? מה בשוגי כבר מוכר לך, מה שונה, ואיך מגיעים למשחק ראשון תוך שעה, ישר מהטלפון."
+>
+  <p class="lead">הצריח, הרץ והמלך זזים בדיוק כמו בשחמט. מזלג הוא עדיין מזלג, ושח הוא עדיין שח. ההבדל הגדול: כלי שלכדת עובר לצד שלך, ואפשר להחזיר אותו ללוח בכל רגע. לכן המשחק לא נרגע לעולם.</p>
+
+  <div class="cta">
+    {playLive ? (
+      <a class="btn" href="/play/"><span>⟦שחק|שחקי⟧ נגד המחשב</span><Fragment set:html={arrow} /></a>
+    ) : (
+      <a class="btn" href="/rules/02-how-pieces-move/"><span>⟦הכר|הכירי⟧ את הכלים</span><Fragment set:html={arrow} /></a>
+    )}
+    <a class="btn btn-ghost" href="#fast-track">המסלול המהיר לשחקני שחמט</a>
+  </div>
+  <p class="small muted">בחינם, בעברית, בלי הרשמה ובלי להוריד אפליקציה.</p>
+
+  <h2 id="crazyhouse">שיחקת פעם קרייזיהאוס?</h2>
+  <p>אם שיחקת <span lang="en">Crazyhouse</span> בצ׳ס.קום או בליצ׳ס, ⟦אתה|את⟧ כבר ⟦מכיר|מכירה⟧ את הרעיון: כלי שלכדת נכנס לכיס, ובתורך אפשר להניח אותו על הלוח במקום לזוז. בשוגי זה לא וריאנט, זה החוק הבסיסי, וקוראים לזה <strong>הצנחה</strong>. ההבדל מקרייזיהאוס: הלוח והכלים בנויים מראש בשביל זה, ולכן המשחק עמוק ומאוזן הרבה יותר.</p>
+
+  <h2 id="pieces">הכלים: מה מוכר ומה חדש</h2>
+  <p>לכל צד עשרים כלים על לוח של 9×9. אין מלכה. על הלוח כל כלי מסומן באות מהשם שלו בעברית, כמו ברישום שחמט בעברית: מ למלך, צ לצריח, פ לפרש. ⟦מעדיף|מעדיפה⟧ אותיות באנגלית? המתג שמעל כל לוח מחליף.</p>
+  <ul class="pieces">
+    <li class="same"><Piece>מ</Piece><div><strong>מלך</strong><span>בדיוק כמו בשחמט, רק בלי הצרחה.</span></div></li>
+    <li class="same"><Piece>צ</Piece><div><strong>צריח</strong><span>בדיוק כמו בשחמט.</span></div></li>
+    <li class="same"><Piece>רץ</Piece><div><strong>רץ</strong><span>בדיוק כמו בשחמט.</span></div></li>
+    <li class="close"><Piece>פ</Piece><div><strong>פרש</strong><span>קופץ כמו בשחמט, אבל רק קדימה: שתיים קדימה ואחת הצידה.</span></div></li>
+    <li class="close"><Piece>ר</Piece><div><strong>רגלי</strong><span>צעד אחד קדימה, וגם <em>לוכד</em> ישר קדימה. אין צעד כפול ואין הכאה דרך הילוכו.</span></div></li>
+    <li class="new"><Piece>ח</Piece><div><strong>רומח</strong><span>צריח שיודע לנסוע רק קדימה.</span></div></li>
+    <li class="new"><Piece>ז</Piece><div><strong>גנרל זהב</strong><span>צעד אחד לכל כיוון, חוץ מאלכסון אחורה. המגן הכי טוב של המלך.</span></div></li>
+    <li class="new"><Piece>כ</Piece><div><strong>גנרל כסף</strong><span>צעד אחד באלכסון לכל כיוון, או צעד אחד ישר קדימה.</span></div></li>
+  </ul>
+  <p class="small muted legend"><span class="dot same"></span>זהה לשחמט <span class="dot close"></span>דומה, עם הבדל <span class="dot new"></span>חדש</p>
+
+  <h2 id="differences">ארבעה דברים שהופכים את השוגי לשוגי</h2>
+  <ol class="diffs">
+    <li>
+      <h3>כלי שנלכד מחליף צד</h3>
+      <p>כל חילוף מחמש את שניכם. החלפת רצים? עכשיו לשניכם יש רץ ביד, שיכול לנחות בדיוק במקום הכואב. לפני כל מהלך, ⟦שאל|שאלי⟧ לא רק מה היריב יכול להזיז, אלא גם מה הוא יכול להצניח.</p>
+    </li>
+    <li>
+      <h3>כמעט כל כלי מוכתר</h3>
+      <p>בשחמט רק רגלי מוכתר, ורק בשורה האחרונה. בשוגי כמעט כל כלי שנכנס לשלוש השורות האחרונות של היריב יכול להתחזק: הצריח הופך ל<strong>דרקון</strong> (צריח שזז גם צעד באלכסון), הרץ ל<strong>סוס</strong> (רץ שזז גם צעד ישר), והכלים הקטנים זזים כמו גנרל זהב.</p>
+    </li>
+    <li>
+      <h3>אין הצרחה. בונים מבצר</h3>
+      <p>את בית המלך בונים ביד, כלי אחרי כלי, וזה נקרא <strong>מבצר</strong>. כי היריב יכול להצניח כלי ליד המלך שלך בכל רגע, הבטיחות שלו חשובה כאן עוד יותר מבשחמט.</p>
+    </li>
+    <li>
+      <h3>כמעט אין תיקו</h3>
+      <p>אין הצעת תיקו, אין "חומר לא מספיק", והסיום לא מתרוקן: כל ארבעים הכלים נשארים במשחק, רק מחליפים בעלים. סוף המשחק הוא בדרך כלל מירוץ של שתי התקפות על המלך. מי שנותן <strong>שח נצחי</strong> כדי לחזור על העמדה, מפסיד.</p>
+    </li>
+  </ol>
+
+  <h2 id="phases">אותם שלושה שלבים, בדרך אחרת</h2>
+  <p>גם משחק שוגי מתחלק לפתיחה, אמצע המשחק וסוף המשחק, בדיוק כמו בשחמט. בכל שלב המטרה מוכרת לך, אבל הדרך אליה שונה:</p>
+  <ol class="diffs">
+    <li>
+      <h3>פתיחה: בונים מבצר במקום להצר</h3>
+      <p>כמו בשחמט, מפתחים כלים ומסדרים את המלך. אבל בלי הצרחה: המלך הולך למבצר במספר מהלכים, והפתיחות נבדלות לפי המקום שבו הצריח עומד, <strong>צריח קבוע</strong> או <strong>צריח נודד</strong>.</p>
+    </li>
+    <li>
+      <h3>אמצע המשחק: כל חילוף נשאר על הלוח</h3>
+      <p>כאן מחליפים כלים ותוקפים, אבל כלי שנלכד לא יוצא מהמשחק. הוא נכנס ליד, ולכן בכל חילוף בודקים גם מה היריב יכול להצניח.</p>
+    </li>
+    <li>
+      <h3>סוף המשחק: מירוץ, לא סיום שקט</h3>
+      <p>בשחמט נשארים בסוף מעט כלים. בשוגי כל הכלים עדיין במשחק, וסוף המשחק הוא מירוץ בין שתי התקפות על המלך: מי שמגיע למט ראשון מנצח.</p>
+    </li>
+  </ol>
+  <p>הסבר מלא על כל שלב, ואיפה נכנסים בו הפתיחות, המבצרים והאסטרטגיות: <a href="/learn/guide/#phases">פתיחות, מבצרים ואסטרטגיה</a>.</p>
+
+  <h2 id="fast-track">המסלול המהיר: משחק ראשון תוך שעה</h2>
+  <p>אין צורך ללמוד הכול מההתחלה. בכל שלב בדרך ההסבר מדבר בשפת השחמט: מה זהה, מה דומה ומה חדש. הכול עובד בטלפון, וההתקדמות נשמרת.</p>
+  <ol class="track">
+    <li>
+      <span class="t"><a href="/learn/introduction/?route=chess">הלוח ומה שונה בו</a>, ואז חזרה מהירה על <a href="/learn/king/?route=chess">המלך</a>, <a href="/learn/bishop/?route=chess">הרץ</a> ו<a href="/learn/rook/?route=chess">הצריח</a></span>
+      <span class="small muted">10 דקות. הם זזים כמו בשחמט, אז ⟦שים|שימי⟧ לב רק להכתרה.</span>
+    </li>
+    <li>
+      <span class="t">הכלים החדשים, אחד בכל שלב: <a href="/learn/gold/?route=chess">זהב</a>, <a href="/learn/silver/?route=chess">כסף</a>, <a href="/learn/knight/?route=chess">פרש</a>, <a href="/learn/lance/?route=chess">רומח</a>, <a href="/learn/pawn/?route=chess">רגלי</a></span>
+      <span class="small muted">15 דקות. גם הפרש והרגלי שונים ממה ⟦שאתה|שאת⟧ ⟦מכיר|מכירה⟧.</span>
+    </li>
+    <li>
+      <span class="t"><a href="/learn/drop/?route=chess">הצנחה</a>, <a href="/learn/checkmate1/?route=chess">מט במהלך אחד</a> ו<a href="/learn/value/?route=chess">ערך הכלים</a></span>
+      <span class="small muted">15 דקות. השלב הכי חשוב בשבילך: ערכי החומר מהשחמט לא עובדים כאן.</span>
+    </li>
+    <li>
+      {playLive
+        ? <span class="t"><a href="/play/">משחק נגד המחשב</a>, ברמה 3 או 4</span>
+        : <span class="t">משחק ראשון נגד המחשב, ברמה 3 או 4 <span class="soon">(יעלה לאתר בקרוב)</span></span>}
+      <span class="small muted">רמות שמענישות טעויות, אבל אפשר לנצח בהן. ניצחת? ⟦עלה|עלי⟧ רמה. מרמה 5 משחק מנוע חזק בהרבה.</span>
+    </li>
+    <li>
+      <span class="t"><a href="/learn/static-rook/?route=chess">פתיחות</a> ו<a href="/learn/static-castles/?route=chess">מבצרים</a></span>
+      <span class="small muted">אחרי כמה משחקים. כאן מתחיל העומק האסטרטגי, ולכל פתיחה יש הערה לשחקני שחמט.</span>
+    </li>
+  </ol>
+  {courseLive && (
+    <div class="course-box">
+      <p><strong>רוצה שהאתר יוביל אותך צעד אחר צעד?</strong> יש מסלול לימוד אישי לשחקני שחמט: רק מה שחדש לך, בסדר שמתאים לשחקן שחמט, מהכלים החדשים ועד בעיות מט. כל שלב מחכה לך בתורו, וההתקדמות נשמרת בחשבון.{ranksLive && <> הנקודות מעלות דרגת לימוד באתר, לא דרגה רשמית (<a href="/ranks/">מה הן הדרגות בשוגי</a>).</>}</p>
+      <p class="cta"><a class="btn" href="/course/?route=chess"><span>מסלול לימוד אישי לשחקני שחמט</span><Fragment set:html={arrow} /></a> <a href="/account/?mode=signup" data-chess-intent>⟦פתח|פתחי⟧ חשבון בחינם</a></p>
+    </div>
+  )}
+  {tryLive && <p class="small muted">רוצה קודם לראות איך זה נראה? <a href="/try/">משחק אחד, מהלך אחרי מהלך</a>.</p>}
+
+  <h2 id="traps">חמש טעויות של שחקני שחמט</h2>
+  <ul class="traps">
+    <li><strong>לחפש את הרגלי באלכסון.</strong> הרגלי לוכד ישר קדימה.</li>
+    <li><strong>להחזיר את הפרש אחורה.</strong> הוא לא יכול. פרש שהתקדם יותר מדי נתקע.</li>
+    <li><strong>להשאיר כלי לא מוגן.</strong> זו מתנה כפולה: היריב לוכד אותו, ואחר כך מצניח אותו נגדך.</li>
+    <li><strong>להחליף כלים כדי להרגיע את העמדה.</strong> כל חילוף מוסיף כלים ליד של שניכם, והעמדה רק מתחממת.</li>
+    <li><strong>להצניח רגלי לטור שכבר יש בו רגלי שלך,</strong> או לתת מט בהצנחת רגלי. שני החוקים האלה לא קיימים בשחמט.</li>
+  </ul>
+
+  <h2 id="depth">למי שמחפש אתגר: כמה עמוק זה</h2>
+  <dl class="stats">
+    <div>
+      <dt>משחקים אפשריים</dt>
+      <dd><bdi dir="ltr">10<sup>226</sup></bdi></dd>
+      <dd class="vs">בשחמט: <bdi dir="ltr">10<sup>123</sup></bdi></dd>
+    </div>
+    <div>
+      <dt>מהלכים חוקיים בעמדה</dt>
+      <dd>כ־80</dd>
+      <dd class="vs">בשחמט: כ־35</dd>
+    </div>
+    <div>
+      <dt>תיקו במשחקי מקצוענים</dt>
+      <dd><bdi dir="ltr">2–3%</bdi></dd>
+      <dd class="vs">ואין הצעת תיקו</dd>
+    </div>
+    <div>
+      <dt>מחשב ניצח את האלוף</dt>
+      <dd>2017</dd>
+      <dd class="vs">בשחמט: 1997</dd>
+    </div>
+  </dl>
+  <p>מחשבים ניצחו את אלוף העולם בשחמט ב־1997, אבל את אלוף השוגי רק עשרים שנה אחר כך. הסיבה העיקרית היא ההצנחה: כמעט פי שניים מהלכים אפשריים בכל עמדה. והכישורים עוברים בשני הכיוונים: האבו יושיהרו, מגדולי שחקני השוגי בכל הזמנים, הוא גם אמן פידה בשחמט, עם דירוג שיא של 2415.</p>
+
+  <details class="more">
+    <summary>שחמט מול שוגי: הטבלה המלאה</summary>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th scope="col"></th><th scope="col">שחמט</th><th scope="col">שוגי</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">לוח</th><td>8×8, 64 משבצות</td><td>9×9, 81 משבצות</td></tr>
+          <tr><th scope="row">כלים לכל צד</th><td>16</td><td>20</td></tr>
+          <tr><th scope="row">מלכה</th><td>יש</td><td>אין. הכלי החזק ביותר הוא הדרקון</td></tr>
+          <tr><th scope="row">כלי שנלכד</th><td>יוצא מהמשחק</td><td>עובר ליד שלך ואפשר להצניח אותו</td></tr>
+          <tr><th scope="row">הכתרה</th><td>רק רגלי, בשורה האחרונה</td><td>כמעט כל כלי, בשלוש השורות האחרונות</td></tr>
+          <tr><th scope="row">רגלי לוכד</th><td>באלכסון</td><td>ישר קדימה</td></tr>
+          <tr><th scope="row">בית למלך</th><td>הצרחה</td><td>בונים מבצר ביד</td></tr>
+          <tr><th scope="row">תיקו</th><td>נפוץ, ויש הצעת תיקו</td><td>נדיר, ואין הצעת תיקו</td></tr>
+          <tr><th scope="row">רישום מהלך</th><td><bdi dir="ltr" class="nt">e4</bdi></td><td><bdi dir="ltr" class="nt">P-76</bdi> (טור 7, שורה 6)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+
+  <div class="cta end">
+    {playLive ? (
+      <a class="btn" href="/play/"><span>⟦שחק|שחקי⟧ נגד המחשב</span><Fragment set:html={arrow} /></a>
+    ) : (
+      <a class="btn" href="/rules/02-how-pieces-move/"><span>⟦הכר|הכירי⟧ את הכלים</span><Fragment set:html={arrow} /></a>
+    )}
+    {courseLive && <a class="btn btn-ghost" href="/course/?route=chess">מסלול לימוד אישי לשחקני שחמט</a>}
+  </div>
+  {courseLive && <p class="small muted">המסלול שומר את ההתקדמות בחשבון: <a href="/account/?mode=signup" data-chess-intent>⟦פתח|פתחי⟧ חשבון בחינם</a>.</p>}
+  <p class="small muted">רוצה יריבים אנושיים? שחקנים ישראלים נפגשים ב<a href="/community/">קהילה שלנו</a>, ומשחקים פומביים וטורנירים מתקיימים {guideLive ? <a href="/lishogi/">בליש׳וגי</a> : 'בליש׳וגי'}.</p>
+
+  <details class="more sources">
+    <summary>מקורות</summary>
+    <ul class="small">
+      <li>שוגי: <bdi dir="ltr">10<sup>226</sup></bdi> משחקים אפשריים וכ־80 מהלכים בעמדה: <span lang="en" dir="ltr">Iida, Sakuta &amp; Rollason, "Computer shogi", Artificial Intelligence 134 (2002)</span>.</li>
+      <li>שחמט: <bdi dir="ltr">10<sup>123</sup></bdi> וכ־35 מהלכים בעמדה: <span lang="en" dir="ltr">L. V. Allis, "Searching for Solutions in Games and Artificial Intelligence" (1994)</span>. ⟦ראה|ראי⟧ גם <a href="https://en.wikipedia.org/wiki/Game_complexity" rel="noopener" lang="en">Game complexity</a>.</li>
+      <li>שיעור התיקו (<bdi dir="ltr">2–3%</bdi>) והיעדר הצעת תיקו: <a href="https://en.wikipedia.org/wiki/Shogi" rel="noopener" lang="en">Wikipedia: Shogi</a>.</li>
+      <li>Ponanza ניצח את המייג׳ין סאטו אמהיקו ב־2017: <a href="https://en.wikipedia.org/wiki/Shogi" rel="noopener" lang="en">Wikipedia: Shogi</a>. Deep Blue ניצח את קספרוב ב־1997: <a href="https://en.wikipedia.org/wiki/Deep_Blue_versus_Garry_Kasparov" rel="noopener" lang="en">Wikipedia: Deep Blue versus Garry Kasparov</a>.</li>
+      <li>האבו יושיהרו, אמן פידה (2004) ודירוג שיא 2415 (2014): <a href="https://en.wikipedia.org/wiki/Yoshiharu_Habu" rel="noopener" lang="en">Wikipedia: Yoshiharu Habu</a>.</li>
+    </ul>
+  </details>
+</Page>
+
+<script>
+  document.querySelectorAll('[data-chess-intent]').forEach((a) => a.addEventListener('click', () => {
+    try { localStorage.setItem('learnRoute', 'chess'); } catch { }
+  }));
+</script>
+
+<style>
+  .lead { font-size: 19px; color: var(--ink); }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; margin: 22px 0 8px; }
+  .cta.end { margin-top: 32px; }
+  .course-box { margin: 20px 0 8px; padding: 16px 18px; border: 1px solid var(--rule); border-radius: 10px; }
+  .course-box .cta { margin: 12px 0 0; align-items: center; }
+
+  :global(.prose) .pieces { list-style: none; padding: 0; margin: 0 0 8px; display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; }
+  @media (min-width: 640px) { .pieces { grid-template-columns: 1fr 1fr; } }
+  :global(.prose) .pieces li { display: flex; gap: 12px; align-items: flex-start; margin: 0; padding: 12px 14px; background: var(--washi); border-inline-start: 4px solid transparent; font-size: 28px; }
+  .pieces li.same { border-inline-start-color: var(--rule); }
+  .pieces li.close { border-inline-start-color: var(--kaya-zone); }
+  .pieces li.new { border-inline-start-color: var(--seal); }
+  .pieces li > :global(.piece-chip) { flex-shrink: 0; }
+  .pieces li div { display: flex; flex-direction: column; font-size: 16px; line-height: 1.5; padding-top: 2px; }
+  .pieces strong { color: var(--ink); }
+  .pieces span { color: var(--ink-2); }
+  .legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-inline-end: -6px; }
+  .dot.same { background: var(--rule); }
+  .dot.close { background: var(--kaya-zone); }
+  .dot.new { background: var(--seal); }
+
+  :global(.prose) .diffs { list-style: none; padding: 0; counter-reset: d; }
+  :global(.prose) .diffs li { counter-increment: d; position: relative; padding-inline-start: 40px; margin-bottom: 18px; }
+  .diffs li::before { content: counter(d); position: absolute; inset-inline-start: 0; top: 0; font: 700 26px/1 var(--f-display); color: var(--seal); }
+  .diffs h3 { margin: 0 0 4px; font-size: 19px; }
+
+  :global(.prose) .track { list-style: none; padding: 0; margin: 0 0 16px; counter-reset: t; border-top: 1px solid var(--rule); }
+  :global(.prose) .track li { counter-increment: t; position: relative; display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 12px 0 12px; padding-inline-start: 40px; border-bottom: 1px solid var(--rule); }
+  .track li::before { content: counter(t); position: absolute; inset-inline-start: 4px; top: 12px; font: 700 22px/1.3 var(--f-display); color: var(--muted); }
+  .track .t { color: var(--ink); font-weight: 500; }
+  .soon { color: var(--muted); font-weight: 400; }
+
+  .traps li { margin-bottom: 8px; }
+
+  .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; margin: 8px 0 16px; background: var(--rule); border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; }
+  @media (min-width: 640px) { .stats { grid-template-columns: repeat(4, 1fr); } }
+  .stats > div { background: var(--washi); padding: 14px 14px 12px; }
+  .stats dt { font-size: 13px; color: var(--muted); }
+  .stats dd { margin: 4px 0 0; font: 700 28px/1.1 var(--f-display); color: var(--seal); }
+  .stats dd sup { font-size: 0.55em; }
+  .stats dd.vs { font: 400 14px/1.4 var(--f-body); color: var(--ink-2); }
+
+  .more { margin: 16px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .more summary { cursor: pointer; padding: 14px 0; font-weight: 700; color: var(--ink); min-height: 24px; }
+  .more.sources summary { font-weight: 500; color: var(--muted); font-size: 15px; }
+  :global(.prose) .sources ul { padding-inline-start: 22px; }
+  .table-wrap { overflow-x: auto; margin: 0 0 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: 16px; }
+  th, td { text-align: start; vertical-align: top; padding: 10px 8px; border-bottom: 1px solid var(--rule); line-height: 1.5; }
+  thead th { font-size: 14px; color: var(--muted); font-weight: 500; }
+  tbody th { font-weight: 700; color: var(--ink); white-space: nowrap; }
+  td { color: var(--ink-2); }
+</style>

@@ -1,0 +1,179 @@
+---
+import Base from '../../layouts/Base.astro';
+import PieceToggle from '../../components/PieceToggle.astro';
+import { PHASES } from '../../lib/first-game';
+import '../../styles/shogiground.css';
+import '../../styles/learn.css';
+
+const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>';
+---
+<Base
+  title="איך נראה משחק שוגי? משחק אחד, מהלך אחרי מהלך"
+  description="משחק שוגי שלם ב־27 מהלכים: פתיחה, אמצע המשחק וסוף המשחק, עד המט. לוחצים על כל מהלך ומקבלים הסבר פשוט בעברית. בלי הרשמה ובלי ידע מוקדם."
+>
+  <div class="wrap watch" data-watch data-step="intro">
+    <header class="watch__head">
+      <p class="eyebrow">משחק אחד · מהלך אחרי מהלך · בלי להכיר כלום</p>
+      <h1>איך נראה משחק שוגי?</h1>
+      <p class="lead watch__lead">לא צריך לדעת כלום. בכל לחיצה נראה מהלך אחד, ונסביר מה קרה ולמה. ⟦אתה|את⟧ ⟦קובע|קובעת⟧ את הקצב: שום דבר לא זז לבד.</p>
+      <ol class="watch__phases" aria-label="שלבי המשחק">
+        {PHASES.map((p, i) => <li data-phase-chip><span class="n">{i + 1}</span> {p.name}</li>)}
+      </ol>
+    </header>
+    <noscript><p>הצפייה במשחק צריכה JavaScript.</p></noscript>
+
+    <div class="watch__grid">
+      <div class="watch__boardcol">
+        <div class="watch__tools"><span class="small muted" data-counter></span><PieceToggle tip /></div>
+        <div class="learn watch__learn">
+          <div class="learn__board" dir="ltr" tabindex="0" role="application" aria-roledescription="לוח שוגי" aria-label="לוח המשחק. חצים ימינה ושמאלה: המהלך הבא והקודם" data-board>
+            <div class="learn__sgbox"><div class="learn__sg" data-sg></div></div>
+          </div>
+        </div>
+        <div class="watch__nav">
+          <button type="button" class="btn" data-next><span data-next-label>המהלך הראשון</span><Fragment set:html={arrow} /></button>
+          <button type="button" class="btn btn-ghost" data-back disabled>אחורה</button>
+          <button type="button" class="btn btn-ghost" data-reset hidden>מההתחלה</button>
+        </div>
+      </div>
+
+      <div class="watch__side">
+        <div data-pane="intro">
+          <div class="box">
+            <h2>איך קוראים את הלוח</h2>
+            <p>שני שחקנים, וכל אחד שולט בצד אחד של הלוח. <strong>הפותח</strong> משחק מלמטה ו<strong>המשיב</strong> מלמעלה, והכלים של המשיב הפוכים, עם החוד כלפי מטה. הפותח זז ראשון. המטרה: לתת מט למלך של היריב, כלומר לתקוף אותו כך שאין לו מוצא.</p>
+          </div>
+          <div class="box">
+            <h2>איך מזהים כלי</h2>
+            <p>על כל כלי כתוב סימן שאומר מה הוא. המלך, למשל, נראה כך: <span class="pchip" data-p="K" aria-hidden="true"></span>. את שאר הכלים נכיר אחד אחד, בפעם הראשונה שכל אחד מהם זז. ⟦אתה|את⟧ ⟦יכול|יכולה⟧ לבחור למעלה אם הסימן יהיה אות בעברית, אות באנגלית או קאנג׳י, הכתב היפני שעל כלים אמיתיים.</p>
+          </div>
+          <div class="box">
+            <h2>שלושה שלבים בכל משחק</h2>
+            <p>פתיחה: מסדרים את הכלים ובונים הגנה למלך. אמצע המשחק: נפגשים, לוכדים ומחליפים כלים. סוף המשחק: מרוץ למט. נסמן לך בכל מהלך באיזה שלב אנחנו.</p>
+          </div>
+          <p class="small muted">כלים שנלכדו מופיעים ליד הלוח: של המשיב למעלה, של הפותח למטה.</p>
+        </div>
+
+        <div data-pane="move" hidden>
+          <div class="phase" data-phase-box hidden>
+            <h2 data-phase-name></h2>
+            <p data-phase-note></p>
+          </div>
+          <article class="card" aria-live="off">
+            <div class="card__meta"><span class="small muted" data-who></span><span class="tags" data-tags></span></div>
+            <h2 class="card__title" data-title></h2>
+            <p data-text></p>
+            <p class="why" data-why><strong>למה? </strong><span data-why-text></span></p>
+          </article>
+          <p class="small muted">שום דבר לא זז לבד. ⟦המשך|המשיכי⟧ ⟦כשאתה|כשאת⟧ ⟦מוכן|מוכנה⟧.</p>
+        </div>
+
+        <div data-pane="summary" hidden>
+          <div class="box box--done">
+            <h2>זה היה משחק שלם.</h2>
+            <p>פתיחה, אמצע המשחק וסוף המשחק, ובסוף מט. עכשיו ⟦אתה|את⟧ ⟦יודע|יודעת⟧ איך משחק שוגי נראה מההתחלה ועד הסוף.</p>
+          </div>
+          <ol class="recap">
+            {PHASES.map((p) => <li><strong>{p.name}</strong><span>{p.recap}</span></li>)}
+          </ol>
+          <p class="manners">ובמשחק אמיתי? לפני המשחק אומרים ליריב "בבקשה, תשמור עליי", ובסופו המפסיד אומר "הפסדתי" עוד לפני המט, והמנצח אומר תודה.</p>
+          <a class="btn watch__try" href="/try/pieces/"><span>עכשיו ⟦תנסה|תנסי⟧ בעצמך: שלושה כלים</span><Fragment set:html={arrow} /></a>
+          <p class="small muted">בדקנו את המשחק עם מנוע מחשב: כל המהלכים חוקיים והמט אמיתי. זה לא משחק מושלם. בחרנו אותו כי הוא מראה את שלושת השלבים.</p>
+        </div>
+      </div>
+    </div>
+    <div class="sr-only" aria-live="polite" data-live></div>
+  </div>
+</Base>
+
+<script>
+  import { bootWatchGame } from '../../scripts/watch-game';
+  document.querySelectorAll<HTMLElement>('[data-watch]').forEach((el) => bootWatchGame(el));
+</script>
+
+<style>
+  .watch { padding-top: 28px; padding-bottom: 24px; max-width: 1100px; }
+  .watch__head { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
+  .watch__head h1 { margin: 0; font-size: clamp(32px, 7vw, 52px); line-height: 1.1; }
+  .watch__lead { margin: 0; font-size: 18px; line-height: 1.6; color: var(--ink-2); max-width: 36em; }
+  .watch:not([data-step="intro"]) .watch__lead { display: none; }
+
+  .watch__phases { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .watch__phases li { background: var(--washi-2); border-radius: 99px; padding: 6px 14px; font-weight: 700; font-size: 14px; color: var(--ink-2); }
+  .watch__phases li .n { font-variant-numeric: tabular-nums; }
+  .watch__phases li[data-state="now"] { background: var(--ink); color: var(--washi); }
+  .watch__phases li[data-state="done"] { color: var(--muted); }
+  .watch__phases li[data-state="done"] .n { display: none; }
+  .watch__phases li[data-state="done"]::before { content: '✓ '; }
+
+  .watch__grid { display: grid; gap: 16px 40px; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 900px) {
+    .watch__grid { grid-template-columns: minmax(0, 520px) minmax(280px, 1fr); align-items: start; }
+    .watch__side { margin-top: 116px; }
+  }
+  .watch__tools { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; min-height: 44px; }
+  .watch__learn { margin: 0; }
+  .watch__learn .learn__board { padding-top: 64px; }
+  .watch__nav { display: flex; flex-wrap: wrap; gap: 8px; max-width: 520px; }
+  .watch__nav .btn { min-height: 52px; }
+  .watch__nav [data-next] { flex: 1 1 220px; justify-content: center; font-size: 18px; }
+  .watch__nav [hidden] { display: none; }
+  .watch__nav button:disabled { opacity: 0.45; cursor: default; }
+
+  .watch__side { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .watch__side [data-pane] { display: flex; flex-direction: column; gap: 14px; }
+  .watch__side [data-pane][hidden] { display: none; }
+  .watch__side h2 { margin: 0 0 6px; font-size: 20px; }
+  .watch__side p { margin: 0; line-height: 1.65; color: var(--ink-2); }
+  .box { background: var(--washi-2); border-radius: 8px; padding: 16px 18px; }
+  .box--done h2 { font-size: clamp(24px, 4vw, 30px); color: var(--seal); }
+  .phase { border-inline-start: 4px solid var(--seal); padding: 4px 14px; }
+  .phase h2 { color: var(--seal); }
+  .card { background: var(--washi); border: 1.5px solid var(--ink); border-radius: 12px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+  .card__meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
+  .card__title { font-size: 24px !important; margin: 0 !important; }
+  .card p { font-size: 17px; color: var(--ink); }
+  .why { font-size: 16px !important; color: var(--ink-2) !important; }
+  .why[hidden] { display: none; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tags :global(.tag) { border-radius: 99px; padding: 2px 10px; font-size: 13px; font-weight: 700; background: var(--washi-2); color: var(--ink); border: 1px solid var(--rule); }
+  .tags :global(.tag--check), .tags :global(.tag--mate) { background: var(--seal); color: var(--washi); border-color: var(--seal); }
+  .recap { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .recap li { display: flex; flex-direction: column; gap: 2px; border-top: 2px solid var(--ink); padding-top: 8px; }
+  .recap span { color: var(--ink-2); line-height: 1.6; }
+  .manners { font-size: 16px; }
+  .watch :global(.pchip) {
+    --h: ''; --l: ''; --k: '';
+    position: relative; display: inline-flex; align-items: center; justify-content: center;
+    width: 1.55em; height: 1.75em; padding-top: 0.28em; vertical-align: -0.45em; margin-inline: 0.1em;
+    color: var(--piece-ink); line-height: 1; filter: drop-shadow(0 1px 1px rgba(40, 25, 10, 0.35));
+    unicode-bidi: isolate; direction: rtl;
+  }
+  .watch :global(.pchip)::before, .watch :global(.pchip)::after { position: absolute; clip-path: polygon(50% 0, 86% 16%, 100% 100%, 0 100%, 14% 16%); }
+  .watch :global(.pchip)::before { content: ''; inset: 0; background: var(--piece-line); }
+  .watch :global(.pchip)::after {
+    content: var(--h); inset: 1.5px; background: var(--piece);
+    display: flex; align-items: center; justify-content: center; padding-top: 0.28em;
+    font: var(--fw-piece) 0.82em/1 var(--f-piece); letter-spacing: -0.3px; color: var(--piece-ink);
+  }
+  :global(html[data-pieces="letters"]) .watch :global(.pchip)::after { content: var(--l); direction: ltr; font-family: var(--f-body); font-weight: 800; }
+  :global(html[data-pieces="kanji"]) .watch :global(.pchip)::after { content: var(--k); font-family: var(--f-kanji); font-size: 0.9em; }
+  :global(html:not([data-pieces="letters"]):not([data-pieces="kanji"])) .watch :global(.pchip:is([data-p="B"], [data-p^="+"]):not([data-p="+R"]))::after { font-size: 0.66em; }
+  :global(html:not([data-pieces="letters"]):not([data-pieces="kanji"])) .watch :global(.pchip[data-p="K"])::after {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 12'%3E%3Cpath fill='%231C1B19' d='M1 3.2 5.6 7 10 .8 14.4 7 19 3.2 17.2 11.2H2.8Z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: center 26%; background-size: 46% auto;
+    padding-top: 0.62em; font-size: 0.7em;
+  }
+  .watch :global(.pchip[data-p="K"]) { --h: 'מ'; --l: 'K'; --k: '王'; }
+  .watch :global(.pchip[data-p="R"]) { --h: 'צ'; --l: 'R'; --k: '飛'; }
+  .watch :global(.pchip[data-p="B"]) { --h: 'רץ'; --l: 'B'; --k: '角'; }
+  .watch :global(.pchip[data-p="G"]) { --h: 'ז'; --l: 'G'; --k: '金'; }
+  .watch :global(.pchip[data-p="S"]) { --h: 'כ'; --l: 'S'; --k: '銀'; }
+  .watch :global(.pchip[data-p="N"]) { --h: 'פ'; --l: 'N'; --k: '桂'; }
+  .watch :global(.pchip[data-p="L"]) { --h: 'ח'; --l: 'L'; --k: '香'; }
+  .watch :global(.pchip[data-p="P"]) { --h: 'ר'; --l: 'P'; --k: '歩'; }
+  .watch :global(.pchip[data-p="+R"]) { --h: 'ד'; --l: '+R'; --k: '龍'; }
+  .watch :global(.pchip[data-p^="+"])::after { color: var(--seal); }
+  .watch__try { align-self: stretch; justify-content: center; min-height: 56px; font-size: 18px; }
+  @media (min-width: 900px) { .watch__try { align-self: flex-start; } }
+</style>

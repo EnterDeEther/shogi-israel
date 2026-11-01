@@ -1,0 +1,25 @@
+---
+import Base from './Base.astro';
+interface Props { title: string; description: string; eyebrow?: string; updated?: string }
+const { title, description, eyebrow, updated } = Astro.props;
+---
+<Base title={title} description={description}>
+  <div class="wrap page">
+    {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+    <h1>{title}</h1>
+    {updated && <p class="small muted upd">עודכן לאחרונה: {updated}</p>}
+    <div class="prose measure"><slot /></div>
+  </div>
+</Base>
+
+<style>
+  .page { padding-top: 36px; }
+  h1 { margin: 6px 0 8px; }
+  .upd { margin: 0 0 20px; }
+  .prose :global(h2) { margin: 40px 0 12px; font-size: clamp(24px, 4.5vw, 30px); scroll-margin-top: 16px; }
+  .prose :global(h3) { margin: 24px 0 8px; }
+  .prose :global(p), .prose :global(li) { color: var(--ink-2); line-height: 1.75; }
+  .prose :global(p) { margin: 0 0 14px; }
+  .prose :global(ul) { padding-inline-start: 22px; margin: 0 0 16px; }
+  .prose :global(li) { margin-bottom: 6px; }
+</style>

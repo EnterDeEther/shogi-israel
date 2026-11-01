@@ -1,0 +1,168 @@
+---
+import Base from '../../layouts/Base.astro';
+import Board from '../../components/Board.astro';
+import Term from '../../components/mdx/Term.astro';
+import Note from '../../components/mdx/Note.astro';
+import Task from '../../components/mdx/Task.astro';
+import Notation from '../../components/mdx/Notation.astro';
+import Step from '../../components/mdx/Step.astro';
+import Piece from '../../components/Piece.astro';
+import { getCollection, render } from 'astro:content';
+import { RULES_COURSE, PRACTICE } from '../../lib/course';
+import { accountsEnabled } from '../../lib/account-config';
+import { pageExists, LISHOGI_TEAM } from '../../lib/live';
+import { stages } from '../../learn/categories';
+import { stageUrl } from '../../learn/urls';
+
+const learnPages = new Set(stages.map((s) => s.key));
+
+export async function getStaticPaths() {
+  const entries = await getCollection('rules');
+  const ids = new Set(entries.map((e) => e.id));
+  return RULES_COURSE.map((stub) => ({
+    params: { lesson: stub.slug },
+    props: { entry: entries.find((e) => e.id === stub.slug) ?? null, stub, live: [...ids] },
+  }));
+}
+
+const { entry, stub, live } = Astro.props;
+const idx = RULES_COURSE.findIndex((l) => l.slug === stub.slug);
+const prev = RULES_COURSE[idx - 1];
+const next = RULES_COURSE[idx + 1];
+const total = RULES_COURSE.length;
+const isLive = (slug?: string) => !!slug && live.includes(slug);
+const rendered = entry ? await render(entry) : null;
+const Content = rendered?.Content;
+const components = { Board, Term, Note, Task, Notation, Step, Piece };
+const practice = (PRACTICE[stub.slug] ?? []).filter((p) => learnPages.has(p.stage));
+---
+<Base
+  title={entry ? entry.data.title : `שיעור ${stub.n}: ${stub.title}`}
+  description={entry ? entry.data.description : `שיעור ${stub.n} בחוקים הבסיסיים של שוגי ישראל. השיעור בכתיבה.`}
+  tabTitle={entry ? `חוקי השוגי, ${entry.data.title}` : undefined}
+  noindex={!entry}
+>
+  <div class="wrap lesson" data-lesson={stub.slug}>
+    <div class="meta">
+      <nav aria-label="מיקום" class="small muted"><a href="/rules/">חוקים בסיסיים</a> · שיעור {stub.n} מתוך {total}</nav>
+      <div class="bar" role="progressbar" aria-label="מיקום בשיעורים" aria-valuenow={stub.n} aria-valuemin="0" aria-valuemax={total}>
+        <span style={`width:${(stub.n / total) * 100}%`}></span>
+      </div>
+    </div>
+
+    {Content ? (
+      <article class="prose">
+        <Content components={components} />
+      </article>
+    ) : (
+      <article class="prose">
+        <h1>שיעור {stub.n}: {stub.title}</h1>
+        {pageExists('/play/') ? (
+          <>
+            <p>השיעור הזה עוד בכתיבה. בינתיים אפשר לחזור לשיעור הקודם, לתרגל בשיעורים האינטראקטיביים, או לשחק משחק שלם נגד המחשב כאן באתר.</p>
+            <p><a href="/play/">לשחק נגד המחשב</a> · <a href="/learn/">לשיעורים האינטראקטיביים</a></p>
+          </>
+        ) : (
+          <>
+            <p>השיעור הזה עוד בכתיבה. בינתיים אפשר לחזור לשיעור הקודם, לתרגל בשיעורים האינטראקטיביים, או לשחק בקבוצה שלנו בליש׳וגי.</p>
+            <p><a href="/learn/">לשיעורים האינטראקטיביים</a> · <a href={LISHOGI_TEAM} rel="noopener">לקבוצה בליש׳וגי</a></p>
+          </>
+        )}
+      </article>
+    )}
+
+    <p class="complete" data-lesson-complete hidden>
+      <strong>סיימת את השיעור.</strong>
+      {accountsEnabled ? (
+        <>
+          <span data-signed-out-only> ההתקדמות נשמרה במכשיר הזה. כדי לשמור אותה בכל מכשיר, <a href="/account/?mode=signup">⟦פתח|פתחי⟧ חשבון</a> (לא חובה).</span>
+          <span data-signed-in-only> ההתקדמות נשמרה בחשבון שלך.<span data-next-step></span></span>
+        </>
+      ) : ' ההתקדמות נשמרה במכשיר הזה.'}
+    </p>
+
+    {practice.length > 0 && (
+      <section class="practice" aria-labelledby="practice-h">
+        <h2 id="practice-h">תרגול על הלוח</h2>
+        <p>תרגילים קצרים ואינטראקטיביים לשיעור הזה. ⟦שחק|שחקי⟧ עם הכלים עד שזה יושב לך בידיים.</p>
+        <ul>
+          {practice.map((p) => (
+            <li><a href={stageUrl(p.stage)}><span>{p.title}</span><span aria-hidden="true">←</span></a></li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <nav class="pager" aria-label="ניווט בין שיעורים">
+      {prev ? (
+        <a class="pg prev" href={`/rules/${prev.slug}/`}><span class="small muted">→ הקודם</span><span>{prev.title}</span></a>
+      ) : (
+        <a class="pg prev" href="/rules/"><span class="small muted">→ חזרה</span><span>כל השיעורים</span></a>
+      )}
+      {next && (
+        <a class:list={['pg next', { soon: !isLive(next.slug) }]} href={`/rules/${next.slug}/`}>
+          <span class="small">הבא ←{!isLive(next.slug) && ' · בקרוב'}</span><span>{next.title}</span>
+        </a>
+      )}
+    </nav>
+  </div>
+</Base>
+
+<script>
+  import '../../scripts/tasks.ts';
+</script>
+
+<style>
+  .lesson { max-width: 1080px; padding-top: 18px; }
+  .prose > :global(*:not(.step)), .meta, .complete, .pager { max-width: 720px; }
+  .meta { display: flex; flex-direction: column; gap: 8px; }
+  .meta a { color: var(--muted); }
+  .bar { height: 4px; background: var(--rule); border-radius: 2px; overflow: hidden; }
+  .bar span { display: block; height: 100%; background: var(--seal); }
+
+  .prose { padding-top: 26px; }
+  .prose :global(h1) { font-size: clamp(32px, 7vw, 46px); margin-bottom: 18px; }
+  .prose :global(h2) { font-size: clamp(25px, 5vw, 32px); margin: 8px 0 14px; scroll-margin-top: 16px; }
+  .prose > :global(p), .prose > :global(ul > li), .prose > :global(ol > li) { font-size: 17px; line-height: 1.75; color: var(--ink-2); }
+  .prose > :global(p) { margin: 0 0 14px; }
+  .prose :global(strong) { color: var(--ink); }
+  .prose > :global(ul), .prose > :global(ol) { padding-inline-start: 22px; margin: 0 0 16px; }
+  .prose > :global(ul > li), .prose > :global(ol > li) { margin-bottom: 6px; }
+  .prose :global(hr) {
+    border: 0; height: 1px; background: var(--rule); margin: 44px 0 32px; position: relative; overflow: visible;
+  }
+  .prose :global(hr)::after {
+    content: ""; position: absolute; left: 50%; top: -4px; width: 9px; height: 9px;
+    transform: translateX(-50%) rotate(45deg); background: var(--seal);
+  }
+  .prose :global(table) { width: 100%; border-collapse: collapse; margin: 16px 0 20px; font-size: 15px; }
+  .prose :global(th), .prose :global(td) { padding: 10px 8px; border-bottom: 1px solid var(--rule); text-align: start; vertical-align: top; }
+  .prose :global(th) { font-weight: 700; color: var(--muted); font-size: 13px; border-bottom: 1.5px solid var(--ink); }
+  .prose :global(td:nth-child(3)) { font-weight: 800; font-variant-numeric: tabular-nums; }
+  .prose :global(td:nth-child(4)) { font-family: var(--f-kanji); font-weight: 800; }
+  .prose :global(.term strong) { color: var(--ink); }
+
+  .complete a { color: inherit; }
+  .complete { margin: 32px 0 0; padding: 14px 16px; border-radius: 6px; background: var(--fb-ok-bg); color: var(--fb-ok-fg); }
+
+  .practice { margin-top: 40px; padding: 20px; border: 1.5px solid var(--ink); border-radius: 6px; }
+  .practice h2 { font-size: 24px; margin: 0 0 6px; }
+  .practice p { margin: 0 0 12px; color: var(--ink-2); }
+  .practice ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .practice a {
+    display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 16px;
+    border-radius: 999px; background: var(--seal); color: var(--on-seal); text-decoration: none; font-weight: 700;
+  }
+  .practice a:hover { color: var(--on-seal); filter: brightness(0.92); }
+
+  .pager { display: flex; gap: 12px; margin-top: 40px; }
+  .pg {
+    flex: 1; min-height: 68px; padding: 10px 14px; border-radius: 6px; text-decoration: none;
+    display: flex; flex-direction: column; justify-content: center; gap: 2px; font-weight: 700;
+  }
+  .prev { border: 1.5px solid var(--ink); color: var(--ink); }
+  .next { background: var(--ink); color: var(--washi); align-items: flex-end; text-align: end; }
+  .next:hover { color: var(--washi); }
+  .next.soon { background: var(--washi-2); color: var(--ink); }
+  .next .small { color: inherit; opacity: 0.8; }
+</style>

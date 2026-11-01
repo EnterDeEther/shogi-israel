@@ -1,0 +1,160 @@
+---
+import Page from '../layouts/Page.astro';
+import { RANKS, XP, rankFor, stepXp } from '../lib/xp';
+import { pageExists } from '../lib/live';
+import { CURRICULUM, LEVEL_INFO, LEVELS } from '../lib/curriculum';
+import { LEVEL_COUNTS } from '../lib/level-counts';
+
+const courseLive = pageExists('/course/');
+const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>';
+const top = RANKS[RANKS.length - 1];
+let sum = 0;
+const levelEnd = LEVELS.map((l) => {
+  for (const u of CURRICULUM.filter((u) => u.level === l)) sum += u.steps.filter((s) => !s.optional?.includes('main')).reduce((t, s) => t + stepXp(s, LEVEL_COUNTS), XP.unit);
+  return rankFor(sum).rank.name;
+});
+
+const compare = [
+  ['מה היא מודדת', 'כמה למדת ותרגלת כאן באתר', 'כמה חזק ⟦אתה|את⟧ ⟦משחק|משחקת⟧ נגד אנשים'],
+  ['מאיפה היא באה', 'נקודות על שיעורים, בעיות מט ומשחקים נגד המחשב', 'תוצאות של משחקים מדורגים, טורנירים או מבחן'],
+  ['יכולה לרדת?', 'לא. נקודות לא נמחקות', 'דירוג באתר משחק עולה ויורד. דרגה רשמית לא יורדת'],
+  ['רשמית?', 'לא', 'רק תעודה של איגוד השוגי היפני'],
+  ['אפשר להשוות?', 'רק לעצמך, לפני ואחרי', 'רק בתוך אותו אתר או אותו ארגון'],
+];
+---
+<Page
+  title="דרגות בשוגי"
+  eyebrow="⟦הכר|הכירי⟧ את השוגי"
+  description="איך עובדות דרגות קיו ודאן בשוגי: חובבים, מקצוענים ודירוג אונליין, איך משיגים דרגה אמיתית, ולמה הדרגה במסלול הלימוד שלנו היא משהו אחר."
+>
+  <p class="lead">אולי כבר ראית אצלנו "עלית לדרגה 9 קיו". חשוב לנו להגיד ביושר מה זה אומר, ומה לא: הדרגה באתר סופרת כמה למדת כאן. היא לא אומרת כמה חזק ⟦אתה|את⟧ ⟦משחק|משחקת⟧, והיא לא דרגה רשמית.</p>
+
+  <div class="short">
+    <p class="short-h">בקצרה</p>
+    <ul>
+      <li><strong>בעולם</strong>, דרגה (קיו או דאן) מודדת כוח משחק. מקבלים אותה מתוצאות של משחקים נגד שחקנים אחרים.</li>
+      <li><strong>אצלנו</strong>, דרגה מודדת התקדמות בלימוד: נקודות על שיעורים, בעיות מט ומשחקים נגד המחשב.</li>
+      <li>3 דאן באתר הוא לא 3 דאן בליש׳וגי, וגם לא 3 דאן של איגוד השוגי היפני.</li>
+    </ul>
+  </div>
+
+  <h2 id="kyu-dan">קיו ודאן: איך קוראים דרגה</h2>
+  <p>בשוגי, כמו בג׳ודו ובגו, יש שני סוגי דרגות. מתחילים בדרגות <strong>קיו</strong> (<span lang="ja">級</span>), והמספר <em>יורד</em> ככל שמתחזקים: 15 קיו, 14 קיו, ועד 1 קיו. אחריהן באות דרגות <strong>דאן</strong> (<span lang="ja">段</span>), והמספר <em>עולה</em>: 1 דאן, 2 דאן, וכן הלאה.</p>
+  <ol class="ladder" aria-label="סדר הדרגות, מהחלשה לחזקה">
+    <li>15 קיו</li><li>…</li><li>1 קיו</li><li class="dan">1 דאן</li><li class="dan">2 דאן</li><li>…</li>
+  </ol>
+  <p>ל־1 דאן קוראים ביפנית <span lang="ja">初段</span> (שׁוֹדַאן), "הדאן הראשון". אצל רוב השחקנים זה רגע גדול: הסימן שעברו מ"לומדים לשחק" ל"יודעים לשחק".</p>
+  <p>חשוב לדעת: אין דרגה אחת לכל העולם. כל ארגון וכל אתר משחק מחלק דרגות לפי השיטה שלו, ולכן תמיד כדאי לשאול "דרגה של מי?".</p>
+
+  <h2 id="amateur">דרגות חובבים</h2>
+  <p>רוב שחקני השוגי בעולם הם חובבים. ביפן מקבלים דרגה בדרך כלל במועדון שוגי (<span lang="ja">道場</span>, דוֹג׳וֹ), לפי התוצאות נגד השחקנים שם, בטורנירים, ובשנים האחרונות גם באפליקציות ובאתרי משחק.</p>
+  <p>דרגה <strong>רשמית</strong> של חובבים היא תעודה של איגוד השוגי היפני (<span lang="ja">免状</span>, מֶנְג׳וֹ). על התעודה חותמים יושב ראש האיגוד ומחזיקי שני התארים הגדולים, מייג׳ין וריואו, והשם נרשם בספר הדרגות של האיגוד. היא עולה כסף, ולא מעט: ב־2015 תעודת 1 דאן עלתה יותר מ־20,000 ין.</p>
+  <p>אפשר לקבל אותה גם מחוץ ליפן. מאז 2015 משחקים ב־<a href="https://81dojo.com/" rel="noopener"><bdi dir="ltr">81Dojo</bdi></a>, אתר שוגי בינלאומי, ולפי התוצאות שם אפשר להזמין תעודה רשמית מהאיגוד, מ־5 קיו ועד 6 דאן.</p>
+
+  <h2 id="pro">המקצוענים: סולם אחר לגמרי</h2>
+  <p>ביפן השוגי הוא גם מקצוע. מי שרוצה להיות <strong>שחקן מקצועי</strong> נכנס בגיל צעיר לבית הספר למקצוענים של איגוד השוגי היפני (<span lang="ja">奨励会</span>, שׁוֹרֵייקַאי). הדרגות שם הן מ־6 קיו עד 3 דאן, והתנאים קשוחים: צריך להגיע ל־1 דאן עד גיל 21 ול־4 דאן עד גיל 26, אחרת עוזבים (עם כמה חריגים).</p>
+  <p>שחקני 3 דאן מתחרים בליגה שנערכת פעמיים בשנה, ורק <strong>שני המקומות הראשונים</strong> בכל ליגה עולים ל־4 דאן והופכים למקצוענים. מכאן הדרגות של המקצוענים הן מ־4 דאן ועד 9 דאן. עולים בהן לפי ניצחונות ותארים, ולא יורדים מהן אף פעם. התארים עצמם, כמו מייג׳ין, הם משהו נפרד: <a href="/history/#champions">על האלופים הגדולים</a> בעמוד ההיסטוריה.</p>
+  <p>כמה רחוק זה מחובבים? חובב בדרגת 3 עד 5 דאן נחשב בערך כמו 6 קיו בבית הספר למקצוענים, כלומר הדרגה <em>הנמוכה ביותר</em> שם. אז 4 דאן של מקצוען ו־4 דאן של חובב הם שני דברים שונים מאוד.</p>
+  <p>לשחקניות מקצועיות יש שיטת דרגות נפרדת. אחת מהן, קרולינה מפולין, גילתה את השוגי בחוברת של המנגה <span lang="en">Naruto</span> ולמדה לבד מהאינטרנט, עד שהפכה ב־2017 לשחקנית המקצועית הראשונה שאינה יפנית: <a href="/history/#world">הסיפור שלה</a>.</p>
+
+  <h2 id="online">דירוג באתרי משחק</h2>
+  <p>באתרי משחק יש <strong>דירוג</strong>: מספר שעולה כשמנצחים ויורד כשמפסידים. האתר מתרגם את הדירוג לדרגת קיו או דאן, לפי טבלה משלו.</p>
+  <ul>
+    <li><strong>ליש׳וגי:</strong> כולם מתחילים ב־<bdi dir="ltr">1500</bdi>, והדרגה מופיעה רק אחרי שהדירוג נרגע. הטבלה המלאה, דירוג מול דרגה, נמצאת <a href="/lishogi/#ratings">במדריך לליש׳וגי</a>. אלה דרגות של ליש׳וגי, לא דרגות רשמיות.</li>
+    <li><strong><bdi dir="ltr">81Dojo</bdi>:</strong> גם שם יש דירוג ודרגות משלו, והמשחקים שם יכולים להוביל לתעודה רשמית מהאיגוד היפני.</li>
+    <li><strong>אירופה:</strong> הפדרציה האירופית לשוגי (FESA) מדרגת שחקנים לפי טורנירים על לוח אמיתי באירופה. ישראל עוד לא חברה בה.</li>
+  </ul>
+  <p>דירוג של אתר אחד לא ניתן להשוואה לדירוג של אתר אחר. 1 דאן בליש׳וגי ו־1 דאן ב־<bdi dir="ltr">81Dojo</bdi> הם לא בדיוק אותו דבר.</p>
+
+  <h2 id="get-rated">איך מקבלים דרגה אמיתית</h2>
+  <ol class="steps">
+    <li><span class="n">1</span><span>לומדים את <a href="/rules/">החוקים הבסיסיים</a> ומשחקים כמה משחקים <a href="/play/">נגד המחשב</a>, עד שהחוקים יושבים.</span></li>
+    <li><span class="n">2</span><span>⟦פתח|פתחי⟧ חשבון חינמי בליש׳וגי או ב־<bdi dir="ltr">81Dojo</bdi> ⟦ושחק|ושחקי⟧ משחקים מדורגים נגד אנשים. אחרי כמה עשרות משחקים הדירוג נרגע, ואז הדרגה שמופיעה ליד השם שלך באמת אומרת משהו. <a href="/lishogi/">המדריך לליש׳וגי</a> עובר על הכול.</span></li>
+    <li><span class="n">3</span><span>רוצה תעודה רשמית? ⟦שחק|שחקי⟧ ב־<bdi dir="ltr">81Dojo</bdi> והזמן אותה מאיגוד השוגי היפני, בתשלום.</span></li>
+  </ol>
+  <p>מה מקדם דרגה? לשחק, ולהבין למה הפסדת. בעיות מט הן דרך האימון הנפוצה ביותר ביפן, והן מאמנות בדיוק את <a href="/learn/guide/#phases">סוף המשחק</a>, השלב שבו המשחק מוכרע: <a href="/tsume/">בעיות המט שלנו</a>.</p>
+
+  <h2 id="site">הדרגות כאן באתר</h2>
+  <p>ב{courseLive ? <a href="/course/">מסלול הלימוד האישי</a> : 'מסלול הלימוד האישי'} ⟦אתה|את⟧ ⟦צובר|צוברת⟧ נקודות על כל דבר ⟦שאתה|שאת⟧ ⟦משלים|משלימה⟧, והנקודות מעלות אותך בדרגה: {RANKS.length} דרגות, מ־{RANKS[0].name} ועד {top.name}. בחרנו בשמות של דרגות השוגי כי הם חלק מהתרבות של המשחק, ⟦וכשתגיע|וכשתגיעי⟧ לשחק בליש׳וגי הם כבר יהיו מוכרים. אבל אצלנו הם סימני דרך במסלול, לא יותר.</p>
+  <p>המסלול בנוי בשלוש רמות, כמו מפת השיעורים. ⟦כשתסיים|כשתסיימי⟧ את כל הצעדים של רמה, עם שלושה כוכבים, ⟦תגיע|תגיעי⟧ בערך לדרגה הזאת:</p>
+  <ul class="levels">
+    {LEVELS.map((l, i) => <li><strong>{LEVEL_INFO[l].title}</strong> ({LEVEL_INFO[l].goal}): <bdi>{levelEnd[i]}</bdi></li>)}
+  </ul>
+  <div class="table-wrap" tabindex="0" role="region" aria-label="דרגה באתר מול דרגה בעולם">
+    <table class="compare">
+      <thead><tr><th scope="col"><span class="visually-hidden">שאלה</span></th><th scope="col">דרגה באתר</th><th scope="col">דרגה בעולם</th></tr></thead>
+      <tbody>{compare.map(([q, site, world]) => <tr><th scope="row">{q}</th><td data-label="באתר">{site}</td><td data-label="בעולם">{world}</td></tr>)}</tbody>
+    </table>
+  </div>
+  <p>לכן שני המצבים האלה תקינים לגמרי: אפשר להגיע ל־1 דאן אצלנו ועדיין להיות בתחילת הדרך בליש׳וגי, ואפשר להיות שחקן חזק שרק התחיל את המסלול ועומד על 15 קיו.</p>
+  <p>ועוד דבר ביושר: הנקודות נספרות בדפדפן שלך, ולכן הן לא מוגנות מעריכה. זו אחת הסיבות שאין אצלנו טבלת מובילים לפי נקודות. הנקודות הן בשבילך, כדי לראות כמה עשית.</p>
+
+  <details class="more">
+    <summary>איך צוברים נקודות, וכמה צריך לכל דרגה</summary>
+    <ul class="small">
+      <li>כוכב בתרגול על הלוח: {XP.star} נקודות (עד 3 כוכבים בכל תרגיל)</li>
+      <li>שיעור בחוקים הבסיסיים: {XP.rules}</li>
+      <li>בעיית מט: {XP.tsume[1]} (מט ב־1), {XP.tsume[3]} (ב־3), {XP.tsume[5]} (ב־5), {XP.tsume[7]} (ב־7)</li>
+      <li>משחק ראשון שסיימת בכל רמה נגד המחשב: {XP.played}</li>
+      <li>ניצחון ראשון בכל רמה: {XP.won} כפול מספר הרמה</li>
+      <li>קריאת פרק במדריך מתוך המסלול: {XP.read}</li>
+      <li>בונוס על כל צעד שהשלמת במסלול: {XP.step}, ועל שלב שלם: {XP.unit}</li>
+    </ul>
+    <p class="small muted">כל דבר נספר פעם אחת: חזרה על תרגיל או בעיה שכבר פתרת לא מוסיפה נקודות.</p>
+    <div class="table-wrap" tabindex="0" role="region" aria-label="נקודות לכל דרגה">
+      <table class="small">
+        <thead><tr><th scope="col">דרגה באתר</th><th scope="col">נקודות</th></tr></thead>
+        <tbody>{RANKS.map((r) => <tr><td><span lang="ja" class="kanji" aria-hidden="true">{r.kanji}</span> {r.name}</td><td><bdi dir="ltr">{r.min.toLocaleString('he-IL')}</bdi></td></tr>)}</tbody>
+      </table>
+    </div>
+  </details>
+
+  <div class="cta">
+    {courseLive && <a class="btn" href="/course/"><span>למסלול הלימוד האישי</span><Fragment set:html={arrow} /></a>}
+    <a class="btn btn-ghost" href="/lishogi/#ratings">דרגות בליש׳וגי</a>
+  </div>
+
+  <details class="more sources">
+    <summary>מקורות</summary>
+    <ul class="small">
+      <li>בית הספר למקצוענים (6 קיו עד 3 דאן, גילאי 21 ו־26, ליגת 3 דאן פעמיים בשנה ושני העולים), דרגות המקצוענים 4 עד 9 דאן ותנאי העלייה, ההשוואה בין דרגות חובבים לבית הספר, ושיטת הדרגות של השחקניות: <a href="https://en.wikipedia.org/wiki/Professional_shogi_player" rel="noopener" lang="en">Wikipedia: Professional shogi player</a>.</li>
+      <li>תעודות רשמיות דרך 81Dojo (מ־2015, 5 קיו עד 6 דאן, החתימות והמחיר): <a href="https://groups.google.com/g/shogi-l/c/QpG7Dj8V0eY" rel="noopener" lang="en">SHOGI-L, 20 במרץ 2015</a>.</li>
+      <li>הדירוג והדרגות בליש׳וגי: <a href="https://lishogi.org/rating-ranks" rel="noopener"><bdi dir="ltr">lishogi.org/rating-ranks</bdi></a>.</li>
+      <li>FESA: <a href="https://fesashogi.eu/" rel="noopener" lang="en">fesashogi.eu</a>.</li>
+    </ul>
+  </details>
+</Page>
+
+<style>
+  .lead { font-size: 19px; color: var(--ink); }
+
+  .short { margin: 20px 0 8px; padding: 14px 18px 4px; border: 1.5px solid var(--rule); border-inline-start: 4px solid var(--seal); border-radius: 8px; background: var(--washi-2); }
+  .short-h { font-weight: 700; color: var(--ink) !important; margin-bottom: 6px !important; }
+
+  :global(.prose) .ladder { list-style: none; padding: 0; margin: 4px 0 16px; display: flex; flex-wrap: wrap; gap: 6px; }
+  :global(.prose) .ladder li { margin: 0; padding: 4px 12px; border: 1.5px solid var(--rule); border-radius: 999px; font-size: 15px; color: var(--ink); }
+  :global(.prose) .ladder li.dan { border-color: var(--seal); }
+
+  :global(.prose) .steps { list-style: none; padding: 0; margin: 0 0 16px; }
+  :global(.prose) .steps li { display: flex; gap: 12px; align-items: baseline; margin: 0 0 10px; }
+  .steps .n { flex: 0 0 28px; height: 28px; border-radius: 50%; background: var(--seal); color: #fff; display: inline-grid; place-items: center; font-weight: 700; font-size: 15px; }
+
+  .table-wrap { overflow-x: auto; margin: 8px 0 12px; }
+  table { border-collapse: collapse; min-width: 260px; width: 100%; }
+  th, td { padding: 6px 12px; border-bottom: 1px solid var(--rule); text-align: start; vertical-align: top; }
+  th { font-weight: 700; color: var(--ink); border-bottom-width: 1.5px; }
+  tbody th { border-bottom-width: 1px; white-space: nowrap; }
+  td { color: var(--ink-2); }
+  @media (max-width: 560px) {
+    .compare thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .compare tr { display: grid; grid-template-columns: 1fr 1fr; column-gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--rule); }
+    .compare th, .compare td { border: 0; padding: 2px 0; }
+    .compare th[scope=row] { grid-column: 1 / -1; }
+    .compare td::before { content: attr(data-label); display: block; font-size: 13px; font-weight: 700; color: var(--muted); }
+  }
+  .kanji { display: inline-block; min-width: 3.2em; color: var(--seal); }
+
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; margin: 24px 0 8px; }
+  .more { margin: 24px 0 16px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .more summary { cursor: pointer; padding: 14px 0; font-weight: 500; color: var(--muted); font-size: 15px; min-height: 24px; }
+</style>
