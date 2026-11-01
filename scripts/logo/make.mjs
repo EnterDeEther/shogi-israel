@@ -52,6 +52,12 @@ function tab() {
   </svg>`;
 }
 
+function badge() {
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <text x="50" y="50" text-anchor="middle" dominant-baseline="central" font-family="Shippori Mincho" font-weight="800" font-size="78" fill="${C.white}">将</text>
+  </svg>`;
+}
+
 const files = [
   ['logo-132.png', 132, logo()],
   ['logo-512.png', 512, logo()],
@@ -61,6 +67,7 @@ const files = [
   ['app-icon-192.png', 192, logo()],
   ['app-icon-maskable-192.png', 192, logo(C.washi, 0.72)],
   ['app-icon-maskable-512.png', 512, logo(C.washi, 0.72)],
+  ['push-badge-96.png', 96, badge()],
 ];
 
 const browser = await chromium.launch();
