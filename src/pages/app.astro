@@ -6,6 +6,7 @@ import PieceToggle from '../components/PieceToggle.astro';
 import HebrewFontSwitch from '../components/HebrewFontSwitch.astro';
 import SoundSetting from '../components/SoundSetting.astro';
 import GenderSetting from '../components/GenderSetting.astro';
+import PushSetting from '../components/PushSetting.astro';
 import { accountsEnabled } from '../lib/account-config';
 ---
 <Base title="האפליקציה" tabTitle="שוגי ישראל כאפליקציה" description="שוגי ישראל במסך הבית של הטלפון: משחק נגד המחשב, המסלול האישי וההגדרות, בלחיצה אחת." noindex>
@@ -29,6 +30,18 @@ import { accountsEnabled } from '../lib/account-config';
       </div>
     )}
 
+    <aside class="push-offer" data-push-offer hidden aria-labelledby="push-offer-h">
+      <span class="ico"><Icon name="bell" size={26} /></span>
+      <div>
+        <h2 id="push-offer-h">שנזכיר לך?</h2>
+        <p class="small">בעיית השבוע ביום ראשון, תזכורת להמשיך במסלול, חדשות מהקהילה. ⟦תבחר|תבחרי⟧ רק מה שמתאים לך, ואפשר לשנות בכל רגע.</p>
+        <div class="offer-btns">
+          <button type="button" class="btn" data-push-offer-yes><span>לבחירת התראות</span></button>
+          <button type="button" class="btn btn-ghost" data-push-offer-no><span>לא עכשיו</span></button>
+        </div>
+      </div>
+    </aside>
+
     <nav class="big" aria-label="מה עושים עכשיו">
       <a class="tile main" href="/course/" data-app-course>
         <span class="ico"><Icon name="course" size={30} /></span>
@@ -46,7 +59,7 @@ import { accountsEnabled } from '../lib/account-config';
         <summary>
           <span class="ico"><Icon name="settings" size={30} /></span>
           <span class="t">הגדרות</span>
-          <span class="h">מראה, סימון הכלים, צלילים</span>
+          <span class="h">מראה, סימון הכלים, צלילים, התראות</span>
           <svg class="chev" width="16" height="16" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
         </summary>
         <div class="set-body">
@@ -55,7 +68,8 @@ import { accountsEnabled } from '../lib/account-config';
           <div class="setting hfont-row"><p class="setting-label">גופן האותיות על הכלים</p><HebrewFontSwitch /></div>
           <div class="setting"><SoundSetting /></div>
           <div class="setting"><p class="setting-label">איך לפנות אליי</p><GenderSetting label="איך לפנות אליי" /></div>
-          {accountsEnabled && <p class="small"><a href="/account/" data-signed-in-only>עוד הגדרות בחשבון: התראות, מיילים, כינוי</a></p>}
+          <div class="setting push-row-wrap" id="push"><PushSetting id="app-push" /></div>
+          {accountsEnabled && <p class="small"><a href="/account/" data-signed-in-only>עוד הגדרות בחשבון: הפעמון, מיילים, כינוי</a></p>}
         </div>
       </details>
     </nav>
@@ -112,6 +126,7 @@ import { accountsEnabled } from '../lib/account-config';
   import { rankFor, xpBreakdown } from '../lib/xp';
   import { gameInProgress } from '../play/record';
   import { installWay, isStandalone, onInstallChange, promptInstall } from '../lib/install';
+  import { offerSeen, offerWanted, serverKey } from '../lib/push-client';
 
   const root = document.querySelector<HTMLElement>('[data-app]')!;
   const signedIn = () => accountsEnabled && hasStoredSession();
@@ -164,6 +179,20 @@ import { accountsEnabled } from '../lib/account-config';
     box.querySelectorAll<HTMLElement>('[data-way]').forEach((el) => { el.hidden = el.dataset.way !== way; });
   }
   root.querySelector('[data-app-prompt]')?.addEventListener('click', () => void promptInstall());
+
+  const settings = root.querySelector<HTMLDetailsElement>('#settings')!;
+  const openPush = () => {
+    settings.open = true;
+    requestAnimationFrame(() => document.getElementById('push')?.scrollIntoView({ block: 'center' }));
+  };
+  async function pushOffer() {
+    const card = root.querySelector<HTMLElement>('[data-push-offer]')!;
+    card.hidden = !offerWanted() || !(await serverKey());
+    card.querySelector('[data-push-offer-yes]')!.addEventListener('click', () => { offerSeen(); card.hidden = true; openPush(); });
+    card.querySelector('[data-push-offer-no]')!.addEventListener('click', () => { offerSeen(); card.hidden = true; });
+  }
+  void pushOffer();
+  if (location.hash === '#push') openPush();
 
   const refresh = () => { course(); play(); };
   refresh();
@@ -237,6 +266,18 @@ import { accountsEnabled } from '../lib/account-config';
   .setting:last-of-type { border-bottom: 0; }
   .setting-label { margin: 0 0 8px; font-weight: 700; }
   .set-body > p { margin: 8px 0 0; }
+
+  .push-offer {
+    display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; margin: 0 0 16px; padding: 16px;
+    border-radius: 20px; background: var(--surface); border: 1.5px solid var(--seal); box-shadow: var(--shadow-1);
+  }
+  .push-offer[hidden] { display: none; }
+  .push-offer .ico { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; background: color-mix(in srgb, var(--seal) 12%, transparent); color: var(--seal); }
+  .push-offer h2 { margin: 0 0 4px; font-size: 20px; }
+  .push-offer p { margin: 0 0 12px; line-height: 1.5; }
+  .offer-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+  .offer-btns .btn { min-height: 44px; font-size: 15px; padding: 0 14px; }
+  .push-row-wrap { scroll-margin-top: 80px; }
 
   .install { margin-top: 28px; padding: 18px; border-radius: 20px; border: 1.5px dashed var(--rule); scroll-margin-top: 80px; }
   .install h2 { margin: 0 0 6px; font-size: 22px; }

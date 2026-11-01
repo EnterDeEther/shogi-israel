@@ -1,0 +1,106 @@
+---
+import { PUSH_KINDS, PUSH_LABEL } from '../lib/push';
+interface Props { id: string; browserNote?: boolean }
+const { id, browserNote = false } = Astro.props;
+---
+<div class="push-setting" data-push-setting data-browser-note={browserNote ? '' : undefined} hidden>
+  <div data-push-on hidden>
+    <p class="push-title" id={`${id}-title`}>התראות בטלפון (רק אם ⟦תבחר|תבחרי⟧)</p>
+    <fieldset class="push-kinds" aria-labelledby={`${id}-title`}>
+      {PUSH_KINDS.map((k) => (
+        <label class="push-row" for={`${id}-${k}`}>
+          <span><strong>{PUSH_LABEL[k].title}</strong><span class="small muted">{PUSH_LABEL[k].sub}</span>
+            {k === 'course' && <span class="small muted" data-push-needs-account hidden>צריך חשבון, כדי שנדע מה הצעד הבא שלך. <a href="/account/?mode=signin">כניסה</a></span>}
+          </span>
+          <input type="checkbox" class="push-sw" id={`${id}-${k}`} data-push-kind={k} />
+        </label>
+      ))}
+    </fieldset>
+    <p class="small muted" data-push-status>לכל היותר התראה אחת ביום, אף פעם לא בשישי ובשבת.</p>
+  </div>
+  <p class="small muted" data-push-denied hidden>ההתראות חסומות בהגדרות הטלפון. כדי להדליק אותן, ⟦פתח|פתחי⟧ את <strong>הגדרות</strong> הטלפון ⟦ומצא|ומצאי⟧ את שוגי ישראל (באייפון: הגדרות ← עדכונים ← שוגי ישראל; באנדרואיד: לחיצה ארוכה על הסמל ← פרטי האפליקציה ← התראות).</p>
+  <p class="small muted" data-push-old hidden>הטלפון הזה לא יודע לקבל התראות מהאפליקציה. באייפון צריך iOS 16.4 ומעלה.</p>
+  <p class="small muted" data-push-browser hidden>התראות בטלפון (בעיית השבוע, תזכורת למסלול, חדשות) אפשר לבחור באפליקציה של שוגי ישראל. <a href="/app/#install">איך מתקינים</a></p>
+</div>
+
+<script>
+  import { accountsEnabled, hasStoredSession } from '../lib/account-config';
+  import { currentKinds, permission, pushHere, pushSupported, resync, saveKinds, serverKey } from '../lib/push-client';
+  import { isStandalone } from '../lib/install';
+  import { PUSH_KINDS, type PushKind, type PushKinds } from '../lib/push';
+  import { g } from '../lib/gender';
+
+  const boxes = [...document.querySelectorAll<HTMLElement>('[data-push-setting]')];
+  const signedIn = () => accountsEnabled && hasStoredSession();
+  const IDLE = 'לכל היותר התראה אחת ביום, אף פעם לא בשישי ובשבת.';
+
+  async function draw() {
+    const key = await serverKey();
+    const kinds = await currentKinds();
+    for (const box of boxes) {
+      const part = (n: string) => box.querySelector<HTMLElement>(`[data-push-${n}]`)!;
+      const inApp = isStandalone();
+      box.hidden = !key || (!inApp && !box.hasAttribute('data-browser-note'));
+      if (box.hidden) continue;
+      part('browser').hidden = inApp;
+      part('old').hidden = !inApp || pushSupported();
+      part('denied').hidden = !pushHere() || permission() !== 'denied';
+      part('on').hidden = !pushHere() || permission() === 'denied';
+      part('needs-account').hidden = signedIn();
+      for (const sw of box.querySelectorAll<HTMLInputElement>('[data-push-kind]')) {
+        const k = sw.dataset.pushKind as PushKind;
+        sw.checked = kinds[k];
+        sw.disabled = k === 'course' && !signedIn();
+      }
+    }
+  }
+
+  for (const box of boxes) {
+    const switches = [...box.querySelectorAll<HTMLInputElement>('[data-push-kind]')];
+    const status = box.querySelector<HTMLElement>('[data-push-status]')!;
+    switches.forEach((sw) => sw.addEventListener('change', async () => {
+      const kinds = Object.fromEntries(PUSH_KINDS.map((k) => [k, switches.find((x) => x.dataset.pushKind === k)!.checked])) as PushKinds;
+      switches.forEach((x) => { x.disabled = true; });
+      status.textContent = 'שומר…';
+      const res = await saveKinds(kinds);
+      status.textContent = res === 'ok'
+        ? (PUSH_KINDS.some((k) => kinds[k]) ? g('נשמר. אפשר לשנות בכל רגע, כאן.') : 'נשמר. לא נשלח התראות לטלפון הזה.')
+        : res === 'denied' ? g('הטלפון לא אישר התראות. ⟦נסה|נסי⟧ שוב, ⟦ובחלון שנפתח בחר|ובחלון שנפתח בחרי⟧ ״אישור״.')
+        : g('השמירה לא הצליחה. ⟦בדוק|בדקי⟧ שיש חיבור ⟦ונסה|ונסי⟧ שוב.');
+      await draw();
+      if (res !== 'ok') setTimeout(() => { status.textContent = IDLE; }, 8000);
+      document.dispatchEvent(new CustomEvent('push-changed'));
+    }));
+  }
+
+  if (boxes.length) {
+    void draw();
+    void resync();
+    document.addEventListener('push-changed', () => void draw());
+    addEventListener('pageshow', () => void draw());
+  }
+</script>
+
+<style>
+  .push-setting { width: 100%; }
+  .push-setting[hidden], .push-setting [hidden] { display: none; }
+  .push-setting p { margin: 8px 0 0; }
+  .push-kinds { border: 1px solid var(--rule); border-radius: 8px; padding: 4px 16px; margin: 0; background: var(--washi-2); }
+  .push-setting .push-title { margin: 0 0 8px; font-weight: 700; }
+  .push-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 56px; padding: 8px 0; border-bottom: 1px solid var(--rule); cursor: pointer; }
+  .push-row:last-child { border-bottom: 0; }
+  .push-row > span { display: flex; flex-direction: column; }
+  .push-sw {
+    appearance: none; flex: none; width: 44px; height: 26px; border-radius: 13px; margin: 0; cursor: pointer; position: relative;
+    background: var(--rule); border: 1.5px solid var(--ink-2); transition: background 0.15s;
+  }
+  .push-sw::after {
+    content: ''; position: absolute; top: 2px; inset-inline-start: 2px; width: 19px; height: 19px; border-radius: 50%;
+    background: var(--washi); border: 1px solid var(--ink-2); transition: inset-inline-start 0.15s;
+  }
+  .push-sw:checked { background: var(--seal); border-color: var(--seal); }
+  .push-sw:checked::after { inset-inline-start: 19px; border-color: var(--seal); }
+  .push-sw:disabled { opacity: 0.45; cursor: not-allowed; }
+  .push-sw:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .push-sw, .push-sw::after { transition: none; } }
+</style>

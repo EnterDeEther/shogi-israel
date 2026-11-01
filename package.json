@@ -39,6 +39,7 @@
     "astro": "^7.4.2",
     "fairy-stockfish-nnue.wasm": "1.1.12",
     "shogiground": "^0.10.3",
-    "shogiops": "~0.21.0"
+    "shogiops": "~0.21.0",
+    "web-push": "^3.6.7"
   }
 }
