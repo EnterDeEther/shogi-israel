@@ -8,6 +8,7 @@ const { tip = false } = Astro.props;
   <div class="seg-tip">
     <div class="seg" role="group" aria-label="סימון הכלים">
       <button type="button" data-pieces-set="hebrew" aria-pressed="true">עברית</button>
+      <button type="button" data-pieces-set="chess" aria-pressed="false">שחמט</button>
       <button type="button" data-pieces-set="letters" aria-pressed="false">אנגלית</button>
       <button type="button" data-pieces-set="kanji" aria-pressed="false">קאנג׳י</button>
     </div>
@@ -16,6 +17,7 @@ const { tip = false } = Astro.props;
 ) : (
   <div class="seg" role="group" aria-label="סימון הכלים">
     <button type="button" data-pieces-set="hebrew" aria-pressed="true">עברית</button>
+    <button type="button" data-pieces-set="chess" aria-pressed="false">שחמט</button>
     <button type="button" data-pieces-set="letters" aria-pressed="false">אנגלית</button>
     <button type="button" data-pieces-set="kanji" aria-pressed="false">קאנג׳י</button>
   </div>

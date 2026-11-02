@@ -25,6 +25,7 @@ export const LETTER: Record<PieceType, string> = { K: 'K', R: 'R', B: 'B', G: 'G
 const KANJI: Record<PieceType, string> = { K: '王', R: '飛', B: '角', G: '金', S: '銀', N: '桂', L: '香', P: '歩' };
 const HEBREW: Record<PieceType, string> = { K: 'מ', R: 'צ', B: 'רץ', G: 'ז', S: 'כ', N: 'פ', L: 'ר', P: 'ח' };
 const HEBREW_PROMOTED: Partial<Record<PieceType, string>> = { R: 'ד', B: 'ס', S: 'כ+', N: 'פ+', L: 'ר+', P: 'ח+' };
+const CHESS: Partial<Record<PieceType, string>> = { K: '♚\uFE0E', R: '♜\uFE0E', B: '♝\uFE0E', N: '♞\uFE0E', P: '♟\uFE0E' };
 const KANJI_PROMOTED: Partial<Record<PieceType, string>> = { R: '龍', B: '馬', S: '全', N: '圭', L: '杏', P: 'と' };
 
 const NAME_HE: Record<PieceType, string> = {
@@ -45,6 +46,12 @@ export function letterOf(p: Piece): string {
 
 export function hebrewOf(p: Piece): string {
   return p.promoted ? (HEBREW_PROMOTED[p.type] ?? HEBREW[p.type]) : HEBREW[p.type];
+}
+
+export function chessOf(p: Piece): string {
+  const c = CHESS[p.type];
+  if (!c) return hebrewOf(p);
+  return p.promoted ? c + '+' : c;
 }
 
 export function kanjiOf(p: Piece): string {

@@ -69,10 +69,11 @@ export function rich(text: string): DocumentFragment {
 }
 function inline(text: string): DocumentFragment {
   const f = document.createDocumentFragment();
-  text.split(/(\*\*[^*]+\*\*|\+?[KRBGSNLP](?:\d\d)?[-x*]\d\d\+?)/).forEach((part, i) => {
+  text.split(/(\*\*[^*]+\*\*|\{\+?[KRBGSNLP]\}|\+?[KRBGSNLP](?:\d\d)?[-x*]\d\d\+?)/).forEach((part, i) => {
     if (!part) return;
     if (i % 2 === 0) f.append(part);
     else if (part.startsWith('**')) f.append(el('strong', {}, part.slice(2, -2)));
+    else if (part.startsWith('{')) f.append(el('span', { class: 'pchip', 'data-p': part.slice(1, -1), 'aria-hidden': 'true' }));
     else f.append(el('bdi', { dir: 'ltr' }, part));
   });
   return f;
@@ -713,6 +714,7 @@ export function pieceSetSwitch(): HTMLElement {
   const set = currentPieceSet();
   return el('div', { class: 'seg', role: 'group', 'aria-label': i18n('il_pieceSet') },
     el('button', { type: 'button', 'data-pieces-set': 'hebrew', 'aria-pressed': String(set === 'hebrew') }, i18n('il_hebrew')),
+    el('button', { type: 'button', 'data-pieces-set': 'chess', 'aria-pressed': String(set === 'chess') }, i18n('il_chessSet')),
     el('button', { type: 'button', 'data-pieces-set': 'letters', 'aria-pressed': String(set === 'letters') }, i18n('il_letters')),
     el('button', { type: 'button', 'data-pieces-set': 'kanji', 'aria-pressed': String(set === 'kanji') }, i18n('il_kanji')),
   );

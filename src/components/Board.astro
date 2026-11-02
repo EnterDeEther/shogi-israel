@@ -1,5 +1,5 @@
 ---
-import { parseSfen, describe, letterOf, kanjiOf, hebrewOf, squareLabel, type PieceType } from '../lib/sfen';
+import { parseSfen, describe, letterOf, kanjiOf, hebrewOf, chessOf, squareLabel, type PieceType } from '../lib/sfen';
 import PieceToggle from './PieceToggle.astro';
 
 interface Props {
@@ -21,6 +21,10 @@ const ranksDigit = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 const ranksKanji = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
 const isHoshi = (f: number, r: number) => (f === 7 || f === 4) && (r === 3 || r === 6);
 const desc = describe(pos);
+const chessSize = (t: string) => {
+  const plain = t.replace(/\uFE0E/g, '');
+  return plain.length > 1 ? 'two' : /[\u2654-\u265F]/.test(plain) ? 'sym' : '';
+};
 const handOf = (side: 'sente' | 'gote') =>
   Object.entries(pos.hands[side]).map(([t, n]) => ({ t, n }));
 const goteHand = handOf('gote');
@@ -36,7 +40,7 @@ const handPieces = (hand: { t: string; n: number }[], side: 'sente' | 'gote') =>
     </div>
   )}
   {goteHand.length > 0 && (
-    <p class="hand gote small" aria-hidden="true">ביד של המשיב: {handPieces(goteHand, 'gote').map(({ n, p }, i) => <>{i > 0 && ' '}<bdi dir="ltr" class="hp"><span class="hh" dir="rtl">{hebrewOf(p)}</span><span class="hlt">{letterOf(p)}</span><span class="hk" lang="ja">{kanjiOf(p)}</span>×{n}</bdi></>)}</p>
+    <p class="hand gote small" aria-hidden="true">ביד של המשיב: {handPieces(goteHand, 'gote').map(({ n, p }, i) => <>{i > 0 && ' '}<bdi dir="ltr" class="hp"><span class="hh" dir="rtl">{hebrewOf(p)}</span><span class="hc" dir="rtl">{chessOf(p)}</span><span class="hlt">{letterOf(p)}</span><span class="hk" lang="ja">{kanjiOf(p)}</span>×{n}</bdi></>)}</p>
   )}
   <div class="bw" dir="ltr">
     <div class="files" aria-hidden="true">{files.map((f) => <span>{f}</span>)}</div>
@@ -51,6 +55,7 @@ const handPieces = (hand: { t: string; n: number }[], side: 'sente' | 'gote') =>
           {s.piece && (
             <span class:list={['pc', { g: s.piece.side === 'gote', pro: s.piece.promoted }]} data-t={(s.piece.promoted ? '+' : '') + s.piece.type}>
               <span class:list={['ph', { two: hebrewOf(s.piece).length > 1, crown: s.piece.type === 'K' }]} dir="rtl">{s.piece.type === 'K' && <svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7 10 .8 14.4 7 19 3.2 17.2 11.2H2.8Z" /></svg>}<span>{hebrewOf(s.piece)}</span></span>
+              <span class:list={['pcs', chessSize(chessOf(s.piece))]} dir="rtl">{chessOf(s.piece)}</span>
               <span class="pl">{letterOf(s.piece)}</span>
               <span class="pk" lang="ja">{kanjiOf(s.piece)}</span>
             </span>
@@ -64,7 +69,7 @@ const handPieces = (hand: { t: string; n: number }[], side: 'sente' | 'gote') =>
   </div>
   <p class="board-fb" data-board-fb role="status" aria-live="polite"></p>
   {senteHand.length > 0 && (
-    <p class="hand sente small" aria-hidden="true">ביד של הפותח: {handPieces(senteHand, 'sente').map(({ n, p }, i) => <>{i > 0 && ' '}<bdi dir="ltr" class="hp"><span class="hh" dir="rtl">{hebrewOf(p)}</span><span class="hlt">{letterOf(p)}</span><span class="hk" lang="ja">{kanjiOf(p)}</span>×{n}</bdi></>)}</p>
+    <p class="hand sente small" aria-hidden="true">ביד של הפותח: {handPieces(senteHand, 'sente').map(({ n, p }, i) => <>{i > 0 && ' '}<bdi dir="ltr" class="hp"><span class="hh" dir="rtl">{hebrewOf(p)}</span><span class="hc" dir="rtl">{chessOf(p)}</span><span class="hlt">{letterOf(p)}</span><span class="hk" lang="ja">{kanjiOf(p)}</span>×{n}</bdi></>)}</p>
   )}
   {caption && <figcaption class="cap">{caption}</figcaption>}
   <details class="alt">
@@ -80,7 +85,7 @@ const handPieces = (hand: { t: string; n: number }[], side: 'sente' | 'gote') =>
     .board-fig, .board-fig.compact { max-width: none; }
     .bw { width: 100vw; margin-inline: calc(50% - 50vw); padding-left: 2px; grid-template-columns: 1fr 13px; gap: 1px; }
   }
-  .board-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+  .board-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; margin-bottom: 10px; }
   .bw { display: grid; grid-template-columns: 1fr 18px; grid-template-rows: 18px auto; gap: 2px; }
   .files { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); font: 500 11px/18px var(--f-body); color: var(--muted); text-align: center; }
   .ranks { display: grid; grid-template-rows: repeat(9, minmax(0, 1fr)); font: 500 11px var(--f-body); color: var(--muted); align-items: center; text-align: center; }
@@ -125,14 +130,19 @@ const handPieces = (hand: { t: string; n: number }[], side: 'sente' | 'gote') =>
   .ph.two { font-size: clamp(11px, 3.6vw, 16px); }
   .ph.crown { margin-top: -4%; font-size: clamp(11px, 3.7vw, 17px); }
   .ph svg { width: 1.05em; height: auto; fill: currentColor; }
-  .pc.pro .ph, .pc.pro .pl, .pc.pro .pk { color: var(--piece-seal); }
-  .pl, .pk { display: none; }
+  .pc.pro .ph, .pc.pro .pl, .pc.pro .pk, .pc.pro .pcs { color: var(--piece-seal); }
+  .pl, .pk, .pcs { display: none; }
+  .pcs { position: relative; z-index: 1; font: var(--fw-piece) clamp(12px, 4.2vw, 19px)/1 var(--f-chess), var(--f-piece); letter-spacing: -0.5px; unicode-bidi: isolate; }
+  .pcs.sym { font-size: clamp(16px, 5.6vw, 25px); }
+  .pcs.two { font-size: clamp(11px, 3.6vw, 16px); }
+  :global(html[data-pieces="chess"]) .ph { display: none; }
+  :global(html[data-pieces="chess"]) .pcs { display: inline; }
   .pk { font-family: var(--f-kanji); font-weight: 800; }
   :global(html[data-pieces="letters"]) .ph { display: none; }
   :global(html[data-pieces="letters"]) .pl { display: inline; }
   :global(html[data-pieces="kanji"]) .ph { display: none; }
   :global(html[data-pieces="kanji"]) .pk { display: inline; }
-  .kanji .ph, .kanji .pl { display: none !important; }
+  .kanji .ph, .kanji .pl, .kanji .pcs { display: none !important; }
   .kanji .pk { display: inline !important; }
 
   .bd:global(.live) .sq { cursor: pointer; -webkit-tap-highlight-color: transparent; }
@@ -159,12 +169,15 @@ const handPieces = (hand: { t: string; n: number }[], side: 'sente' | 'gote') =>
 
   .hand { margin: 6px 0; color: var(--muted); }
   .hh { font-family: var(--f-piece); font-weight: var(--fw-piece); }
-  .hlt, .hk { display: none; }
+  .hlt, .hk, .hc { display: none; }
+  .hc { font-family: var(--f-chess), var(--f-piece); font-weight: var(--fw-piece); }
+  :global(html[data-pieces="chess"]) .hh { display: none; }
+  :global(html[data-pieces="chess"]) .hc { display: inline; }
   .hk { font-family: var(--f-kanji); font-weight: 800; }
   :global(html[data-pieces="letters"]) .hh, :global(html[data-pieces="kanji"]) .hh { display: none; }
   :global(html[data-pieces="letters"]) .hlt { display: inline; }
   :global(html[data-pieces="kanji"]) .hk { display: inline; }
-  .kanji .hh, .kanji .hlt { display: none !important; }
+  .kanji .hh, .kanji .hlt, .kanji .hc { display: none !important; }
   .kanji .hk { display: inline !important; }
   .cap { margin-top: 10px; font-size: 15px; color: var(--muted); line-height: 1.6; }
   .alt { margin-top: 8px; font-size: 15px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
