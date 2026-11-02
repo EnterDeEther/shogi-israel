@@ -2,26 +2,12 @@ import { LEVEL_COUNTS } from './level-counts';
 import { buildInbox, openGameFrom, unread, type InboxNote, type Notice } from './inbox';
 import { readLocal, updateInbox } from './progress-local';
 import { INBOX_READ_MAX } from './progress-sync';
-
-const NOTICES_KEY = 'shogi-il.inbox.notices';
-const NOTICES_TTL = 30 * 60 * 1000;
+import { isLiveNews } from './news';
+import { loadNews } from './news-data';
 
 async function loadNotices(): Promise<Notice[]> {
-  try {
-    const cached = JSON.parse(sessionStorage.getItem(NOTICES_KEY) || 'null');
-    if (cached && Date.now() - cached.at < NOTICES_TTL && Array.isArray(cached.list)) return cached.list;
-  } catch { }
-  try {
-    const { supabase } = await import('./account');
-    const now = new Date().toISOString();
-    const { data, error } = await supabase().from('notices').select('id, title, body, url')
-      .lte('starts_at', now).or(`ends_at.is.null,ends_at.gt.${now}`).order('starts_at', { ascending: false }).limit(5);
-    if (error) return [];
-    try { sessionStorage.setItem(NOTICES_KEY, JSON.stringify({ at: Date.now(), list: data })); } catch { }
-    return data ?? [];
-  } catch {
-    return [];
-  }
+  const now = Date.now();
+  return (await loadNews()).filter((n) => isLiveNews(n, now)).slice(0, 5);
 }
 
 function openGame() {

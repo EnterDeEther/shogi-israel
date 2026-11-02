@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import Board from '../components/Board.astro';
 import LearnerHome from '../components/LearnerHome.astro';
+import NewsBar from '../components/NewsBar.astro';
 import Icon from '../components/Icon.astro';
 import { getCollection } from 'astro:content';
 import { RULES_COURSE, pad } from '../lib/course';
@@ -44,6 +45,7 @@ if (hasCourse) Astro.csp?.insertScriptHash(`sha256-${createHash('sha256').update
     </>
   )}
 
+  <NewsBar class="wrap" />
   <section class="hero wrap" data-newcomer>
     <div class="hero-text">
       <p class="eyebrow">הקהילה הישראלית של השוגי, השחמט היפני</p>

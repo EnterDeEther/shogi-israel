@@ -3,6 +3,7 @@ import { curriculumFor, nextStep, stageDone, stepHref, KIND_LABEL } from './curr
 import type { InboxGroup, SyncedProgress } from './progress-sync';
 import { rankFor, xpBreakdown } from './xp';
 import { weekIndex, weekPuzzle, weekStreak, weeksHe } from '../tsume/week';
+import { newsCta, newsHref, plainNews, type NewsRow } from './news';
 
 export type InboxKind = 'news' | 'rank' | 'week' | 'streak' | 'next' | 'stage' | 'game';
 
@@ -16,7 +17,7 @@ export interface InboxNote {
   sub?: string;
 }
 
-export interface Notice { id: number; title: string; body?: string | null; url?: string | null }
+export type Notice = Pick<NewsRow, 'id' | 'title' | 'body' | 'url' | 'kind' | 'cta_label'>;
 
 export interface OpenGame { id: string; level: number; moves: number }
 
@@ -46,7 +47,8 @@ export function buildInbox(p: SyncedProgress, ctx: InboxContext): InboxNote[] {
   const notes: InboxNote[] = [];
 
   for (const n of ctx.notices ?? []) {
-    notes.push({ id: `news:${n.id}`, kind: 'news', kanji: '報', text: n.body ? `${n.title}: ${n.body}` : n.title, href: n.url || '/', cta: 'לפרטים' });
+    const text = plainNews(n.title);
+    notes.push({ id: `news:${n.id}`, kind: 'news', kanji: '報', text: n.body ? `${text} ${n.body}` : text, href: newsHref(n), cta: newsCta(n) });
   }
 
   const { rank, next } = rankFor(xpBreakdown(p, ctx.levelCounts).total);
