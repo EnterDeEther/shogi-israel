@@ -8,6 +8,7 @@ import SoundSetting from '../components/SoundSetting.astro';
 import GenderSetting from '../components/GenderSetting.astro';
 import PushSetting from '../components/PushSetting.astro';
 import NewsBar from '../components/NewsBar.astro';
+import FaqDialog from '../components/FaqDialog.astro';
 import { accountsEnabled } from '../lib/account-config';
 import { APP_TOUR_URL } from '../lib/tour';
 ---
@@ -77,7 +78,7 @@ import { APP_TOUR_URL } from '../lib/tour';
         </div>
       </details>
     </nav>
-    <a class="faq-row" href="/what-is-shogi/"><Icon name="question" size={22} /><span>שאלות נפוצות</span><span class="small muted">חוקים, שחמט, איפה משחקים</span></a>
+    <a class="faq-row" href="/what-is-shogi/" data-faq-open><Icon name="question" size={22} /><span>שאלות נפוצות</span><span class="small muted">חוקים, שחמט, איפה משחקים</span></a>
 
     <section class="install" id="install" data-app-install hidden aria-labelledby="install-h">
       <h2 id="install-h">שוגי ישראל במסך הבית</h2>
@@ -124,6 +125,7 @@ import { APP_TOUR_URL } from '../lib/tour';
     </section>
 
     <p class="more small"><a href="/">לאתר המלא</a></p>
+    <FaqDialog />
   </div>
 </Base>
 

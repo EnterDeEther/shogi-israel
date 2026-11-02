@@ -1,0 +1,62 @@
+---
+import { FAQ } from '../lib/shogi-faq';
+import { HOME_FAQ } from '../lib/home-story';
+
+const first = HOME_FAQ.map((id) => FAQ.find((f) => f.id === id)).filter((f) => !!f);
+const rest = FAQ.filter((f) => !HOME_FAQ.includes(f.id));
+---
+<dialog class="faq-sheet" data-faq-dialog aria-labelledby="faq-sheet-h">
+  <div class="faq-head">
+    <h2 id="faq-sheet-h">שאלות נפוצות</h2>
+    <button type="button" class="faq-x" data-faq-close aria-label="סגירה">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </button>
+  </div>
+  <div class="faq-body">
+    {[...first, ...rest].map((f) => (
+      <details>
+        <summary>{f.q}</summary>
+        <p set:html={f.a} />
+      </details>
+    ))}
+    <p class="faq-all"><a href="/what-is-shogi/">כל התשובות בדף אחד ←</a></p>
+  </div>
+</dialog>
+
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>('[data-faq-dialog]');
+  if (dialog && typeof dialog.showModal === 'function') {
+    document.addEventListener('click', (e) => {
+      const opener = (e.target as HTMLElement).closest('[data-faq-open]');
+      if (!opener) return;
+      e.preventDefault();
+      dialog.showModal();
+      dialog.querySelector<HTMLElement>('summary')?.focus();
+    });
+    dialog.querySelector('[data-faq-close]')?.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+  }
+</script>
+
+<style>
+  .faq-sheet { width: min(760px, calc(100vw - 24px)); max-height: 88dvh; padding: 0; border: 1px solid var(--glass-edge); border-radius: 20px; background: var(--surface); color: var(--ink); box-shadow: var(--shadow-glass); overflow: hidden; }
+  .faq-sheet[open] { display: flex; flex-direction: column; }
+  .faq-sheet::backdrop { background: rgba(10, 8, 4, 0.45); }
+  :global(html:has(.faq-sheet[open])) { overflow: hidden; }
+  .faq-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 14px 10px 20px; border-bottom: 1px solid var(--rule); }
+  .faq-head h2 { margin: 0; font-size: 26px; }
+  .faq-x { display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 999px; background: transparent; color: var(--ink); cursor: pointer; }
+  .faq-x:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); }
+  .faq-body { overflow-y: auto; overscroll-behavior: contain; padding: 4px 20px 18px; }
+  details { border-bottom: 1px solid var(--rule); }
+  summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; font-weight: 700; font-size: 18px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; flex: none; font: 400 26px/1 var(--f-body); color: var(--seal); transition: rotate .2s; }
+  details[open] summary::after { rotate: 45deg; }
+  details p { margin: 0; padding-bottom: 16px; color: var(--ink-2); line-height: 1.65; }
+  .faq-all { margin: 14px 0 0; }
+  .faq-all a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; }
+  @media (max-width: 600px) {
+    .faq-sheet { width: 100vw; max-width: 100vw; max-height: 90dvh; margin: auto 0 0; border-radius: 20px 20px 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  }
+</style>
