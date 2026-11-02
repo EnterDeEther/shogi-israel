@@ -1,0 +1,32 @@
+<a class="to-top" href="#top" data-to-top aria-label="חזרה למעלה" title="חזרה למעלה" hidden>
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"></path></svg>
+</a>
+
+<script>
+  const btn = document.querySelector<HTMLAnchorElement>('[data-to-top]');
+  if (btn) {
+    const show = () => { btn.hidden = scrollY < innerHeight * 1.2; };
+    addEventListener('scroll', show, { passive: true });
+    show();
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: still ? 'auto' : 'smooth' });
+    });
+  }
+</script>
+
+<style>
+  .to-top {
+    position: fixed; z-index: 15; left: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    display: grid; place-items: center; width: 46px; height: 46px; border-radius: 999px;
+    background: var(--glass); color: var(--ink); box-shadow: var(--shadow-glass); border: 1px solid var(--glass-edge);
+    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); text-decoration: none;
+    transition: opacity .2s ease, translate .2s var(--ease-out), visibility .2s;
+  }
+  .to-top:hover { color: var(--seal); }
+  .to-top[hidden] { display: grid; opacity: 0; translate: 0 12px; pointer-events: none; visibility: hidden; }
+  :global(html.tour-on) .to-top, :global(html.app-locked) .to-top { display: none; }
+  :global(html[data-in-flow]) .to-top { opacity: 0; translate: 0 12px; pointer-events: none; visibility: hidden; }
+  @media (prefers-reduced-motion: reduce) { .to-top { transition: none; } }
+</style>

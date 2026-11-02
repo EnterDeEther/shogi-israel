@@ -1,0 +1,44 @@
+---
+import { HOME_FAQ } from '../lib/home-story';
+import { FAQ } from '../lib/shogi-faq';
+import { TOUR_URL } from '../lib/tour';
+
+const faq = HOME_FAQ.map((id) => FAQ.find((f) => f.id === id)).filter((f) => !!f);
+---
+<section data-snap class="scene wrap home-faq" id="faq" data-newcomer aria-labelledby="story-faq-h">
+  <div class="scene-head rv"><h2 id="story-faq-h">שאלות נפוצות</h2></div>
+  <div class="faq">
+    {faq.map((f) => (
+      <details>
+        <summary>{f.q}</summary>
+        <p set:html={f.a} />
+      </details>
+    ))}
+  </div>
+  <div class="endrow">
+    <a href="/what-is-shogi/">לכל השאלות ←</a>
+    <a class="btn btn-ghost" href={TOUR_URL} data-tour-start>מה יש באתר? סיור קצר</a>
+  </div>
+</section>
+
+<style>
+  .scene { margin-top: 56px; scroll-snap-align: start; scroll-snap-stop: always; }
+  .scene-head { display: grid; gap: 6px; margin-bottom: 8px; }
+  .scene-head h2 { font-size: clamp(30px, 7vw, 44px); }
+  .faq { display: grid; border-top: 1px solid var(--rule); margin-top: 12px; max-width: 760px; }
+  .faq details { border-bottom: 1px solid var(--rule); }
+  .faq summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; font-weight: 700; font-size: 18px; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: "+"; flex: none; font: 400 26px/1 var(--f-body); color: var(--seal); transition: rotate .2s; }
+  .faq details[open] summary::after { rotate: 45deg; }
+  .faq details p { margin: 0; padding-bottom: 16px; color: var(--ink-2); line-height: 1.65; }
+  .endrow { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; margin-top: 18px; }
+  .endrow > a:first-child { display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .rv { animation: rise linear both; animation-timeline: view(); animation-range: entry 0% entry 55%; }
+    }
+  }
+  @keyframes rise { from { opacity: 0; translate: 0 28px; } to { opacity: 1; translate: 0 0; } }
+</style>

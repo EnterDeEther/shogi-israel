@@ -7,21 +7,16 @@ import { settingsHref } from './settings-place';
 import { WEEK_LENGTH, weekIndex, weekPuzzle } from '../tsume/week';
 import { readLocal, updateInbox } from './progress-local';
 import { INBOX_READ_MAX } from './progress-sync';
+import { hasActivity } from './visitor';
 
 const SPEED: NewsSpeed = 'normal';
 const LATE_MS = 1500;
 const REST_KEY = 'shogi-il.news.rest';
 const isInstalled = () => matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
-const LEARNER_KEYS = ['shogi-il.learn.progress', 'shogi-il.tsume.solved', 'shogi-il.play.history'];
 
 function returning(): boolean {
   if (document.documentElement.hasAttribute('data-learner')) return true;
-  try {
-    const ls = localStorage;
-    if (LEARNER_KEYS.some((k) => { const v = ls.getItem(k); return !!v && v !== '[]' && v !== '{}'; })) return true;
-    for (let i = 0; i < ls.length; i++) if ((ls.key(i) || '').startsWith('done:')) return true;
-  } catch { }
-  return false;
+  try { return hasActivity(localStorage); } catch { return false; }
 }
 
 function markRead(ids: string[]) {
