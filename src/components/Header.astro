@@ -10,7 +10,7 @@ const here = (l: NavLink) => (isCurrent(l, path) ? 'page' : undefined);
 const ext = (l: NavLink) => (l.external ? { rel: 'noopener', target: '_blank' } : {});
 const tsume = import.meta.glob<{ default: unknown[] }>('../tsume/data/mate*.json', { eager: true });
 const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length ?? 0;
-const PLAY: NavLink = { href: '/play/', label: 'משחק נגד המחשב' };
+const PLAY: NavLink = { href: '/play/', label: '⟦שחק|שחקי⟧ עכשיו' };
 const COURSE: NavLink = { href: '/course/', label: 'מסלול לימוד אישי' };
 const quick = isLive(PLAY) && isLive(COURSE);
 const SETTINGS: NavLink = { href: '/app/#settings', label: 'הגדרות' };
@@ -48,7 +48,7 @@ const DESK_SETTINGS: NavLink = { href: '/settings/', label: 'הגדרות' };
 
     {quick && (
       <div class="quick" data-tour="quick">
-        <a class="quick-btn" href={PLAY.href} data-quick-play aria-current={here(PLAY)} aria-label="משחק נגד המחשב" title="משחק נגד המחשב">
+        <a class="quick-btn" href={PLAY.href} data-quick-play aria-current={here(PLAY)} aria-label="⟦שחק|שחקי⟧ עכשיו" title="⟦שחק|שחקי⟧ עכשיו">
           <span class="quick-ico"><Icon name="cpu" size={22} /><span class="quick-dot" data-quick-dot hidden></span></span>
           <span class="quick-cap" aria-hidden="true">משחק</span>
         </a>
@@ -99,8 +99,8 @@ const DESK_SETTINGS: NavLink = { href: '/settings/', label: 'הגדרות' };
           <div class="quick-tiles">
             <a class="tile" href={PLAY.href} data-quick-play aria-current={here(PLAY)}>
               <span class="ico"><Icon name="cpu" /></span>
-              <span class="label" data-quick-title>משחק נגד המחשב</span>
-              <span class="hint" data-quick-hint>עשר רמות, ישר בדפדפן</span>
+              <span class="label" data-quick-title>⟦שחק|שחקי⟧ עכשיו</span>
+              <span class="hint" data-quick-hint>נגד המחשב, עשר רמות</span>
             </a>
             <a class="tile" href={COURSE.href} data-quick-course aria-current={here(COURSE)}>
               <span class="ico"><Icon name="course" /></span>
@@ -439,7 +439,7 @@ const DESK_SETTINGS: NavLink = { href: '/settings/', label: 'הגדרות' };
     setAll('[data-quick-play]', (a) => {
       a.href = game ? '/play/' : '/play/?new';
       if (game) say(a, '⟦המשך|המשיכי⟧ את המשחק', game.moves ? `רמה ${game.level}, אחרי ${game.moves} מהלכים` : `רמה ${game.level}, לפני המהלך הראשון`);
-      else say(a, 'משחק נגד המחשב', 'עשר רמות, ישר בדפדפן');
+      else say(a, '⟦שחק|שחקי⟧ עכשיו', 'נגד המחשב, עשר רמות');
     });
     document.querySelector('[data-quick-dot]')?.toggleAttribute('hidden', !game);
   }

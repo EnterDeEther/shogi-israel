@@ -60,7 +60,7 @@ export const NAV: NavItem[] = [
     icon: 'play',
     blurb: 'נגד המחשב כאן באתר, או מול שחקנים מכל העולם.',
     links: [
-      { href: '/play/', label: 'נגד המחשב', hint: 'משחק מלא, ישר בדפדפן', icon: 'cpu' },
+      { href: '/play/', label: '⟦שחק|שחקי⟧ עכשיו', hint: 'משחק מלא נגד המחשב, ישר בדפדפן', icon: 'cpu' },
       { href: '/lishogi/', label: '⟦שחק|שחקי⟧ אונליין בליש׳וגי', hint: 'מדריך: משחקים מול כל העולם', icon: 'online' },
     ],
   },
