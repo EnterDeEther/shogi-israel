@@ -438,7 +438,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
 
   .know, .hero { scroll-snap-align: start; scroll-margin-top: 100vh; }
   .scene { scroll-snap-align: start; scroll-snap-stop: always; }
-  .scene.after { scroll-snap-align: none; scroll-snap-stop: normal; }
+  .scene.after { scroll-snap-align: start; scroll-snap-stop: normal; }
   .step + .step { scroll-snap-align: start; scroll-snap-stop: always; scroll-margin-top: var(--snap-m, 0px); }
   @media (min-width: 900px), (max-width: 899px) and (orientation: landscape) and (max-height: 520px) { .step + .step { scroll-snap-align: center; scroll-margin-top: 0px; } }
   .stage { --tb: 0; --rows: 9; position: relative; width: min(100%, 36svh, 520px, max(27svh, 100svh - 430px)); aspect-ratio: 9 / 9; margin-inline: auto; direction: ltr; display: block; }

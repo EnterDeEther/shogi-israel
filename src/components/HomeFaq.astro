@@ -22,7 +22,7 @@ const faq = HOME_FAQ.map((id) => FAQ.find((f) => f.id === id)).filter((f) => !!f
 </section>
 
 <style>
-  .scene { margin-top: 56px; }
+  .scene { margin-top: 56px; scroll-snap-align: start; }
   .scene-head { display: grid; gap: 6px; margin-bottom: 8px; }
   .scene-head h2 { font-size: clamp(30px, 7vw, 44px); }
   .faq { display: grid; border-top: 1px solid var(--rule); margin-top: 12px; max-width: 760px; }
