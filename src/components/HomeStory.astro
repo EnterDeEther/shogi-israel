@@ -4,6 +4,7 @@ import { BOARD_STORIES, HERO_ART, PHASES, SHOW_CAPS, STORY, allPieces, type Stor
 import { FIRST_GAME } from '../lib/first-game';
 import { pageExists, LISHOGI_TEAM } from '../lib/live';
 import { FACEBOOK_GROUP_URL, INSTAGRAM_URL, WHATSAPP_URL } from '../lib/nav';
+import Icon from './Icon.astro';
 
 interface Props { first: string }
 const { first } = Astro.props;
@@ -57,6 +58,10 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
       </a>
       <p class="small muted note">בלי הרשמה · בחינם · בעברית</p>
     </div>
+    <ul class="side-doors">
+      {hasChess && <li><a href="/chess/" data-chess-door><Icon name="chess" size={20} /><span><b>⟦משחק|משחקת⟧ שחמט?</b> יש לך מסלול משלך</span></a></li>}
+      <li><a href="#faq"><Icon name="question" size={20} /><span><b>שאלות נפוצות</b> לפני שמתחילים</span></a></li>
+    </ul>
     <a class="cue" href="#story-1">או ⟦גלול|גללי⟧ למטה, ונכיר את המשחק בדקה<Fragment set:html={down} /></a>
   </div>
   <div class="hero-art" aria-hidden="true">
@@ -263,6 +268,12 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   .cta { display: flex; flex-direction: column; gap: 8px; padding-top: 6px; }
   .cta .btn { align-self: stretch; }
   .note { margin: 0; text-align: center; }
+  .side-doors { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .side-doors a { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 8px 14px; border-radius: 12px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--rule); color: var(--ink-2); text-decoration: none; font-size: 15.5px; line-height: 1.4; }
+  .side-doors a:hover { box-shadow: inset 0 0 0 1px var(--seal); }
+  .side-doors b { color: var(--ink); }
+  .side-doors :global(.icon) { flex: none; color: var(--seal); }
+  @media (min-width: 560px) { .side-doors { grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); } }
   .cue { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; color: var(--muted); font-size: 15px; text-decoration: none; }
   .cue:hover { color: var(--ink); }
   .hero-art { position: relative; height: 230px; display: grid; place-items: center; order: -1; }
