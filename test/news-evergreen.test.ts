@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { existsSync, readdirSync } from 'node:fs';
-import { EVERGREEN_FILL, LINK_SLOTS, TIPS, WEEK_TIP, israelDayNumber, pickEvergreen, type EvergreenCtx } from '../src/lib/news-evergreen';
+import { BAR_SIZE, LINK_SLOTS, TIPS, WEEK_TIP, israelDayNumber, pickEvergreen, type EvergreenCtx } from '../src/lib/news-evergreen';
 import { CTA_MAX, NEWS_TARGET, newsLength, newsProblems, newsUrlOk, pickNews } from '../src/lib/news';
 
 const NOW = Date.parse('2026-11-10T10:00:00Z');
@@ -32,8 +32,8 @@ describe('the always-on pool follows the entry rules', () => {
 });
 
 describe('filling the bar', () => {
-  test('tops up to three, and nothing when real updates fill it', () => {
-    expect(pickEvergreen(ctx(), EVERGREEN_FILL)).toHaveLength(3);
+  test('gives as many tips as asked, up to the bar size', () => {
+    expect(pickEvergreen(ctx(), BAR_SIZE)).toHaveLength(4);
     expect(pickEvergreen(ctx(), 1)).toHaveLength(1);
     expect(pickEvergreen(ctx(), 0)).toEqual([]);
   });
@@ -48,7 +48,7 @@ describe('filling the bar', () => {
   test('newcomers get no returning-only tips and no puzzle', () => {
     const keys = new Set(TIPS.filter((t) => t.audience === 'returning').map((t) => t.title));
     for (let d = 0; d < 20; d++) {
-      for (const r of pickEvergreen(ctx({ now: NOW + d * 864e5 }), 3)) {
+      for (const r of pickEvergreen(ctx({ now: NOW + d * 864e5 }), BAR_SIZE)) {
         expect(keys.has(r.title)).toBe(false);
         expect(r.kind).toBe('tip');
       }
