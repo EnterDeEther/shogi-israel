@@ -16,7 +16,7 @@ export default defineConfig({
   trailingSlash: 'ignore',
   integrations: [
     mdx(),
-    sitemap({ filter: (page) => !isDraftLesson(page) && !/\/(account|app|tsume\/week)\//.test(page) }),
+    sitemap({ filter: (page) => !isDraftLesson(page) && !/\/(account|app|settings|tsume\/week)\//.test(page) }),
   ],
   build: { format: 'directory', inlineStylesheets: 'never' },
   vite: {
