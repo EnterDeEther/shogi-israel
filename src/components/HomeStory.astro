@@ -40,13 +40,13 @@ const down = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke
 const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7 10 .8 14.4 7 19 3.2 17.2 11.2H2.8Z" /></svg>';
 ---
 {hasPlay && (
-  <p class="know wrap" data-newcomer>
+  <p class="know wrap" data-newcomer data-snap>
     <span>כבר ⟦יודע|יודעת⟧ לשחק שוגי?</span>
     <a href="/play/">⟦שחק|שחקי⟧ עכשיו<Fragment set:html={arrow} /></a>
   </p>
 )}
 
-<section class="hero wrap" data-newcomer aria-labelledby="hero-h">
+<section class="hero wrap" data-newcomer data-snap aria-labelledby="hero-h">
   <div class="hero-text">
     <p class="eyebrow">הקהילה הישראלית של השוגי</p>
     <h1 id="hero-h">⟦ברוך הבא|ברוכה הבאה⟧ לשוגי ישראל</h1>
@@ -84,7 +84,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
 </section>
 
 {(['a', 'c', 'b'] as const).map((key, n) => (
-  <section class="scene wrap" id={`story-${n + 1}`} data-newcomer aria-labelledby={`story-${key}-h`}>
+  <section data-snap class="scene wrap" id={`story-${n + 1}`} data-newcomer aria-labelledby={`story-${key}-h`}>
     <div class="scene-head rv">
       <p class="kicker">{key === 'a' ? 'מה זה שוגי, בדקה' : key === 'c' ? 'קוראים את הכלים' : 'מה שמיוחד בשוגי'}</p>
       <h2 id={`story-${key}-h`}>{key === 'a' ? 'משחק הגנרלים' : key === 'c' ? 'לא צריך לדעת יפנית' : 'כלי שלכדת עובר לצד שלך'}</h2>
@@ -127,13 +127,13 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
         <p class="cap" data-cap>{key === 'c' ? SHOW_CAPS.c2 : board(key).state.cap}</p>
       </div>
       <div class="steps">
-        {STORY[key].map((s) => <div class="step" data-s={s.key}><p class="card" set:html={s.text} /></div>)}
+        {STORY[key].map((s) => <div class="step" data-snap data-s={s.key}><p class="card" set:html={s.text} /></div>)}
       </div>
     </div>
   </section>
 ))}
 
-<section class="scene wrap" data-newcomer aria-labelledby="story-phases-h">
+<section data-snap class="scene wrap" data-newcomer aria-labelledby="story-phases-h">
   <div class="scene-head rv">
     <p class="kicker">איך נראה משחק</p>
     <h2 id="story-phases-h">כל משחק עובר שלושה שלבים</h2>
@@ -144,7 +144,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   <p class="small"><a href="/learn/guide/#phases">הסבר על שלושת השלבים</a></p>
 </section>
 
-<section class="scene wrap" data-newcomer aria-labelledby="story-go-h">
+<section data-snap class="scene wrap" data-newcomer aria-labelledby="story-go-h">
   <div class="scene-head rv">
     <p class="kicker">ועכשיו, תורך</p>
     <h2 id="story-go-h">מאיפה ⟦תרצה|תרצי⟧ להתחיל?</h2>
@@ -181,7 +181,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   )}
 </section>
 
-<section class="scene wrap" data-newcomer aria-labelledby="story-us-h">
+<section data-snap class="scene wrap" data-newcomer aria-labelledby="story-us-h">
   <div class="comm rv">
     <h2 id="story-us-h">לא לבד</h2>
     <p>אני דין. למדתי שוגי מסרטונים ביוטיוב, והפסדתי שוב ושוב למחשב עד שהבנתי למה. חיפשתי מקום כזה בעברית ומצאתי כמעט כלום, אז בניתי אותו.</p>
@@ -198,6 +198,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
 
 <script>
   import { BOARD_STORIES, SHOW_CAPS, type BoardState } from '../lib/home-story';
+  import { snapGate } from '../lib/snap-gate';
 
   const wide = matchMedia('(min-width: 900px)');
   const watch = (story: HTMLElement, set: (key: string) => void) => {
@@ -209,6 +210,8 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
       io?.disconnect();
       const top = col && !wide.matches ? parseFloat(getComputedStyle(col).top) + col.offsetHeight : 0;
       const line = Math.round(wide.matches ? innerHeight / 2 : top + (innerHeight - top) * 0.4);
+      const pad = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
+      story.style.setProperty('--snap-m', `${Math.max(0, line - 30 - pad)}px`);
       io = new IntersectionObserver((ents) => ents.forEach((en) => { if (en.isIntersecting) set(en.target.getAttribute('data-s') || ''); }), { rootMargin: `-${line}px 0px -${Math.max(0, innerHeight - line - 1)}px 0px` });
       steps.forEach((s) => io!.observe(s));
     };
@@ -253,6 +256,9 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
     if (below(story)) set('c0');
     watch(story, set);
   });
+
+  const html = document.documentElement;
+  snapGate('[data-snap], .site-footer', () => !html.hasAttribute('data-learner') && !html.classList.contains('tour-on') && !document.querySelector('dialog[open]'));
 </script>
 
 <style>
@@ -316,6 +322,10 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
     .step:last-child { min-height: 84vh; }
   }
 
+  .know, .hero { scroll-snap-align: start; scroll-margin-top: 100vh; }
+  .scene { scroll-snap-align: start; scroll-snap-stop: always; }
+  .step + .step { scroll-snap-align: start; scroll-snap-stop: always; scroll-margin-top: var(--snap-m, 0px); }
+  @media (min-width: 900px) { .step + .step { scroll-snap-align: center; scroll-margin-top: 0px; } }
   .stage { position: relative; width: min(100%, 36svh, 520px); aspect-ratio: 9 / 10.9; margin-inline: auto; direction: ltr; display: block; }
   @media (min-width: 900px) { .stage { width: min(100%, 54vh, 500px); } }
   .board { position: absolute; inset-inline: 0; top: calc(100% * .95 / 10.9); height: calc(100% * 9 / 10.9); background-color: var(--kaya); border: 2px solid var(--grid); box-shadow: var(--shadow-board); border-radius: 3px;
