@@ -1,4 +1,4 @@
-import type { NewsRow } from './news.js';
+import { NEWS_LIVE, pickNews, type NewsRow, type NewsViewer } from './news.js';
 import { WEEK_LENGTH } from '../tsume/week.js';
 
 export interface Evergreen {
@@ -32,7 +32,7 @@ export const TIPS: Evergreen[] = [
   { key: 'pieces', kind: 'tip', title: 'אפשר לבחור סימני כלים: עברית, אנגלית, קאנג׳י או שחמט', cta: 'להגדרות', url: 'settings', audience: 'returning' },
 ];
 
-export const EVERGREEN_FILL = 3;
+export const BAR_SIZE = NEWS_LIVE;
 export const TIPS_REST_DAYS = 3;
 
 export interface EvergreenCtx {
@@ -75,4 +75,12 @@ export function pickEvergreen(ctx: EvergreenCtx, need: number): NewsRow[] {
     starts_at: new Date(day * DAY).toISOString(),
     ends_at: null,
   }));
+}
+
+export type TipsCtx = Omit<EvergreenCtx, 'now' | 'taken'>;
+
+export function composeBar(rows: NewsRow[], viewer: NewsViewer, tips: TipsCtx): { news: NewsRow[]; tips: NewsRow[] } {
+  const news = pickNews(rows, viewer);
+  const fill = viewer.off ? [] : pickEvergreen({ ...tips, now: viewer.now, taken: news.map((r) => r.url) }, BAR_SIZE - news.length);
+  return { news, tips: fill };
 }

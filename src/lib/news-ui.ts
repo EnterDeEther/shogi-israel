@@ -1,8 +1,8 @@
 import { hasStoredSession } from './account-config';
 import { currentGender, resolve, type Gender } from './gender';
-import { NEWS_KIND, NEWS_ROUNDS, asKind, newsCta, newsDwell, newsHref, newsId, newsParts, pickNews, type NewsRow, type NewsSpeed } from './news';
+import { NEWS_KIND, NEWS_ROUNDS, asKind, newsCta, newsDwell, newsHref, newsId, newsParts, type NewsRow, type NewsSpeed } from './news';
 import { cachedNews, loadNews } from './news-data';
-import { EVERGREEN_FILL, TIPS_REST_DAYS, pickEvergreen } from './news-evergreen';
+import { TIPS_REST_DAYS, composeBar } from './news-evergreen';
 import { settingsHref } from './settings-place';
 import { WEEK_LENGTH, weekIndex, weekPuzzle } from '../tsume/week';
 import { readLocal, updateInbox } from './progress-local';
@@ -271,11 +271,11 @@ export function startNews(root: HTMLElement) {
     const now = Date.now();
     const back = returning();
     const off = p.inbox.off.includes('news');
-    const real = pickNews(list, { now, returning: back, signedIn: hasStoredSession(), read: p.inbox.read, off });
-    const extra = off ? [] : pickEvergreen({
-      now, returning: back || hasStoredSession(), installed: isInstalled(), path: location.pathname, weekOpen: weekOpen(weekCount),
-      links: { settings: settingsHref(), whatsapp: root.dataset.whatsapp, facebook: root.dataset.facebook }, taken: real.map((r) => r.url), restUntil: restUntil(),
-    }, EVERGREEN_FILL - real.length);
+    const signedIn = hasStoredSession();
+    const { news: real, tips: extra } = composeBar(list, { now, returning: back, signedIn, read: p.inbox.read, off }, {
+      returning: back || signedIn, installed: isInstalled(), path: location.pathname, weekOpen: weekOpen(weekCount),
+      links: { settings: settingsHref(), whatsapp: root.dataset.whatsapp, facebook: root.dataset.facebook }, restUntil: restUntil(),
+    });
     const pick = [...real, ...extra];
     const key = pick.map((r) => `${r.id}|${r.kind}|${r.title}|${r.cta_label}|${r.url}`).join('\n');
     if (key === shown && !force) return;
@@ -294,10 +294,9 @@ export function startNews(root: HTMLElement) {
   let late = 0;
   if (cache) render(cache.list);
   else late = window.setTimeout(() => render([]), LATE_MS);
-  void loadNews().then((list) => {
+  void loadNews(true).then((list) => {
     clearTimeout(late);
-    if (cache || !shown) render(list);
-    else rows = list;
+    render(list);
   });
   for (const ev of ['progress-changed', 'progress-synced', 'progress-reset']) document.addEventListener(ev, () => setTimeout(() => render(rows), 0));
   document.addEventListener('gender-changed', () => render(rows, true));
