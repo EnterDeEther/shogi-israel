@@ -27,5 +27,6 @@
   .to-top:hover { color: var(--seal); }
   .to-top[hidden] { display: grid; opacity: 0; translate: 0 12px; pointer-events: none; visibility: hidden; }
   :global(html.tour-on) .to-top, :global(html.app-locked) .to-top { display: none; }
+  :global(html[data-in-flow]) .to-top { opacity: 0; translate: 0 12px; pointer-events: none; visibility: hidden; }
   @media (prefers-reduced-motion: reduce) { .to-top { transition: none; } }
 </style>

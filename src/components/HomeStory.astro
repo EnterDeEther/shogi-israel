@@ -35,6 +35,8 @@ const boards = (['a', 'b'] as const).map((key) => {
   return { key, state, pieces: allPieces(key).map((p) => ({ ...p, now: at.get(p.id) ?? p })) };
 });
 const board = (key: 'a' | 'b') => boards.find((b) => b.key === key)!;
+const tray = (key: 'a' | 'b') => (BOARD_STORIES[key].first.hand || Object.values(BOARD_STORIES[key].steps).some((st) => st.hand) ? 0.95 : 0);
+const stageStyle = (key: 'a' | 'b') => `--tb:${tray(key)};--rows:${9 + tray(key)};aspect-ratio:9 / ${9 + tray(key)}`;
 const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>';
 const down = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"></path></svg>';
 const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7 10 .8 14.4 7 19 3.2 17.2 11.2H2.8Z" /></svg>';
@@ -97,10 +99,9 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
             <span class="big" data-b><span class="sh"><span class="ph crown" dir="rtl"><Fragment set:html={crown} /><span>מ</span></span></span></span>
           </div>
         ) : (
-          <div class="stage" data-stage data-zone={on(board(key).state.zone)} data-hand={on(board(key).state.hand)} data-still>
-            <span class="tray top"></span>
+          <div class="stage" data-stage data-zone={on(board(key).state.zone)} data-hand={on(board(key).state.hand)} style={stageStyle(key)} data-still>
             <span class="board"><span class="zone"></span><span class="hoshi" style="left:33.333%;top:33.333%"></span><span class="hoshi" style="left:66.667%;top:33.333%"></span><span class="hoshi" style="left:33.333%;top:66.667%"></span><span class="hoshi" style="left:66.667%;top:66.667%"></span></span>
-            <span class="tray bot"><span>ביד שלך</span></span>
+            {tray(key) > 0 && <span class="tray bot"><span>ביד שלך</span></span>}
             <span class="layer">
               {board(key).pieces.map((p) => {
                 const base = labels(p.t, p.g, false);
@@ -201,7 +202,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   import { BOARD_STORIES, SHOW_CAPS, type BoardState } from '../lib/home-story';
   import { snapGate, snapStops } from '../lib/snap-gate';
 
-  const wide = matchMedia('(min-width: 900px)');
+  const wide = matchMedia('(min-width: 900px), (max-width: 899px) and (orientation: landscape) and (max-height: 520px)');
   const watch = (story: HTMLElement, show: (key: string, back: boolean) => void, reset: () => void) => {
     if (!('IntersectionObserver' in window)) return;
     const steps = [...story.querySelectorAll<HTMLElement>('[data-s]')];
@@ -216,19 +217,21 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
       show(k, back);
     };
     let io: IntersectionObserver | undefined;
+    let line = 0;
     const start = () => {
       io?.disconnect();
       const top = col && !wide.matches ? parseFloat(getComputedStyle(col).top) + col.offsetHeight : 0;
-      const line = Math.round(wide.matches ? innerHeight / 2 : top + 60);
+      line = Math.round(wide.matches ? innerHeight / 2 : top + 60);
       const pad = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
       story.style.setProperty('--snap-m', `${Math.max(0, Math.round(top - pad))}px`);
+      story.style.setProperty('--rest', `${Math.max(0, Math.round(innerHeight - top))}px`);
       io = new IntersectionObserver((ents) => ents.forEach((en) => { if (en.isIntersecting) go(en.target.getAttribute('data-s') || ''); }), { rootMargin: `-${line}px 0px -${Math.max(0, innerHeight - line - 1)}px 0px` });
       steps.forEach((s) => io!.observe(s));
     };
     start();
     if (col) {
       new IntersectionObserver(([en]) => {
-        if (en.intersectionRatio >= 0.85) { if (cur < 0) go(keys[0]); }
+        if (en.intersectionRatio >= 0.85) { if (cur < 0) go(keys[Math.max(0, steps.findLastIndex((s) => s.getBoundingClientRect().top <= line))]); }
         else if (en.boundingClientRect.top > 0 && cur >= 0) { cur = -1; reset(); }
       }, { threshold: [0, 0.85] }).observe(col);
     }
@@ -302,12 +305,14 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   const end = document.querySelector<HTMLElement>('[data-flow-end]');
   if (rail && end) {
     const fill = rail.querySelector<HTMLElement>('.rail-fill')!;
-    let ys: number[] = [], dots: HTMLElement[] = [], frame = 0;
+    const faq = document.getElementById('faq');
+    let ys: number[] = [], dots: HTMLElement[] = [], frame = 0, tail = Infinity;
     const measure = () => {
       if (html.hasAttribute('data-learner')) return;
       const els = [...document.querySelectorAll<HTMLElement>('[data-snap]')].filter((el) => el.getClientRects().length && (el === end || !!(end.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING)));
       ys = snapStops(els, { h: innerHeight, scrollY, pad: parseFloat(getComputedStyle(html).scrollPaddingTop) || 0, max: html.scrollHeight - innerHeight });
       if (ys.length < 2) return;
+      tail = faq && faq.getClientRects().length ? snapStops([faq], { h: innerHeight, scrollY, pad: parseFloat(getComputedStyle(html).scrollPaddingTop) || 0, max: html.scrollHeight - innerHeight })[0] ?? Infinity : Infinity;
       dots.forEach((d) => d.remove());
       dots = ys.map((_, i) => { const d = document.createElement('span'); d.className = 'rail-dot'; d.style.top = `${(i / (ys.length - 1)) * 100}%`; rail.append(d); return d; });
       paint();
@@ -322,7 +327,10 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
       const p = Math.min(1, (i + part) / n);
       fill.style.transform = `scaleY(${p})`;
       dots.forEach((d, k) => d.toggleAttribute('data-on', k / n <= p + 0.001));
-      rail.toggleAttribute('data-on', scrollY > 40 && scrollY < ys[n] + innerHeight * 0.6);
+      const inFlow = scrollY > 40 && scrollY < ys[n] + innerHeight * 0.6;
+      if (inFlow !== rail.hasAttribute('data-on')) rail.toggleAttribute('data-on', inFlow);
+      const story = scrollY < Math.min(tail, ys[n] + innerHeight * 3) - 8;
+      if (story !== html.hasAttribute('data-in-flow')) html.toggleAttribute('data-in-flow', story);
     };
     addEventListener('scroll', () => { if (!frame) frame = requestAnimationFrame(paint); }, { passive: true });
     let rt = 0;
@@ -381,6 +389,21 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
     .hero-art { height: 420px; order: 2; }
     .hero-art .pc { width: 96px; }
   }
+  @media (max-width: 899px) and (max-height: 780px) {
+    .hero { gap: 14px; padding-top: 6px; }
+    .hero-art { height: 172px; }
+    .hero-art .pc { width: 50px; }
+  }
+  @media (max-width: 380px) {
+    .side-doors a { gap: 8px; padding: 8px 10px; }
+    .side-doors b { font-size: 15px; }
+  }
+  @media (max-width: 899px) and (orientation: landscape) and (max-height: 520px) {
+    .hero { grid-template-columns: 1.1fr .9fr; align-items: center; gap: 24px; padding-top: 6px; }
+    .hero h1 { font-size: 34px; }
+    .hero-art { height: 250px; order: 2; }
+    .hero-art .pc { width: 58px; }
+  }
 
   .scene { margin-top: 56px; }
   .scene-head { display: grid; gap: 6px; margin-bottom: 8px; }
@@ -391,7 +414,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   .stage-col::after { content: ""; position: absolute; inset-inline: 0; top: 100%; height: 22px; background: linear-gradient(var(--washi), transparent); pointer-events: none; }
   .steps { display: grid; }
   .step { min-height: 44svh; display: flex; align-items: flex-start; padding-block: 24px; }
-  .step:last-child { min-height: 40svh; }
+  .step:last-child { min-height: max(40svh, var(--rest, 0px)); }
   .card { margin: 0; background: var(--surface); border-radius: 14px; padding: 18px 20px; box-shadow: var(--shadow-2); max-width: 30em; font-size: 18px; line-height: 1.65; }
   .card :global(strong) { color: var(--seal); }
   @media (min-width: 900px) {
@@ -402,26 +425,36 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
     .step:last-child { min-height: 84vh; }
   }
 
+  @media (max-width: 899px) and (orientation: landscape) and (max-height: 520px) {
+    .scene-head h2 { font-size: 28px; }
+    .story { grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+    .stage-col { top: 72px; background: none; order: 2; }
+    .stage-col::after { display: none; }
+    .step { min-height: 72svh; align-items: center; padding-block: 12px; }
+    .step:last-child { min-height: 80svh; }
+    .card { font-size: 16px; padding: 14px 16px; }
+  }
+
   .know, .hero { scroll-snap-align: start; scroll-margin-top: 100vh; }
   .scene { scroll-snap-align: start; scroll-snap-stop: always; }
   .step + .step { scroll-snap-align: start; scroll-snap-stop: always; scroll-margin-top: var(--snap-m, 0px); }
-  @media (min-width: 900px) { .step + .step { scroll-snap-align: center; scroll-margin-top: 0px; } }
-  .stage { position: relative; width: min(100%, 36svh, 520px); aspect-ratio: 9 / 10.9; margin-inline: auto; direction: ltr; display: block; }
+  @media (min-width: 900px), (max-width: 899px) and (orientation: landscape) and (max-height: 520px) { .step + .step { scroll-snap-align: center; scroll-margin-top: 0px; } }
+  .stage { --tb: 0; --rows: 9; position: relative; width: min(100%, 36svh, 520px); aspect-ratio: 9 / 9; margin-inline: auto; direction: ltr; display: block; }
   @media (min-width: 900px) { .stage { width: min(100%, 54vh, 500px); } }
-  .board { position: absolute; inset-inline: 0; top: calc(100% * .95 / 10.9); height: calc(100% * 9 / 10.9); background-color: var(--kaya); border: 2px solid var(--grid); box-shadow: var(--shadow-board); border-radius: 3px;
+  @media (max-width: 899px) and (orientation: landscape) and (max-height: 520px) { .stage { width: min(100%, calc((100svh - 200px) * .9)); } }
+  .board { position: absolute; inset-inline: 0; top: 0; height: calc(100% * 9 / var(--rows)); background-color: var(--kaya); border: 2px solid var(--grid); box-shadow: var(--shadow-board); border-radius: 3px;
     background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
     background-size: calc(100% / 9) calc(100% / 9); background-position: -1px -1px; }
   .zone { position: absolute; inset-inline: 0; top: 0; height: calc(100% / 3); background: color-mix(in srgb, var(--seal) 22%, transparent); opacity: 0; transition: opacity .5s ease; }
   .stage[data-zone] .zone { opacity: 1; }
   .hoshi { position: absolute; width: 7px; height: 7px; border-radius: 50%; background: var(--grid); translate: -50% -50%; }
-  .tray { position: absolute; inset-inline: 0; height: calc(100% * .95 / 10.9); display: flex; align-items: center; font-size: 12px; font-weight: 700; color: var(--seal); direction: rtl; }
-  .tray.top { top: 0; }
+  .tray { position: absolute; inset-inline: 0; height: calc(100% * var(--tb) / var(--rows)); display: flex; align-items: center; font-size: 12px; font-weight: 700; color: var(--seal); direction: rtl; }
   .tray.bot { bottom: 0; }
   .tray span { opacity: 0; transition: opacity .4s; }
   .stage[data-hand] .tray.bot span { opacity: 1; }
   .layer { position: absolute; inset: 0; }
-  .layer .pc { position: absolute; left: 0; top: 0; width: calc(100% / 9); height: calc(100% / 10.9); container-type: size; display: grid; place-items: center;
-    transform: translate(calc(var(--c) * 100%), calc((var(--r) + .95) * 100%)) scale(var(--s, 1)); transition: transform .6s var(--ease-out), opacity .45s ease, filter .3s ease; }
+  .layer .pc { position: absolute; left: 0; top: 0; width: calc(100% / 9); height: calc(100% / var(--rows)); container-type: size; display: grid; place-items: center;
+    transform: translate(calc(var(--c) * 100%), calc(var(--r) * 100%)) scale(var(--s, 1)); transition: transform .6s var(--ease-out), opacity .45s ease, filter .3s ease; }
   .layer .pc[data-out] { opacity: 0; }
   .layer .pc[data-lift] { filter: drop-shadow(0 6px 6px rgba(0, 0, 0, .25)); }
   .stage[data-still] .pc, .stage[data-still] .sh, .stage[data-still] .zone, .stage[data-still] .tray span { transition: none; }
@@ -456,9 +489,10 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
 
   .cap { text-align: center; font-size: 14px; color: var(--muted); margin: 6px 0 0; min-height: 1.6em; }
 
-  .show { position: relative; width: min(100%, 36svh, 360px); aspect-ratio: 1; margin-inline: auto; direction: ltr; }
+  .show { position: relative; width: min(100%, 36svh, 360px); aspect-ratio: 10 / 7; margin-inline: auto; direction: ltr; }
   @media (min-width: 900px) { .show { width: min(100%, 56vh, 440px); } }
-  .big { position: absolute; width: 38%; aspect-ratio: 10 / 11; left: 31%; top: 27%; container-type: inline-size; display: grid; place-items: center; color: var(--piece-ink);
+  @media (max-width: 899px) and (orientation: landscape) and (max-height: 520px) { .show { width: min(100%, calc((100svh - 200px) * 1.3)); } }
+  .big { position: absolute; width: 36%; aspect-ratio: 10 / 11; left: 32%; top: 21.7%; container-type: inline-size; display: grid; place-items: center; color: var(--piece-ink);
     transition: translate .6s var(--ease-out), opacity .4s ease, scale .6s var(--ease-out); }
   .big .sh { width: 100%; height: 100%; }
   .big b { position: relative; z-index: 1; font: 800 46cqw/1 var(--f-kanji); }
