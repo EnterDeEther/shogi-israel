@@ -59,6 +59,11 @@ const DESK_SETTINGS: NavLink = { href: '/settings/', label: 'הגדרות' };
       </div>
     )}
 
+    <button type="button" class="quick-btn install-mini" data-install-start data-install-mini hidden aria-label="התקנת האפליקציה" title="התקנת האפליקציה">
+      <span class="quick-ico"><Icon name="add-home" size={22} /></span>
+      <span class="quick-cap" aria-hidden="true">התקנה</span>
+    </button>
+
     {account && (
       <details class="inbox" data-inbox data-signed-in-only data-week-count={weekCount} data-tour="bell">
         <summary>
@@ -109,6 +114,11 @@ const DESK_SETTINGS: NavLink = { href: '/settings/', label: 'הגדרות' };
           <span class="label">הגדרות</span>
           <span class="hint">מראה, סימון הכלים, צלילים</span>
         </a>
+        <button type="button" class="solo settings-row install-row" data-install-start data-install-mini hidden>
+          <span class="ico"><Icon name="add-home" /></span>
+          <span class="label">התקנה במסך הבית</span>
+          <span class="hint">האפליקציה, בחינם עם חשבון</span>
+        </button>
         {items.map((i) => isSection(i) ? (
           <section class="group" data-tour={i.tour}>
             <h2 class="group-title">{i.label}</h2>
@@ -242,7 +252,9 @@ const DESK_SETTINGS: NavLink = { href: '/settings/', label: 'הגדרות' };
   .panel .settings-row .ico { grid-row: span 2; }
   .panel .settings-row > :not(.ico) { grid-column: 2; }
 
-  .theme-row { appearance: none; background: none; border: 0; width: 100%; font: inherit; text-align: start; cursor: pointer; }
+  .theme-row, .install-row { appearance: none; background: none; border: 0; width: 100%; font: inherit; color: inherit; text-align: start; cursor: pointer; }
+  .install-mini { appearance: none; background: transparent; border: 0; font: inherit; cursor: pointer; flex-shrink: 0; }
+  [data-install-mini][hidden], :global(html[data-standalone]) [data-install-mini] { display: none !important; }
   .theme-row .ico svg { grid-area: 1 / 1; }
   .theme-row .i-sun, .theme-row .t-light, :global(html[data-theme="dark"]) .theme-row .i-moon, :global(html[data-theme="dark"]) .theme-row .t-dark { display: none; }
   :global(html[data-theme="dark"]) .theme-row .i-sun, :global(html[data-theme="dark"]) .theme-row .t-light { display: inline; }
@@ -340,7 +352,7 @@ const DESK_SETTINGS: NavLink = { href: '/settings/', label: 'הגדרות' };
   }
 
   @media (min-width: 1040px) {
-    .nav-narrow { display: none; }
+    .nav-narrow, .install-mini { display: none !important; }
     .bar:has(.quick) > .theme-btn { display: grid; }
     .quick { margin-inline-start: 4px; }
     .nav-wide { display: flex; align-items: center; gap: 22px; margin-inline-start: auto; }

@@ -41,22 +41,33 @@ const solos = items.filter((i) => !isSection(i));
 </footer>
 
 <script>
-  type TourId = 'site' | 'account';
-  const isTourId = (v: string | null): v is TourId => v === 'site' || v === 'account';
+  import { hasStoredSession } from '../lib/account-config';
+  import { readTourEnd } from '../lib/tour';
+  import { isStandalone } from '../lib/install';
+
+  type TourId = 'site' | 'account' | 'app';
+  const isTourId = (v: string | null): v is TourId => v === 'site' || v === 'account' || v === 'app';
+  const onApp = location.pathname === '/app/';
   const start = (id: TourId, from?: HTMLElement) => {
+    if (id === 'app') return import('../scripts/tour').then((m) => m.startTour('app', from));
     const ok = id === 'site' || document.documentElement.hasAttribute('data-signed-in');
     return import('../scripts/tour').then((m) => m.startTour(ok ? id : 'site', from));
   };
   document.addEventListener('click', (e) => {
     const link = (e.target as HTMLElement).closest<HTMLElement>('[data-tour-start]');
-    if (!link || location.pathname !== '/') return;
+    if (!link) return;
+    const want = link.dataset.tourStart;
+    if (want === 'app' ? !onApp : location.pathname !== '/') return;
     e.preventDefault();
-    void start(link.dataset.tourStart === 'account' ? 'account' : 'site', link);
+    void start(want === 'app' ? 'app' : want === 'account' ? 'account' : 'site', link);
   });
   const asked = new URLSearchParams(location.search).get('tour');
-  if (location.pathname === '/' && isTourId(asked)) {
+  const here = asked === 'app' ? onApp : location.pathname === '/';
+  if (here && isTourId(asked)) {
     history.replaceState(history.state, '', location.pathname + location.hash);
     setTimeout(() => void start(asked), asked === 'account' ? 300 : 0);
+  } else if (onApp && isStandalone() && hasStoredSession() && readTourEnd((() => { try { return localStorage; } catch { return undefined; } })(), 'app') === null) {
+    setTimeout(() => void start('app'), 600);
   }
 </script>
 

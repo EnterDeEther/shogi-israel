@@ -125,9 +125,53 @@ export const ACCOUNT_TOUR: Tour = {
   },
 };
 
-export type TourId = 'site' | 'account';
-export const TOURS: Record<TourId, Tour> = { site: SITE_TOUR, account: ACCOUNT_TOUR };
-export const isTourId = (v: string | null | undefined): v is TourId => v === 'site' || v === 'account';
+export const APP_TOUR: Tour = {
+  name: 'סיור באפליקציה',
+  again: 'אפשר לחזור לסיור מההגדרות, בשורה "סיור באפליקציה".',
+  intro: {
+    title: '⟦ברוך הבא|ברוכה הבאה⟧ לאפליקציה',
+    body: (n: number) => `${COUNT_WORDS[n] ?? n} צעדים קצרים: איפה ההגדרות, איך משתמשים בהן, ומאיפה מתחילים ללמוד או לשחק. ⟦אתה|את⟧ ⟦מחליט|מחליטה⟧ מתי להמשיך, ואפשר לצאת בכל רגע.`,
+    primary: '⟦התחל|התחילי⟧ סיור קצר',
+    secondary: 'לא עכשיו',
+  },
+  steps: [
+    {
+      target: 'app-course',
+      title: 'המסלול שלך',
+      body: 'מכאן ⟦ממשיך|ממשיכה⟧ ללמוד: לחיצה אחת פותחת את הצעד הבא במסלול הלימוד האישי. בפעם הראשונה הוא מתחיל במשחק קצר אחד לצפייה.',
+    },
+    {
+      target: 'app-play',
+      title: 'משחק נגד המחשב',
+      body: 'עשר רמות, מהקלה ביותר. משחק שלא גמרת נשמר ומחכה לך כאן, ו"או משחק חדש" פותח משחק חדש.',
+    },
+    {
+      target: 'app-settings',
+      title: 'ההגדרות',
+      body: 'לחיצה כאן פותחת את ההגדרות של המכשיר: מראה בהיר או כהה, סימון הכלים (עברית, אנגלית או קאנג׳י), צלילים ורטט, איך לפנות אליך, והתראות. כל שינוי נשמר מיד, ואפשר לנסות ולחזור.',
+    },
+    {
+      target: 'settings',
+      title: 'הגדרות מכל דף',
+      body: 'בראש כל דף, בתפריט ☰ (במסך רחב: גלגל השיניים), "הגדרות" מחזירה לכאן. בתפריט יש גם את כל השאר: שיעורים, בעיות מט וקהילה.',
+    },
+    {
+      target: 'quick',
+      title: 'קיצורי דרך בכל דף',
+      body: 'בראש כל דף: "משחק" ממשיך את המשחק נגד המחשב או פותח חדש, ו"מסלול" מוביל לצעד הבא שלך.',
+    },
+  ],
+  end: {
+    title: 'זהו, אפשר להתחיל',
+    body: 'הסיור נמצא תמיד בהגדרות, בשורה "סיור באפליקציה".',
+    primary: 'למסלול שלי',
+    secondary: 'סגירה',
+  },
+};
+
+export type TourId = 'site' | 'account' | 'app';
+export const TOURS: Record<TourId, Tour> = { site: SITE_TOUR, account: ACCOUNT_TOUR, app: APP_TOUR };
+export const isTourId = (v: string | null | undefined): v is TourId => v === 'site' || v === 'account' || v === 'app';
 
 export const stepsFor = (steps: TourStep[], has: (target: string) => boolean): TourStep[] => steps.filter((s) => has(s.target));
 
@@ -156,3 +200,4 @@ export function writeTourEnd(store: (Pick<Storage, 'getItem'> & Pick<Storage, 's
 
 export const TOUR_URL = '/?tour=site';
 export const ACCOUNT_TOUR_URL = '/?tour=account';
+export const APP_TOUR_URL = '/app/?tour=app';

@@ -7,6 +7,7 @@ interface PromptEvent extends Event {
 
 const INSTALLED = 'shogi-il.app.installed';
 const LATER = 'shogi-il.app.later';
+const CLOSED = 'shogi-il.app.closed';
 const VIEWS = 'shogi-il.app.views';
 const LATER_DAYS = 21;
 
@@ -21,8 +22,9 @@ export const isStandalone = (): boolean =>
   matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
 
 const ua = () => navigator.userAgent;
+export const isIpad = () => /iPad/.test(ua()) || (/Macintosh/.test(ua()) && navigator.maxTouchPoints > 1);
 export const isIos = () => /iPhone|iPad|iPod/.test(ua()) || (/Macintosh/.test(ua()) && navigator.maxTouchPoints > 1);
-const isAndroid = () => /Android/.test(ua());
+export const isAndroid = () => /Android/.test(ua());
 const isIosOther = () => /CriOS|EdgiOS|FxiOS/.test(ua());
 const isInApp = () => /Instagram|FBAN|FBAV|FB_IAB|FBIOS|Line\/|MicroMessenger|TikTok|musical_ly|Snapchat/i.test(ua());
 
@@ -48,16 +50,68 @@ export async function promptInstall(): Promise<boolean> {
 
 export const onInstallChange = (f: () => void) => listeners.add(f);
 
-export const later = () => set(LATER, String(Date.now()));
+export const closeOffer = () => set(CLOSED, '1');
 const resting = () => Date.now() - Number(get(LATER) || 0) < LATER_DAYS * 864e5;
 
 const views = () => Number(get(VIEWS) || 0);
+const touch = () => matchMedia('(pointer: coarse)').matches;
+const offerable = (way: InstallWay) => way !== 'installed' && way !== 'none';
+
+export function offerOnPage(path: string): boolean {
+  if (/^\/(try|play|kif|clock)(\/|$)/.test(path)) return false;
+  return !/^\/(learn|rules|tsume)\/.+/.test(path);
+}
 
 export function offerWanted(): boolean {
-  if (resting() || views() < 2) return false;
-  if (!matchMedia('(pointer: coarse)').matches) return false;
-  const way = installWay();
-  return way === 'prompt' || way === 'ios' || way === 'ios-chrome' || way === 'ios-inapp';
+  if (get(CLOSED) || resting() || views() < 2) return false;
+  return touch() && offerable(installWay());
+}
+
+export const miniWanted = (): boolean => touch() && offerable(installWay());
+
+let asking: Promise<boolean> | null = null;
+export function confirmInstall(): Promise<boolean> {
+  const box = document.querySelector<HTMLDialogElement>('[data-install-warning]');
+  if (!box || typeof box.showModal !== 'function') return Promise.resolve(true);
+  if (asking) return asking;
+  box.querySelectorAll<HTMLElement>('[data-warn-ios]').forEach((el) => { el.hidden = !isIos(); });
+  box.querySelectorAll<HTMLElement>('[data-warn-android-in]').forEach((el) => {
+    el.hidden = !(isAndroid() && document.documentElement.hasAttribute('data-signed-in'));
+  });
+  asking = new Promise<boolean>((resolve) => {
+    box.returnValue = '';
+    box.addEventListener('close', () => { asking = null; resolve(box.returnValue === 'go'); }, { once: true });
+    box.showModal();
+  });
+  return asking;
+}
+
+function toast(text: string) {
+  const el = document.createElement('div');
+  el.className = 'xp-toast xp-toast--guest';
+  el.setAttribute('role', 'status');
+  el.textContent = text;
+  document.body.append(el);
+  requestAnimationFrame(() => el.classList.add('xp-toast--on'));
+  setTimeout(() => { el.classList.remove('xp-toast--on'); setTimeout(() => el.remove(), 400); }, 6000);
+}
+
+export async function installFlow(installedText: string): Promise<boolean> {
+  if (!(await confirmInstall())) return false;
+  const menu = document.querySelector<HTMLDetailsElement>('[data-nav-narrow]');
+  if (menu) menu.open = false;
+  if (installWay() === 'prompt') {
+    const ok = await promptInstall();
+    if (ok) toast(installedText);
+    return ok;
+  }
+  if (location.pathname === '/app/') {
+    history.replaceState(history.state, '', '/app/#install');
+    document.getElementById('install')?.scrollIntoView({ block: 'start' });
+  } else {
+    location.href = '/app/#install';
+  }
+  return false;
 }
 
 export function startInstall() {

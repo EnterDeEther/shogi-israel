@@ -11,7 +11,10 @@ import Analytics from '@vercel/analytics/astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import InstallOffer from '../components/InstallOffer.astro';
+import InstallWarning from '../components/InstallWarning.astro';
 import { ogImageFor, structuredData, ldJson } from '../lib/seo';
+import { accountsEnabled, AUTH_STORAGE_KEY } from '../lib/account-config';
+import { APP_GATE } from '../lib/app-lock';
 
 interface Props {
   title: string;
@@ -58,6 +61,17 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
     <meta property="og:image:alt" content={fullTitle} />
     <meta name="twitter:card" content="summary_large_image" />
     {ld.map((d) => <script is:inline type="application/ld+json" set:html={ldJson(d)} />)}
+    <script is:inline define:vars={{ appLock: accountsEnabled, authKey: AUTH_STORAGE_KEY, gate: APP_GATE }}>
+      (function () {
+        var root = document.documentElement;
+        if (!(matchMedia('(display-mode: standalone)').matches || navigator.standalone === true)) return;
+        root.setAttribute('data-standalone', '');
+        if (!appLock) return;
+        try { if (localStorage.getItem(authKey)) return; } catch (e) { return; }
+        root.classList.add('app-locked');
+        if (location.pathname !== '/account/') location.replace(gate);
+      })();
+    </script>
     <script is:inline>
       (function () {
         var root = document.documentElement;
@@ -94,6 +108,7 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
     </main>
     <Footer />
     <InstallOffer />
+    <InstallWarning />
     <Analytics />
     <script>
       import '../scripts/gender';
@@ -183,8 +198,10 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
     </script>
     <script>
       import { accountsEnabled, hasStoredSession } from '../lib/account-config';
+      if (document.documentElement.classList.contains('app-locked')) import('../lib/app-lock').then((m) => m.startGate());
       if (accountsEnabled && hasStoredSession()) {
         document.documentElement.setAttribute('data-signed-in', '');
+        if (document.documentElement.hasAttribute('data-standalone')) import('../lib/app-lock').then((m) => m.checkAppSession());
         if (location.pathname !== '/account/') import('../lib/account').then((m) => m.startSync());
         import('../lib/xp-toast').then((m) => m.startXpNotes());
         import('../lib/inbox-ui').then((m) => m.startInbox());

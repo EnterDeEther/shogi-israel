@@ -8,6 +8,7 @@ import SoundSetting from '../components/SoundSetting.astro';
 import GenderSetting from '../components/GenderSetting.astro';
 import PushSetting from '../components/PushSetting.astro';
 import { accountsEnabled } from '../lib/account-config';
+import { APP_TOUR_URL } from '../lib/tour';
 ---
 <Base title="האפליקציה" tabTitle="שוגי ישראל כאפליקציה" description="שוגי ישראל במסך הבית של הטלפון: משחק נגד המחשב, המסלול האישי וההגדרות, בלחיצה אחת." noindex>
   <div class="wrap app" data-app>
@@ -43,19 +44,19 @@ import { accountsEnabled } from '../lib/account-config';
     </aside>
 
     <nav class="big" aria-label="מה עושים עכשיו">
-      <a class="tile main" href="/course/" data-app-course>
+      <a class="tile main" href="/course/" data-app-course data-tour="app-course">
         <span class="ico"><Icon name="course" size={30} /></span>
         <span class="t" data-t>מסלול לימוד אישי</span>
         <span class="h" data-h>מאיפה מתחילים, ומה הצעד הבא</span>
       </a>
-      <a class="tile" href="/play/?new" data-app-play>
+      <a class="tile" href="/play/?new" data-app-play data-tour="app-play">
         <span class="ico"><Icon name="cpu" size={30} /><span class="dot" data-app-dot hidden></span></span>
         <span class="t" data-t>משחק נגד המחשב</span>
         <span class="h" data-h>עשר רמות, ישר בדפדפן</span>
       </a>
       <a class="newgame small" href="/play/?new" data-app-new hidden>או משחק חדש</a>
 
-      <details class="tile settings" id="settings">
+      <details class="tile settings" id="settings" data-tour="app-settings">
         <summary>
           <span class="ico"><Icon name="settings" size={30} /></span>
           <span class="t">הגדרות</span>
@@ -70,20 +71,21 @@ import { accountsEnabled } from '../lib/account-config';
           <div class="setting"><p class="setting-label">איך לפנות אליי</p><GenderSetting label="איך לפנות אליי" /></div>
           <div class="setting push-row-wrap" id="push"><PushSetting id="app-push" /></div>
           {accountsEnabled && <p class="small"><a href="/account/" data-signed-in-only>עוד הגדרות בחשבון: הפעמון, מיילים, כינוי</a></p>}
+          <p class="small"><a href={APP_TOUR_URL} data-tour-start="app">סיור באפליקציה</a></p>
         </div>
       </details>
     </nav>
 
     <section class="install" id="install" data-app-install hidden aria-labelledby="install-h">
       <h2 id="install-h">שוגי ישראל במסך הבית</h2>
-      <p class="muted">סמל אחד במסך הבית שפותח ישר את הדף הזה, בלי שורת כתובת. בחינם, בלי חנות אפליקציות.</p>
+      <p class="muted">סמל אחד במסך הבית שפותח ישר את הדף הזה, בלי שורת כתובת. בחינם, עם חשבון, בלי חנות אפליקציות.</p>
 
       <div data-way="prompt" hidden>
-        <button type="button" class="btn" data-app-prompt><span>התקנה</span><Icon name="add-home" size={20} /></button>
+        <button type="button" class="btn" data-install-start><span>התקנה</span><Icon name="add-home" size={20} /></button>
       </div>
 
       <ol class="steps" data-way="ios" hidden>
-        <li><span class="k"><Icon name="share" size={22} /></span><span>⟦לחץ|לחצי⟧ על <strong>כפתור השיתוף</strong> של ספארי, בסרגל שלמטה. בספארי החדש הוא נמצא בתוך כפתור <strong>⋯</strong> שבפינה.</span></li>
+        <li><span class="k"><Icon name="share" size={22} /></span><span>⟦לחץ|לחצי⟧ על <strong>כפתור השיתוף</strong> של ספארי<span data-iphone-note>, בסרגל שלמטה. בספארי החדש הוא נמצא בתוך כפתור <strong>⋯</strong> שבפינה</span><span data-ipad-note hidden>. באייפד הוא בפינה העליונה, ליד שורת הכתובת</span>.</span></li>
         <li><span class="k"><Icon name="add-home" size={22} /></span><span>⟦בחר|בחרי⟧ <strong>הוספה למסך הבית</strong>. אם הוא לא ברשימה, ⟦גלול|גללי⟧ אותה למטה.</span></li>
         <li><span class="k"><img src="/app-icon-192.png" width="22" height="22" alt="" /></span><span>⟦לחץ|לחצי⟧ <strong>הוספה</strong>. הסמל של שוגי ישראל יופיע במסך הבית ויפתח ישר את הדף הזה.</span></li>
       </ol>
@@ -100,6 +102,10 @@ import { accountsEnabled } from '../lib/account-config';
         <li><span class="k"><Icon name="add-home" size={22} /></span><span>⟦בחר|בחרי⟧ <strong>הוספה למסך הבית</strong>, ואז <strong>הוספה</strong>.</span></li>
       </ol>
 
+      <div data-way="android-inapp" hidden>
+        <a class="btn chrome" href="intent://shogi.co.il/app/#Intent;scheme=https;package=com.android.chrome;end"><span>פתיחה ב־Chrome</span></a>
+        <p class="small muted">אם הכפתור לא עובד:</p>
+      </div>
       <ol class="steps" data-way="android-inapp" hidden>
         <li><span class="k"><Icon name="dots" size={22} /></span><span>מתוך אינסטגרם או פייסבוק אי אפשר להתקין. ⟦לחץ|לחצי⟧ על <strong>⋮</strong> למעלה ⟦ובחר|ובחרי⟧ <strong>פתיחה ב־Chrome</strong>.</span></li>
         <li><span class="k"><Icon name="add-home" size={22} /></span><span>בדף שנפתח ⟦לחץ|לחצי⟧ על <strong>התקנה</strong>.</span></li>
@@ -125,7 +131,8 @@ import { accountsEnabled } from '../lib/account-config';
   import { readLocal } from '../lib/progress-local';
   import { rankFor, xpBreakdown } from '../lib/xp';
   import { gameInProgress } from '../play/record';
-  import { installWay, isStandalone, onInstallChange, promptInstall } from '../lib/install';
+  import { installWay, isIpad, isStandalone, onInstallChange } from '../lib/install';
+  import { readTourEnd } from '../lib/tour';
   import { offerSeen, offerWanted, serverKey } from '../lib/push-client';
   import { DESKTOP_SETTINGS, isPhoneLike } from '../lib/settings-place';
 
@@ -179,15 +186,21 @@ import { accountsEnabled } from '../lib/account-config';
     box.hidden = false;
     box.querySelectorAll<HTMLElement>('[data-way]').forEach((el) => { el.hidden = el.dataset.way !== way; });
   }
-  root.querySelector('[data-app-prompt]')?.addEventListener('click', () => void promptInstall());
+  const ipad = isIpad();
+  root.querySelectorAll<HTMLElement>('[data-ipad-note]').forEach((el) => { el.hidden = !ipad; });
+  root.querySelectorAll<HTMLElement>('[data-iphone-note]').forEach((el) => { el.hidden = ipad; });
 
   const settings = root.querySelector<HTMLDetailsElement>('#settings')!;
   const openPush = () => {
     settings.open = true;
     requestAnimationFrame(() => document.getElementById('push')?.scrollIntoView({ block: 'center' }));
   };
+  const tourPending = () => {
+    try { return isStandalone() && signedIn() && readTourEnd(localStorage, 'app') === null; } catch { return false; }
+  };
   async function pushOffer() {
     const card = root.querySelector<HTMLElement>('[data-push-offer]')!;
+    if (tourPending()) await new Promise<void>((done) => document.addEventListener('tour-end', () => done(), { once: true }));
     card.hidden = !offerWanted() || !(await serverKey());
     card.querySelector('[data-push-offer-yes]')!.addEventListener('click', () => { offerSeen(); card.hidden = true; openPush(); });
     card.querySelector('[data-push-offer-no]')!.addEventListener('click', () => { offerSeen(); card.hidden = true; });
@@ -285,6 +298,8 @@ import { accountsEnabled } from '../lib/account-config';
   .install h2 { margin: 0 0 6px; font-size: 22px; }
   .install > p { margin: 0 0 14px; }
   .install .btn { width: 100%; justify-content: center; gap: 10px; }
+  .install .chrome { margin-bottom: 10px; }
+  [data-ipad-note][hidden], [data-iphone-note][hidden] { display: none; }
   .steps { list-style: none; margin: 0; padding: 0; counter-reset: s; }
   .steps li { counter-increment: s; display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start; padding: 10px 0; line-height: 1.5; }
   .steps li + li { border-top: 1px solid var(--rule); }

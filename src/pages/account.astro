@@ -40,6 +40,13 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
 
     {accountsEnabled && (
       <>
+        <div class="app-gate" data-app-gate>
+          <img src="/app-icon-192.png" width="56" height="56" alt="" />
+          <p class="gate-title">⟦ברוך הבא|ברוכה הבאה⟧ לשוגי ישראל</p>
+          <p>כמו שאמרנו, האפליקציה עובדת עם חשבון. כדי להשתמש בה ⟦היכנס|היכנסי⟧ לחשבון או ⟦פתח|פתחי⟧ חשבון חדש בחינם. ההתקדמות שלך נשמרת בחשבון ועוברת איתך לכל מכשיר.</p>
+          <p class="small" data-gate-ios hidden>גם אם נכנסת לאתר בספארי, האפליקציה צריכה כניסה משלה.</p>
+          <p class="small gate-offline" data-gate-offline hidden>צריך חיבור לאינטרנט כדי להיכנס.</p>
+        </div>
         <p class="muted" data-view="loading">טוען…</p>
 
         <section data-view="signin" hidden>
@@ -341,6 +348,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       $('[data-stat="wins"]').textContent = String(g.wins);
       $('[data-stat="losses"]').textContent = String(g.losses);
       if (recovering) return;
+      if (document.documentElement.classList.contains('app-locked')) return location.replace('/app/');
       show('home');
       if (location.hash === '#notifications') document.getElementById('notifications')?.scrollIntoView();
     }
@@ -680,6 +688,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
 
     $('[data-signout]').addEventListener('click', async () => {
       await acc.signOut();
+      if (isStandalone()) return location.replace('/account/?app=gate');
       show('signin');
     });
     const danger = $<HTMLElement>('.danger');
@@ -689,6 +698,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       const { error } = await acc.deleteAccount();
       busy(danger, false);
       if (error) return fail('home', 'המחיקה לא הצליחה. ⟦נסה|נסי⟧ שוב, או ⟦כתוב|כתבי⟧ לנו באינסטגרם.');
+      if (isStandalone()) return location.replace('/account/?app=gate');
       show('signin');
       fail('signin', 'החשבון נמחק.');
     });
