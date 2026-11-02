@@ -354,7 +354,8 @@ mark.learn-task {
 .learn__settings .close { width: 44px; height: 44px; border: 0; background: none; color: var(--ink); cursor: pointer; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; }
 .learn__settings .close:hover { background: var(--washi-2); }
 .learn__settings fieldset { border: 0; border-top: 1px solid var(--rule); margin: 0; padding: 12px 0; }
-.learn__settings legend { font-weight: 700; padding: 0; margin-bottom: 8px; }
+.learn__settings legend { float: inline-start; width: 100%; font-weight: 700; padding: 0; margin-bottom: 8px; }
+.learn__settings legend + * { clear: both; }
 .learn__settings .pref { display: flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; }
 .learn__settings .pref input { width: 22px; height: 22px; accent-color: var(--seal); margin: 0; }
 .learn__settings .sound-rest[hidden] { display: none; }
