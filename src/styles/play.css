@@ -3,6 +3,12 @@
 .play-island { margin: 18px 0 8px; }
 .play { display: grid; gap: 18px; margin: 18px 0 8px; grid-template-columns: minmax(0, 1fr); }
 .play__main { min-width: 0; }
+.play__bar { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: -18px; }
+.play__bar[hidden] { display: none; }
+.play__what { margin: 0; font-size: 16px; color: var(--ink-2); }
+.play__what strong { color: var(--ink); }
+.play__new { min-height: 44px; padding: 0 16px; gap: 6px; font-size: 16px; }
+.play__new:disabled { opacity: 0.4; cursor: default; }
 .play__table { min-width: 0; }
 @media (min-width: 860px) {
   .play { grid-template-columns: minmax(0, 600px) minmax(280px, 340px); column-gap: 28px; align-items: start; }

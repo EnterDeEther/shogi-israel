@@ -56,6 +56,7 @@ function picon(name: string): HTMLElement {
 export function mount(root: HTMLElement): { board: HTMLElement } {
   root.classList.add('play');
   root.replaceChildren(
+    el('div', { class: 'play__bar', 'data-bar': true }),
     el('div', { class: 'play__main' },
       el('div', {
         class: 'play__board', dir: 'ltr', tabindex: '0', role: 'application',
@@ -350,6 +351,16 @@ export function render(ctrl: PlayCtrl, root: HTMLElement, openSettings: () => vo
       if (frame.getBoundingClientRect().top < (document.querySelector('.site-header')?.clientHeight ?? 0)) frame.scrollIntoView({ block: 'start' });
     });
   }
+
+  const bar = q('[data-bar]');
+  bar.hidden = support !== 'ok';
+  bar.replaceChildren(
+    el('p', { class: 'play__what' }, el('strong', {}, 'נגד המחשב'), ctrl.record ? ` · רמה ${ctrl.level.level}` : null),
+    el('button', {
+      type: 'button', class: 'btn play__new', 'data-fid': 'top-new', disabled: ctrl.setupOpen,
+      onclick: go(() => ctrl.openSetup()),
+    }, picon('plus'), 'משחק חדש'),
+  );
 
   const top = ctrl.orientation === 'sente' ? 'gote' : 'sente';
   const bottom = ctrl.orientation;
