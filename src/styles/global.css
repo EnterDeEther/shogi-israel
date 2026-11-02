@@ -398,7 +398,7 @@ html[data-pieces="letters"] .pchip::after { content: var(--l); direction: ltr; f
 html[data-pieces="kanji"] .pchip::after { content: var(--k); font-family: var(--f-kanji); font-size: 0.9em; }
 html[data-pieces="chess"] .pchip::after { content: var(--c, var(--h)); font-family: var(--f-chess), var(--f-piece); }
 html[data-pieces="chess"] .pchip:not([data-p^="+"])::after { font-size: 1.08em; padding-top: 0.18em; }
-html[data-pieces="chess"] .pchip[data-p^="+"]::after { font-size: 0.66em; }
+html[data-pieces="chess"] .pchip[data-p^="+"]::after { font-size: 0.74em; letter-spacing: -0.2em; }
 html[data-pieces="hebrew"] .pchip:is([data-p="B"], [data-p^="+"]):not([data-p="+R"], [data-p="+B"])::after { font-size: 0.66em; }
 html[data-pieces="hebrew"] .pchip[data-p="K"]::after {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 12'%3E%3Cpath fill='%231C1B19' d='M1 3.2 5.6 7 10 .8 14.4 7 19 3.2 17.2 11.2H2.8Z'/%3E%3C/svg%3E");
