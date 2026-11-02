@@ -8,7 +8,7 @@ import type PlayCtrl from './ctrl';
 import type { PlaySettings } from './ctrl';
 import type { GameEnd } from './game';
 import { engineLabel, getLevel, levels } from './levels';
-import { highestBeaten } from './record';
+import { highestBeaten, openGameText, savedGame, touchDevice } from './record';
 import { recordKif } from './record-kif';
 import { scrollWithin } from '../lib/scroll-within';
 
@@ -45,6 +45,7 @@ const extraIcons: Record<string, string> = {
   'chev-right': '<path d="M9 6l6 6-6 6"/>',
   'end-right': '<path d="M6 6l6 6-6 6M16 6v12"/>',
   crown: '<path d="M4 18h16M5 16l-1-9 5 4 3-6 3 6 5-4-1 9z"/>',
+  kif: '<path d="M12 2.5l6 2.6 2.2 16.4H3.8L6 5.1z"/><path d="M12 9v7M9 13l3 3 3-3"/>',
 };
 function picon(name: string): HTMLElement {
   if (!extraIcons[name]) return icon(name);
@@ -58,6 +59,7 @@ export function mount(root: HTMLElement): { board: HTMLElement } {
   root.replaceChildren(
     el('div', { class: 'play__bar', 'data-bar': true }),
     el('div', { class: 'play__main' },
+      el('div', { class: 'play__seat play__seat--top', 'data-seat': 'top', hidden: true }),
       el('div', {
         class: 'play__board', dir: 'ltr', tabindex: '0', role: 'application',
         'aria-roledescription': 'לוח שוגי', 'aria-label': 'הלוח', 'aria-describedby': 'play-kbd-help', 'data-board': true,
@@ -68,6 +70,7 @@ export function mount(root: HTMLElement): { board: HTMLElement } {
           el('div', { class: 'play__overlay', 'data-overlay': true, hidden: true }),
         ),
       ),
+      el('div', { class: 'play__seat play__seat--bottom', 'data-seat': 'bottom', hidden: true }),
       el('p', { class: 'sr-only', id: 'play-kbd-help' }, 'משחק במקלדת: חצים להזזת הסמן, Enter לבחירה ולמהלך, D לכלי מהיד, סימן שאלה לעזרה.'),
       el('div', { class: 'sr-only', 'aria-live': 'polite', 'data-live': true }),
     ),
@@ -88,7 +91,26 @@ export function clockText(ctrl: PlayCtrl, color: Color): string {
   return t.main > 0 ? fmt(t.main) : `${fmt(t.byo)}`;
 }
 
+function localEndText(end: GameEnd): { title: string; text: string } {
+  const w = end.winner;
+  const loser = w ? SIDE[w === 'sente' ? 'gote' : 'sente'] : '';
+  const title = w ? `הניצחון ל${SIDE[w]}` : 'תיקו';
+  const text = {
+    mate: `מט. המלך של ${loser} לא יכול לברוח.`,
+    stalemate: `ל${loser} לא נשאר אף מהלך חוקי, ובשוגי זה הפסד.`,
+    resign: `${loser} נכנע.`,
+    time: `הזמן של ${loser} נגמר (טיימאאוט).`,
+    repetition: 'אותה עמדה חזרה ארבע פעמים (חזרה מרובעת).',
+    perpetual: `${loser} נתן שח נצחי, ומי שנותן שח נצחי מפסיד.`,
+    impasse: `${w ? SIDE[w] : ''} הכריז על ניצחון בנקודות (מבוי סתום).`,
+    draw: 'לאף צד לא נשארו מספיק כלים.',
+    agreement: 'שני השחקנים הסכימו על תיקו.',
+  }[end.reason];
+  return { title, text };
+}
+
 function endText(ctrl: PlayCtrl, end: GameEnd): { title: string; text: string } {
+  if (ctrl.local) return localEndText(end);
   const won = end.winner === ctrl.playerColor;
   const draw = !end.winner;
   const title = draw ? 'תיקו' : won ? 'ניצחת!' : 'המחשב ניצח';
@@ -101,8 +123,40 @@ function endText(ctrl: PlayCtrl, end: GameEnd): { title: string; text: string } 
     perpetual: won ? 'המחשב נתן שח נצחי, ומי שנותן שח נצחי מפסיד.' : 'נתת שח נצחי, ומי שנותן שח נצחי מפסיד.',
     impasse: won ? 'הכרזת על ניצחון בנקודות (מבוי סתום).' : 'המחשב הכריז על ניצחון בנקודות (מבוי סתום).',
     draw: 'לאף צד לא נשארו מספיק כלים.',
+    agreement: 'תיקו בהסכמה.',
   }[end.reason];
   return { title, text };
+}
+
+/** Two players: each side's own row, on its own edge of the board (the top one is drawn upside down). */
+function seatRow(ctrl: PlayCtrl, color: Color, go: (fn: () => void) => (e: Event) => void): HTMLElement {
+  const running = ctrl.clock?.running === color;
+  const t = ctrl.clock ? ctrl.timeLeft(color) : undefined;
+  const turn = ctrl.playing && ctrl.line.current.turn === color;
+  const other: Color = color === 'sente' ? 'gote' : 'sente';
+  const offered = ctrl.drawOffer === other;
+  const btn = (label: string, fid: string, fn: () => void, cls = '', pressed?: boolean) =>
+    el('button', { type: 'button', class: `seat-btn${cls}`, 'data-fid': `${fid}-${color}`, disabled: !ctrl.playing, 'aria-pressed': pressed === undefined ? undefined : String(pressed), onclick: go(fn) }, label);
+  const sub = !ctrl.playing ? (color === 'sente' ? 'משחק ראשון' : 'משחק שני')
+    : offered ? `${SIDE[other]} מציע תיקו`
+    : turn ? (ctrl.line.current.isCheck() ? `שח! התור של ${SIDE[color]}` : `התור של ${SIDE[color]}`)
+    : '';
+  const actions = ctrl.resignConfirm === color
+    ? [el('span', { class: 'q' }, 'להיכנע?'),
+       btn('כן', 'resign-yes', () => ctrl.resign(color), ' danger'),
+       btn('לא', 'resign-no', () => ctrl.cancelResign())]
+    : [btn(offered ? 'קבלת תיקו' : 'הצעת תיקו', 'draw', () => ctrl.offerDraw(color), offered ? ' primary' : '', ctrl.drawOffer === color),
+       btn('כניעה', 'resign', () => ctrl.resign(color))];
+  return el('div', { class: `ruser seat${turn ? ' turn' : ''}${running ? ' running' : ''}` },
+    el('span', { class: 'mark', 'aria-hidden': 'true' }, MARK[color]),
+    el('span', { class: 'who' },
+      el('strong', {}, SIDE[color]),
+      el('span', { class: `small${turn || offered ? ' hot' : ' muted'}` }, sub)),
+    el('span', { class: 'seat-actions' }, ...actions),
+    ctrl.clock
+      ? el('span', { class: `rclock${t && t.main <= 0 ? ' byo' : ''}`, dir: 'ltr', 'data-clock': color, 'aria-label': `השעון של ${SIDE[color]}` }, clockText(ctrl, color))
+      : null,
+  );
 }
 
 function playerRow(ctrl: PlayCtrl, color: Color): HTMLElement {
@@ -164,11 +218,18 @@ function controls(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void, op
   const tool = (name: string, label: string, fn: () => void, opts: { disabled?: boolean; cls?: string; iconName?: string } = {}) =>
     el('button', { type: 'button', class: `tool${opts.cls ? ` ${opts.cls}` : ''}`, 'data-fid': `tool-${name}`, title: label, disabled: !!opts.disabled, onclick: go(fn) },
       picon(opts.iconName ?? name), el('span', { class: 'label' }, label));
-  if (ctrl.resignConfirm) {
+  if (ctrl.resignConfirm && !ctrl.local) {
     return el('div', { class: 'tools confirm', role: 'group', 'aria-label': 'אישור כניעה' },
       el('span', { class: 'q' }, 'להיכנע?'),
       tool('flag', 'כן, נכנעים', () => ctrl.resign(), { cls: 'danger' }),
       tool('close', 'לא, ממשיכים', () => ctrl.cancelResign()),
+    );
+  }
+  if (ctrl.local) {
+    return el('div', { class: 'tools', role: 'group', 'aria-label': 'פעולות במשחק' },
+      tool('undo', 'החזרת מהלך', () => ctrl.takeback(), { disabled: !ctrl.takebackPlies }),
+      tool('plus', 'משחק חדש', () => ctrl.openSetup()),
+      tool('cog', 'הגדרות', openSettings),
     );
   }
   return el('div', { class: 'tools', role: 'group', 'aria-label': 'פעולות במשחק' },
@@ -205,14 +266,66 @@ function kifButtons(ctrl: PlayCtrl): HTMLElement {
   );
 }
 
+/** The KIF button in the moves box: the game so far as a KIF file, at any point of the game. */
+let kifOpen = false;
+let kifCtrl: PlayCtrl | undefined;
+let kifListening = false;
+
+function kifMenu(ctrl: PlayCtrl): HTMLElement {
+  kifCtrl = ctrl;
+  if (!kifListening) {
+    kifListening = true;
+    const close = () => { if (kifOpen) { kifOpen = false; kifCtrl?.redraw(); } };
+    document.addEventListener('click', (e) => { if (!(e.target as HTMLElement).closest?.('.kif-menu')) close(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  }
+  const n = ctrl.line.plies.length;
+  const has = !!ctrl.record && n > 0;
+  const open = kifOpen && has;
+  const flash = (btn: HTMLElement, text: string) => {
+    const label = btn.querySelector('.label') ?? btn;
+    const before = label.textContent;
+    label.textContent = text;
+    window.setTimeout(() => (label.textContent = before), 2000);
+  };
+  const item = (label: string, fid: string, fn: (btn: HTMLElement) => void) => {
+    const btn = el('button', { type: 'button', role: 'menuitem', class: 'kif-item', 'data-fid': fid }, el('span', { class: 'label' }, label));
+    btn.addEventListener('click', (e) => { e.preventDefault(); fn(btn); });
+    return btn;
+  };
+  return el('div', { class: 'kif-menu' },
+    el('button', {
+      type: 'button', class: 'kif-btn', 'data-fid': 'kif-menu', 'aria-haspopup': 'menu', 'aria-expanded': String(open),
+      disabled: !has, title: has ? 'רישום המשחק (KIF)' : 'אין עדיין מהלכים לשמור',
+      onclick: (e: Event) => { e.preventDefault(); e.stopPropagation(); kifOpen = !kifOpen; ctrl.redraw(); },
+    }, picon('kif'), el('span', { dir: 'ltr' }, 'KIF')),
+    open
+      ? el('div', { class: 'kif-pop', role: 'menu', 'aria-label': 'רישום המשחק' },
+        el('p', { class: 'small muted' }, ctrl.ended ? `רישום המשחק (${n} מהלכים)` : `רישום המשחק עד עכשיו (${n} מהלכים)`),
+        item('הורדת קובץ KIF', 'kif-download', () => downloadKif(kifText(ctrl), kifFileName({ date: new Date(ctrl.record!.startedAt) }))),
+        item('העתקה', 'kif-copy', async (btn) => flash(btn, (await copyText(kifText(ctrl))) ? 'הועתק ✓' : 'ההעתקה נכשלה')),
+        ctrl.ended
+          ? item('ניתוח ב־Lishogi', 'kif-lishogi', async (btn) => {
+            const ok = await copyText(kifText(ctrl));
+            flash(btn, ok ? 'הועתק, ⟦הדבק|הדביקי⟧ בחלון שנפתח' : 'ההעתקה נכשלה');
+            window.open(LISHOGI_IMPORT_URL, '_blank', 'noopener');
+          })
+          : el('p', { class: 'small muted' }, 'ניתוח ב־Lishogi: אחרי סוף המשחק'),
+        el('p', { class: 'small muted kif-what' }, 'מה זה KIF?', tipEl('kif')),
+      )
+      : null,
+  );
+}
+
 function status(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void): HTMLElement | null {
   if (!ctrl.record) return null;
   const end = ctrl.ended;
   if (end) {
     const { title, text } = endText(ctrl, end);
-    const won = end.winner === ctrl.playerColor;
-    const next = ctrl.level.level < 10 && won;
-    return el('div', { class: `result ${end.winner ? (won ? 'won' : 'lost') : 'draw'}`, role: 'status' },
+    const local = ctrl.local;
+    const won = !local && end.winner === ctrl.playerColor;
+    const next = !local && ctrl.level.level < 10 && won;
+    return el('div', { class: `result ${end.winner ? (won || local ? 'won' : 'lost') : 'draw'}`, role: 'status' },
       el('strong', {}, title),
       el('p', {}, text),
       ctrl.record.takebacks ? el('p', { class: 'small muted' }, `החזרת ${ctrl.record.takebacks === 1 ? 'מהלך אחד' : `${ctrl.record.takebacks} מהלכים`} במשחק הזה.`) : null,
@@ -224,10 +337,10 @@ function status(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void): HTM
         el('button', { type: 'button', class: 'link', onclick: go(() => ctrl.openSetup()) }, 'הגדרות משחק'),
       ),
       kifButtons(ctrl),
-      el('p', { class: 'small', 'data-signed-out-only': '' },
+      local ? null : el('p', { class: 'small', 'data-signed-out-only': '' },
         won ? 'כל הכבוד! ' : '', el('a', { href: '/account/?mode=signup' }, '⟦פתח|פתחי⟧ חשבון בחינם'), ' כדי לשמור את המשחקים שלך ולהתקדם במסלול, בכל מכשיר.'),
       won ? shareButton({ title: `ניצחתי את המחשב ברמה ${ctrl.level.level}`, sub: 'שוגי, השחמט היפני. משחקים בעברית ובחינם', kanji: '勝', path: '/play/' }, 'shogi-israel-win.png', 'btn share') : null,
-      nextInCourse(),
+      local ? null : nextInCourse(),
     );
   }
   if (ctrl.engineError) {
@@ -237,7 +350,10 @@ function status(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void): HTM
     );
   }
   const pos = ctrl.line.current;
-  const text = ctrl.thinking
+  // two players: whose turn it is shows on that side's own row
+  const text = ctrl.local
+    ? ''
+    : ctrl.thinking
     ? 'המחשב חושב…'
     : pos.turn === ctrl.playerColor
       ? pos.isCheck() ? 'שח! תורך.' : 'תורך.'
@@ -252,6 +368,10 @@ function status(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void): HTM
 }
 
 function setupScreen(ctrl: PlayCtrl, draft: PlaySettings, go: (fn: () => void) => (e: Event) => void, rerender: () => void): HTMLElement {
+  const touch = touchDevice();
+  if (!touch) draft.mode = 'ai';
+  if (ctrl.aiBlocked) draft.mode = 'local';
+  const local = draft.mode === 'local';
   const beaten = highestBeaten();
   const lv = getLevel(draft.level);
   const seg = <T>(label: string, options: { label: string; value: T; sub?: string }[], cur: T, pick: (v: T) => void, cls = '', tip?: TipId) =>
@@ -262,16 +382,35 @@ function setupScreen(ctrl: PlayCtrl, draft: PlaySettings, go: (fn: () => void) =
         onclick: (e: Event) => { e.preventDefault(); pick(o.value); rerender(); },
       }, o.label, o.sub ? el('span', { class: 'sub' }, o.sub) : null))),
     );
+  // phones and tablets: pick the computer or two players on this device (Dean, 2 Nov 2026)
+  const modeBtn = (mode: PlaySettings['mode'], label: string, sub: string, disabled = false) =>
+    el('button', {
+      type: 'button', class: 'mode', 'data-fid': `mode-${mode}`, disabled, 'aria-pressed': String(draft.mode === mode),
+      onclick: (e: Event) => { e.preventDefault(); draft.mode = mode; if (mode === 'ai') ctrl.preload(draft.level); rerender(); },
+    }, el('strong', {}, label), el('span', { class: 'sub' }, sub));
+  const sameKind = !!ctrl.record && ctrl.local === local;
+  const waiting = sameKind ? null : savedGame(draft.mode);
   return el('div', { class: 'screen setup', role: 'dialog', 'aria-modal': 'false', 'aria-labelledby': 'play-setup-title' },
-    el('h2', { id: 'play-setup-title' }, 'משחק נגד המחשב'),
-    seg('רמה', levels.map((l) => ({ label: String(l.level), value: l.level })), draft.level, (v) => {
+    el('h2', { id: 'play-setup-title' }, touch ? 'משחק חדש' : 'משחק נגד המחשב'),
+    touch
+      ? el('div', { class: 'mode-pick', role: 'group', 'aria-label': 'סוג המשחק' },
+        modeBtn('ai', 'נגד המחשב', '10 רמות', ctrl.aiBlocked),
+        modeBtn('local', 'שני שחקנים', 'מכשיר אחד'))
+      : null,
+    ctrl.aiBlocked ? el('p', { class: 'small muted' }, 'הדפדפן הזה לא מריץ את המחשב, אבל אפשר לשחק בו שני שחקנים על מכשיר אחד.') : null,
+    local
+      ? el('div', { class: 'local-how' },
+        el('span', { class: 'mini-board', 'aria-hidden': 'true' }, el('span', {}, '☖ משיב'), el('i'), el('span', {}, '☗ פותח')),
+        el('p', {}, 'כל שחקן מקבל צד אחד של הלוח. ', el('strong', {}, 'פותח'), ' למטה ומשחק ראשון, ', el('strong', {}, 'משיב'), ' למעלה. הלוח לא מסתובב בין התורות.'))
+      : null,
+    local ? null : seg('רמה', levels.map((l) => ({ label: String(l.level), value: l.level })), draft.level, (v) => {
       draft.level = v;
       ctrl.preload(v);
     }, 'levels'),
-    el('p', { class: 'level-hint' },
+    local ? null : el('p', { class: 'level-hint' },
       el('strong', {}, `רמה ${lv.level}: `), levelHint[lv.level],
       beaten ? el('span', { class: 'small muted beaten' }, ` · הרמה הגבוהה שניצחת: ${beaten}`) : null),
-    seg<PlaySettings['color']>('⟦אתה|את⟧ ⟦משחק|משחקת⟧', [
+    local ? null : seg<PlaySettings['color']>('⟦אתה|את⟧ ⟦משחק|משחקת⟧', [
       { label: 'פותח', value: 'sente', sub: '⟦אתה|את⟧ ⟦מתחיל|מתחילה⟧' },
       { label: 'אקראי', value: 'random' },
       { label: 'משיב', value: 'gote', sub: 'המחשב מתחיל' },
@@ -280,9 +419,14 @@ function setupScreen(ctrl: PlayCtrl, draft: PlaySettings, go: (fn: () => void) =
     clockHelp(),
     el('div', { class: 'buttons' },
       el('button', { type: 'button', class: 'btn primary big', 'data-autofocus': true, 'data-fid': 'start', onclick: go(() => ctrl.newGame({ ...draft })) }, 'מתחילים'),
-      ctrl.record ? el('button', { type: 'button', class: 'link', onclick: go(() => ctrl.closeSetup()) }, ctrl.playing ? 'חזרה למשחק' : 'סגירה') : null,
+      waiting
+        ? el('button', { type: 'button', class: 'link', 'data-fid': 'resume-other', onclick: go(() => ctrl.switchTo(draft.mode)) }, `או להמשיך את המשחק השמור (${openGameText(waiting)})`)
+        : null,
+      ctrl.record && !ctrl.aiBlocked ? el('button', { type: 'button', class: 'link', onclick: go(() => ctrl.closeSetup()) }, ctrl.playing ? 'חזרה למשחק' : 'סגירה') : null,
     ),
-    ctrl.playing ? el('p', { class: 'small muted' }, 'משחק חדש יחליף את המשחק הנוכחי.') : null,
+    ctrl.playing
+      ? el('p', { class: 'small muted' }, sameKind ? 'משחק חדש יחליף את המשחק הנוכחי.' : 'המשחק הנוכחי נשמר, ואפשר לחזור אליו.')
+      : null,
   );
 }
 
@@ -330,7 +474,11 @@ export function render(ctrl: PlayCtrl, root: HTMLElement, openSettings: () => vo
   const q = <T extends HTMLElement = HTMLElement>(s: string) => root.querySelector<T>(s)!;
 
   const overlay = q('[data-overlay]');
-  if (support !== 'ok') {
+  const touch = touchDevice();
+  ctrl.aiBlocked = support !== 'ok';
+  // engines can't run here: phones and tablets can still play two players on one device
+  if (ctrl.aiBlocked && touch && !ctrl.local) ctrl.setupOpen = true;
+  if (support !== 'ok' && !touch) {
     overlay.hidden = false;
     overlay.replaceChildren(unsupported(support));
   } else if (ctrl.setupOpen) {
@@ -346,16 +494,18 @@ export function render(ctrl: PlayCtrl, root: HTMLElement, openSettings: () => vo
   const wasSetup = root.classList.contains('setup-open');
   root.classList.toggle('setup-open', !overlay.hidden);
   if (wasSetup && overlay.hidden) {
-    const frame = q('.play__board');
+    const frame = ctrl.local ? q('[data-seat="top"]') : q('.play__board');
     requestAnimationFrame(() => {
       if (frame.getBoundingClientRect().top < (document.querySelector('.site-header')?.clientHeight ?? 0)) frame.scrollIntoView({ block: 'start' });
     });
   }
 
   const bar = q('[data-bar]');
-  bar.hidden = support !== 'ok';
+  bar.hidden = support !== 'ok' && !touch;
   bar.replaceChildren(
-    el('p', { class: 'play__what' }, el('strong', {}, 'נגד המחשב'), ctrl.record ? ` · רמה ${ctrl.level.level}` : null),
+    (ctrl.setupOpen && draft ? draft.mode === 'local' : ctrl.local)
+      ? el('p', { class: 'play__what' }, el('strong', {}, 'שני שחקנים'), ' · מכשיר אחד')
+      : el('p', { class: 'play__what' }, el('strong', {}, 'נגד המחשב'), ctrl.record && !ctrl.setupOpen ? ` · רמה ${ctrl.level.level}` : null),
     el('button', {
       type: 'button', class: 'btn play__new', 'data-fid': 'top-new', disabled: ctrl.setupOpen,
       onclick: go(() => ctrl.openSetup()),
@@ -364,15 +514,25 @@ export function render(ctrl: PlayCtrl, root: HTMLElement, openSettings: () => vo
 
   const top = ctrl.orientation === 'sente' ? 'gote' : 'sente';
   const bottom = ctrl.orientation;
+  // two players: each side's row sits on its own edge of the board, the top one upside down
+  const seats = ctrl.local && !!ctrl.record && overlay.hidden;
+  root.classList.toggle('play--local', seats);
+  const seatTop = q('[data-seat="top"]');
+  const seatBottom = q('[data-seat="bottom"]');
+  seatTop.hidden = seatBottom.hidden = !seats;
+  seatTop.replaceChildren(...(seats ? [seatRow(ctrl, 'gote', go)] : []));
+  seatBottom.replaceChildren(...(seats ? [seatRow(ctrl, 'sente', go)] : []));
   const table = q('[data-table]');
   const movesScroll = table.querySelector('[data-moves]')?.scrollTop;
   table.replaceChildren(
     el('div', { class: 'table-box' },
-      playerRow(ctrl, top),
-      el('div', { class: 'replay' }, moveList(ctrl, go), navButtons(ctrl, go)),
+      ctrl.local ? null : playerRow(ctrl, top),
+      el('div', { class: 'replay' },
+        el('div', { class: 'moves-head' }, el('strong', {}, 'מהלכים'), kifMenu(ctrl)),
+        moveList(ctrl, go), navButtons(ctrl, go)),
       status(ctrl, go),
       controls(ctrl, go, openSettings),
-      playerRow(ctrl, bottom),
+      ctrl.local ? null : playerRow(ctrl, bottom),
     ),
     el('div', { class: 'pieces-switch' }, pieceSetSwitch(), tipEl('pieces')),
   );

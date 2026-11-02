@@ -7,7 +7,7 @@ import { impasse } from '../learn/impasse';
 
 export const START_SFEN = initialSfen('standard');
 
-export type EndReason = 'mate' | 'stalemate' | 'resign' | 'time' | 'repetition' | 'perpetual' | 'impasse' | 'draw';
+export type EndReason = 'mate' | 'stalemate' | 'resign' | 'time' | 'repetition' | 'perpetual' | 'impasse' | 'draw' | 'agreement';
 export interface GameEnd {
   reason: EndReason;
   winner?: Color;

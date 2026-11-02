@@ -1,7 +1,7 @@
 // AGPL-3.0-or-later.
 import { describe, expect, test } from 'bun:test';
 import { bookMove } from '../src/play/book';
-import { Line } from '../src/play/game';
+import { Line, START_SFEN } from '../src/play/game';
 import { getLevel, levels } from '../src/play/levels';
 
 describe('Line', () => {
@@ -79,12 +79,44 @@ describe('the header play button', () => {
 
   test('continues a game still being played, and only that', async () => {
     const { gameInProgress } = await import('../src/play/record');
-    expect(gameInProgress()).toBeNull();
+    expect(gameInProgress(false)).toBeNull();
     save(game);
-    expect(gameInProgress()).toEqual({ moves: 2, level: 3 });
+    expect(gameInProgress(false)).toEqual({ moves: 2, level: 3, mode: 'ai', at: 0 });
     save({ ...game, result: { reason: 'mate', winner: 'sente' } });
-    expect(gameInProgress()).toBeNull();
+    expect(gameInProgress(false)).toBeNull();
     m.set('shogi-il.play.current', '{not json');
-    expect(gameInProgress()).toBeNull();
+    expect(gameInProgress(false)).toBeNull();
+    m.delete('shogi-il.play.current');
+  });
+
+  test('two players on one device: own slot, phones and tablets only, the most recent game wins', async () => {
+    const { gameInProgress, openGameText } = await import('../src/play/record');
+    const local = { ...game, id: 'b', moves: ['7g7f'], mode: 'local' };
+    m.set('shogi-il.play.local.current', JSON.stringify({ record: local, clock: null, orientation: 'sente', at: 200 }));
+    expect(gameInProgress(false)).toBeNull(); // desktop never continues a two-player game
+    expect(gameInProgress(true)?.mode).toBe('local');
+    m.set('shogi-il.play.current', JSON.stringify({ record: game, clock: null, orientation: 'sente', at: 100 }));
+    expect(gameInProgress(true)?.mode).toBe('local');
+    m.set('shogi-il.play.current', JSON.stringify({ record: game, clock: null, orientation: 'sente', at: 300 }));
+    expect(gameInProgress(true)?.mode).toBe('ai');
+    expect(openGameText({ moves: 1, level: 1, mode: 'local', at: 0 })).toBe('שני שחקנים, אחרי מהלך אחד');
+    expect(openGameText({ moves: 2, level: 3, mode: 'ai', at: 0 })).toBe('רמה 3, אחרי 2 מהלכים');
+    m.delete('shogi-il.play.current');
+    m.delete('shogi-il.play.local.current');
+  });
+
+  test('two-player wins never count as beating a computer level, and their KIF names both sides', async () => {
+    const { highestBeaten } = await import('../src/play/record');
+    const { recordKif } = await import('../src/play/record-kif');
+    const won = { ...game, startSfen: START_SFEN, result: { reason: 'resign', winner: 'sente' } };
+    m.set('shogi-il.play.history', JSON.stringify([{ ...won, level: 9, mode: 'local' }, { ...won, level: 2 }]));
+    expect(highestBeaten()).toBe(2);
+    const kif = recordKif({ ...won, mode: 'local' } as never);
+    expect(kif).toContain('先手：פותח');
+    expect(kif).toContain('後手：משיב');
+    const open = recordKif({ ...game, startSfen: START_SFEN, mode: 'local' } as never);
+    expect(open).toContain('   2 ');
+    expect(open).not.toContain('まで');
+    m.delete('shogi-il.play.history');
   });
 });

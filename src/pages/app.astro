@@ -132,7 +132,7 @@ import { APP_TOUR_URL } from '../lib/tour';
   import { LEVEL_COUNTS } from '../lib/level-counts';
   import { readLocal } from '../lib/progress-local';
   import { rankFor, xpBreakdown } from '../lib/xp';
-  import { gameInProgress } from '../play/record';
+  import { gameInProgress, openGameText, touchDevice } from '../play/record';
   import { installWay, isIpad, isStandalone, onInstallChange } from '../lib/install';
   import { readTourEnd } from '../lib/tour';
   import { offerSeen, offerWanted, serverKey } from '../lib/push-client';
@@ -167,8 +167,8 @@ import { APP_TOUR_URL } from '../lib/tour';
     const game = gameInProgress();
     root.querySelector<HTMLElement>('[data-app-dot]')!.hidden = !game;
     root.querySelector<HTMLElement>('[data-app-new]')!.hidden = !game;
-    if (game) fill(a, '/play/', '⟦המשך|המשיכי⟧ את המשחק', game.moves ? `רמה ${game.level}, אחרי ${game.moves} מהלכים` : `רמה ${game.level}, לפני המהלך הראשון`);
-    else fill(a, '/play/?new', 'משחק נגד המחשב', 'עשר רמות, ישר בדפדפן');
+    if (game) fill(a, '/play/', '⟦המשך|המשיכי⟧ את המשחק', openGameText(game));
+    else fill(a, '/play/?new', '⟦שחק|שחקי⟧ עכשיו', touchDevice() ? 'נגד המחשב או שני שחקנים על מכשיר אחד' : 'עשר רמות, ישר בדפדפן');
   }
 
   async function hello() {

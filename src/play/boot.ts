@@ -121,6 +121,17 @@ export function bootPlay(root: HTMLElement): PlayCtrl {
     });
   }, 100);
 
+  // two players on one device: keep the screen on while the game is played (a long think must not dim it)
+  let wake: { release(): Promise<void> } | null = null;
+  const keepAwake = () => {
+    const want = ctrl.local && ctrl.playing && document.visibilityState === 'visible';
+    const nav = navigator as Navigator & { wakeLock?: { request(type: 'screen'): Promise<{ release(): Promise<void> }> } };
+    if (want && !wake && nav.wakeLock) nav.wakeLock.request('screen').then((w) => { wake = w; }, () => {});
+    else if (!want && wake) { void wake.release().catch(() => {}); wake = null; }
+  };
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') wake = null; keepAwake(); });
+  window.setInterval(keepAwake, 2000);
+
   render(ctrl, root, openSettings, support);
   root.querySelector<HTMLElement>('.play__overlay:not([hidden]) [data-autofocus]')?.focus({ preventScroll: true });
   return ctrl;

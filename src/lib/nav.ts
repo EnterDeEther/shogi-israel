@@ -7,6 +7,8 @@ export interface NavLink {
   external?: boolean;
   sub?: boolean;
   icon?: IconName;
+  /** Shown on phones and tablets only (class "touch-only"). */
+  touchOnly?: boolean;
 }
 export interface NavSection {
   label: string;
@@ -61,6 +63,7 @@ export const NAV: NavItem[] = [
     blurb: 'נגד המחשב כאן באתר, או מול שחקנים מכל העולם.',
     links: [
       { href: '/play/', label: '⟦שחק|שחקי⟧ עכשיו', hint: 'משחק מלא נגד המחשב, ישר בדפדפן', icon: 'cpu' },
+      { href: '/play/?vs=local', label: 'שני שחקנים, מכשיר אחד', hint: 'חבר לידך? כל אחד מקבל צד של הלוח', icon: 'two-players', touchOnly: true },
       { href: '/lishogi/', label: '⟦שחק|שחקי⟧ אונליין בליש׳וגי', hint: 'מדריך: משחקים מול כל העולם', icon: 'online' },
     ],
   },
@@ -99,7 +102,7 @@ const routes = new Set(
     .map((r) => (r.endsWith('/') ? r : `${r}/`)),
 );
 
-export const isLive = (l: NavLink): boolean => l.external || l.href.includes('#') || routes.has(l.href);
+export const isLive = (l: NavLink): boolean => l.external || l.href.includes('#') || routes.has(l.href.split('?')[0]);
 
 export const liveNav = (): NavItem[] =>
   NAV.flatMap((i): NavItem[] => {
@@ -112,7 +115,7 @@ export const liveNav = (): NavItem[] =>
 
 export const liveSections = (): NavSection[] =>
   NAV.filter(isSection)
-    .map((s) => ({ ...s, links: s.links.filter((l) => isLive(l) && !l.sub) }))
+    .map((s) => ({ ...s, links: s.links.filter((l) => isLive(l) && !l.sub && !l.touchOnly) }))
     .filter((s) => s.links.length > 0);
 
 export const withChips = (links: NavLink[]): (NavLink | NavLink[])[] =>

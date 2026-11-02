@@ -90,6 +90,7 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
         <h3>⟦שחק|שחקי⟧ עכשיו</h3>
         <p data-play-text>עשר רמות, ממתחילים ועד מתקדמים. רמה 1 סלחנית, והמטרה רק לסיים משחק שלם.</p>
         <a class="today-link" href="/play/" data-play-link><span data-play-cta>לשחק</span> ←</a>
+        <p class="today-friend touch-only">חבר לידך? <a href="/play/?vs=local">שני שחקנים על אותו מכשיר</a>, כל אחד מקבל צד של הלוח.</p>
       </li>
       <li class="today-card">
         <h3>הקהילה בוואטסאפ</h3>
@@ -314,6 +315,8 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
   .today-card p { margin: 0; color: var(--ink-2); line-height: 1.6; flex: 1; }
   .today-link { display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; color: var(--seal); text-decoration: none; align-self: flex-start; }
   .today-link:hover { text-decoration: underline; }
+  .today-friend { flex: none; margin: 0; font-size: 14px; color: var(--muted); }
+  .today-friend a { color: var(--seal); font-weight: 600; min-height: 44px; }
 
   .part { margin-top: 48px; display: flex; flex-direction: column; gap: 14px; border-top: 1px solid var(--rule); padding-top: 28px; }
   .part h2 { margin-bottom: 6px; }
