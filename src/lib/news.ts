@@ -1,6 +1,6 @@
 import { resolve, TOKEN, type Gender } from './gender.js';
 
-export type NewsKind = 'new' | 'content' | 'changed' | 'moved' | 'fixed' | 'important';
+export type NewsKind = 'new' | 'content' | 'changed' | 'moved' | 'fixed' | 'important' | 'tip' | 'week';
 export type NewsAudience = 'all' | 'returning' | 'signed_in';
 
 export interface NewsRow {
@@ -23,6 +23,7 @@ export const NEWS_DAYS = 7;
 export const NEWS_COLUMNS = 'id, kind, title, body, url, cta_label, audience, starts_at, ends_at';
 
 export const NEWS_KINDS: NewsKind[] = ['new', 'content', 'important', 'changed', 'moved', 'fixed'];
+export const ALWAYS_KINDS: NewsKind[] = ['tip', 'week'];
 export const NEWS_KIND: Record<NewsKind, { label: string; cta: string; loud: boolean }> = {
   new: { label: 'חדש', cta: '⟦נסה|נסי⟧ עכשיו', loud: true },
   content: { label: 'תוכן חדש', cta: '⟦קרא|קראי⟧ עכשיו', loud: true },
@@ -30,10 +31,12 @@ export const NEWS_KIND: Record<NewsKind, { label: string; cta: string; loud: boo
   changed: { label: 'השתנה', cta: 'מה השתנה', loud: false },
   moved: { label: 'עבר מקום', cta: 'למקום החדש', loud: false },
   fixed: { label: 'תוקן', cta: '⟦נסה|נסי⟧ שוב', loud: false },
+  tip: { label: 'ידעת?', cta: 'לפרטים', loud: false },
+  week: { label: 'בעיית השבוע', cta: '⟦פתור|פתרי⟧ עכשיו', loud: false },
 };
 const FOR_NEWCOMERS = new Set<NewsKind>(['new', 'content', 'important']);
 
-export const asKind = (k: unknown): NewsKind => (NEWS_KINDS.includes(k as NewsKind) ? (k as NewsKind) : 'new');
+export const asKind = (k: unknown): NewsKind => (typeof k === 'string' && Object.prototype.hasOwnProperty.call(NEWS_KIND, k) ? (k as NewsKind) : 'new');
 export const newsId = (id: number): string => `news:${id}`;
 
 export type NewsPart = { t: 'text' | 'bold' | 'chip' | 'chess'; s: string };
@@ -109,7 +112,7 @@ export function pickNews(rows: NewsRow[], v: NewsViewer): NewsRow[] {
   const read = new Set(v.read ?? []);
   return rows
     .filter((r) => r && typeof r.title === 'string' && isLiveNews(r, v.now) && newsUrlOk(r.url) && !newsProblems(r.title).includes('markup'))
-    .filter((r) => !read.has(newsId(r.id)) && seesNews(r, v))
+    .filter((r) => !read.has(newsId(r.id)) && !ALWAYS_KINDS.includes(asKind(r.kind)) && seesNews(r, v))
     .sort((a, b) => Date.parse(b.starts_at) - Date.parse(a.starts_at) || b.id - a.id)
     .slice(0, NEWS_LIVE);
 }

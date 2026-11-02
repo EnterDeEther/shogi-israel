@@ -2,11 +2,16 @@ import { hasStoredSession } from './account-config';
 import { currentGender, resolve, type Gender } from './gender';
 import { NEWS_KIND, NEWS_ROUNDS, asKind, newsCta, newsDwell, newsHref, newsId, newsParts, pickNews, type NewsRow, type NewsSpeed } from './news';
 import { cachedNews, loadNews } from './news-data';
+import { EVERGREEN_FILL, TIPS_REST_DAYS, pickEvergreen } from './news-evergreen';
+import { settingsHref } from './settings-place';
+import { WEEK_LENGTH, weekIndex, weekPuzzle } from '../tsume/week';
 import { readLocal, updateInbox } from './progress-local';
 import { INBOX_READ_MAX } from './progress-sync';
 
 const SPEED: NewsSpeed = 'normal';
 const LATE_MS = 1500;
+const REST_KEY = 'shogi-il.news.rest';
+const isInstalled = () => matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
 const LEARNER_KEYS = ['shogi-il.learn.progress', 'shogi-il.tsume.solved', 'shogi-il.play.history'];
 
 function returning(): boolean {
@@ -206,7 +211,7 @@ function makeBar(root: HTMLElement, items: NewsRow[], kit: HTMLTemplateElement, 
   });
   stage.addEventListener('click', (e) => {
     const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[data-news-id]');
-    if (a) markRead([newsId(Number(a.dataset.newsId))]);
+    if (a && Number(a.dataset.newsId) > 0) markRead([newsId(Number(a.dataset.newsId))]);
   });
 
   let hovered = false, focused = false, offscreen = false, touch = 0;
@@ -239,10 +244,21 @@ function makeBar(root: HTMLElement, items: NewsRow[], kit: HTMLTemplateElement, 
   return api;
 }
 
+function weekOpen(count: number): boolean {
+  if (!count) return false;
+  const solved = readLocal().tsume[String(WEEK_LENGTH)] ?? [];
+  return !solved.includes(weekPuzzle(weekIndex(), count));
+}
+
+function restUntil(): number {
+  try { return Number(localStorage.getItem(REST_KEY)) || 0; } catch { return 0; }
+}
+
 export function startNews(root: HTMLElement) {
   const kit = root.querySelector<HTMLTemplateElement>('template[data-news-kit]');
   if (!kit) return;
   root.removeChild(kit);
+  const weekCount = Number(root.dataset.weekCount) || 0;
   let rows: NewsRow[] = [];
   let shown = '';
   let bar: Bar | null = null;
@@ -252,7 +268,15 @@ export function startNews(root: HTMLElement) {
     rows = list;
     if (closed) return;
     const p = readLocal();
-    const pick = pickNews(list, { now: Date.now(), returning: returning(), signedIn: hasStoredSession(), read: p.inbox.read, off: p.inbox.off.includes('news') });
+    const now = Date.now();
+    const back = returning();
+    const off = p.inbox.off.includes('news');
+    const real = pickNews(list, { now, returning: back, signedIn: hasStoredSession(), read: p.inbox.read, off });
+    const extra = off ? [] : pickEvergreen({
+      now, returning: back || hasStoredSession(), installed: isInstalled(), path: location.pathname, weekOpen: weekOpen(weekCount),
+      links: { settings: settingsHref(), whatsapp: root.dataset.whatsapp, facebook: root.dataset.facebook }, taken: real.map((r) => r.url), restUntil: restUntil(),
+    }, EVERGREEN_FILL - real.length);
+    const pick = [...real, ...extra];
     const key = pick.map((r) => `${r.id}|${r.kind}|${r.title}|${r.cta_label}|${r.url}`).join('\n');
     if (key === shown && !force) return;
     shown = key;
@@ -261,14 +285,20 @@ export function startNews(root: HTMLElement) {
     if (!pick.length) { root.hidden = true; root.replaceChildren(); return; }
     bar = makeBar(root, pick, kit!, () => {
       closed = true;
-      markRead(pick.map((r) => newsId(r.id)));
+      markRead(real.map((r) => newsId(r.id)));
+      if (extra.length) { try { localStorage.setItem(REST_KEY, String(Date.now() + TIPS_REST_DAYS * 864e5)); } catch { } }
     });
   }
 
   const cache = cachedNews();
+  let late = 0;
   if (cache) render(cache.list);
-  const t0 = Date.now();
-  void loadNews().then((list) => { if (cache || shown || Date.now() - t0 < LATE_MS) render(list); });
+  else late = window.setTimeout(() => render([]), LATE_MS);
+  void loadNews().then((list) => {
+    clearTimeout(late);
+    if (cache || !shown) render(list);
+    else rows = list;
+  });
   for (const ev of ['progress-changed', 'progress-synced', 'progress-reset']) document.addEventListener(ev, () => setTimeout(() => render(rows), 0));
   document.addEventListener('gender-changed', () => render(rows, true));
 }

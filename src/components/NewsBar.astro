@@ -1,9 +1,13 @@
 ---
 import Icon from './Icon.astro';
+import { WEEK_LENGTH } from '../tsume/week';
+import { FACEBOOK_GROUP_URL, WHATSAPP_URL } from '../lib/nav';
+const tsume = import.meta.glob<{ default: unknown[] }>('../tsume/data/mate*.json', { eager: true });
+const weekCount = tsume[`../tsume/data/mate${WEEK_LENGTH}.json`]?.default.length ?? 0;
 interface Props { class?: string }
 const { class: cls } = Astro.props;
 ---
-<section class:list={['news', cls]} data-news data-news-bar hidden aria-label="עדכונים באתר">
+<section class:list={['news', cls]} data-news data-news-bar data-week-count={weekCount} data-whatsapp={WHATSAPP_URL} data-facebook={FACEBOOK_GROUP_URL} hidden aria-label="עדכונים באתר">
   <template data-news-kit>
     <span data-kind-icon="new"><Icon name="news-new" size={15} /></span>
     <span data-kind-icon="content"><Icon name="news-content" size={15} /></span>
@@ -11,6 +15,8 @@ const { class: cls } = Astro.props;
     <span data-kind-icon="changed"><Icon name="news-changed" size={15} /></span>
     <span data-kind-icon="moved"><Icon name="news-moved" size={15} /></span>
     <span data-kind-icon="fixed"><Icon name="news-fixed" size={15} /></span>
+    <span data-kind-icon="tip"><Icon name="question" size={15} /></span>
+    <span data-kind-icon="week"><Icon name="king" size={15} /></span>
     <svg data-news-arrow viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
     <span data-news-pause><svg class="i-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6.5" y="5" width="3.6" height="14" rx="1.2"></rect><rect x="13.9" y="5" width="3.6" height="14" rx="1.2"></rect></svg><svg class="i-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17 5.8v12.4a1 1 0 0 1-1.5.9L6.2 13a1.2 1.2 0 0 1 0-2l9.3-6.1a1 1 0 0 1 1.5.9z"></path></svg></span>
     <svg data-news-close viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
