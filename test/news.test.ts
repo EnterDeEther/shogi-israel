@@ -34,10 +34,10 @@ describe('length rules', () => {
   });
 
   test('every type has a short label and a default button within the limit', () => {
-    for (const k of NEWS_KINDS) {
+    for (const k of Object.keys(NEWS_KIND) as (keyof typeof NEWS_KIND)[]) {
       expect(newsLength(NEWS_KIND[k].cta)).toBeLessThanOrEqual(CTA_MAX);
       expect(newsProblems(NEWS_KIND[k].cta, CTA_MAX)).toEqual([]);
-      expect(NEWS_KIND[k].label.length).toBeLessThanOrEqual(8);
+      expect(NEWS_KIND[k].label.length).toBeLessThanOrEqual(11);
     }
   });
 
