@@ -19,16 +19,17 @@ interface Props {
   ogImage?: string;
   noindex?: boolean;
   tabTitle?: string;
+  piecesDefault?: 'chess';
 }
 
-const { title, description, ogImage = ogImageFor(Astro.url.pathname), noindex = false, tabTitle } = Astro.props;
+const { title, description, ogImage = ogImageFor(Astro.url.pathname), noindex = false, tabTitle, piecesDefault } = Astro.props;
 const fullTitle = title === 'שוגי ישראל' ? 'שוגי ישראל · השחמט היפני, בעברית' : `${tabTitle ?? title} · שוגי ישראל`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogUrl = new URL(ogImage, Astro.site);
 const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description);
 ---
 <!doctype html>
-<html lang="he" dir="rtl" data-pieces="hebrew" data-hfont="noto">
+<html lang="he" dir="rtl" data-pieces="hebrew" data-hfont="noto" data-pieces-default={piecesDefault}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -64,7 +65,15 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
         try {
           localStorage.removeItem('pieces');
           var pieces = localStorage.getItem('pieceSet');
-          if (pieces === 'letters' || pieces === 'kanji') root.setAttribute('data-pieces', pieces);
+          if (!pieces) {
+            var route = localStorage.getItem('learnRoute');
+            if (route !== 'chess' && route !== 'main') {
+              var course = JSON.parse(localStorage.getItem('shogi-il.course') || 'null') || {};
+              route = course.route === 'chess' || course.route === 'main' ? course.route : course.track ? (course.track === 'chess' ? 'chess' : 'main') : '';
+            }
+            if (route === 'chess' || (!route && (localStorage.getItem('pieceSetHint') === 'chess' || root.getAttribute('data-pieces-default') === 'chess'))) pieces = 'chess';
+          }
+          if (pieces === 'chess' || pieces === 'letters' || pieces === 'kanji') root.setAttribute('data-pieces', pieces);
           var hfont = localStorage.getItem('hebrewFont');
           if (hfont === 'suez' || hfont === 'secular') root.setAttribute('data-hfont', hfont);
           if (localStorage.getItem('gender') === 'f') root.setAttribute('data-gender', 'f');
@@ -104,7 +113,7 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
       import '../scripts/info-tips';
     </script>
     <script>
-      import { pieceSetOf, hebrewFontOf } from '../lib/piece-set';
+      import { pieceSetOf, hebrewFontOf, choosePieceSet, refreshPieceSet } from '../lib/piece-set';
       const root = document.documentElement;
       const sync = () => {
         const set = pieceSetOf(root.getAttribute('data-pieces'));
@@ -127,12 +136,11 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
         }
         const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-pieces-set]');
         if (!btn) return;
-        const set = pieceSetOf(btn.dataset.piecesSet);
-        root.setAttribute('data-pieces', set);
-        try { localStorage.setItem('pieceSet', set); } catch {}
+        choosePieceSet(pieceSetOf(btn.dataset.piecesSet));
         sync();
-        document.dispatchEvent(new CustomEvent('pieces-changed', { detail: set }));
       });
+      document.addEventListener('pieces-changed', sync);
+      for (const ev of ['progress-changed', 'progress-reset']) document.addEventListener(ev, refreshPieceSet);
       sync();
     </script>
     <script>
