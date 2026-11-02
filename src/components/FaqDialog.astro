@@ -1,9 +1,5 @@
 ---
 import { FAQ } from '../lib/shogi-faq';
-import { HOME_FAQ } from '../lib/home-story';
-
-const first = HOME_FAQ.map((id) => FAQ.find((f) => f.id === id)).filter((f) => !!f);
-const rest = FAQ.filter((f) => !HOME_FAQ.includes(f.id));
 ---
 <dialog class="faq-sheet" data-faq-dialog aria-labelledby="faq-sheet-h">
   <div class="faq-head">
@@ -13,7 +9,7 @@ const rest = FAQ.filter((f) => !HOME_FAQ.includes(f.id));
     </button>
   </div>
   <div class="faq-body">
-    {[...first, ...rest].map((f) => (
+    {FAQ.map((f) => (
       <details>
         <summary>{f.q}</summary>
         <p set:html={f.a} />

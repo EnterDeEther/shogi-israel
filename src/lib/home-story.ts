@@ -92,7 +92,7 @@ export const PHASES = [
   { h: 'סוף המשחק', p: 'מרוץ למט.' },
 ];
 
-export const HOME_FAQ = ['need-chess', 'japanese', 'length', 'cost', 'community'];
+export const HOME_FAQ = ['need-chess', 'japanese', 'cost', 'length', 'community'];
 
 export const HERO_ART: [PieceType, number, number, number][] = [
   ['K', 0, 0, 1.25], ['R', -1.25, -0.55, 0.9], ['B', 1.2, -0.6, 0.9], ['G', -0.7, 0.75, 0.8], ['S', 0.75, 0.8, 0.8], ['P', 0, -1.45, 0.7],
