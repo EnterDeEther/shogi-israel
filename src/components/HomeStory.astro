@@ -235,6 +235,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   };
   const below = (el: HTMLElement) => el.getBoundingClientRect().top > innerHeight;
   const BEAT = 650;
+  const still = matchMedia('(prefers-reduced-motion: reduce)');
   const settle = (fn: () => void) => {
     let t = 0;
     const kick = () => { clearTimeout(t); t = window.setTimeout(done, 160); };
@@ -269,7 +270,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
     let stop = () => {};
     const play = (st: BoardState, back: boolean) => {
       stop();
-      if (!st.pre || back) { apply(st); return; }
+      if (!st.pre || back || still.matches) { apply(st); return; }
       apply(st.pre);
       stop = settle(() => apply(st));
     };
@@ -288,7 +289,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
     if (below(story)) set('c0');
     watch(story, (k, back) => {
       stop();
-      if (back) { set(k); return; }
+      if (back || still.matches) { set(k); return; }
       set('c0');
       stop = settle(() => set(k));
     }, () => { stop(); set('c0'); });
