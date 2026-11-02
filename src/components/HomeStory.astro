@@ -195,7 +195,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   </div>
 </section>
 
-<div class="rail" data-rail data-newcomer aria-hidden="true"><span class="rail-track"></span><span class="rail-fill"></span><span class="rail-head"><svg viewBox="0 0 20 22" width="16" height="18"><path d="M10 21L16.4 17.4L18.6 3H1.4L3.6 17.4Z"></path></svg><span class="rail-label"></span></span></div>
+<div class="rail" data-rail data-newcomer aria-hidden="true"><span class="rail-fill"></span></div>
 
 <script>
   import { BOARD_STORIES, SHOW_CAPS, type BoardState } from '../lib/home-story';
@@ -302,63 +302,29 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   const end = document.querySelector<HTMLElement>('[data-flow-end]');
   if (rail && end) {
     const fill = rail.querySelector<HTMLElement>('.rail-fill')!;
-    const head = rail.querySelector<HTMLElement>('.rail-head')!;
-    const label = rail.querySelector<HTMLElement>('.rail-label')!;
-    const calm = matchMedia('(prefers-reduced-motion: reduce)');
-    type Mark = { at: number; dot: HTMLElement; name: string; on: boolean };
-    let from = 0, to = 1, marks: Mark[] = [], goal = 0, now = 0, frame = 0, idle = 0, text = '';
-    const nameOf = (el: HTMLElement) => {
-      const sec = el.closest('section') ?? el;
-      const h = sec.querySelector<HTMLElement>('h1, h2');
-      return (h?.innerText || '').trim();
-    };
+    let ys: number[] = [], dots: HTMLElement[] = [], frame = 0;
     const measure = () => {
       if (html.hasAttribute('data-learner')) return;
       const els = [...document.querySelectorAll<HTMLElement>('[data-snap]')].filter((el) => el.getClientRects().length && (el === end || !!(end.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING)));
-      const view = { h: innerHeight, scrollY, pad: parseFloat(getComputedStyle(html).scrollPaddingTop) || 0, max: html.scrollHeight - innerHeight };
-      const ys = snapStops(els, view);
+      ys = snapStops(els, { h: innerHeight, scrollY, pad: parseFloat(getComputedStyle(html).scrollPaddingTop) || 0, max: html.scrollHeight - innerHeight });
       if (ys.length < 2) return;
-      from = ys[0]; to = ys[ys.length - 1];
-      const byY = new Map<number, HTMLElement>();
-      for (const el of els) { const y = snapStops([el], view)[0]; if (y !== undefined && !byY.has(y)) byY.set(y, el); }
-      marks.forEach((m) => m.dot.remove());
-      marks = ys.map((y) => {
-        const el = byY.get(y)!;
-        const dot = document.createElement('span');
-        dot.className = el.hasAttribute('data-s') ? 'rail-dot' : 'rail-dot major';
-        const at = (y - from) / (to - from);
-        dot.style.top = `${at * 100}%`;
-        rail.insertBefore(dot, head);
-        return { at, dot, name: nameOf(el), on: false };
-      });
-      aim();
+      dots.forEach((d) => d.remove());
+      dots = ys.map((_, i) => { const d = document.createElement('span'); d.className = 'rail-dot'; d.style.top = `${(i / (ys.length - 1)) * 100}%`; rail.append(d); return d; });
+      paint();
     };
-    const draw = () => {
+    const paint = () => {
       frame = 0;
-      now = calm.matches ? goal : now + (goal - now) * 0.18;
-      if (Math.abs(goal - now) < 0.0008) now = goal;
-      fill.style.transform = `scaleY(${now})`;
-      head.style.top = `${now * 100}%`;
-      for (const m of marks) {
-        const on = m.at <= now + 0.003;
-        if (on !== m.on) { m.on = on; m.dot.toggleAttribute('data-on', on); if (on && !calm.matches) { m.dot.classList.remove('pop'); void m.dot.offsetWidth; m.dot.classList.add('pop'); } }
-      }
-      const cur = [...marks].reverse().find((m) => m.at <= now + 0.003);
-      if (cur && cur.name !== text) { text = cur.name; label.textContent = text; }
-      rail.toggleAttribute('data-full', now >= 0.999);
-      if (now !== goal) frame = requestAnimationFrame(draw);
+      if (ys.length < 2) return;
+      const n = ys.length - 1;
+      let i = 0;
+      while (i < n - 1 && scrollY >= ys[i + 1]) i++;
+      const part = Math.min(1, Math.max(0, (scrollY - ys[i]) / (ys[i + 1] - ys[i] || 1)));
+      const p = Math.min(1, (i + part) / n);
+      fill.style.transform = `scaleY(${p})`;
+      dots.forEach((d, k) => d.toggleAttribute('data-on', k / n <= p + 0.001));
+      rail.toggleAttribute('data-on', scrollY > 40 && scrollY < ys[n] + innerHeight * 0.6);
     };
-    const aim = () => {
-      goal = Math.min(1, Math.max(0, (scrollY - from) / (to - from)));
-      rail.toggleAttribute('data-on', scrollY > 40 && scrollY < to + innerHeight * 0.6);
-      if (!frame) frame = requestAnimationFrame(draw);
-    };
-    addEventListener('scroll', () => {
-      aim();
-      rail.setAttribute('data-moving', '');
-      clearTimeout(idle);
-      idle = window.setTimeout(() => rail.removeAttribute('data-moving'), 1100);
-    }, { passive: true });
+    addEventListener('scroll', () => { if (!frame) frame = requestAnimationFrame(paint); }, { passive: true });
     let rt = 0;
     addEventListener('resize', () => { clearTimeout(rt); rt = window.setTimeout(measure, 250); });
     addEventListener('load', measure);
@@ -369,29 +335,13 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
 </script>
 
 <style>
-  .rail { --glow: color-mix(in srgb, var(--seal) 55%, transparent); position: fixed; right: 4px; top: 88px; bottom: 36px; width: 4px; z-index: 15; pointer-events: none; opacity: 0; translate: 10px 0; transition: opacity .45s ease, translate .55s var(--ease-out); }
-  .rail[data-on] { opacity: 1; translate: 0 0; }
-  .rail-track { position: absolute; inset: 0; border-radius: 4px; background: color-mix(in srgb, var(--ink) 10%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 6%, transparent); transition: transform .35s var(--ease-out); }
-  .rail[data-moving] .rail-track { transform: scaleX(1.5); }
-  .rail-fill { position: absolute; inset: 0; border-radius: 4px; background: linear-gradient(180deg, color-mix(in srgb, var(--seal) 70%, #e9b35a), var(--seal) 60%, color-mix(in srgb, var(--seal) 80%, #000)); transform-origin: top; transform: scaleY(0); box-shadow: 0 0 10px var(--glow); }
-  .rail-head { position: absolute; left: 50%; top: 0; width: 16px; height: 18px; translate: -50% -50%; z-index: 2; display: grid; place-items: center; color: var(--seal); filter: drop-shadow(0 0 6px var(--glow)) drop-shadow(0 1px 2px rgba(0, 0, 0, .3)); transition: scale .35s var(--ease-out); }
-  .rail-head svg { display: block; fill: currentColor; stroke: var(--washi); stroke-width: 1.6; }
-  .rail[data-moving] .rail-head { scale: 1.15; }
-  .rail[data-full] .rail-head { animation: rail-done 1.6s ease-in-out infinite; }
-  .rail-label { position: absolute; right: calc(100% + 10px); top: 50%; translate: 6px -50%; white-space: nowrap; font-size: 13px; font-weight: 800; color: var(--ink); padding: 5px 11px; border-radius: 999px; background: color-mix(in srgb, var(--surface) 82%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: var(--shadow-2), inset 0 0 0 1px var(--rule); opacity: 0; transition: opacity .3s ease, translate .4s var(--ease-out); direction: rtl; }
-  .rail[data-moving] .rail-label { opacity: 1; translate: 0 -50%; }
-  .rail :global(.rail-dot) { position: absolute; left: 50%; width: 6px; height: 6px; translate: -50% -50%; border-radius: 50%; background: var(--washi); box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--ink) 25%, transparent); transition: background-color .3s ease, box-shadow .3s ease, scale .3s var(--ease-out); z-index: 1; }
-  .rail :global(.rail-dot.major) { width: 10px; height: 10px; }
-  .rail :global(.rail-dot[data-on]) { background: var(--seal); box-shadow: 0 0 0 1.5px var(--seal), 0 0 8px var(--glow); }
-  .rail :global(.rail-dot)::after { content: ""; position: absolute; inset: 0; border-radius: 50%; box-shadow: 0 0 0 2px var(--seal); opacity: 0; }
-  .rail :global(.rail-dot.pop) { animation: rail-pop .5s var(--ease-out); }
-  .rail :global(.rail-dot.pop)::after { animation: rail-ring .7s ease-out; }
-  @keyframes rail-pop { 0% { scale: 1; } 40% { scale: 1.7; } 100% { scale: 1; } }
-  @keyframes rail-ring { 0% { opacity: .7; scale: 1; } 100% { opacity: 0; scale: 3.2; } }
-  @keyframes rail-done { 0%, 100% { filter: drop-shadow(0 0 6px var(--glow)) drop-shadow(0 1px 2px rgba(0, 0, 0, .3)); } 50% { filter: drop-shadow(0 0 14px var(--seal)) drop-shadow(0 1px 2px rgba(0, 0, 0, .3)); } }
+  .rail { position: fixed; right: 3px; top: 88px; bottom: 36px; width: 2px; border-radius: 2px; background: color-mix(in srgb, var(--ink) 7%, transparent); z-index: 15; pointer-events: none; opacity: 0; transition: opacity .6s ease; }
+  .rail[data-on] { opacity: 1; }
+  .rail-fill { position: absolute; inset: 0; border-radius: inherit; background: color-mix(in srgb, var(--seal) 55%, transparent); transform-origin: top; transform: scaleY(0); }
+  .rail :global(.rail-dot) { position: absolute; left: 50%; width: 4px; height: 4px; translate: -50% -50%; border-radius: 50%; background: color-mix(in srgb, var(--ink) 18%, var(--washi)); transition: background-color .4s ease; }
+  .rail :global(.rail-dot[data-on]) { background: color-mix(in srgb, var(--seal) 60%, var(--washi)); }
   :global(html.tour-on) .rail, :global(html.app-locked) .rail { display: none; }
-  @media (min-width: 900px) { .rail { right: 14px; top: 124px; bottom: 56px; } }
-  @media (prefers-reduced-motion: reduce) { .rail, .rail-track, .rail-head, .rail-label { transition: none; } .rail[data-full] .rail-head { animation: none; } }
+  @media (min-width: 900px) { .rail { right: 6px; top: 124px; bottom: 56px; } }
   .know { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 10px; margin: 14px auto 0; font-size: 15px; color: var(--ink-2); }
   .know a { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-weight: 800; color: var(--seal); text-decoration: none; }
   .know a:hover { text-decoration: underline; }
