@@ -1,0 +1,410 @@
+---
+import { chessOf, hebrewOf, kanjiOf, letterOf, type PieceType } from '../lib/sfen';
+import { BOARD_STORIES, HERO_ART, PHASES, SHOW_CAPS, STORY, allPieces, type StoryPiece } from '../lib/home-story';
+import { FIRST_GAME } from '../lib/first-game';
+import { pageExists, LISHOGI_TEAM } from '../lib/live';
+import { FACEBOOK_GROUP_URL, INSTAGRAM_URL, WHATSAPP_URL } from '../lib/nav';
+
+interface Props { first: string }
+const { first } = Astro.props;
+const hasTry = first === '/try/';
+const hasPlay = pageExists('/play/');
+const hasChess = pageExists('/chess/');
+const hasCourse = pageExists('/course/');
+
+const side = (g: 0 | 1) => (g ? 'gote' : 'sente') as 'sente' | 'gote';
+const labels = (t: PieceType, g: 0 | 1, promoted: boolean) => {
+  const p = { type: t, side: side(g), promoted };
+  const chess = chessOf(p);
+  const plain = chess.replace(/︎/g, '');
+  return {
+    h: hebrewOf(p), c: chess, l: letterOf(p), k: kanjiOf(p),
+    cs: plain.length > 1 ? 'two' : /[♔-♟-]/.test(plain) ? 'sym' : '',
+  };
+};
+const finalOf = (key: 'a' | 'b') => {
+  const steps = Object.values(BOARD_STORIES[key].steps);
+  const last = steps[steps.length - 1];
+  return { state: last, at: new Map(last.pcs.map((p) => [p.id, p])) };
+};
+const vars = (p: StoryPiece) => `--r:${p.r};--c:${p.c};--s:${p.s ?? (p.lift ? 1.18 : 1)}`;
+const on = (v: unknown) => (v ? '' : undefined);
+const boards = (['a', 'b'] as const).map((key) => {
+  const { state, at } = finalOf(key);
+  return { key, state, pieces: allPieces(key).map((p) => ({ ...p, now: at.get(p.id) ?? p })) };
+});
+const board = (key: 'a' | 'b') => boards.find((b) => b.key === key)!;
+const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>';
+const down = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"></path></svg>';
+const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7 10 .8 14.4 7 19 3.2 17.2 11.2H2.8Z" /></svg>';
+---
+{hasPlay && (
+  <p class="know wrap" data-newcomer>
+    <span>כבר ⟦יודע|יודעת⟧ לשחק שוגי?</span>
+    <a href="/play/">⟦שחק|שחקי⟧ עכשיו<Fragment set:html={arrow} /></a>
+  </p>
+)}
+
+<section class="hero wrap" data-newcomer aria-labelledby="hero-h">
+  <div class="hero-text">
+    <p class="eyebrow">הקהילה הישראלית של השוגי</p>
+    <h1 id="hero-h">⟦ברוך הבא|ברוכה הבאה⟧ לשוגי ישראל</h1>
+    <p class="lead">שוגי הוא השחמט של יפן. כאן לומדים אותו מאפס, בעברית ובחינם.</p>
+    <div class="cta">
+      <a class="btn" href={first} data-tour="try">
+        <span data-hero-label>{hasTry ? '⟦צפה|צפי⟧ במשחק אחד, מהלך אחרי מהלך' : '⟦התחל|התחילי⟧ בחוקים הבסיסיים'}</span>
+        <Fragment set:html={arrow} />
+      </a>
+      <p class="small muted note">בלי הרשמה · בחינם · בעברית</p>
+    </div>
+    <a class="cue" href="#story-1">או ⟦גלול|גללי⟧ למטה, ונכיר את המשחק בדקה<Fragment set:html={down} /></a>
+  </div>
+  <div class="hero-art" aria-hidden="true">
+    {HERO_ART.map(([t, x, y, s], i) => {
+      const lb = labels(t, 0, false);
+      return (
+        <span class="pc" style={`--i:${i};--x:${x};--y:${y};--s:${s};z-index:${i === 0 ? 3 : 1}`}>
+          <span class="sh">
+            <span class="lb">
+              <span class:list={['ph', { two: lb.h.length > 1, crown: t === 'K' }]} dir="rtl">{t === 'K' && <Fragment set:html={crown} />}<span>{lb.h}</span></span>
+              <span class:list={['pcs', lb.cs]} dir="rtl">{lb.c}</span>
+              <span class="pl">{lb.l}</span>
+              <span class="pk" lang="ja">{lb.k}</span>
+            </span>
+          </span>
+        </span>
+      );
+    })}
+  </div>
+</section>
+
+{(['a', 'c', 'b'] as const).map((key, n) => (
+  <section class="scene wrap" id={`story-${n + 1}`} data-newcomer aria-labelledby={`story-${key}-h`}>
+    <div class="scene-head rv">
+      <p class="kicker">{key === 'a' ? 'מה זה שוגי, בדקה' : key === 'c' ? 'קוראים את הכלים' : 'מה שמיוחד בשוגי'}</p>
+      <h2 id={`story-${key}-h`}>{key === 'a' ? 'משחק הגנרלים' : key === 'c' ? 'לא צריך לדעת יפנית' : 'כלי שלכדת עובר לצד שלך'}</h2>
+    </div>
+    <div class="story" data-story={key}>
+      <div class="stage-col" aria-hidden="true">
+        {key === 'c' ? (
+          <div class="show" data-show data-step="c2">
+            <span class="big" data-a lang="ja"><span class="sh"><b>王</b></span></span>
+            <span class="big" data-b><span class="sh"><span class="ph crown" dir="rtl"><Fragment set:html={crown} /><span>מ</span></span></span></span>
+            <span class="big" data-d><span class="sh"><span class="ph crown" dir="rtl"><Fragment set:html={crown} /><span>מ</span></span></span></span>
+          </div>
+        ) : (
+          <div class="stage" data-stage data-zone={on(board(key).state.zone)} data-hand={on(board(key).state.hand)} data-still>
+            <span class="tray top"></span>
+            <span class="board"><span class="zone"></span><span class="hoshi" style="left:33.333%;top:33.333%"></span><span class="hoshi" style="left:66.667%;top:33.333%"></span><span class="hoshi" style="left:33.333%;top:66.667%"></span><span class="hoshi" style="left:66.667%;top:66.667%"></span></span>
+            <span class="tray bot"><span>ביד שלך</span></span>
+            <span class="layer">
+              {board(key).pieces.map((p) => {
+                const base = labels(p.t, p.g, false);
+                const up = p.promotes ? labels(p.t, p.g, true) : null;
+                return (
+                  <span class="pc" data-id={p.id} style={vars(p.now)} data-g={on(p.now.g)} data-p={on(p.now.pr)} data-out={on(p.now.out)} data-lift={on(p.now.lift)}>
+                    <span class="sh">
+                      {[base, up].filter((l) => !!l).map((lb, i) => (
+                        <span class:list={['lb', i ? 'up' : 'n']}>
+                          <span class:list={['ph', { two: lb.h.length > 1, crown: p.t === 'K' }]} dir="rtl">{p.t === 'K' && <Fragment set:html={crown} />}<span>{lb.h}</span></span>
+                          <span class:list={['pcs', lb.cs]} dir="rtl">{lb.c}</span>
+                          <span class="pl">{lb.l}</span>
+                          <span class="pk" lang="ja">{lb.k}</span>
+                        </span>
+                      ))}
+                    </span>
+                  </span>
+                );
+              })}
+            </span>
+          </div>
+        )}
+        <p class="cap" data-cap>{key === 'c' ? SHOW_CAPS.c2 : board(key).state.cap}</p>
+      </div>
+      <div class="steps">
+        {STORY[key].map((s) => <div class="step" data-s={s.key}><p class="card" set:html={s.text} /></div>)}
+      </div>
+    </div>
+  </section>
+))}
+
+<section class="scene wrap" data-newcomer aria-labelledby="story-phases-h">
+  <div class="scene-head rv">
+    <p class="kicker">איך נראה משחק</p>
+    <h2 id="story-phases-h">כל משחק עובר שלושה שלבים</h2>
+  </div>
+  <ol class="phases">
+    {PHASES.map((ph, i) => <li class="phase rv"><span class="n">{i + 1}</span><div><h3>{ph.h}</h3><p>{ph.p}</p></div></li>)}
+  </ol>
+  <p class="small"><a href="/learn/guide/#phases">הסבר על שלושת השלבים</a></p>
+</section>
+
+<section class="scene wrap" data-newcomer aria-labelledby="story-go-h">
+  <div class="scene-head rv">
+    <p class="kicker">ועכשיו, תורך</p>
+    <h2 id="story-go-h">מאיפה ⟦תרצה|תרצי⟧ להתחיל?</h2>
+  </div>
+  <div class="choose">
+    {hasTry && (
+      <a class="pick main rv" href="/try/">
+        <h3>⟦צפה|צפי⟧ במשחק אחד<Fragment set:html={arrow} /></h3>
+        <p>משחק שלם של {FIRST_GAME.length} מהלכים. ⟦אתה לוחץ|את לוחצת⟧, ואנחנו מסבירים כל מהלך. בלי הרשמה, ושום דבר לא זז לבד.</p>
+        <span class="go">הצעד הראשון</span>
+      </a>
+    )}
+    {hasChess && (
+      <a class="pick rv" href="/chess/">
+        <h3>⟦משחק|משחקת⟧ שחמט?</h3>
+        <p>דף שמראה מה כבר מוכר לך ומה חדש, ומסלול שמתחיל משם.</p>
+        <span class="go">לשחקני שחמט ←</span>
+      </a>
+    )}
+    {hasCourse && (
+      <a class="pick rv" href="/course/">
+        <h3>רוצה סדר לימוד?</h3>
+        <p>מסלול לימוד אישי: עונים על שאלה אחת ומקבלים סדר ברור, מהחוקים ועד בעיות מט.</p>
+        <span class="go">למסלול ←</span>
+      </a>
+    )}
+  </div>
+  <p class="rules-line small rv">⟦מעדיף|מעדיפה⟧ לקרוא? <a href="/rules/">שמונה שיעורים קצרים של חוקים בסיסיים</a></p>
+  {hasPlay && (
+    <div class="also rv">
+      <b>כבר ⟦יודע|יודעת⟧ לשחק?</b>
+      <span>⟦שחק|שחקי⟧ עכשיו נגד המחשב, עשר רמות. <a href="/play/">⟦שחק|שחקי⟧ עכשיו ←</a><span class="touch-only"> או <a href="/play/?vs=local">שני שחקנים על אותו מכשיר ←</a></span></span>
+    </div>
+  )}
+</section>
+
+<section class="scene wrap" data-newcomer aria-labelledby="story-us-h">
+  <div class="comm rv">
+    <h2 id="story-us-h">לא לבד</h2>
+    <p>אני דין. למדתי שוגי מסרטונים ביוטיוב, והפסדתי שוב ושוב למחשב עד שהבנתי למה. חיפשתי מקום כזה בעברית ומצאתי כמעט כלום, אז בניתי אותו.</p>
+    <p>הקהילה קטנה ומתחילה. ⟦בוא|בואי⟧ להיות מהראשונים.</p>
+    <ul class="chips">
+      <li><a href={WHATSAPP_URL} rel="noopener">קהילת הוואטסאפ</a></li>
+      <li><a href={FACEBOOK_GROUP_URL} rel="noopener">קבוצת הפייסבוק</a></li>
+      <li><a href={INSTAGRAM_URL} rel="noopener">אינסטגרם</a></li>
+      <li><a href={LISHOGI_TEAM} rel="noopener">הקבוצה שלנו בליש׳וגי</a></li>
+      <li><a href="/community/">דף הקהילה</a></li>
+    </ul>
+  </div>
+</section>
+
+<script>
+  import { BOARD_STORIES, SHOW_CAPS, type BoardState } from '../lib/home-story';
+
+  const wide = matchMedia('(min-width: 900px)');
+  const watch = (story: HTMLElement, set: (key: string) => void) => {
+    if (!('IntersectionObserver' in window)) return;
+    const steps = [...story.querySelectorAll<HTMLElement>('[data-s]')];
+    const col = story.querySelector<HTMLElement>('.stage-col');
+    let io: IntersectionObserver | undefined;
+    const start = () => {
+      io?.disconnect();
+      const top = col && !wide.matches ? parseFloat(getComputedStyle(col).top) + col.offsetHeight : 0;
+      const line = Math.round(wide.matches ? innerHeight / 2 : top + (innerHeight - top) * 0.4);
+      io = new IntersectionObserver((ents) => ents.forEach((en) => { if (en.isIntersecting) set(en.target.getAttribute('data-s') || ''); }), { rootMargin: `-${line}px 0px -${Math.max(0, innerHeight - line - 1)}px 0px` });
+      steps.forEach((s) => io!.observe(s));
+    };
+    start();
+    let t = 0;
+    addEventListener('resize', () => { clearTimeout(t); t = window.setTimeout(start, 200); });
+  };
+  const below = (el: HTMLElement) => el.getBoundingClientRect().top > innerHeight;
+
+  document.querySelectorAll<HTMLElement>('[data-story="a"], [data-story="b"]').forEach((story) => {
+    const key = story.dataset.story as 'a' | 'b';
+    const stage = story.querySelector<HTMLElement>('[data-stage]');
+    const cap = story.querySelector<HTMLElement>('[data-cap]');
+    if (!stage || !cap) return;
+    const els = new Map([...stage.querySelectorAll<HTMLElement>('[data-id]')].map((el) => [el.dataset.id!, el]));
+    const apply = (st: BoardState) => {
+      for (const p of st.pcs) {
+        const el = els.get(p.id);
+        if (!el) continue;
+        el.style.setProperty('--r', String(p.r));
+        el.style.setProperty('--c', String(p.c));
+        el.style.setProperty('--s', String(p.s ?? (p.lift ? 1.18 : 1)));
+        el.toggleAttribute('data-g', p.g === 1);
+        el.toggleAttribute('data-p', !!p.pr);
+        el.toggleAttribute('data-out', !!p.out);
+        el.toggleAttribute('data-lift', !!p.lift);
+      }
+      cap.textContent = st.cap;
+      stage.toggleAttribute('data-zone', !!st.zone);
+      stage.toggleAttribute('data-hand', !!st.hand);
+    };
+    if (below(story)) apply(BOARD_STORIES[key].first);
+    requestAnimationFrame(() => requestAnimationFrame(() => stage.removeAttribute('data-still')));
+    watch(story, (s) => { const st = BOARD_STORIES[key].steps[s]; if (st) apply(st); });
+  });
+
+  document.querySelectorAll<HTMLElement>('[data-story="c"]').forEach((story) => {
+    const show = story.querySelector<HTMLElement>('[data-show]');
+    const cap = story.querySelector<HTMLElement>('[data-cap]');
+    if (!show || !cap) return;
+    const set = (k: string) => { if (!SHOW_CAPS[k]) return; show.dataset.step = k; cap.textContent = SHOW_CAPS[k]; };
+    if (below(story)) set('c0');
+    watch(story, set);
+  });
+</script>
+
+<style>
+  .know { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 10px; margin: 14px auto 0; font-size: 15px; color: var(--ink-2); }
+  .know a { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-weight: 800; color: var(--seal); text-decoration: none; }
+  .know a:hover { text-decoration: underline; }
+  .know :global(svg) { width: 18px; height: 18px; }
+
+  .hero { display: grid; gap: 24px; padding-top: 18px; }
+  .hero-text { display: flex; flex-direction: column; gap: 14px; }
+  .hero h1 { font-size: clamp(36px, 8.5vw, 60px); line-height: 1.1; }
+  .lead { margin: 0; font-size: 19px; line-height: 1.65; color: var(--ink-2); max-width: 30em; }
+  .cta { display: flex; flex-direction: column; gap: 8px; padding-top: 6px; }
+  .cta .btn { align-self: stretch; }
+  .note { margin: 0; text-align: center; }
+  .cue { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; color: var(--muted); font-size: 15px; text-decoration: none; }
+  .cue:hover { color: var(--ink); }
+  .hero-art { position: relative; height: 230px; display: grid; place-items: center; order: -1; }
+  .hero-art .pc { position: absolute; width: 64px; aspect-ratio: 10 / 11; container-type: inline-size; translate: calc(var(--x) * 110%) calc(var(--y) * 100%); scale: var(--s); }
+  .hero-art .sh { width: 100%; height: 100%; }
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-art .pc { animation: land .9s var(--ease-out) both; animation-delay: calc(var(--i) * 90ms + 150ms); }
+  }
+  @keyframes land { from { opacity: 0; translate: calc(var(--x) * 110%) calc(var(--y) * 100% - 24px); } }
+  @media (min-width: 900px) {
+    .know { justify-content: flex-start; max-width: var(--page); }
+    .hero { grid-template-columns: 1.1fr .9fr; align-items: center; gap: 56px; padding-block: 48px 16px; min-height: min(600px, calc(100svh - 180px)); }
+    .cta .btn { align-self: flex-start; min-width: 360px; }
+    .note { text-align: start; }
+    .cue { justify-content: flex-start; }
+    .hero-art { height: 420px; order: 2; }
+    .hero-art .pc { width: 96px; }
+  }
+
+  .scene { margin-top: 56px; }
+  .scene-head { display: grid; gap: 6px; margin-bottom: 8px; }
+  .kicker { margin: 0; color: var(--seal); font-weight: 800; font-size: 14px; letter-spacing: .02em; }
+  .scene-head h2 { font-size: clamp(30px, 7vw, 44px); }
+  .story { display: grid; }
+  .stage-col { position: sticky; top: 65px; z-index: 2; padding-block: 8px 4px; background: var(--washi); }
+  .stage-col::after { content: ""; position: absolute; inset-inline: 0; top: 100%; height: 22px; background: linear-gradient(var(--washi), transparent); pointer-events: none; }
+  .steps { display: grid; }
+  .step { min-height: 44svh; display: flex; align-items: flex-start; padding-block: 24px; }
+  .step:last-child { min-height: 40svh; }
+  .card { margin: 0; background: var(--surface); border-radius: 14px; padding: 18px 20px; box-shadow: var(--shadow-2); max-width: 30em; font-size: 18px; line-height: 1.65; }
+  .card :global(strong) { color: var(--seal); }
+  @media (min-width: 900px) {
+    .story { grid-template-columns: 1fr 1fr; gap: 56px; align-items: start; }
+    .stage-col { top: 105px; background: none; order: 2; }
+    .stage-col::after { display: none; }
+    .step { min-height: 64vh; align-items: center; }
+    .step:last-child { min-height: 84vh; }
+  }
+
+  .stage { position: relative; width: min(100%, 36svh, 520px); aspect-ratio: 9 / 10.9; margin-inline: auto; direction: ltr; display: block; }
+  @media (min-width: 900px) { .stage { width: min(100%, 54vh, 500px); } }
+  .board { position: absolute; inset-inline: 0; top: calc(100% * .95 / 10.9); height: calc(100% * 9 / 10.9); background-color: var(--kaya); border: 2px solid var(--grid); box-shadow: var(--shadow-board); border-radius: 3px;
+    background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: calc(100% / 9) calc(100% / 9); background-position: -1px -1px; }
+  .zone { position: absolute; inset-inline: 0; top: 0; height: calc(100% / 3); background: color-mix(in srgb, var(--seal) 22%, transparent); opacity: 0; transition: opacity .5s ease; }
+  .stage[data-zone] .zone { opacity: 1; }
+  .hoshi { position: absolute; width: 7px; height: 7px; border-radius: 50%; background: var(--grid); translate: -50% -50%; }
+  .tray { position: absolute; inset-inline: 0; height: calc(100% * .95 / 10.9); display: flex; align-items: center; font-size: 12px; font-weight: 700; color: var(--seal); direction: rtl; }
+  .tray.top { top: 0; }
+  .tray.bot { bottom: 0; }
+  .tray span { opacity: 0; transition: opacity .4s; }
+  .stage[data-hand] .tray.bot span { opacity: 1; }
+  .layer { position: absolute; inset: 0; }
+  .layer .pc { position: absolute; left: 0; top: 0; width: calc(100% / 9); height: calc(100% / 10.9); container-type: size; display: grid; place-items: center;
+    transform: translate(calc(var(--c) * 100%), calc((var(--r) + .95) * 100%)) scale(var(--s, 1)); transition: transform .6s var(--ease-out), opacity .45s ease, filter .3s ease; }
+  .layer .pc[data-out] { opacity: 0; }
+  .layer .pc[data-lift] { filter: drop-shadow(0 6px 6px rgba(0, 0, 0, .25)); }
+  .stage[data-still] .pc, .stage[data-still] .sh, .stage[data-still] .zone, .stage[data-still] .tray span { transition: none; }
+
+  .pc { color: var(--piece-ink); line-height: 1; }
+  .sh { width: 84%; height: 90%; display: grid; place-items: center; position: relative; transition: rotate .45s var(--ease-out); filter: drop-shadow(0 1px 1px rgba(40, 25, 10, .4)); }
+  .pc[data-g] .sh { rotate: 180deg; }
+  .sh::before, .sh::after { content: ""; position: absolute; clip-path: polygon(50% 0, 86% 16%, 100% 100%, 0 100%, 14% 16%); }
+  .sh::before { inset: 0; background: var(--piece-line); }
+  .sh::after { inset: 1.5px; background: var(--piece); }
+  .pc[data-g] .sh::after { background: var(--piece-gote); }
+  .lb { position: relative; z-index: 1; display: grid; place-items: center; padding-top: 16%; }
+  .pc[data-p] .lb.n, .pc:not([data-p]) .lb.up { display: none; }
+  .pc[data-p] .lb { color: var(--piece-seal); }
+  .ph, .pl { font: 800 46cqw/1 var(--f-body); letter-spacing: -0.03em; }
+  .ph { font-family: var(--f-piece); font-weight: var(--fw-piece); display: inline-flex; flex-direction: column; align-items: center; gap: 0.06em; unicode-bidi: isolate; white-space: nowrap; }
+  .ph.two { font-size: 38cqw; }
+  .ph.crown { font-size: 40cqw; margin-top: -8%; }
+  .ph :global(svg) { width: 1.05em; height: auto; fill: currentColor; }
+  .pcs { font: var(--fw-piece) 46cqw/1 var(--f-chess), var(--f-piece); unicode-bidi: isolate; }
+  .pcs.sym { font-size: 60cqw; }
+  .pcs.two { font-size: 38cqw; }
+  .pk { font: 800 48cqw/1 var(--f-kanji); }
+  .pl, .pk, .pcs { display: none; }
+  :global(html[data-pieces="chess"]) .ph { display: none; }
+  :global(html[data-pieces="chess"]) .pcs { display: inline; }
+  :global(html[data-pieces="letters"]) .ph { display: none; }
+  :global(html[data-pieces="letters"]) .pl { display: inline; }
+  :global(html[data-pieces="kanji"]) .ph { display: none; }
+  :global(html[data-pieces="kanji"]) .pk { display: inline; }
+  .hero-art .lb { padding-top: 18%; }
+
+  .cap { text-align: center; font-size: 14px; color: var(--muted); margin: 6px 0 0; min-height: 1.6em; }
+
+  .show { position: relative; width: min(100%, 36svh, 360px); aspect-ratio: 1; margin-inline: auto; direction: ltr; }
+  @media (min-width: 900px) { .show { width: min(100%, 56vh, 440px); } }
+  .big { position: absolute; width: 38%; aspect-ratio: 10 / 11; left: 31%; top: 27%; container-type: inline-size; display: grid; place-items: center; color: var(--piece-ink);
+    transition: translate .6s var(--ease-out), opacity .4s ease, scale .6s var(--ease-out); }
+  .big .sh { width: 100%; height: 100%; }
+  .big b { position: relative; z-index: 1; font: 800 46cqw/1 var(--f-kanji); }
+  .big .ph { position: relative; z-index: 1; font-size: 40cqw; padding-top: 14%; }
+  .show [data-b], .show [data-d] { opacity: 0; }
+  .show[data-step="c1"] [data-a] { opacity: 0; scale: .9; }
+  .show[data-step="c1"] [data-b] { opacity: 1; }
+  .show[data-step="c2"] [data-a] { opacity: 0; }
+  .show[data-step="c2"] [data-b] { opacity: 1; translate: 0 55%; scale: .78; }
+  .show[data-step="c2"] [data-d] { opacity: 1; translate: 0 -55%; scale: .78; }
+  .show [data-d] .sh { rotate: 180deg; }
+  .show [data-d] .sh::after { background: var(--piece-gote); }
+
+  .phases { list-style: none; margin: 14px 0 12px; padding: 0; display: grid; gap: 14px; }
+  .phase { display: grid; grid-template-columns: 44px 1fr; gap: 14px; align-items: start; padding: 16px 18px; background: var(--surface); border-radius: 14px; box-shadow: var(--shadow-1); }
+  .phase .n { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--washi-2); color: var(--seal); font: 800 22px/1 var(--f-display); }
+  .phase h3 { margin: 0; font-size: 23px; }
+  .phase p { margin: 2px 0 0; color: var(--ink-2); line-height: 1.55; }
+  @media (min-width: 900px) { .phases { grid-template-columns: repeat(3, minmax(0, 1fr)); } .phase { grid-template-columns: 1fr; } }
+
+  .choose { display: grid; gap: 12px; margin-top: 16px; }
+  .pick { display: grid; gap: 8px; align-content: start; padding: 20px; border-radius: 16px; background: var(--surface); box-shadow: var(--shadow-1); color: var(--ink); text-decoration: none; border: 1px solid var(--rule); transition: box-shadow .2s ease, border-color .15s ease; }
+  .pick:hover { box-shadow: var(--shadow-2); border-color: color-mix(in srgb, var(--seal) 30%, var(--rule)); }
+  .pick h3 { margin: 0; font-size: 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .pick p { margin: 0; color: var(--ink-2); line-height: 1.55; }
+  .pick.main { background: var(--ink); color: var(--washi); border-color: var(--ink); }
+  .pick.main p { color: color-mix(in srgb, var(--washi) 82%, transparent); }
+  .go { font-weight: 800; color: var(--seal); }
+  .pick.main .go { color: color-mix(in srgb, var(--seal) 45%, var(--washi)); }
+  .rules-line { margin: 14px 0 0; color: var(--ink-2); }
+  .also { margin-top: 14px; padding: 14px 18px; border-radius: 14px; border: 1px dashed var(--rule); display: grid; gap: 4px; line-height: 1.6; color: var(--ink-2); }
+  .also b { color: var(--ink); }
+  .also a { font-weight: 700; }
+  @media (min-width: 900px) { .choose { grid-template-columns: 1.3fr 1fr 1fr; } }
+
+  .comm { display: grid; gap: 12px; padding: 22px; border-radius: 16px; background: var(--washi-2); box-shadow: var(--shadow-1); max-width: 760px; }
+  .comm h2 { font-size: 28px; }
+  .comm p { margin: 0; color: var(--ink-2); line-height: 1.65; }
+  .chips { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 999px; background: var(--surface); color: var(--ink); text-decoration: none; font-weight: 700; font-size: 15px; box-shadow: inset 0 0 0 1px var(--rule); }
+  .chips a:hover { color: var(--seal); box-shadow: inset 0 0 0 1px var(--seal); }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .rv { animation: rise linear both; animation-timeline: view(); animation-range: entry 0% entry 55%; }
+      .card { animation: rise linear both; animation-timeline: view(); animation-range: entry 0% entry 100%; }
+    }
+  }
+  @keyframes rise { from { opacity: 0; translate: 0 28px; } to { opacity: 1; translate: 0 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .layer .pc, .sh, .zone, .tray span, .big { transition: none !important; }
+  }
+</style>

@@ -2,19 +2,28 @@
 import { LEVELS, LEVEL_INFO } from '../lib/curriculum';
 import { WEEK_LENGTH } from '../tsume/week';
 import InfoTip from './InfoTip.astro';
+import Icon from './Icon.astro';
 
 interface Props { weekCount: number; accounts?: boolean }
 const { weekCount, accounts = false } = Astro.props;
 const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
 ---
 <section class="me wrap" data-learner-only data-me data-week-count={weekCount} aria-labelledby="me-h">
-  <div class="me-top">
-    <div class="me-main">
-      <p class="eyebrow">⟦ברוך השב|ברוכה השבה⟧</p>
-      <h1 id="me-h"><span data-me-hello>טוב לראות אותך שוב</span>.</h1>
-      <p class="lead" data-me-lead>הנה הצעד הבא שלך.</p>
+  <div class="hello">
+    <p class="eyebrow">⟦ברוך השב|ברוכה השבה⟧</p>
+    <h1 id="me-h"><span data-me-hello>טוב לראות אותך שוב</span>.</h1>
+    <p class="lead" data-me-lead>הנה הצעד הבא שלך.</p>
+  </div>
 
-      <div class="next" aria-labelledby="next-title">
+  <div class="me-grid">
+    <div class="me-main">
+      <div class="next game" data-game hidden>
+        <p class="next-where">משחק פתוח · <span data-game-what></span></p>
+        <p class="next-title">המשחק שלך מחכה</p>
+        <a class="btn next-btn" href="/play/" data-game-link><span>⟦המשך|המשיכי⟧ את המשחק</span></a>
+      </div>
+
+      <div class="next" data-next-card aria-labelledby="next-title">
         <p class="next-where" data-next-where>הצעד הבא במסלול</p>
         <p class="next-title" id="next-title" data-next-title>המסלול שלך</p>
         <p class="next-why" data-next-why></p>
@@ -23,41 +32,58 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
           <span class="small"></span>
         </div>
         <a class="btn next-btn" href="/course/" data-next-link data-tour="next"><span data-next-cta>למסלול</span></a>
-
-        {accounts && (
-          <div class="invite" data-signed-out-only data-invite aria-labelledby="invite-h">
-            <p class="invite-head" id="invite-h">כרגע ההתקדמות שלך שמורה רק בדפדפן הזה. עם חשבון בחינם:</p>
-            <ul class="invite-list">
-              <li>ההתקדמות נשמרת בכל מכשיר, בטלפון ובמחשב.</li>
-              <li>מסלול אישי: עונה על שתי שאלות קצרות ⟦ומקבל|ומקבלת⟧ נקודת התחלה שמתאימה לך.</li>
-              <li>הנקודות ודרגת הלימוד שלך נשמרות בחשבון ולא הולכות לאיבוד.</li>
-              <li>אם ⟦תרצה|תרצי⟧, בעיית השבוע במייל, פעם בשבוע לכל היותר.</li>
-            </ul>
-            <p class="invite-note">מה שכבר עשית כאן נכנס לחשבון ונספר. אפשר גם להמשיך בלי חשבון.</p>
-            <div class="invite-actions">
-              <a class="btn invite-btn" href="/account/?mode=signup"><span>⟦פתח|פתחי⟧ חשבון בחינם</span></a>
-              <a class="invite-link" href="/account/?mode=signin">כבר יש לך חשבון? כניסה</a>
-              <button type="button" class="invite-link invite-later" data-invite-later>לא עכשיו</button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
 
-    <aside class="rank" aria-labelledby="rank-h" data-tour="rank">
-      <p class="rank-head" id="rank-h">דרגת הלימוד שלך · במסלול</p>
-      <div class="rank-row">
+    <div class="me-side">
+      <ul class="tiles" aria-label="להיום">
+        <li class="tile">
+          <h2 class="tile-h"><Icon name="play" size={20} />⟦שחק|שחקי⟧ עכשיו</h2>
+          <p data-play-text>עשר רמות, ממתחילים ועד מתקדמים. רמה 1 סלחנית, והמטרה רק לסיים משחק שלם.</p>
+          <a class="tile-link" href="/play/" data-play-link><span data-play-cta>לשחק</span> ←</a>
+        </li>
+        <li class="tile">
+          <h2 class="tile-h"><Icon name="king" size={20} />בעיית השבוע</h2>
+          <p data-week-text>בעיית מט ב־{WEEK_LENGTH} מהלכים<InfoTip id="mate" />, אותה בעיה לכולם. בעיה חדשה בכל יום ראשון.</p>
+          <a class="tile-link" href="/tsume/week/" data-week-link><span data-week-cta>לפתור</span> ←</a>
+        </li>
+        <li class="tile touch-only">
+          <h2 class="tile-h"><Icon name="two-players" size={20} />חבר לידך?</h2>
+          <p>שני שחקנים על אותו מכשיר, כל אחד מקבל צד של הלוח.</p>
+          <a class="tile-link" href="/play/?vs=local">לשחק ביחד ←</a>
+        </li>
+      </ul>
+
+      <aside class="rank" aria-labelledby="rank-h" data-tour="rank">
         <span class="rank-kanji" lang="ja" aria-hidden="true" data-rank-kanji>十五級</span>
-        <p class="rank-name" data-rank-name>15 קיו</p>
-        <InfoTip id="rank" />
-      </div>
-      <p class="rank-points" data-rank-points>0 נקודות</p>
-      <div class="bar" aria-hidden="true"><span data-rank-bar></span></div>
-      <p class="small rank-text" data-rank-text>נקודות נצברות פעם אחת על כל שיעור, בעיה או משחק.</p>
-      <p class="small rank-guest" data-signed-out-only>{accounts ? 'הנקודות נשמרות רק בדפדפן הזה, עד שיש חשבון.' : 'הנקודות נשמרות בדפדפן הזה.'}</p>
-      <p class="small"><a href="/ranks/#site">דרגה של לימוד באתר, לא דרגה רשמית</a></p>
-    </aside>
+        <div class="rank-body">
+          <p class="rank-row"><span class="rank-name" data-rank-name>15 קיו</span><span class="rank-head" id="rank-h">דרגת הלימוד שלך · במסלול</span><InfoTip id="rank" /></p>
+          <div class="bar" aria-hidden="true"><span data-rank-bar></span></div>
+          <p class="small rank-text"><span data-rank-points>0 נקודות</span> · <span data-rank-text>נקודות נצברות פעם אחת על כל שיעור, בעיה או משחק.</span></p>
+          <p class="small rank-guest" data-signed-out-only>{accounts ? 'הנקודות נשמרות רק בדפדפן הזה, עד שיש חשבון.' : 'הנקודות נשמרות בדפדפן הזה.'}</p>
+          <p class="small"><a href="/ranks/#site">דרגה של לימוד באתר, לא דרגה רשמית</a></p>
+        </div>
+      </aside>
+    </div>
   </div>
+
+  {accounts && (
+    <div class="invite" data-signed-out-only data-invite aria-labelledby="invite-h">
+      <p class="invite-head" id="invite-h">כרגע ההתקדמות שלך שמורה רק בדפדפן הזה. עם חשבון בחינם:</p>
+      <ul class="invite-list">
+        <li>ההתקדמות נשמרת בכל מכשיר, בטלפון ובמחשב.</li>
+        <li>מסלול אישי: עונה על שתי שאלות קצרות ⟦ומקבל|ומקבלת⟧ נקודת התחלה שמתאימה לך.</li>
+        <li>הנקודות ודרגת הלימוד שלך נשמרות בחשבון ולא הולכות לאיבוד.</li>
+        <li>אם ⟦תרצה|תרצי⟧, בעיית השבוע במייל, פעם בשבוע לכל היותר.</li>
+      </ul>
+      <p class="invite-note">מה שכבר עשית כאן נכנס לחשבון ונספר. אפשר גם להמשיך בלי חשבון.</p>
+      <div class="invite-actions">
+        <a class="btn invite-btn" href="/account/?mode=signup"><span>⟦פתח|פתחי⟧ חשבון בחינם</span></a>
+        <a class="invite-link" href="/account/?mode=signin">כבר יש לך חשבון? כניסה</a>
+        <button type="button" class="invite-link invite-later" data-invite-later>לא עכשיו</button>
+      </div>
+    </div>
+  )}
 
   <section class="block-sm" aria-labelledby="path-h">
     <div class="head-row">
@@ -78,34 +104,9 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
     </ol>
   </section>
 
-  <section class="block-sm" aria-labelledby="today-h">
-    <h2 id="today-h">להיום</h2>
-    <ul class="today">
-      <li class="today-card">
-        <h3>בעיית השבוע</h3>
-        <p data-week-text>בעיית מט ב־{WEEK_LENGTH} מהלכים<InfoTip id="mate" />, אותה בעיה לכולם. בעיה חדשה בכל יום ראשון.</p>
-        <a class="today-link" href="/tsume/week/" data-week-link><span data-week-cta>לפתור</span> ←</a>
-      </li>
-      <li class="today-card">
-        <h3>⟦שחק|שחקי⟧ עכשיו</h3>
-        <p data-play-text>עשר רמות, ממתחילים ועד מתקדמים. רמה 1 סלחנית, והמטרה רק לסיים משחק שלם.</p>
-        <a class="today-link" href="/play/" data-play-link><span data-play-cta>לשחק</span> ←</a>
-        <p class="today-friend touch-only">חבר לידך? <a href="/play/?vs=local">שני שחקנים על אותו מכשיר</a>, כל אחד מקבל צד של הלוח.</p>
-      </li>
-      <li class="today-card">
-        <h3>הקהילה בוואטסאפ</h3>
-        <p>עדכונים, שאלות על שיעורים ובעיות, ומי רוצה לשחק. אנחנו קהילה קטנה ומתחילה.</p>
-        <a class="today-link" href={WHATSAPP} rel="noopener">להצטרף לקבוצה ←</a>
-      </li>
-    </ul>
-  </section>
-
   <section class="part" aria-labelledby="part-h">
-    <div>
-      <h2 id="part-h">⟦אתה|את⟧ חלק מזה</h2>
-      <p>מצאת שיעור מבלבל, או מונח שאפשר לומר טוב יותר בעברית? ⟦כתוב|כתבי⟧ לי, ואני אתקן. ככה האתר משתפר לכולם.</p>
-    </div>
-    <a class="btn btn-ghost" href="/about/#contact"><span>⟦כתוב|כתבי⟧ לנו</span></a>
+    <h2 id="part-h">⟦אתה|את⟧ חלק מזה</h2>
+    <p>מצאת שיעור מבלבל, או מונח שאפשר לומר טוב יותר בעברית? <a href="/about/#contact">⟦כתוב|כתבי⟧ לי</a>, ואני אתקן. שאלות, עדכונים ומי רוצה לשחק: <a href={WHATSAPP} rel="noopener">הקהילה בוואטסאפ</a>.</p>
   </section>
 </section>
 
@@ -117,6 +118,8 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
   import { rankFor, xpBreakdown } from '../lib/xp';
   import { weekIndex, weekPuzzle, weekStreak, weeksHe, WEEK_LENGTH } from '../tsume/week';
   import { tipEl } from '../lib/info-tip-dom';
+  import { hasActivity } from '../lib/visitor';
+  import { gameInProgress, openGameText } from '../play/record';
 
   const root = document.querySelector<HTMLElement>('[data-me]');
   const html = document.documentElement;
@@ -128,7 +131,7 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
   function render() {
     if (!root) return;
     const p = readLocal();
-    if (!signedIn() && !hasAnyProgress(p)) { html.removeAttribute('data-learner'); return; }
+    if (!signedIn() && !hasActivity(localStorage)) { html.removeAttribute('data-learner'); return; }
     html.setAttribute('data-learner', '');
 
     const placed = !!p.course.route;
@@ -164,7 +167,12 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
         $('.small', prog).textContent = inStep ? `${up.done} מתוך ${up.of} בצעד הזה` : `${up.done} מתוך ${up.of} צעדים ב${unit.title}`;
       }
     }
-    text('[data-me-lead]', next || (signedIn() && !placed) ? 'הנה הצעד הבא שלך.' : 'עשית את כל הדרך. כל הכבוד.');
+    const game = gameInProgress();
+    const gameBox = $('[data-game]');
+    gameBox.hidden = !game;
+    root.toggleAttribute('data-has-game', !!game);
+    if (game) text('[data-game-what]', openGameText(game));
+    text('[data-me-lead]', game ? 'המשחק שלך מחכה, והצעד הבא במסלול מתחתיו.' : next || (signedIn() && !placed) ? 'הנה הצעד הבא שלך.' : 'עשית את כל הדרך. כל הכבוד.');
 
     const xp = xpBreakdown(p, LEVEL_COUNTS).total;
     const r = rankFor(xp);
@@ -253,16 +261,18 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
 </script>
 
 <style>
-  .me { padding-top: 32px; }
-  .me-top { display: grid; gap: 20px; }
-  .me-main { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-  .me h1 { font-size: clamp(34px, 7vw, 56px); line-height: 1.1; }
+  .me { padding-top: 22px; }
+  .hello { display: grid; gap: 6px; }
+  .me h1 { font-size: clamp(34px, 7vw, 52px); line-height: 1.1; }
   .me .lead { margin: 0; font-size: 18px; line-height: 1.6; color: var(--ink-2); }
+  .me-grid { display: grid; gap: 14px; margin-top: 18px; }
+  .me-main, .me-side { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 
   .bar { height: 8px; border-radius: 999px; background: var(--rule); overflow: hidden; }
   .bar span { display: block; height: 100%; width: 0; background: var(--seal); border-radius: inherit; transition: width .3s; }
 
-  .next { background: var(--ink); color: var(--washi); border-radius: 8px; padding: 22px 20px; display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+  .next { background: var(--ink); color: var(--washi); border-radius: 16px; padding: 22px 20px; display: flex; flex-direction: column; gap: 10px; box-shadow: var(--shadow-2); }
+  .next[hidden] { display: none; }
   .next p { margin: 0; }
   .next-where { font-size: 14px; font-weight: 700; line-height: 1.5; opacity: .8; }
   .next-title { font-family: var(--f-display); font-size: clamp(26px, 5vw, 32px); font-weight: 800; line-height: 1.15; }
@@ -272,66 +282,66 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
   .next-progress .bar { flex: 1; max-width: 280px; background: color-mix(in srgb, var(--washi) 25%, transparent); }
   .next-btn { align-self: stretch; background: var(--washi); color: var(--ink); border-color: var(--washi); margin-top: 4px; }
   .next-btn:hover { background: var(--kaya); color: #1C1B19; border-color: var(--kaya); }
+  .me[data-has-game] [data-next-card] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-1); border: 1px solid var(--rule); padding: 16px 18px; }
+  .me[data-has-game] [data-next-card] .next-title { font-size: 22px; }
+  .me[data-has-game] [data-next-card] .next-progress .bar { background: var(--rule); }
+  .me[data-has-game] [data-next-card] .next-btn { background: transparent; color: var(--ink); border-color: var(--rule); }
 
-  .invite { border-top: 1px solid color-mix(in srgb, var(--washi) 22%, transparent); margin-top: 10px; padding-top: 16px; display: flex; flex-direction: column; gap: 10px; }
-  .invite[hidden] { display: none; }
-  .invite-head { font-weight: 700; font-size: 16px; line-height: 1.5; }
-  .invite-list { margin: 0; padding-inline-start: 20px; display: flex; flex-direction: column; gap: 4px; font-size: 15.5px; line-height: 1.55; opacity: .9; }
-  .invite-note { font-size: 14px; line-height: 1.5; opacity: .75; }
-  .invite-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 18px; margin-top: 2px; }
-  .invite-btn { background: transparent; color: inherit; border-color: color-mix(in srgb, var(--washi) 55%, transparent); }
-  .invite-btn:hover { background: var(--washi); color: var(--ink); border-color: var(--washi); }
-  .invite-link { color: inherit; font: inherit; font-size: 15px; font-weight: 700; background: none; border: 0; padding: 0; min-height: 44px; display: inline-flex; align-items: center; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-  .invite-later { font-weight: 400; opacity: .75; }
+  .tiles { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .tile { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 14px 16px 6px; display: flex; flex-direction: column; gap: 4px; box-shadow: var(--shadow-1); }
+  .tile-h { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 19px; }
+  .tile-h :global(.icon) { color: var(--seal); flex: none; }
+  .tile p { margin: 0; color: var(--ink-2); line-height: 1.55; font-size: 15.5px; flex: 1; }
+  .tile-link { display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; color: var(--seal); text-decoration: none; align-self: flex-start; }
+  .tile-link:hover { text-decoration: underline; }
 
-  .rank { background: var(--washi-2); border: 1px solid var(--rule); border-radius: 8px; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+  .rank { display: flex; gap: 14px; align-items: flex-start; background: var(--washi-2); border: 1px solid var(--rule); border-radius: 14px; padding: 14px 16px; }
   .rank p { margin: 0; }
-  .rank-head { font-size: 14px; font-weight: 700; color: var(--muted); }
-  .rank-row { display: flex; align-items: center; gap: 14px; }
+  .rank-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+  .rank-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
   .rank-row :global(.info-tip__btn) { margin-inline-start: -6px; }
-  .rank-kanji { font-family: var(--f-kanji); font-size: 22px; font-weight: 800; color: var(--on-seal); background: var(--seal); border-radius: 999px; min-width: 56px; height: 56px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; }
-  .rank-name { font-family: var(--f-display); font-size: 44px; font-weight: 800; line-height: 1; }
-  .rank-points { font-size: 16px; color: var(--ink-2); }
-  .rank-text, .rank-guest { color: var(--ink-2); line-height: 1.55; }
+  .rank-head { font-size: 14px; font-weight: 700; color: var(--muted); }
+  .rank-kanji { flex: none; font-family: var(--f-kanji); font-size: 15px; font-weight: 800; color: var(--on-seal); background: var(--seal); border-radius: 999px; min-width: 50px; height: 50px; padding: 0 8px; display: inline-flex; align-items: center; justify-content: center; }
+  .rank-name { font-family: var(--f-display); font-size: 26px; font-weight: 800; line-height: 1; }
+  .rank-text, .rank-guest { color: var(--ink-2); line-height: 1.5; }
 
-  .block-sm { margin-top: 48px; }
-  .block-sm > h2, .head-row { margin-bottom: 16px; }
-  .head-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .invite { margin-top: 14px; background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 10px; box-shadow: var(--shadow-1); }
+  .invite[hidden] { display: none; }
+  .invite p { margin: 0; }
+  .invite-head { font-weight: 700; font-size: 16px; line-height: 1.5; }
+  .invite-list { margin: 0; padding-inline-start: 20px; display: flex; flex-direction: column; gap: 4px; font-size: 15.5px; line-height: 1.55; color: var(--ink-2); }
+  .invite-note { font-size: 14px; line-height: 1.5; color: var(--muted); }
+  .invite-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 18px; margin-top: 2px; }
+  .invite-link { color: inherit; font: inherit; font-size: 15px; font-weight: 700; background: none; border: 0; padding: 0; min-height: 44px; display: inline-flex; align-items: center; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .invite-later { font-weight: 400; color: var(--muted); }
 
-  .units { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-  .unit { display: flex; flex-direction: column; gap: 2px; min-height: 44px; padding: 14px 16px; border: 1px solid var(--rule); border-radius: 8px; color: var(--ink); text-decoration: none; background: var(--washi); }
+  .block-sm { margin-top: 36px; }
+  .head-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+
+  .units { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .unit { display: flex; flex-direction: column; gap: 2px; min-height: 44px; padding: 12px 14px; border: 1px solid var(--rule); border-radius: 12px; color: var(--ink); text-decoration: none; background: var(--washi); }
   .unit:hover { border-color: var(--seal); }
-  .unit[data-current] { background: var(--ink); color: var(--washi); border-color: var(--ink); }
+  .unit[data-current] { box-shadow: inset 0 0 0 2px var(--seal); border-color: var(--seal); }
   .unit-tag { color: var(--seal); font-weight: 700; }
-  .unit[data-current] .unit-tag { color: inherit; opacity: .8; }
-  .unit-title { font-family: var(--f-display); font-size: 21px; }
-  .unit-goal { opacity: .85; }
+  .unit-title { font-family: var(--f-display); font-size: 19px; }
+  .unit-goal { color: var(--ink-2); }
   .unit-count { font-weight: 700; }
   .unit-count:empty { display: none; }
 
-  .today { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
-  .today-card { background: var(--washi-2); border-top: 4px solid var(--seal); border-radius: 4px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
-  .today-card h3 { font-family: var(--f-display); font-size: 22px; font-weight: 800; margin: 0; }
-  .today-card p { margin: 0; color: var(--ink-2); line-height: 1.6; flex: 1; }
-  .today-link { display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; color: var(--seal); text-decoration: none; align-self: flex-start; }
-  .today-link:hover { text-decoration: underline; }
-  .today-friend { flex: none; margin: 0; font-size: 14px; color: var(--muted); }
-  .today-friend a { color: var(--seal); font-weight: 600; min-height: 44px; }
+  .part { margin-top: 36px; border-top: 1px solid var(--rule); padding-top: 22px; }
+  .part h2 { margin: 0 0 6px; font-size: 22px; }
+  .part p { margin: 0; color: var(--ink-2); line-height: 1.65; max-width: 44em; }
+  .part a { font-weight: 700; }
 
-  .part { margin-top: 48px; display: flex; flex-direction: column; gap: 14px; border-top: 1px solid var(--rule); padding-top: 28px; }
-  .part h2 { margin-bottom: 6px; }
-  .part p { margin: 0; color: var(--ink-2); line-height: 1.6; max-width: 40em; }
-
+  @media (min-width: 560px) {
+    .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
   @media (min-width: 700px) {
     .units { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .next-btn { align-self: flex-start; }
-    .part { flex-direction: row; align-items: center; justify-content: space-between; gap: 32px; }
-    .part .btn { flex-shrink: 0; }
   }
   @media (min-width: 900px) {
-    .me { padding-top: 56px; }
-    .me-top { grid-template-columns: 2fr 1fr; gap: 32px; align-items: end; }
-    .units { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .today { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+    .me { padding-top: 44px; }
+    .me-grid { grid-template-columns: 1.2fr 1fr; gap: 24px; align-items: start; }
   }
 </style>
