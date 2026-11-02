@@ -32,6 +32,7 @@ const faq = HOME_FAQ.map((id) => FAQ.find((f) => f.id === id)).filter((f) => !!f
   .faq summary::after { content: "+"; flex: none; font: 400 26px/1 var(--f-body); color: var(--seal); transition: rotate .2s; }
   .faq details[open] summary::after { rotate: 45deg; }
   .faq details p { margin: 0; padding-bottom: 16px; color: var(--ink-2); line-height: 1.65; }
+  @media (max-width: 899px) and (orientation: landscape) and (max-height: 520px) { .faq { padding-inline-end: 58px; } }
   .endrow { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; margin-top: 18px; }
   .endrow > a:first-child { display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; }
 

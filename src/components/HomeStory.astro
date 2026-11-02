@@ -414,6 +414,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   .stage-col::after { content: ""; position: absolute; inset-inline: 0; top: 100%; height: 22px; background: linear-gradient(var(--washi), transparent); pointer-events: none; }
   .steps { display: grid; }
   .step { min-height: 44svh; display: flex; align-items: flex-start; padding-block: 24px; }
+  .step:first-child { padding-top: clamp(8px, 100svh - 716px, 24px); }
   .step:last-child { min-height: 40svh; min-height: max(40svh, calc(100lvh - var(--col-b, 100lvh))); }
   .card { margin: 0; background: var(--surface); border-radius: 14px; padding: 18px 20px; box-shadow: var(--shadow-2); max-width: 30em; font-size: 18px; line-height: 1.65; }
   .card :global(strong) { color: var(--seal); }
@@ -431,7 +432,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
     .stage-col { top: 72px; background: none; order: 2; }
     .stage-col::after { display: none; }
     .step { min-height: 72svh; align-items: center; padding-block: 12px; }
-    .step:last-child { min-height: 80svh; }
+    .step:last-child { min-height: calc(100svh - 82px); }
     .card { font-size: 16px; padding: 14px 16px; }
   }
 
@@ -439,7 +440,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   .scene { scroll-snap-align: start; scroll-snap-stop: always; }
   .step + .step { scroll-snap-align: start; scroll-snap-stop: always; scroll-margin-top: var(--snap-m, 0px); }
   @media (min-width: 900px), (max-width: 899px) and (orientation: landscape) and (max-height: 520px) { .step + .step { scroll-snap-align: center; scroll-margin-top: 0px; } }
-  .stage { --tb: 0; --rows: 9; position: relative; width: min(100%, 36svh, 520px); aspect-ratio: 9 / 9; margin-inline: auto; direction: ltr; display: block; }
+  .stage { --tb: 0; --rows: 9; position: relative; width: min(100%, 36svh, 520px, max(27svh, 100svh - 430px)); aspect-ratio: 9 / 9; margin-inline: auto; direction: ltr; display: block; }
   @media (min-width: 900px) { .stage { width: min(100%, 54vh, 500px); } }
   @media (max-width: 899px) and (orientation: landscape) and (max-height: 520px) { .stage { width: min(100%, calc((100svh - 200px) * .9)); } }
   .board { position: absolute; inset-inline: 0; top: 0; height: calc(100% * 9 / var(--rows)); background-color: var(--kaya); border: 2px solid var(--grid); box-shadow: var(--shadow-board); border-radius: 3px;
