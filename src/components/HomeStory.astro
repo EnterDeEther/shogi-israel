@@ -224,7 +224,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
       line = Math.round(wide.matches ? innerHeight / 2 : top + 60);
       const pad = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
       story.style.setProperty('--snap-m', `${Math.max(0, Math.round(top - pad))}px`);
-      story.style.setProperty('--rest', `${Math.max(0, Math.round(innerHeight - top))}px`);
+      story.style.setProperty('--col-b', `${Math.round(top)}px`);
       io = new IntersectionObserver((ents) => ents.forEach((en) => { if (en.isIntersecting) go(en.target.getAttribute('data-s') || ''); }), { rootMargin: `-${line}px 0px -${Math.max(0, innerHeight - line - 1)}px 0px` });
       steps.forEach((s) => io!.observe(s));
     };
@@ -414,7 +414,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   .stage-col::after { content: ""; position: absolute; inset-inline: 0; top: 100%; height: 22px; background: linear-gradient(var(--washi), transparent); pointer-events: none; }
   .steps { display: grid; }
   .step { min-height: 44svh; display: flex; align-items: flex-start; padding-block: 24px; }
-  .step:last-child { min-height: max(40svh, var(--rest, 0px)); }
+  .step:last-child { min-height: 40svh; min-height: max(40svh, calc(100lvh - var(--col-b, 100lvh))); }
   .card { margin: 0; background: var(--surface); border-radius: 14px; padding: 18px 20px; box-shadow: var(--shadow-2); max-width: 30em; font-size: 18px; line-height: 1.65; }
   .card :global(strong) { color: var(--seal); }
   @media (min-width: 900px) {
