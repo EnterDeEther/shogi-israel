@@ -5,7 +5,7 @@ import { TOUR_URL } from '../lib/tour';
 
 const faq = HOME_FAQ.map((id) => FAQ.find((f) => f.id === id)).filter((f) => !!f);
 ---
-<section data-snap class="scene wrap home-faq" id="faq" data-newcomer aria-labelledby="story-faq-h">
+<section class="scene wrap home-faq" id="faq" data-newcomer aria-labelledby="story-faq-h">
   <div class="scene-head rv"><h2 id="story-faq-h">שאלות נפוצות</h2></div>
   <div class="faq">
     {faq.map((f) => (
@@ -22,7 +22,7 @@ const faq = HOME_FAQ.map((id) => FAQ.find((f) => f.id === id)).filter((f) => !!f
 </section>
 
 <style>
-  .scene { margin-top: 56px; scroll-snap-align: start; scroll-snap-stop: always; }
+  .scene { margin-top: 56px; }
   .scene-head { display: grid; gap: 6px; margin-bottom: 8px; }
   .scene-head h2 { font-size: clamp(30px, 7vw, 44px); }
   .faq { display: grid; border-top: 1px solid var(--rule); margin-top: 12px; max-width: 760px; }

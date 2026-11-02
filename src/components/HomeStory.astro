@@ -181,7 +181,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   )}
 </section>
 
-<section data-snap class="scene wrap" data-newcomer aria-labelledby="story-us-h">
+<section class="scene wrap after" data-newcomer aria-labelledby="story-us-h">
   <div class="comm rv">
     <h2 id="story-us-h">לא לבד</h2>
     <p>אני דין. למדתי שוגי מסרטונים ביוטיוב, והפסדתי שוב ושוב למחשב עד שהבנתי למה. חיפשתי מקום כזה בעברית ומצאתי כמעט כלום, אז בניתי אותו.</p>
@@ -312,7 +312,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
       const els = [...document.querySelectorAll<HTMLElement>('[data-snap]')].filter((el) => el.getClientRects().length && (el === end || !!(end.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING)));
       ys = snapStops(els, { h: innerHeight, scrollY, pad: parseFloat(getComputedStyle(html).scrollPaddingTop) || 0, max: html.scrollHeight - innerHeight });
       if (ys.length < 2) return;
-      tail = faq && faq.getClientRects().length ? snapStops([faq], { h: innerHeight, scrollY, pad: parseFloat(getComputedStyle(html).scrollPaddingTop) || 0, max: html.scrollHeight - innerHeight })[0] ?? Infinity : Infinity;
+      tail = faq && faq.getClientRects().length ? Math.round(faq.getBoundingClientRect().top + scrollY - (parseFloat(getComputedStyle(html).scrollPaddingTop) || 0)) : Infinity;
       dots.forEach((d) => d.remove());
       dots = ys.map((_, i) => { const d = document.createElement('span'); d.className = 'rail-dot'; d.style.top = `${(i / (ys.length - 1)) * 100}%`; rail.append(d); return d; });
       paint();
@@ -339,7 +339,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
     document.fonts?.ready.then(measure);
     measure();
   }
-  snapGate('[data-snap], .site-footer', () => !html.hasAttribute('data-learner') && !html.classList.contains('tour-on') && !document.querySelector('dialog[open]'));
+  snapGate('[data-snap]', () => !html.hasAttribute('data-learner') && !html.classList.contains('tour-on') && !document.querySelector('dialog[open]'));
 </script>
 
 <style>
@@ -438,6 +438,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
 
   .know, .hero { scroll-snap-align: start; scroll-margin-top: 100vh; }
   .scene { scroll-snap-align: start; scroll-snap-stop: always; }
+  .scene.after { scroll-snap-align: none; scroll-snap-stop: normal; }
   .step + .step { scroll-snap-align: start; scroll-snap-stop: always; scroll-margin-top: var(--snap-m, 0px); }
   @media (min-width: 900px), (max-width: 899px) and (orientation: landscape) and (max-height: 520px) { .step + .step { scroll-snap-align: center; scroll-margin-top: 0px; } }
   .stage { --tb: 0; --rows: 9; position: relative; width: min(100%, 36svh, 520px, max(27svh, 100svh - 430px)); aspect-ratio: 9 / 9; margin-inline: auto; direction: ltr; display: block; }
