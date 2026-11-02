@@ -24,6 +24,7 @@ export const ICONS = {
   'settings': `<path d="M3.5 6.5h17M3.5 12h17M3.5 17.5h17" stroke-opacity=".45"/><path d="M8 3.6L9.53 4.70L9.95 9.4H6.05L6.47 4.70Z" fill="currentColor" stroke="none"/><path d="M16 9.1L17.53 10.20L17.95 14.9H14.05L14.47 10.20Z" fill="currentColor" fill-opacity=".18"/><path d="M16 9.1L17.53 10.20L17.95 14.9H14.05L14.47 10.20Z"/><path d="M10.5 14.6L12.03 15.70L12.45 20.4H8.55L8.97 15.70Z" fill="currentColor" stroke="none"/>`,
   'share': `<path d="M8.5 9.5H6.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-9a1 1 0 0 0-1-1h-2M12 14.5V3M8.5 6.5L12 3l3.5 3.5"/>`,
   'add-home': `<rect x="4" y="4" width="16" height="16" rx="4" fill="currentColor" fill-opacity=".18" stroke="none"/><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/>`,
+  'bell': `<path d="M6 10a6 6 0 0 1 12 0c0 4.6 1.8 6.3 2.2 6.8H3.8C4.2 16.3 6 14.6 6 10z" fill="currentColor" fill-opacity=".18" stroke="none"/><path d="M6 10a6 6 0 0 1 12 0c0 4.6 1.8 6.3 2.2 6.8H3.8C4.2 16.3 6 14.6 6 10zM12 2.6V4"/><path d="M12 17.6L13.53 18.70L13.95 21.6H10.05L10.47 18.70Z" fill="currentColor" stroke="none"/>`,
   'dots': `<circle cx="5.5" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="1.5" fill="currentColor" stroke="none"/>`,
 } as const;
 

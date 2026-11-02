@@ -5,6 +5,7 @@ import ThemeSetting from '../components/ThemeSetting.astro';
 import PieceToggle from '../components/PieceToggle.astro';
 import HebrewFontSwitch from '../components/HebrewFontSwitch.astro';
 import PasswordField from '../components/PasswordField.astro';
+import PushSetting from '../components/PushSetting.astro';
 import GenderSetting from '../components/GenderSetting.astro';
 import InfoTip from '../components/InfoTip.astro';
 import { accountsEnabled } from '../lib/account-config';
@@ -213,6 +214,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
           </fieldset>
           <p class="small err" data-email-paused hidden>המיילים הושהו כי המייל האחרון לא הגיע אליך (או סומן כספאם). ⟦הדלק|הדליקי⟧ שוב כדי לחדש.</p>
           <p class="small muted" data-email-note>לכל היותר מייל אחד בשבוע, אף פעם לא בשישי ובשבת, ובכל מייל יש קישור להפסקה בלחיצה אחת. מיילי החשבון (אישור כתובת, איפוס סיסמה) נשלחים רק ⟦כשאתה|כשאת⟧ ⟦מבקש|מבקשת⟧. פרטים ב<a href="/privacy/#emails">מדיניות הפרטיות</a>.</p>
+          <div class="push-wrap"><PushSetting id="acct-push" browserNote /></div>
 
           <h2>הגדרות</h2>
           <div class="setting">
@@ -763,6 +765,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
   .check { display: flex; gap: 10px; align-items: flex-start; font-weight: 400 !important; font-size: 16px; line-height: 1.5; cursor: pointer; margin-top: 6px; }
   .form .check input { width: 20px; height: 20px; min-height: 0; padding: 0; border: revert; background: revert; margin: 2px 0 0; flex: none; accent-color: var(--seal); }
   [data-email-prefs] { margin-top: 10px; }
+  .push-wrap { margin-top: 14px; }
   .notify { border: 1px solid var(--rule); border-radius: 8px; padding: 4px 16px; margin: 0; background: var(--washi-2); }
   .notify legend { padding: 0 6px; margin-inline-start: -6px; font-weight: 700; }
   .switch-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 56px; padding: 8px 0; border-bottom: 1px solid var(--rule); cursor: pointer; }
