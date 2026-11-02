@@ -94,8 +94,8 @@
 html[data-pieces="letters"] :is(.learn, .play) piece::after { content: var(--l); direction: ltr; font-family: var(--f-body); font-weight: 800; }
 html[data-pieces="kanji"] :is(.learn, .play) piece::after { content: var(--k); font-family: var(--f-kanji); font-weight: 800; }
 html[data-pieces="chess"] :is(.learn, .play) piece::after { content: var(--c, var(--h)); font-family: var(--f-chess), var(--f-piece); }
-html[data-pieces="chess"] :is(.learn, .play) piece:is(.king, .rook, .bishop, .knight, .pawn)::after { font-size: clamp(13px, 4.2vw, 21px); padding-top: 10%; }
-html[data-pieces="chess"] :is(.learn, .play) sg-pieces piece:is(.king, .rook, .bishop, .knight, .pawn)::after { font-size: clamp(30px, 10vw, 50px); }
+html[data-pieces="chess"] :is(.learn, .play) piece:is(.king, .rook, .bishop, .gold, .silver, .knight, .lance, .pawn)::after { font-size: clamp(13px, 4.2vw, 21px); padding-top: 10%; }
+html[data-pieces="chess"] :is(.learn, .play) sg-pieces piece:is(.king, .rook, .bishop, .gold, .silver, .knight, .lance, .pawn)::after { font-size: clamp(30px, 10vw, 50px); }
 html[data-pieces="chess"] :is(.learn, .play) piece:is(.dragon, .horse, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { font-size: clamp(11px, 3.8vw, 19px); }
 html[data-pieces="chess"] :is(.learn, .play) sg-pieces piece:is(.dragon, .horse, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { font-size: clamp(22px, 7.6vw, 38px); }
 html[data-pieces="hebrew"] :is(.learn, .play) piece:is(.bishop, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { font-size: clamp(11px, 3.8vw, 19px); }
@@ -131,6 +131,11 @@ html[data-pieces="hebrew"] :is(.learn, .play) piece.king::after {
 :is(.learn, .play) piece.bishop { --c: '\265D\FE0E'; }
 :is(.learn, .play) piece.knight { --c: '\265E\FE0E'; }
 :is(.learn, .play) piece.pawn { --c: '\265F\FE0E'; }
+:is(.learn, .play) piece.gold { --c: '\E002'; }
+:is(.learn, .play) piece.silver { --c: '\E001'; }
+:is(.learn, .play) piece.lance { --c: '\E000'; }
+:is(.learn, .play) piece.promotedsilver { --c: '\E001+'; }
+:is(.learn, .play) piece.promotedlance { --c: '\E000+'; }
 :is(.learn, .play) piece.dragon { --c: '\265C\FE0E+'; }
 :is(.learn, .play) piece.horse { --c: '\265D\FE0E+'; }
 :is(.learn, .play) piece.promotedknight { --c: '\265E\FE0E+'; }

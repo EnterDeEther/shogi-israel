@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import he from '../src/learn/i18n/he.json';
-import { chessOf, hebrewOf, type PieceType } from '../src/lib/sfen';
+import { chessOf, type PieceType } from '../src/lib/sfen';
 import { choosePieceSet, defaultPieceSet, markChessPlayer, pieceSetOf, refreshPieceSet, savedPieceSet } from '../src/lib/piece-set';
 
 const mem = new Map<string, string>();
@@ -35,12 +35,16 @@ beforeEach(() => {
 
 describe('chess piece set', () => {
   const types: PieceType[] = ['K', 'R', 'B', 'G', 'S', 'N', 'L', 'P'];
-  test('pieces with a chess twin get its symbol, the rest keep the Hebrew letter', () => {
-    const sym = (t: PieceType, promoted = false) => chessOf({ type: t, side: 'sente', promoted }).replace(/︎/g, '');
-    expect(types.map((t) => sym(t))).toEqual(['♚', '♜', '♝', hebrewOf({ type: 'G', side: 'sente', promoted: false }), hebrewOf({ type: 'S', side: 'sente', promoted: false }), '♞', hebrewOf({ type: 'L', side: 'sente', promoted: false }), '♟']);
+  test('every piece gets a chess-style symbol: samurai helmets for the generals, a lance glyph for the lance', () => {
+    const sym = (t: PieceType, promoted = false) => chessOf({ type: t, side: 'sente', promoted }).replace(/\uFE0E/g, '');
+    expect(types.map((t) => sym(t))).toEqual(['♚', '♜', '♝', '\uE002', '\uE001', '♞', '\uE000', '♟']);
     expect(sym('R', true)).toBe('♜+');
     expect(sym('P', true)).toBe('♟+');
-    expect(sym('S', true)).toBe(hebrewOf({ type: 'S', side: 'sente', promoted: true }));
+    expect(sym('S', true)).toBe('\uE001+');
+    expect(sym('L', true)).toBe('\uE000+');
+  });
+  test('the lance glyph is in the bundled font', () => {
+    expect(readFileSync('src/styles/global.css', 'utf8')).toMatch(/unicode-range: U\+2654-265F, U\+E000-E002;/);
   });
   test('every chess symbol carries the text-style selector so phones do not draw an emoji', () => {
     for (const t of types) {

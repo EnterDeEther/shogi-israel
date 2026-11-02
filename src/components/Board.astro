@@ -23,7 +23,7 @@ const isHoshi = (f: number, r: number) => (f === 7 || f === 4) && (r === 3 || r 
 const desc = describe(pos);
 const chessSize = (t: string) => {
   const plain = t.replace(/\uFE0E/g, '');
-  return plain.length > 1 ? 'two' : /[\u2654-\u265F]/.test(plain) ? 'sym' : '';
+  return plain.length > 1 ? 'two' : /[\u2654-\u265F\uE000-\uE002]/.test(plain) ? 'sym' : '';
 };
 const handOf = (side: 'sente' | 'gote') =>
   Object.entries(pos.hands[side]).map(([t, n]) => ({ t, n }));

@@ -5,7 +5,7 @@
   font-display: block;
   ascent-override: 82%;
   descent-override: 8%;
-  unicode-range: U+2654-265F;
+  unicode-range: U+2654-265F, U+E000-E002;
 }
 
 :root {
@@ -155,7 +155,7 @@ html[data-hfont="secular"] { --f-piece: 'Secular One', 'Heebo Variable', sans-se
 [data-hfont-set="noto"] { font-family: 'Noto Serif Hebrew', serif; font-weight: 800; }
 [data-hfont-set="suez"] { font-family: 'Suez One', serif; font-weight: 400; }
 [data-hfont-set="secular"] { font-family: 'Secular One', sans-serif; font-weight: 400; }
-html:is([data-pieces="letters"], [data-pieces="kanji"]) .hfont-row { display: none; }
+html:is([data-pieces="letters"], [data-pieces="kanji"], [data-pieces="chess"]) .hfont-row { display: none; }
 
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -397,7 +397,7 @@ html[data-gender="f"] .gf { display: contents; }
 html[data-pieces="letters"] .pchip::after { content: var(--l); direction: ltr; font-family: var(--f-body); font-weight: 800; }
 html[data-pieces="kanji"] .pchip::after { content: var(--k); font-family: var(--f-kanji); font-size: 0.9em; }
 html[data-pieces="chess"] .pchip::after { content: var(--c, var(--h)); font-family: var(--f-chess), var(--f-piece); }
-html[data-pieces="chess"] .pchip:is([data-p="K"], [data-p="R"], [data-p="B"], [data-p="N"], [data-p="P"])::after { font-size: 1.08em; padding-top: 0.18em; }
+html[data-pieces="chess"] .pchip:not([data-p^="+"])::after { font-size: 1.08em; padding-top: 0.18em; }
 html[data-pieces="chess"] .pchip[data-p^="+"]::after { font-size: 0.66em; }
 html[data-pieces="hebrew"] .pchip:is([data-p="B"], [data-p^="+"]):not([data-p="+R"], [data-p="+B"])::after { font-size: 0.66em; }
 html[data-pieces="hebrew"] .pchip[data-p="K"]::after {
@@ -408,15 +408,15 @@ html[data-pieces="hebrew"] .pchip[data-p="K"]::after {
 .pchip[data-p="K"] { --h: 'מ'; --l: 'K'; --k: '王'; --c: '\265A\FE0E'; }
 .pchip[data-p="R"] { --h: 'צ'; --l: 'R'; --k: '飛'; --c: '\265C\FE0E'; }
 .pchip[data-p="B"] { --h: 'רץ'; --l: 'B'; --k: '角'; --c: '\265D\FE0E'; }
-.pchip[data-p="G"] { --h: 'ז'; --l: 'G'; --k: '金'; }
-.pchip[data-p="S"] { --h: 'כ'; --l: 'S'; --k: '銀'; }
+.pchip[data-p="G"] { --h: 'ז'; --l: 'G'; --k: '金'; --c: '\E002'; }
+.pchip[data-p="S"] { --h: 'כ'; --l: 'S'; --k: '銀'; --c: '\E001'; }
 .pchip[data-p="N"] { --h: 'פ'; --l: 'N'; --k: '桂'; --c: '\265E\FE0E'; }
-.pchip[data-p="L"] { --h: 'ר'; --l: 'L'; --k: '香'; }
+.pchip[data-p="L"] { --h: 'ר'; --l: 'L'; --k: '香'; --c: '\E000'; }
 .pchip[data-p="P"] { --h: 'ח'; --l: 'P'; --k: '歩'; --c: '\265F\FE0E'; }
 .pchip[data-p="+R"] { --h: 'ד'; --l: '+R'; --k: '龍'; --c: '\265C\FE0E+'; }
 .pchip[data-p="+B"] { --h: 'ס'; --l: '+B'; --k: '馬'; --c: '\265D\FE0E+'; }
-.pchip[data-p="+S"] { --h: 'כ+'; --l: '+S'; --k: '全'; }
+.pchip[data-p="+S"] { --h: 'כ+'; --l: '+S'; --k: '全'; --c: '\E001+'; }
 .pchip[data-p="+N"] { --h: 'פ+'; --l: '+N'; --k: '圭'; --c: '\265E\FE0E+'; }
-.pchip[data-p="+L"] { --h: 'ר+'; --l: '+L'; --k: '杏'; }
+.pchip[data-p="+L"] { --h: 'ר+'; --l: '+L'; --k: '杏'; --c: '\E000+'; }
 .pchip[data-p="+P"] { --h: 'ח+'; --l: '+P'; --k: 'と'; --c: '\265F\FE0E+'; }
 .pchip[data-p^="+"]::after { color: var(--seal); }
