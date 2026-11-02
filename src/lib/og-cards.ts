@@ -20,6 +20,7 @@ export interface OgCard {
   highlight?: string;
   zones?: boolean;
   kanji?: boolean;
+  pieces?: 'chess';
 }
 
 export const ogSlug = (path: string): string => path.replace(/^\/+|\/+$/g, '').replace(/\/+/g, '-') || 'default';
@@ -141,8 +142,8 @@ export function ogCards(): OgCard[] {
       sub: 'לוח 9 על 9, 20 כלים לכל צד, וכלי שלכדת עובר לצד שלך. התשובות הקצרות, בעברית.', sfen: START,
     },
     {
-      path: '/chess/', eyebrow: 'לשחקני שחמט', title: 'יודע שחמט? חצי מהשוגי כבר אצלך',
-      sub: 'מה מוכר, מה שונה, ואיך מגיעים למשחק ראשון תוך שעה, ישר מהטלפון.', sfen: START,
+      path: '/chess/', pieces: 'chess', eyebrow: 'לשחקני שחמט', title: 'יודע שחמט? חצי מהשוגי כבר אצלך',
+      sub: 'מה מוכר, מה שונה, ואיך מגיעים למשחק ראשון תוך שעה. עם סמלי שחמט על הכלים.', sfen: START,
     },
     {
       path: '/history/', eyebrow: 'מאות שנים על לוח אחד', title: 'ההיסטוריה של השוגי',
