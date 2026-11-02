@@ -26,6 +26,12 @@ export const ICONS = {
   'add-home': `<rect x="4" y="4" width="16" height="16" rx="4" fill="currentColor" fill-opacity=".18" stroke="none"/><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/>`,
   'bell': `<path d="M6 10a6 6 0 0 1 12 0c0 4.6 1.8 6.3 2.2 6.8H3.8C4.2 16.3 6 14.6 6 10z" fill="currentColor" fill-opacity=".18" stroke="none"/><path d="M6 10a6 6 0 0 1 12 0c0 4.6 1.8 6.3 2.2 6.8H3.8C4.2 16.3 6 14.6 6 10zM12 2.6V4"/><path d="M12 17.6L13.53 18.70L13.95 21.6H10.05L10.47 18.70Z" fill="currentColor" stroke="none"/>`,
   'dots': `<circle cx="5.5" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="1.5" fill="currentColor" stroke="none"/>`,
+  'news-new': `<path d="M12 2.5L17.85 6.2L19.5 21H4.5L6.15 6.2Z" fill="currentColor" fill-opacity=".18" stroke="none"/><path d="M12 2.5L17.85 6.2L19.5 21H4.5L6.15 6.2Z"/><path d="M12 9.4l1.05 2.75 2.75 1.05-2.75 1.05L12 17l-1.05-2.75-2.75-1.05 2.75-1.05z" fill="currentColor" stroke="none"/>`,
+  'news-content': `<rect x="6" y="6.5" width="12" height="11" rx="1.5" fill="currentColor" fill-opacity=".18" stroke="none"/><path d="M6 6.5h12v11H6zM4 6.5h16M4 17.5h16M9 10h6M9 13.5h4"/>`,
+  'news-changed': `<path d="M12 2.5L17.85 6.2L19.5 21H4.5L6.15 6.2Z" fill="currentColor" fill-opacity=".18" stroke="none"/><path d="M12 2.5L17.85 6.2L19.5 21H4.5L6.15 6.2Z"/><path d="M8.6 13a3.4 3.4 0 0 1 6-2.1M15.4 14a3.4 3.4 0 0 1-6 2.1M14.8 8.9v2.2h-2.2M9.2 18.1v-2.2h2.2"/>`,
+  'news-moved': `<path d="M7 7L10.2 9.2L11 18.5H3L3.8 9.2Z" stroke-dasharray="0 2.4"/><path d="M17 5L20.2 7.2L21 16.5H13L13.8 7.2Z" fill="currentColor" fill-opacity=".18" stroke="none"/><path d="M17 5L20.2 7.2L21 16.5H13L13.8 7.2Z"/><path d="M5.5 20h9.5M12.8 17.8l2.2 2.2-2.2 2.2"/>`,
+  'news-fixed': `<path d="M12 2.5L17.85 6.2L19.5 21H4.5L6.15 6.2Z" fill="currentColor" fill-opacity=".18" stroke="none"/><path d="M12 2.5L17.85 6.2L19.5 21H4.5L6.15 6.2Z"/><path d="M8.8 13.6l2.3 2.3 4.2-4.6"/>`,
+  'news-important': `<path d="M12 2.5L17.85 6.2L19.5 21H4.5L6.15 6.2Z" fill="currentColor" fill-opacity=".18" stroke="none"/><path d="M12 2.5L17.85 6.2L19.5 21H4.5L6.15 6.2Z"/><path d="M12 9v5.2"/><circle cx="12" cy="17.2" r="1.1" fill="currentColor" stroke="none"/>`,
 } as const;
 
 export const BRANDS = {

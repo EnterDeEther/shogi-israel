@@ -4,6 +4,7 @@ import { normalize } from './progress-sync.js';
 import { resolve, type Gender } from './gender.js';
 import { israelDay, israelWeek } from './notify.js';
 import { weekPuzzle, weekStreak, weeksHe, WEEK_LENGTH } from '../tsume/week.js';
+import { newsHref, plainNews } from './news.js';
 
 export type PushKind = 'week' | 'course' | 'news';
 export const PUSH_KINDS: PushKind[] = ['week', 'course', 'news'];
@@ -42,7 +43,7 @@ export interface PushRow {
   news_after: string;
 }
 
-export interface Notice { id: number; title: string; body: string | null; url: string | null; starts_at: string }
+export interface Notice { id: number; title: string; body: string | null; url: string | null; starts_at: string; ends_at?: string | null; status?: string | null; push?: boolean | null }
 
 export interface PushContext {
   now: Date;
@@ -53,6 +54,7 @@ export interface PushContext {
 }
 
 export const isPublished = (n: { status?: string | null }): boolean => n.status == null || n.status === 'published';
+export const pushesNews = (n: Notice): boolean => n.push === true && isPublished(n);
 
 export type PushDue = { kind: 'week' } | { kind: 'course' } | { kind: 'news'; notice: Notice };
 
@@ -64,7 +66,7 @@ export function duePush(row: PushRow, ctx: PushContext): PushDue | null {
   if (since(row.last_push_at) * 24 < ONE_A_DAY_HOURS) return null;
 
   if (row.push_news) {
-    const fresh = ctx.notices.find((n) => Date.parse(n.starts_at) > Date.parse(row.news_after) && Date.parse(n.starts_at) <= now.getTime());
+    const fresh = ctx.notices.find((n) => pushesNews(n) && Date.parse(n.starts_at) > Date.parse(row.news_after) && Date.parse(n.starts_at) <= now.getTime());
     if (fresh) return { kind: 'news', notice: fresh };
   }
 
@@ -91,7 +93,7 @@ export function buildPush(due: PushDue, ctx: PushContext, gender: Gender = 'm'):
   const p = normalize(ctx.progressData);
   let m: PushMessage;
   if (due.kind === 'news') {
-    m = { title: due.notice.title, body: due.notice.body ?? 'יש משהו חדש בשוגי ישראל.', url: due.notice.url ?? '/', tag: `news-${due.notice.id}` };
+    m = { title: 'מה חדש בשוגי ישראל', body: plainNews(due.notice.title), url: newsHref(due.notice), tag: `news-${due.notice.id}` };
   } else if (due.kind === 'week') {
     const streak = weekStreak(p.tsume[String(WEEK_LENGTH)] ?? [], ctx.weekCount, israelWeek(ctx.now));
     m = {

@@ -1,6 +1,6 @@
 import webpush from 'web-push';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { afterPush, buildPush, duePush, isPublished, type Notice, type PushContext, type PushMessage, type PushRow } from './push.js';
+import { afterPush, buildPush, duePush, pushesNews, type Notice, type PushContext, type PushMessage, type PushRow } from './push.js';
 import { asGender } from './gender.js';
 
 export const pushConfigured = (): boolean => Boolean(process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY);
@@ -27,9 +27,10 @@ type Row = PushRow & { p256dh: string; auth: string };
 export async function runPush(db: SupabaseClient, now: Date, weekCount: number, dry: boolean) {
   const { data: rows, error } = await db.from('push_subscriptions').select('*').or('push_week.eq.true,push_course.eq.true,push_news.eq.true').limit(5000);
   if (error) return { error: error.message };
-  const { data: noticeRows } = await db.from('notices').select('*')
-    .lte('starts_at', now.toISOString()).or(`ends_at.is.null,ends_at.gt.${now.toISOString()}`).order('starts_at', { ascending: false }).limit(20);
-  const notices = (noticeRows ?? []).filter(isPublished).slice(0, 10);
+  const { data: noticeRows } = await db.from('notices').select('id, title, body, url, starts_at, ends_at, status, push')
+    .eq('status', 'published').eq('push', true)
+    .lte('starts_at', now.toISOString()).gt('ends_at', now.toISOString()).order('starts_at', { ascending: false }).limit(20);
+  const notices = ((noticeRows ?? []) as Notice[]).filter(pushesNews).slice(0, 10);
 
   const ids = [...new Set((rows ?? []).map((r) => r.user_id).filter(Boolean))] as string[];
   const progress = new Map<string, unknown>();
@@ -52,7 +53,7 @@ export async function runPush(db: SupabaseClient, now: Date, weekCount: number, 
   const plan: { phone: string; kind: string }[] = [];
   for (const row of (rows ?? []) as Row[]) {
     const ctx: PushContext = {
-      now, weekCount, notices: (notices ?? []) as Notice[],
+      now, weekCount, notices,
       progressData: row.user_id ? progress.get(row.user_id) : undefined,
       lastSeen: row.user_id ? seen.get(row.user_id) : undefined,
     };

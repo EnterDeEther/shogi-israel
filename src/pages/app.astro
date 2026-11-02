@@ -7,6 +7,7 @@ import HebrewFontSwitch from '../components/HebrewFontSwitch.astro';
 import SoundSetting from '../components/SoundSetting.astro';
 import GenderSetting from '../components/GenderSetting.astro';
 import PushSetting from '../components/PushSetting.astro';
+import NewsBar from '../components/NewsBar.astro';
 import { accountsEnabled } from '../lib/account-config';
 ---
 <Base title="האפליקציה" tabTitle="שוגי ישראל כאפליקציה" description="שוגי ישראל במסך הבית של הטלפון: משחק נגד המחשב, המסלול האישי וההגדרות, בלחיצה אחת." noindex>
@@ -19,6 +20,7 @@ import { accountsEnabled } from '../lib/account-config';
         <p class="rank small" data-app-rank hidden><a href="/ranks/#site" data-app-rank-link></a></p>
       </div>
     </header>
+    <NewsBar />
 
     {accountsEnabled && (
       <div class="acct" data-signed-out-only>

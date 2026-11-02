@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { afterPush, buildPush, duePush, isPublished, pushEndpointOk, type PushContext, type PushRow } from '../src/lib/push';
+import { afterPush, buildPush, duePush, isPublished, pushEndpointOk, pushesNews, type PushContext, type PushRow } from '../src/lib/push';
 import { israelWeek } from '../src/lib/notify';
 import { weekPuzzle } from '../src/tsume/week';
 
@@ -50,8 +50,11 @@ describe('which push a phone gets today', () => {
   });
 
   test('news: a notice that went live after the last one sent, once', () => {
-    const notice = { id: 7, title: 'טורניר ראשון', body: null, url: '/community/', starts_at: daysBefore(SUN, 1) };
+    const notice = { id: 7, title: 'טורניר ראשון', body: null, url: '/community/', starts_at: daysBefore(SUN, 1), push: true };
     expect(duePush(row({ push_news: true }), ctx({ notices: [notice] }))).toEqual({ kind: 'news', notice });
+    expect(duePush(row({ push_news: true }), ctx({ notices: [{ ...notice, push: false }] }))).toBeNull();
+    expect(duePush(row({ push_news: true }), ctx({ notices: [{ ...notice, push: null }] }))).toBeNull();
+    expect(duePush(row({ push_news: true }), ctx({ notices: [{ ...notice, status: 'waiting' }] }))).toBeNull();
     expect(duePush(row({ push_news: true, news_after: notice.starts_at }), ctx({ notices: [notice] }))).toBeNull();
     expect(duePush(row({ push_news: true, news_after: daysBefore(SUN, 0.5) }), ctx({ notices: [notice] }))).toBeNull();
     const due = duePush(row({ push_news: true }), ctx({ notices: [notice] }))!;
@@ -63,6 +66,11 @@ test('only published news is pushed', () => {
   expect(isPublished({ status: 'published' })).toBe(true);
   expect(isPublished({})).toBe(true);
   for (const status of ['draft', 'waiting', 'archived']) expect(isPublished({ status })).toBe(false);
+  const n = { id: 1, title: 'x', body: null, url: null, starts_at: SUN.toISOString() };
+  expect(pushesNews({ ...n, status: 'published', push: true })).toBe(true);
+  expect(pushesNews({ ...n, status: 'published', push: false })).toBe(false);
+  expect(pushesNews({ ...n, status: 'published' })).toBe(false);
+  expect(pushesNews({ ...n, status: 'draft', push: true })).toBe(false);
 });
 
 describe('what the push says', () => {
@@ -75,6 +83,14 @@ describe('what the push says', () => {
     expect(c.url.startsWith('/')).toBe(true);
     expect(c.body).toContain('הצעד הבא');
     for (const x of [m, c]) expect(x.title + x.body).not.toContain('⟦');
+  });
+
+  test('news: the update sentence, plain, in the reader\'s form, only to our own links', () => {
+    const notice = { id: 9, title: 'הרגלי נקרא עכשיו **חייל**, עם האות {ח}. ⟦נסה|נסי⟧', body: null, url: '/try/pieces/', starts_at: SUN.toISOString(), push: true };
+    const f = buildPush({ kind: 'news', notice }, ctx(), 'f');
+    expect(f).toEqual({ title: 'מה חדש בשוגי ישראל', body: 'הרגלי נקרא עכשיו חייל, עם האות ח. נסי', url: '/try/pieces/', tag: 'news-9' });
+    expect(buildPush({ kind: 'news', notice }, ctx()).body.endsWith('נסה')).toBe(true);
+    expect(buildPush({ kind: 'news', notice: { ...notice, url: 'https://evil.example/' } }, ctx()).url).toBe('/');
   });
 });
 
