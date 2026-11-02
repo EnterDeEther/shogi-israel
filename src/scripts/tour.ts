@@ -99,6 +99,8 @@ export function startTour(id: TourId, from?: HTMLElement | null): void {
   const loop = () => { place(); raf = requestAnimationFrame(loop); };
 
   function nextStepLink(): { href: string; label: string } {
+    const course = [...document.querySelectorAll<HTMLAnchorElement>('a[data-tour="app-course"]')].find(visible);
+    if (course) return { href: course.href, label: tour.end.primary };
     const next = [...document.querySelectorAll<HTMLAnchorElement>('a[data-tour="next"]')].find(visible);
     if (next) return { href: next.href, label: 'לצעד הבא שלי' };
     const first = [...document.querySelectorAll<HTMLAnchorElement>('a[data-tour="try"]')].find(visible);
@@ -158,6 +160,7 @@ export function startTour(id: TourId, from?: HTMLElement | null): void {
     root.classList.remove('tour-on');
     if (!keepMenu) setMenu(false);
     writeTourEnd(store(), how, id);
+    document.dispatchEvent(new CustomEvent('tour-end', { detail: { id, how } }));
     if (how === 'left') return;
     if (from?.isConnected) from.focus({ preventScroll: true });
     if (how === 'skipped' && firstTime) note(tour.again);

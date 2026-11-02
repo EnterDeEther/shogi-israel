@@ -420,3 +420,17 @@ html[data-pieces="hebrew"] .pchip[data-p="K"]::after {
 .pchip[data-p="+L"] { --h: 'ר+'; --l: '+L'; --k: '杏'; --c: '\E000+'; }
 .pchip[data-p="+P"] { --h: 'ח+'; --l: '+P'; --k: 'と'; --c: '\265F\FE0E+'; }
 .pchip[data-p^="+"]::after { color: var(--seal); }
+
+.app-gate { display: none; }
+html.app-locked .app-gate { display: block; margin: 8px 0 18px; padding: 16px; border-radius: 18px; background: var(--surface); border: 1px solid var(--glass-edge); }
+html.app-locked .app-gate img { width: 56px; height: 56px; border-radius: 14px; }
+html.app-locked .app-gate p { margin: 6px 0 0; line-height: 1.55; }
+html.app-locked .app-gate .gate-title { font-size: 22px; font-weight: 800; margin-top: 8px; }
+html.app-locked .app-gate [hidden] { display: none; }
+html.app-locked .gate-offline { color: var(--seal); font-weight: 700; }
+html.app-locked .site-header, html.app-locked .site-footer, html.app-locked .skip, html.app-locked .install-offer,
+html.app-locked .xp-toast, html.app-locked .tour-card, html.app-locked .tour-catch, html.app-locked .tour-spot { display: none !important; }
+.gate-sheet { width: min(640px, calc(100vw - 24px)); max-height: 86dvh; padding: 0; border: 1px solid var(--glass-edge); border-radius: 20px; background: var(--surface); color: var(--ink); }
+.gate-sheet::backdrop { background: rgba(10, 8, 4, 0.42); }
+.gate-sheet-x { position: sticky; top: 0; display: flex; margin: 10px 10px 0 auto; z-index: 1; }
+.gate-sheet-body { padding: 0 18px 20px; overflow-y: auto; max-height: calc(86dvh - 64px); }

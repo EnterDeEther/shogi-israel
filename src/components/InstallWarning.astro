@@ -1,0 +1,59 @@
+<dialog class="install-warning" data-install-warning aria-labelledby="install-warning-h" aria-describedby="install-warning-body">
+  <form method="dialog">
+    <img src="/app-icon-192.png" width="56" height="56" alt="" />
+    <h2 id="install-warning-h">האפליקציה דורשת חשבון</h2>
+    <p id="install-warning-body">כדי להשתמש באפליקציה צריך להיכנס לחשבון. אין לך עדיין? פתיחת חשבון בחינם לוקחת דקה, עם קוד שנשלח למייל. האתר עצמו נשאר פתוח גם בלי חשבון.</p>
+    <p class="extra" data-warn-ios hidden>באייפון האפליקציה שומרת כניסה משלה, אז גם אם ⟦אתה מחובר|את מחוברת⟧ בספארי, ⟦תתבקש|תתבקשי⟧ להיכנס פעם אחת באפליקציה.</p>
+    <p class="extra" data-warn-android-in hidden>⟦אתה כבר מחובר|את כבר מחוברת⟧, אז האפליקציה תיפתח ישר על החשבון שלך.</p>
+    <div class="acts">
+      <button type="submit" class="btn" value="go" autofocus>הבנתי, ⟦המשך|המשיכי⟧ להתקנה</button>
+      <button type="submit" class="btn btn-ghost" value="cancel">ביטול</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+  import { installFlow, isStandalone, miniWanted, onInstallChange } from '../lib/install';
+  import { g } from '../lib/gender';
+
+  const box = document.querySelector<HTMLDialogElement>('[data-install-warning]');
+  box?.addEventListener('click', (e) => {
+    if (e.target !== box) return;
+    const r = box.getBoundingClientRect();
+    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) box.close('cancel');
+  });
+
+  const installed = () => g('האפליקציה הותקנה. ⟦פתח|פתחי⟧ אותה מהסמל במסך הבית.');
+  document.addEventListener('click', (e) => {
+    const start = (e.target as HTMLElement).closest<HTMLElement>('[data-install-start]');
+    if (!start) return;
+    e.preventDefault();
+    void installFlow(installed());
+  });
+
+  const minis = document.querySelectorAll<HTMLElement>('[data-install-mini]');
+  const update = () => {
+    const show = !isStandalone() && miniWanted();
+    minis.forEach((el) => { el.hidden = !show; });
+  };
+  update();
+  onInstallChange(update);
+</script>
+
+<style>
+  .install-warning {
+    width: min(420px, calc(100vw - 32px)); padding: 22px 20px 18px; border: 1px solid var(--glass-edge); border-radius: 22px;
+    background: var(--surface); color: var(--ink); box-shadow: var(--shadow-glass); text-align: center;
+  }
+  .install-warning::backdrop { background: rgba(10, 8, 4, 0.42); }
+  .install-warning[open] { animation: warn-in .24s var(--ease-out); }
+  img { width: 56px; height: 56px; border-radius: 14px; }
+  h2 { margin: 10px 0 8px; font-size: 22px; line-height: 1.3; }
+  p { margin: 0 0 10px; line-height: 1.55; text-align: start; }
+  .extra { padding: 10px 12px; border-radius: 12px; background: var(--washi-2); font-size: 15px; }
+  .extra[hidden] { display: none; }
+  .acts { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+  .acts .btn { justify-content: center; min-height: 48px; font-size: 16px; }
+  @keyframes warn-in { from { opacity: 0; transform: translateY(10px) scale(0.98); } }
+  @media (prefers-reduced-motion: reduce) { .install-warning[open] { animation: none; } }
+</style>

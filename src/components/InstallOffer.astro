@@ -1,33 +1,34 @@
 ---
 import Icon from './Icon.astro';
 
-const PAGES = ['/', '/course/', '/learn/', '/tsume/', '/rules/', '/what-is-shogi/', '/chess/', '/community/', '/about/', '/ranks/', '/history/', '/account/'];
-const show = PAGES.includes(Astro.url.pathname);
+import { offerOnPage } from '../lib/install';
+
+const show = offerOnPage(Astro.url.pathname);
 ---
 {show && (
   <aside class="install-offer" data-install-offer hidden aria-labelledby="install-offer-h">
     <img src="/app-icon-192.png" width="48" height="48" alt="" />
     <div class="txt">
-      <p class="h" id="install-offer-h">שוגי ישראל במסך הבית</p>
-      <p class="sub">משחק נגד המחשב והמסלול שלך בלחיצה אחת, כמו אפליקציה.</p>
+      <p class="h" id="install-offer-h">שוגי ישראל כאפליקציה במסך הבית</p>
+      <p class="sub">המסלול שלך ומשחק נגד המחשב בלחיצה אחת. בחינם, עם חשבון.</p>
     </div>
     <div class="act">
-      <button type="button" class="btn go" data-install-go><Icon name="add-home" size={18} /><span>התקנה</span></button>
-      <a class="btn go" href="/app/#install" data-install-how hidden><Icon name="add-home" size={18} /><span>איך מתקינים?</span></a>
+      <button type="button" class="btn go" data-install-start data-install-go><Icon name="add-home" size={18} /><span>התקנה</span></button>
+      <button type="button" class="btn go" data-install-start data-install-how hidden><Icon name="add-home" size={18} /><span>איך מתקינים?</span></button>
     </div>
-    <button type="button" class="x" data-install-later aria-label="לא עכשיו">
+    <button type="button" class="x" data-install-close aria-label="סגירה">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
     </button>
   </aside>
 )}
 
 <script>
-  import { installWay, later, offerWanted, onInstallChange, promptInstall } from '../lib/install';
+  import { closeOffer, installWay, offerWanted, onInstallChange } from '../lib/install';
 
   const box = document.querySelector<HTMLElement>('[data-install-offer]');
   if (box) {
     const go = box.querySelector<HTMLButtonElement>('[data-install-go]')!;
-    const how = box.querySelector<HTMLAnchorElement>('[data-install-how]')!;
+    const how = box.querySelector<HTMLButtonElement>('[data-install-how]')!;
     const hide = () => { box.classList.add('leaving'); setTimeout(() => { box.hidden = true; box.classList.remove('leaving'); }, 180); };
     const update = () => {
       if (!offerWanted()) { if (!box.hidden) hide(); return; }
@@ -36,11 +37,19 @@ const show = PAGES.includes(Astro.url.pathname);
       how.hidden = prompt;
       box.hidden = false;
     };
-    go.addEventListener('click', async () => { if (await promptInstall()) hide(); });
-    how.addEventListener('click', () => later());
-    box.querySelector('[data-install-later]')!.addEventListener('click', () => { later(); hide(); });
-    onInstallChange(update);
-    setTimeout(update, 2500);
+    box.querySelector('[data-install-close]')!.addEventListener('click', () => { closeOffer(); hide(); });
+    const newsOpen = () => {
+      const bar = document.querySelector<HTMLElement>('[data-news-bar]');
+      return !!bar && !bar.hidden && bar.getClientRects().length > 0;
+    };
+    const waitsForNews = location.pathname === '/' || location.pathname === '/app/';
+    const begin = performance.now();
+    const ready = () => {
+      if (waitsForNews && newsOpen() && performance.now() - begin < 3000) return void setTimeout(ready, 200);
+      onInstallChange(update);
+      update();
+    };
+    setTimeout(ready, 2500);
   }
 </script>
 
