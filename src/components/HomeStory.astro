@@ -92,10 +92,9 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
     <div class="story" data-story={key}>
       <div class="stage-col" aria-hidden="true">
         {key === 'c' ? (
-          <div class="show" data-show data-step="c2">
+          <div class="show" data-show data-step="c1">
             <span class="big" data-a lang="ja"><span class="sh"><b>王</b></span></span>
             <span class="big" data-b><span class="sh"><span class="ph crown" dir="rtl"><Fragment set:html={crown} /><span>מ</span></span></span></span>
-            <span class="big" data-d><span class="sh"><span class="ph crown" dir="rtl"><Fragment set:html={crown} /><span>מ</span></span></span></span>
           </div>
         ) : (
           <div class="stage" data-stage data-zone={on(board(key).state.zone)} data-hand={on(board(key).state.hand)} data-still>
@@ -124,7 +123,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
             </span>
           </div>
         )}
-        <p class="cap" data-cap>{key === 'c' ? SHOW_CAPS.c2 : board(key).state.cap}</p>
+        <p class="cap" data-cap>{key === 'c' ? SHOW_CAPS.c1 : board(key).state.cap}</p>
       </div>
       <div class="steps">
         {STORY[key].map((s) => <div class="step" data-snap data-s={s.key}><p class="card" set:html={s.text} /></div>)}
@@ -201,10 +200,19 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   import { snapGate } from '../lib/snap-gate';
 
   const wide = matchMedia('(min-width: 900px)');
-  const watch = (story: HTMLElement, set: (key: string) => void) => {
+  const watch = (story: HTMLElement, show: (key: string, back: boolean) => void, reset: () => void) => {
     if (!('IntersectionObserver' in window)) return;
     const steps = [...story.querySelectorAll<HTMLElement>('[data-s]')];
+    const keys = steps.map((s) => s.getAttribute('data-s') || '');
     const col = story.querySelector<HTMLElement>('.stage-col');
+    let cur = -1;
+    const go = (k: string) => {
+      const i = keys.indexOf(k);
+      if (i < 0 || i === cur) return;
+      const back = i < cur;
+      cur = i;
+      show(k, back);
+    };
     let io: IntersectionObserver | undefined;
     const start = () => {
       io?.disconnect();
@@ -212,14 +220,29 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
       const line = Math.round(wide.matches ? innerHeight / 2 : top + 60);
       const pad = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
       story.style.setProperty('--snap-m', `${Math.max(0, Math.round(top - pad))}px`);
-      io = new IntersectionObserver((ents) => ents.forEach((en) => { if (en.isIntersecting) set(en.target.getAttribute('data-s') || ''); }), { rootMargin: `-${line}px 0px -${Math.max(0, innerHeight - line - 1)}px 0px` });
+      io = new IntersectionObserver((ents) => ents.forEach((en) => { if (en.isIntersecting) go(en.target.getAttribute('data-s') || ''); }), { rootMargin: `-${line}px 0px -${Math.max(0, innerHeight - line - 1)}px 0px` });
       steps.forEach((s) => io!.observe(s));
     };
     start();
+    if (col) {
+      new IntersectionObserver(([en]) => {
+        if (en.intersectionRatio >= 0.85) { if (cur < 0) go(keys[0]); }
+        else if (en.boundingClientRect.top > 0 && cur >= 0) { cur = -1; reset(); }
+      }, { threshold: [0, 0.85] }).observe(col);
+    }
     let t = 0;
     addEventListener('resize', () => { clearTimeout(t); t = window.setTimeout(start, 200); });
   };
   const below = (el: HTMLElement) => el.getBoundingClientRect().top > innerHeight;
+  const BEAT = 650;
+  const settle = (fn: () => void) => {
+    let t = 0;
+    const kick = () => { clearTimeout(t); t = window.setTimeout(done, 160); };
+    const done = () => { removeEventListener('scroll', kick); t = window.setTimeout(fn, BEAT); };
+    addEventListener('scroll', kick, { passive: true });
+    kick();
+    return () => { clearTimeout(t); removeEventListener('scroll', kick); };
+  };
 
   document.querySelectorAll<HTMLElement>('[data-story="a"], [data-story="b"]').forEach((story) => {
     const key = story.dataset.story as 'a' | 'b';
@@ -243,9 +266,17 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
       stage.toggleAttribute('data-zone', !!st.zone);
       stage.toggleAttribute('data-hand', !!st.hand);
     };
-    if (below(story)) apply(BOARD_STORIES[key].first);
+    let stop = () => {};
+    const play = (st: BoardState, back: boolean) => {
+      stop();
+      if (!st.pre || back) { apply(st); return; }
+      apply(st.pre);
+      stop = settle(() => apply(st));
+    };
+    const first = BOARD_STORIES[key].first;
+    if (below(story)) apply(first);
     requestAnimationFrame(() => requestAnimationFrame(() => stage.removeAttribute('data-still')));
-    watch(story, (s) => { const st = BOARD_STORIES[key].steps[s]; if (st) apply(st); });
+    watch(story, (s, back) => { const st = BOARD_STORIES[key].steps[s]; if (st) play(st, back); }, () => { stop(); apply(first); });
   });
 
   document.querySelectorAll<HTMLElement>('[data-story="c"]').forEach((story) => {
@@ -253,8 +284,14 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
     const cap = story.querySelector<HTMLElement>('[data-cap]');
     if (!show || !cap) return;
     const set = (k: string) => { if (!SHOW_CAPS[k]) return; show.dataset.step = k; cap.textContent = SHOW_CAPS[k]; };
+    let stop = () => {};
     if (below(story)) set('c0');
-    watch(story, set);
+    watch(story, (k, back) => {
+      stop();
+      if (back) { set(k); return; }
+      set('c0');
+      stop = settle(() => set(k));
+    }, () => { stop(); set('c0'); });
   });
 
   const html = document.documentElement;
@@ -383,14 +420,9 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   .big .sh { width: 100%; height: 100%; }
   .big b { position: relative; z-index: 1; font: 800 46cqw/1 var(--f-kanji); }
   .big .ph { position: relative; z-index: 1; font-size: 40cqw; padding-top: 14%; }
-  .show [data-b], .show [data-d] { opacity: 0; }
+  .show [data-b] { opacity: 0; }
   .show[data-step="c1"] [data-a] { opacity: 0; scale: .9; }
   .show[data-step="c1"] [data-b] { opacity: 1; }
-  .show[data-step="c2"] [data-a] { opacity: 0; }
-  .show[data-step="c2"] [data-b] { opacity: 1; translate: 0 55%; scale: .78; }
-  .show[data-step="c2"] [data-d] { opacity: 1; translate: 0 -55%; scale: .78; }
-  .show [data-d] .sh { rotate: 180deg; }
-  .show [data-d] .sh::after { background: var(--piece-gote); }
 
   .phases { list-style: none; margin: 14px 0 12px; padding: 0; display: grid; gap: 14px; }
   .phase { display: grid; grid-template-columns: 44px 1fr; gap: 14px; align-items: start; padding: 16px 18px; background: var(--surface); border-radius: 14px; box-shadow: var(--shadow-1); }
