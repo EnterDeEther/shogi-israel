@@ -28,6 +28,22 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
   </div>
   <p class="small muted">בחינם, בעברית, עם סמלי שחמט על הכלים, בלי הרשמה ובלי להוריד אפליקציה.</p>
 
+  <section class="ask" data-chess-ask hidden aria-labelledby="ask-title">
+    <div data-ask-q>
+      <h2 id="ask-title" class="ask__title">רוצה כלים בסגנון שחמט?</h2>
+      <div class="ask__demo" aria-hidden="true">
+        <span class="pchip" data-p="K"></span><span class="pchip" data-p="R"></span><span class="pchip" data-p="B"></span><span class="pchip" data-p="N"></span><span class="pchip" data-p="P"></span><span class="pchip" data-p="G"></span><span class="pchip" data-p="S"></span><span class="pchip" data-p="L"></span>
+      </div>
+      <p>על הכלים יופיעו סמלי השחמט שכבר מוכרים לך, ולשלושת הכלים החדשים יש סמלים באותו סגנון. הבחירה חלה על כל הלוחות באתר.</p>
+      <div class="ask__btns">
+        <button type="button" class="btn" data-ask="chess">כן, סמלי שחמט</button>
+        <button type="button" class="btn btn-ghost" data-ask="hebrew">לא, אותיות בעברית</button>
+      </div>
+    </div>
+    <p class="ask__done" data-ask-done="chess" hidden><strong>מעולה, הכלים יוצגו בסמלי שחמט.</strong> אפשר להחליף בכל רגע ב<a href="#pieces">מתג סימון הכלים</a>.</p>
+    <p class="ask__done" data-ask-done="hebrew" hidden><strong>בסדר, הכלים יוצגו באותיות בעברית.</strong> אפשר לחזור לסמלי שחמט בכל רגע ב<a href="#pieces">מתג סימון הכלים</a>.</p>
+  </section>
+
   <h2 id="crazyhouse">שיחקת פעם קרייזיהאוס?</h2>
   <p>אם שיחקת <span lang="en">Crazyhouse</span> בצ׳ס.קום או בליצ׳ס, ⟦אתה|את⟧ כבר ⟦מכיר|מכירה⟧ את הרעיון: כלי שלכדת נכנס לכיס, ובתורך אפשר להניח אותו על הלוח במקום לזוז. בשוגי זה לא וריאנט, זה החוק הבסיסי, וקוראים לזה <strong>הצנחה</strong>. ההבדל מקרייזיהאוס: הלוח והכלים בנויים מראש בשביל זה, ולכן המשחק עמוק ומאוזן הרבה יותר.</p>
 
@@ -198,8 +214,25 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
 </Page>
 
 <script>
-  import { markChessPlayer } from '../lib/piece-set';
+  import { choosePieceSet, markChessPlayer, savedPieceSet } from '../lib/piece-set';
   markChessPlayer();
+  const ask = document.querySelector<HTMLElement>('[data-chess-ask]');
+  const ASKED = 'chessPiecesAsked';
+  let asked = false;
+  try { asked = localStorage.getItem(ASKED) === '1'; } catch { }
+  if (ask && !asked && savedPieceSet() !== 'chess') {
+    ask.hidden = false;
+    ask.querySelectorAll<HTMLButtonElement>('[data-ask]').forEach((b) => b.addEventListener('click', () => {
+      const set = b.dataset.ask === 'hebrew' ? 'hebrew' : 'chess';
+      choosePieceSet(set);
+      try { localStorage.setItem(ASKED, '1'); } catch { }
+      ask.querySelector<HTMLElement>('[data-ask-q]')!.hidden = true;
+      const done = ask.querySelector<HTMLElement>(`[data-ask-done="${set}"]`)!;
+      done.hidden = false;
+      done.setAttribute('tabindex', '-1');
+      done.focus({ preventScroll: true });
+    }));
+  }
   document.querySelectorAll('[data-chess-intent]').forEach((a) => a.addEventListener('click', () => {
     try { localStorage.setItem('learnRoute', 'chess'); } catch { }
   }));
@@ -219,6 +252,15 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
   .pieces li.close { border-inline-start-color: var(--kaya-zone); }
   .pieces li.new { border-inline-start-color: var(--seal); }
   .pieces li > .pchip { flex-shrink: 0; }
+  .ask { margin: 16px 0 8px; padding: 14px 16px; background: var(--washi-2); border: 2px solid var(--seal); border-radius: 12px; }
+  .ask[hidden], .ask [hidden] { display: none; }
+  :global(.prose) .ask__title { margin: 0 0 10px; font-size: 22px; }
+  .ask__demo { display: flex; flex-wrap: wrap; gap: 2px; margin: 0 0 10px; font-size: clamp(16px, 5vw, 30px); }
+  .ask__demo :global(.pchip)::after { content: var(--c) !important; font-family: var(--f-chess), var(--f-piece) !important; font-size: 1.08em !important; padding-top: 0.18em !important; background-image: none !important; direction: ltr; }
+  :global(.prose) .ask p { margin: 0 0 12px; }
+  .ask__btns { display: flex; flex-wrap: wrap; gap: 10px; }
+  :global(.prose) .ask .ask__done { margin: 0; }
+  .ask__done:focus { outline: none; }
   .set-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0 0 16px; }
   .pieces li div { display: flex; flex-direction: column; font-size: 16px; line-height: 1.5; padding-top: 2px; }
   .pieces strong { color: var(--ink); }
