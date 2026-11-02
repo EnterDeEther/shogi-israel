@@ -93,9 +93,14 @@
 :is(.learn, .play) sg-pieces piece::after, :is(.learn, .play) piece.dragging::after { font-size: clamp(26px, 8.8vw, 44px); }
 html[data-pieces="letters"] :is(.learn, .play) piece::after { content: var(--l); direction: ltr; font-family: var(--f-body); font-weight: 800; }
 html[data-pieces="kanji"] :is(.learn, .play) piece::after { content: var(--k); font-family: var(--f-kanji); font-weight: 800; }
-html:not([data-pieces="letters"]):not([data-pieces="kanji"]) :is(.learn, .play) piece:is(.bishop, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { font-size: clamp(11px, 3.8vw, 19px); }
-html:not([data-pieces="letters"]):not([data-pieces="kanji"]) :is(.learn, .play) sg-pieces piece:is(.bishop, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { font-size: clamp(22px, 7.6vw, 38px); }
-html:not([data-pieces="letters"]):not([data-pieces="kanji"]) :is(.learn, .play) piece.king::after {
+html[data-pieces="chess"] :is(.learn, .play) piece::after { content: var(--c, var(--h)); font-family: var(--f-chess), var(--f-piece); }
+html[data-pieces="chess"] :is(.learn, .play) piece:is(.king, .rook, .bishop, .gold, .silver, .knight, .lance, .pawn)::after { font-size: clamp(13px, 4.2vw, 21px); padding-top: 10%; }
+html[data-pieces="chess"] :is(.learn, .play) sg-pieces piece:is(.king, .rook, .bishop, .gold, .silver, .knight, .lance, .pawn)::after { font-size: clamp(30px, 10vw, 50px); }
+html[data-pieces="chess"] :is(.learn, .play) piece:is(.dragon, .horse, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { font-size: clamp(11px, 3.8vw, 19px); }
+html[data-pieces="chess"] :is(.learn, .play) sg-pieces piece:is(.dragon, .horse, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { font-size: clamp(22px, 7.6vw, 38px); }
+html[data-pieces="hebrew"] :is(.learn, .play) piece:is(.bishop, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { font-size: clamp(11px, 3.8vw, 19px); }
+html[data-pieces="hebrew"] :is(.learn, .play) sg-pieces piece:is(.bishop, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { font-size: clamp(22px, 7.6vw, 38px); }
+html[data-pieces="hebrew"] :is(.learn, .play) piece.king::after {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 12'%3E%3Cpath fill='%231C1B19' d='M1 3.2 5.6 7 10 .8 14.4 7 19 3.2 17.2 11.2H2.8Z'/%3E%3C/svg%3E"), var(--arrows, none);
   background-repeat: no-repeat; background-position: center 30%, center; background-size: 36% auto, 100% 100%;
   padding-top: 50%;
@@ -113,14 +118,28 @@ html:not([data-pieces="letters"]):not([data-pieces="kanji"]) :is(.learn, .play) 
 :is(.learn, .play) piece.gold { --h: 'ז'; --l: 'G'; --k: '金'; }
 :is(.learn, .play) piece.silver { --h: 'כ'; --l: 'S'; --k: '銀'; }
 :is(.learn, .play) piece.knight { --h: 'פ'; --l: 'N'; --k: '桂'; }
-:is(.learn, .play) piece.lance { --h: 'ח'; --l: 'L'; --k: '香'; }
-:is(.learn, .play) piece.pawn { --h: 'ר'; --l: 'P'; --k: '歩'; }
+:is(.learn, .play) piece.lance { --h: 'ר'; --l: 'L'; --k: '香'; }
+:is(.learn, .play) piece.pawn { --h: 'ח'; --l: 'P'; --k: '歩'; }
 :is(.learn, .play) piece.dragon { --h: 'ד'; --l: '+R'; --k: '龍'; }
 :is(.learn, .play) piece.horse { --h: 'ס'; --l: '+B'; --k: '馬'; }
 :is(.learn, .play) piece.promotedsilver { --h: 'כ+'; --l: '+S'; --k: '全'; }
 :is(.learn, .play) piece.promotedknight { --h: 'פ+'; --l: '+N'; --k: '圭'; }
-:is(.learn, .play) piece.promotedlance { --h: 'ח+'; --l: '+L'; --k: '杏'; }
-:is(.learn, .play) piece.tokin { --h: 'ר+'; --l: '+P'; --k: 'と'; }
+:is(.learn, .play) piece.promotedlance { --h: 'ר+'; --l: '+L'; --k: '杏'; }
+:is(.learn, .play) piece.tokin { --h: 'ח+'; --l: '+P'; --k: 'と'; }
+:is(.learn, .play) piece.king { --c: '\265A\FE0E'; }
+:is(.learn, .play) piece.rook { --c: '\265C\FE0E'; }
+:is(.learn, .play) piece.bishop { --c: '\265D\FE0E'; }
+:is(.learn, .play) piece.knight { --c: '\265E\FE0E'; }
+:is(.learn, .play) piece.pawn { --c: '\265F\FE0E'; }
+:is(.learn, .play) piece.gold { --c: '\E002'; }
+:is(.learn, .play) piece.silver { --c: '\E001'; }
+:is(.learn, .play) piece.lance { --c: '\E000'; }
+:is(.learn, .play) piece.promotedsilver { --c: '\E001+'; }
+:is(.learn, .play) piece.promotedlance { --c: '\E000+'; }
+:is(.learn, .play) piece.dragon { --c: '\265C\FE0E+'; }
+:is(.learn, .play) piece.horse { --c: '\265D\FE0E+'; }
+:is(.learn, .play) piece.promotedknight { --c: '\265E\FE0E+'; }
+:is(.learn, .play) piece.tokin { --c: '\265F\FE0E+'; }
 :is(.learn, .play) piece:is(.dragon, .horse, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { color: var(--piece-seal); }
 
 :is(.learn, .play) sg-squares sq { position: relative; }

@@ -1,6 +1,7 @@
 // AGPL-3.0-or-later, like the rest of src/learn/.
 import { hasKey, i18n } from './i18n';
 import { readLocal } from '../lib/progress-local';
+import { refreshPieceSet } from '../lib/piece-set';
 
 export const ROUTE_KEY = 'learnRoute';
 
@@ -20,6 +21,7 @@ export function setRoute(route: Route | null): void {
     if (route) localStorage.setItem(ROUTE_KEY, route);
     else localStorage.removeItem(ROUTE_KEY);
   } catch { }
+  if (typeof document !== 'undefined') refreshPieceSet();
 }
 
 export function routeFromUrl(search = window.location.search): void {
