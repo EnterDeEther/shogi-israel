@@ -193,16 +193,19 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
           <h2 id="notifications">התראות</h2>
           <fieldset class="notify" data-notify>
             <legend>מה יופיע בפעמון שבראש העמוד</legend>
+            <div class="notify-box">
             {INBOX_GROUPS.map((g) => (
               <label class="switch-row" for={`notify-${g}`}>
                 <span><strong>{GROUP_LABEL[g].title}</strong><span class="small muted">{GROUP_LABEL[g].sub}</span></span>
                 <input type="checkbox" class="switch" id={`notify-${g}`} data-notify-group={g} checked />
               </label>
             ))}
+            </div>
           </fieldset>
           <p class="small muted" data-notify-saved>ההגדרות נשמרות בחשבון ועוברות איתך לכל מכשיר.</p>
           <fieldset class="notify" data-email-prefs>
             <legend>מיילים (רק אם ⟦תבקש|תבקשי⟧)</legend>
+            <div class="notify-box">
             <label class="switch-row" for="email-week">
               <span><strong>בעיית השבוע במייל</strong><span class="small muted">{CONSENT_TEXT.week}</span></span>
               <input type="checkbox" class="switch" id="email-week" data-email-kind="week" />
@@ -211,6 +214,7 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
               <span><strong>תזכורת לחזור</strong><span class="small muted">{CONSENT_TEXT.return}</span></span>
               <input type="checkbox" class="switch" id="email-return" data-email-kind="return" />
             </label>
+            </div>
           </fieldset>
           <p class="small err" data-email-paused hidden>המיילים הושהו כי המייל האחרון לא הגיע אליך (או סומן כספאם). ⟦הדלק|הדליקי⟧ שוב כדי לחדש.</p>
           <p class="small muted" data-email-note>לכל היותר מייל אחד בשבוע, אף פעם לא בשישי ובשבת, ובכל מייל יש קישור להפסקה בלחיצה אחת. מיילי החשבון (אישור כתובת, איפוס סיסמה) נשלחים רק ⟦כשאתה|כשאת⟧ ⟦מבקש|מבקשת⟧. פרטים ב<a href="/privacy/#emails">מדיניות הפרטיות</a>.</p>
@@ -766,8 +770,9 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
   .form .check input { width: 20px; height: 20px; min-height: 0; padding: 0; border: revert; background: revert; margin: 2px 0 0; flex: none; accent-color: var(--seal); }
   [data-email-prefs] { margin-top: 10px; }
   .push-wrap { margin-top: 14px; }
-  .notify { border: 1px solid var(--rule); border-radius: 8px; padding: 4px 16px; margin: 0; background: var(--washi-2); }
-  .notify legend { padding: 0 6px; margin-inline-start: -6px; font-weight: 700; }
+  .notify { border: 0; padding: 0; margin: 0; min-width: 0; }
+  .notify legend { padding: 0; margin: 0 0 8px; font-weight: 700; }
+  .notify-box { border: 1px solid var(--rule); border-radius: 8px; padding: 4px 16px; background: var(--washi-2); }
   .switch-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 56px; padding: 8px 0; border-bottom: 1px solid var(--rule); cursor: pointer; }
   .switch-row:last-child { border-bottom: 0; }
   .switch-row > span { display: flex; flex-direction: column; }

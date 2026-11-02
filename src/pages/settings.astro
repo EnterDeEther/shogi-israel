@@ -1,0 +1,75 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import ThemeSetting from '../components/ThemeSetting.astro';
+import PieceToggle from '../components/PieceToggle.astro';
+import HebrewFontSwitch from '../components/HebrewFontSwitch.astro';
+import SoundSetting from '../components/SoundSetting.astro';
+import GenderSetting from '../components/GenderSetting.astro';
+import { accountsEnabled } from '../lib/account-config';
+---
+<Base title="הגדרות" description="הגדרות שוגי ישראל: מראה האתר, סימון הכלים, צלילים ואיך לפנות אליך." noindex>
+  <div class="wrap page settings-page">
+    <header class="top">
+      <span class="ico"><Icon name="settings" size={30} /></span>
+      <div>
+        <h1>הגדרות</h1>
+        <p class="muted">ההגדרות נשמרות במחשב הזה ופועלות בכל עמודי האתר.</p>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="card" aria-labelledby="look-h">
+        <h2 id="look-h">מראה</h2>
+        <div class="setting"><p class="setting-label">מראה האתר</p><ThemeSetting /></div>
+        <div class="setting"><p class="setting-label">סימון הכלים</p><PieceToggle /></div>
+        <div class="setting hfont-row"><p class="setting-label">גופן האותיות על הכלים</p><HebrewFontSwitch /></div>
+      </section>
+
+      <section class="card" aria-labelledby="sound-h">
+        <h2 id="sound-h">צלילים</h2>
+        <div class="setting"><SoundSetting /></div>
+      </section>
+
+      <section class="card" aria-labelledby="you-h">
+        <h2 id="you-h">פנייה</h2>
+        <div class="setting"><p class="setting-label">איך לפנות אליי באתר</p><GenderSetting label="איך לפנות אליי באתר" /></div>
+      </section>
+
+      {accountsEnabled && (
+        <section class="card" aria-labelledby="acct-h">
+          <h2 id="acct-h">חשבון והתראות</h2>
+          <p data-signed-in-only>הפעמון, המיילים, הכינוי והסיסמה נמצאים <a href="/account/#notifications">בחשבון שלי</a>.</p>
+          <p data-signed-out-only>עם חשבון בחינם ההתקדמות עוברת איתך לכל מכשיר, ואפשר לבחור התראות ומיילים. <a href="/account/?mode=signup">⟦פתח|פתחי⟧ חשבון</a> או <a href="/account/?mode=signin">⟦היכנס|היכנסי⟧</a>.</p>
+        </section>
+      )}
+    </div>
+  </div>
+</Base>
+
+<script>
+  import { isPhoneLike, PHONE_SETTINGS } from '../lib/settings-place';
+
+  if (isPhoneLike()) location.replace(PHONE_SETTINGS);
+</script>
+
+<style>
+  .settings-page { padding-block: 28px 56px; }
+  .top { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+  .top h1 { margin: 0; }
+  .top p { margin: 4px 0 0; }
+  .top .ico {
+    display: grid; place-items: center; width: 56px; height: 56px; border-radius: 16px; flex-shrink: 0;
+    background: color-mix(in srgb, var(--seal) 12%, transparent); color: var(--seal);
+  }
+  .grid { display: grid; gap: 18px; grid-template-columns: 1fr; align-items: start; }
+  @media (min-width: 860px) { .grid { grid-template-columns: 1fr 1fr; } }
+  .card {
+    display: flex; flex-direction: column; gap: 18px; padding: 20px 22px;
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; box-shadow: var(--shadow-1);
+  }
+  .card h2 { margin: 0; font-size: 20px; }
+  .card p { margin: 0; }
+  .setting { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+  .setting-label { margin: 0; font-weight: 700; }
+</style>

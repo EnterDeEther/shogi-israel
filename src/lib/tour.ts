@@ -21,7 +21,7 @@ export interface Tour {
   end: TourCard;
 }
 
-const COUNT_WORDS: Record<number, string> = { 2: 'שני', 3: 'שלושה', 4: 'ארבעה', 5: 'חמישה', 6: 'שישה' };
+const COUNT_WORDS: Record<number, string> = { 2: 'שני', 3: 'שלושה', 4: 'ארבעה', 5: 'חמישה', 6: 'שישה', 7: 'שבעה', 8: 'שמונה' };
 
 export const SITE_TOUR: Tour = {
   name: 'סיור באתר',
@@ -53,6 +53,11 @@ export const SITE_TOUR: Tour = {
       target: 'quick',
       title: 'שני קיצורי דרך, בכל דף',
       body: 'בראש העמוד: "משחק" פותח משחק נגד המחשב, וכשיש משחק פתוח הוא ממשיך אותו מאותו מהלך. "מסלול" מוביל לצעד הבא במסלול הלימוד האישי.',
+    },
+    {
+      target: 'settings',
+      title: 'הגדרות',
+      body: 'מראה בהיר או כהה, סימון הכלים, גופן האותיות, צלילים ואיך לפנות אליך.',
     },
     {
       target: 'know',

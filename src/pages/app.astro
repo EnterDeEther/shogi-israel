@@ -127,6 +127,7 @@ import { accountsEnabled } from '../lib/account-config';
   import { gameInProgress } from '../play/record';
   import { installWay, isStandalone, onInstallChange, promptInstall } from '../lib/install';
   import { offerSeen, offerWanted, serverKey } from '../lib/push-client';
+  import { DESKTOP_SETTINGS, isPhoneLike } from '../lib/settings-place';
 
   const root = document.querySelector<HTMLElement>('[data-app]')!;
   const signedIn = () => accountsEnabled && hasStoredSession();
@@ -205,6 +206,7 @@ import { accountsEnabled } from '../lib/account-config';
   if (location.hash === '#install') requestAnimationFrame(() => document.getElementById('install')?.scrollIntoView({ block: 'start' }));
   const openSettings = () => {
     if (location.hash !== '#settings') return;
+    if (!isPhoneLike()) { location.replace(DESKTOP_SETTINGS); return; }
     const box = document.getElementById('settings') as HTMLDetailsElement | null;
     if (!box) return;
     box.open = true;
@@ -212,7 +214,7 @@ import { accountsEnabled } from '../lib/account-config';
   };
   openSettings();
   addEventListener('hashchange', openSettings);
-  document.querySelectorAll('a[href="/app/#settings"]').forEach((a) => a.addEventListener('click', () => setTimeout(openSettings)));
+  document.querySelectorAll('a[data-settings-link]').forEach((a) => a.addEventListener('click', () => setTimeout(openSettings)));
 </script>
 
 <style>
