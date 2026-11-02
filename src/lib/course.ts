@@ -23,7 +23,7 @@ export const PRACTICE: Record<string, { stage: string; title: string }[]> = {
     { stage: 'lance', title: 'רומח' },
     { stage: 'bishop', title: 'רץ' },
     { stage: 'rook', title: 'צריח' },
-    { stage: 'pawn', title: 'רגלי' },
+    { stage: 'pawn', title: 'חייל' },
   ],
   '03-promotion': [{ stage: 'il_promotion', title: 'הכתרה' }],
   '04-drops': [

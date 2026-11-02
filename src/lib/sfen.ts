@@ -23,15 +23,15 @@ export interface Position {
 export const LETTER: Record<PieceType, string> = { K: 'K', R: 'R', B: 'B', G: 'G', S: 'S', N: 'N', L: 'L', P: 'P' };
 
 const KANJI: Record<PieceType, string> = { K: '王', R: '飛', B: '角', G: '金', S: '銀', N: '桂', L: '香', P: '歩' };
-const HEBREW: Record<PieceType, string> = { K: 'מ', R: 'צ', B: 'רץ', G: 'ז', S: 'כ', N: 'פ', L: 'ח', P: 'ר' };
-const HEBREW_PROMOTED: Partial<Record<PieceType, string>> = { R: 'ד', B: 'ס', S: 'כ+', N: 'פ+', L: 'ח+', P: 'ר+' };
+const HEBREW: Record<PieceType, string> = { K: 'מ', R: 'צ', B: 'רץ', G: 'ז', S: 'כ', N: 'פ', L: 'ר', P: 'ח' };
+const HEBREW_PROMOTED: Partial<Record<PieceType, string>> = { R: 'ד', B: 'ס', S: 'כ+', N: 'פ+', L: 'ר+', P: 'ח+' };
 const KANJI_PROMOTED: Partial<Record<PieceType, string>> = { R: '龍', B: '馬', S: '全', N: '圭', L: '杏', P: 'と' };
 
 const NAME_HE: Record<PieceType, string> = {
-  K: 'מלך', R: 'צריח', B: 'רץ', G: 'גנרל זהב', S: 'גנרל כסף', N: 'פרש', L: 'רומח', P: 'רגלי',
+  K: 'מלך', R: 'צריח', B: 'רץ', G: 'גנרל זהב', S: 'גנרל כסף', N: 'פרש', L: 'רומח', P: 'חייל',
 };
 const NAME_HE_PLURAL: Record<PieceType, string> = {
-  K: 'מלכים', R: 'צריחים', B: 'רצים', G: 'גנרלי זהב', S: 'גנרלי כסף', N: 'פרשים', L: 'רמחים', P: 'רגלים',
+  K: 'מלכים', R: 'צריחים', B: 'רצים', G: 'גנרלי זהב', S: 'גנרלי כסף', N: 'פרשים', L: 'רמחים', P: 'חיילים',
 };
 const NAME_HE_PROMOTED: Partial<Record<PieceType, string>> = {
   R: 'דרקון', B: 'סוס', S: 'כסף מוכתר', N: 'פרש מוכתר', L: 'רומח מוכתר', P: 'טוקין',

@@ -28,7 +28,7 @@ const TERMS: { name: string; re: RegExp; where: string }[] = [
   { name: 'tokin', re: /טוקין/, where: 'pawn:2' },
   { name: 'capture', re: /לכיד|ללכוד|לוכד|⟦לכוד|לכדת/, where: 'capture:intro' },
   { name: 'threatened', re: /מאוי/, where: 'capture:2' },
-  { name: 'nifu', re: /רגלי כפול/, where: 'drop:8' },
+  { name: 'nifu', re: /חייל כפול/, where: 'drop:8' },
   { name: 'protected', re: /מוגן|להגן/, where: 'protection:intro' },
   { name: 'check', re: W('[בלמהו]?שח'), where: 'check1:intro' },
   { name: 'block', re: /חסימ|לחסום|⟦חסום/, where: 'outOfCheck:intro' },

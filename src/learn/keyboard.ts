@@ -11,7 +11,7 @@ const pieceNames: Record<string, string> = {
   silver: 'גנרל כסף',
   knight: 'פרש',
   lance: 'רומח',
-  pawn: 'רגלי',
+  pawn: 'חייל',
   dragon: 'דרקון',
   horse: 'סוס',
   promotedsilver: 'כסף מוכתר',

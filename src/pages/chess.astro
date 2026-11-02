@@ -37,8 +37,8 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
     <li class="same"><Piece>צ</Piece><div><strong>צריח</strong><span>בדיוק כמו בשחמט.</span></div></li>
     <li class="same"><Piece>רץ</Piece><div><strong>רץ</strong><span>בדיוק כמו בשחמט.</span></div></li>
     <li class="close"><Piece>פ</Piece><div><strong>פרש</strong><span>קופץ כמו בשחמט, אבל רק קדימה: שתיים קדימה ואחת הצידה.</span></div></li>
-    <li class="close"><Piece>ר</Piece><div><strong>רגלי</strong><span>צעד אחד קדימה, וגם <em>לוכד</em> ישר קדימה. אין צעד כפול ואין הכאה דרך הילוכו.</span></div></li>
-    <li class="new"><Piece>ח</Piece><div><strong>רומח</strong><span>צריח שיודע לנסוע רק קדימה.</span></div></li>
+    <li class="close"><Piece>ח</Piece><div><strong>חייל</strong><span>הרגלי של השחמט. צעד אחד קדימה, וגם <em>לוכד</em> ישר קדימה. אין צעד כפול ואין הכאה דרך הילוכו.</span></div></li>
+    <li class="new"><Piece>ר</Piece><div><strong>רומח</strong><span>צריח שיודע לנסוע רק קדימה.</span></div></li>
     <li class="new"><Piece>ז</Piece><div><strong>גנרל זהב</strong><span>צעד אחד לכל כיוון, חוץ מאלכסון אחורה. המגן הכי טוב של המלך.</span></div></li>
     <li class="new"><Piece>כ</Piece><div><strong>גנרל כסף</strong><span>צעד אחד באלכסון לכל כיוון, או צעד אחד ישר קדימה.</span></div></li>
   </ul>
@@ -52,7 +52,7 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
     </li>
     <li>
       <h3>כמעט כל כלי מוכתר</h3>
-      <p>בשחמט רק רגלי מוכתר, ורק בשורה האחרונה. בשוגי כמעט כל כלי שנכנס לשלוש השורות האחרונות של היריב יכול להתחזק: הצריח הופך ל<strong>דרקון</strong> (צריח שזז גם צעד באלכסון), הרץ ל<strong>סוס</strong> (רץ שזז גם צעד ישר), והכלים הקטנים זזים כמו גנרל זהב.</p>
+      <p>בשחמט רק חייל מוכתר, ורק בשורה האחרונה. בשוגי כמעט כל כלי שנכנס לשלוש השורות האחרונות של היריב יכול להתחזק: הצריח הופך ל<strong>דרקון</strong> (צריח שזז גם צעד באלכסון), הרץ ל<strong>סוס</strong> (רץ שזז גם צעד ישר), והכלים הקטנים זזים כמו גנרל זהב.</p>
     </li>
     <li>
       <h3>אין הצרחה. בונים מבצר</h3>
@@ -90,8 +90,8 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
       <span class="small muted">10 דקות. הם זזים כמו בשחמט, אז ⟦שים|שימי⟧ לב רק להכתרה.</span>
     </li>
     <li>
-      <span class="t">הכלים החדשים, אחד בכל שלב: <a href="/learn/gold/?route=chess">זהב</a>, <a href="/learn/silver/?route=chess">כסף</a>, <a href="/learn/knight/?route=chess">פרש</a>, <a href="/learn/lance/?route=chess">רומח</a>, <a href="/learn/pawn/?route=chess">רגלי</a></span>
-      <span class="small muted">15 דקות. גם הפרש והרגלי שונים ממה ⟦שאתה|שאת⟧ ⟦מכיר|מכירה⟧.</span>
+      <span class="t">הכלים החדשים, אחד בכל שלב: <a href="/learn/gold/?route=chess">זהב</a>, <a href="/learn/silver/?route=chess">כסף</a>, <a href="/learn/knight/?route=chess">פרש</a>, <a href="/learn/lance/?route=chess">רומח</a>, <a href="/learn/pawn/?route=chess">חייל</a></span>
+      <span class="small muted">15 דקות. גם הפרש והחייל שונים ממה ⟦שאתה|שאת⟧ ⟦מכיר|מכירה⟧.</span>
     </li>
     <li>
       <span class="t"><a href="/learn/drop/?route=chess">הצנחה</a>, <a href="/learn/checkmate1/?route=chess">מט במהלך אחד</a> ו<a href="/learn/value/?route=chess">ערך הכלים</a></span>
@@ -118,11 +118,11 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
 
   <h2 id="traps">חמש טעויות של שחקני שחמט</h2>
   <ul class="traps">
-    <li><strong>לחפש את הרגלי באלכסון.</strong> הרגלי לוכד ישר קדימה.</li>
+    <li><strong>לחפש את החייל באלכסון.</strong> החייל לוכד ישר קדימה.</li>
     <li><strong>להחזיר את הפרש אחורה.</strong> הוא לא יכול. פרש שהתקדם יותר מדי נתקע.</li>
     <li><strong>להשאיר כלי לא מוגן.</strong> זו מתנה כפולה: היריב לוכד אותו, ואחר כך מצניח אותו נגדך.</li>
     <li><strong>להחליף כלים כדי להרגיע את העמדה.</strong> כל חילוף מוסיף כלים ליד של שניכם, והעמדה רק מתחממת.</li>
-    <li><strong>להצניח רגלי לטור שכבר יש בו רגלי שלך,</strong> או לתת מט בהצנחת רגלי. שני החוקים האלה לא קיימים בשחמט.</li>
+    <li><strong>להצניח חייל לטור שכבר יש בו חייל שלך,</strong> או לתת מט בהצנחת חייל. שני החוקים האלה לא קיימים בשחמט.</li>
   </ul>
 
   <h2 id="depth">למי שמחפש אתגר: כמה עמוק זה</h2>
@@ -162,8 +162,8 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
           <tr><th scope="row">כלים לכל צד</th><td>16</td><td>20</td></tr>
           <tr><th scope="row">מלכה</th><td>יש</td><td>אין. הכלי החזק ביותר הוא הדרקון</td></tr>
           <tr><th scope="row">כלי שנלכד</th><td>יוצא מהמשחק</td><td>עובר ליד שלך ואפשר להצניח אותו</td></tr>
-          <tr><th scope="row">הכתרה</th><td>רק רגלי, בשורה האחרונה</td><td>כמעט כל כלי, בשלוש השורות האחרונות</td></tr>
-          <tr><th scope="row">רגלי לוכד</th><td>באלכסון</td><td>ישר קדימה</td></tr>
+          <tr><th scope="row">הכתרה</th><td>רק חייל, בשורה האחרונה</td><td>כמעט כל כלי, בשלוש השורות האחרונות</td></tr>
+          <tr><th scope="row">חייל לוכד</th><td>באלכסון</td><td>ישר קדימה</td></tr>
           <tr><th scope="row">בית למלך</th><td>הצרחה</td><td>בונים מבצר ביד</td></tr>
           <tr><th scope="row">תיקו</th><td>נפוץ, ויש הצעת תיקו</td><td>נדיר, ואין הצעת תיקו</td></tr>
           <tr><th scope="row">רישום מהלך</th><td><bdi dir="ltr" class="nt">e4</bdi></td><td><bdi dir="ltr" class="nt">P-76</bdi> (טור 7, שורה 6)</td></tr>

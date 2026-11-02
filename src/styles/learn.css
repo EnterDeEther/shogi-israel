@@ -113,14 +113,14 @@ html:not([data-pieces="letters"]):not([data-pieces="kanji"]) :is(.learn, .play) 
 :is(.learn, .play) piece.gold { --h: 'ז'; --l: 'G'; --k: '金'; }
 :is(.learn, .play) piece.silver { --h: 'כ'; --l: 'S'; --k: '銀'; }
 :is(.learn, .play) piece.knight { --h: 'פ'; --l: 'N'; --k: '桂'; }
-:is(.learn, .play) piece.lance { --h: 'ח'; --l: 'L'; --k: '香'; }
-:is(.learn, .play) piece.pawn { --h: 'ר'; --l: 'P'; --k: '歩'; }
+:is(.learn, .play) piece.lance { --h: 'ר'; --l: 'L'; --k: '香'; }
+:is(.learn, .play) piece.pawn { --h: 'ח'; --l: 'P'; --k: '歩'; }
 :is(.learn, .play) piece.dragon { --h: 'ד'; --l: '+R'; --k: '龍'; }
 :is(.learn, .play) piece.horse { --h: 'ס'; --l: '+B'; --k: '馬'; }
 :is(.learn, .play) piece.promotedsilver { --h: 'כ+'; --l: '+S'; --k: '全'; }
 :is(.learn, .play) piece.promotedknight { --h: 'פ+'; --l: '+N'; --k: '圭'; }
-:is(.learn, .play) piece.promotedlance { --h: 'ח+'; --l: '+L'; --k: '杏'; }
-:is(.learn, .play) piece.tokin { --h: 'ר+'; --l: '+P'; --k: 'と'; }
+:is(.learn, .play) piece.promotedlance { --h: 'ר+'; --l: '+L'; --k: '杏'; }
+:is(.learn, .play) piece.tokin { --h: 'ח+'; --l: '+P'; --k: 'と'; }
 :is(.learn, .play) piece:is(.dragon, .horse, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { color: var(--piece-seal); }
 
 :is(.learn, .play) sg-squares sq { position: relative; }

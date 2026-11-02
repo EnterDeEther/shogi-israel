@@ -49,7 +49,7 @@ describe('three pieces try', () => {
 });
 
 describe('first game: nothing named before it is introduced', () => {
-  const PIECES: [string, string][] = [['רגלי', '{P}'], ['צריח', '{R}'], ['גנרל זהב', '{G}'], ['רץ ', '{B}'], ['גנרל כסף', '{S}'], ['דרקון', '{+R}']];
+  const PIECES: [string, string][] = [['חייל', '{P}'], ['צריח', '{R}'], ['גנרל זהב', '{G}'], ['רץ ', '{B}'], ['גנרל כסף', '{S}'], ['דרקון', '{+R}']];
   const texts: string[] = [];
   FIRST_GAME.forEach((m, i) => {
     const ph = PHASES.find((p) => p.first === i + 1);
@@ -66,6 +66,6 @@ describe('first game: nothing named before it is introduced', () => {
 
   test('piece marks are valid and stripped for screen readers', () => {
     for (const t of texts) for (const m of t.matchAll(/\{([^}]*)\}/g)) expect(m[1]).toMatch(/^\+?[KRBGSNLP]$/);
-    expect(plainText('זה רגלי {P}, הכלי')).toBe('זה רגלי, הכלי');
+    expect(plainText('זה חייל {P}, הכלי')).toBe('זה חייל, הכלי');
   });
 });

@@ -10,7 +10,7 @@ import { tipEl } from '../lib/info-tip-dom';
 const MARK: Record<Color, string> = { sente: '☗', gote: '☖' };
 
 const ROLE: Partial<Record<Role, string>> = {
-  rook: 'הצריח', bishop: 'הרץ', gold: 'הזהב', silver: 'הכסף', knight: 'הפרש', lance: 'הרומח', pawn: 'הרגלי',
+  rook: 'הצריח', bishop: 'הרץ', gold: 'הזהב', silver: 'הכסף', knight: 'הפרש', lance: 'הרומח', pawn: 'החייל',
   dragon: 'הדרקון', horse: 'הסוס', tokin: 'הטוקין', promotedsilver: 'הכסף המוכתר', promotedknight: 'הפרש המוכתר', promotedlance: 'הרומח המוכתר',
 };
 

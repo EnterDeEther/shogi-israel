@@ -5,7 +5,7 @@ import Piece from '../components/Piece.astro';
 
 const pieces: [string, string, string, boolean?][] = [
   ['玉', 'K', 'מלך'], ['飛', 'R', 'צריח'], ['角', 'B', 'רץ'], ['金', 'G', 'גנרל זהב'], ['銀', 'S', 'גנרל כסף'],
-  ['桂', 'N', 'פרש'], ['香', 'L', 'רומח'], ['歩', 'P', 'רגלי'],
+  ['桂', 'N', 'פרש'], ['香', 'L', 'רומח'], ['歩', 'P', 'חייל'],
   ['龍', '+R', 'דרקון', true], ['馬', '+B', 'סוס', true], ['成銀', '+S', 'כסף מוכתר', true],
   ['成桂', '+N', 'פרש מוכתר', true], ['成香', '+L', 'רומח מוכתר', true], ['と', '+P', 'טוקין', true],
 ];
@@ -59,10 +59,10 @@ const ranks = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
       <p>⟦קח|קחי⟧ את <span lang="ja" class="kj">７六歩(77)</span>. היא אומרת: <strong>לאן</strong>, <strong>איזה כלי</strong>, ו<strong>מאיפה</strong>.</p>
       <ol>
         <li><span lang="ja" class="kj">７六</span> היא משבצת היעד: טור 7, שורה 6. כלומר <bdi dir="ltr" class="nt">76</bdi>. הטור כתוב בספרה, והשורה במספר יפני (טבלה למטה).</li>
-        <li><span lang="ja" class="kj">歩</span> הוא הכלי: רגלי <Piece>歩</Piece>.</li>
+        <li><span lang="ja" class="kj">歩</span> הוא הכלי: חייל <Piece>歩</Piece>.</li>
         <li><bdi dir="ltr" class="nt">(77)</bdi> היא המשבצת שממנה הכלי יצא.</li>
       </ol>
-      <p>ביחד: הרגלי עבר מ־<bdi dir="ltr" class="nt">77</bdi> ל־<bdi dir="ltr" class="nt">76</bdi>. אצלנו באתר כותבים את אותו מהלך <bdi dir="ltr" class="nt">P-76</bdi>.</p>
+      <p>ביחד: החייל עבר מ־<bdi dir="ltr" class="nt">77</bdi> ל־<bdi dir="ltr" class="nt">76</bdi>. אצלנו באתר כותבים את אותו מהלך <bdi dir="ltr" class="nt">P-76</bdi>.</p>
 
       <h3>ארבעה סימנים שכדאי להכיר</h3>
       <table class="kif-table">
