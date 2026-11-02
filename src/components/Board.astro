@@ -128,7 +128,9 @@ const handPieces = (hand: { t: string; n: number }[], side: 'sente' | 'gote') =>
   .ph { font-family: var(--f-piece); font-weight: var(--fw-piece); }
   .ph { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; unicode-bidi: isolate; }
   .ph.two { font-size: clamp(11px, 3.6vw, 16px); }
-  .ph.crown { margin-top: -4%; font-size: clamp(11px, 3.7vw, 17px); }
+  .pc:has(.ph.crown) { padding-top: 10%; }
+  .ph.crown { font-size: clamp(11px, 3.7vw, 17px); }
+  .ph.crown svg { width: 0.85em; }
   .ph svg { width: 1.05em; height: auto; fill: currentColor; }
   .pc.pro .ph, .pc.pro .pl, .pc.pro .pk, .pc.pro .pcs { color: var(--piece-seal); }
   .pl, .pk, .pcs { display: none; }
