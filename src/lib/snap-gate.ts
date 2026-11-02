@@ -20,17 +20,40 @@ export function nextStop(stops: number[], y: number, dir: number): number | unde
   return dir > 0 ? stops.find((s) => s > y + 4) : [...stops].reverse().find((s) => s < y - 4);
 }
 
+export const glideTime = (dist: number): number => Math.round(Math.min(950, Math.max(520, 380 + dist * 0.6)));
+
+const ease = (t: number): number => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+
 export function snapGate(selector: string, active: () => boolean): void {
   const root = document.documentElement;
   const still = matchMedia('(prefers-reduced-motion: reduce)');
   let lockUntil = 0;
+  let gliding = false;
   const stops = () => snapStops(document.querySelectorAll<HTMLElement>(selector), {
     h: innerHeight, scrollY, pad: parseFloat(getComputedStyle(root).scrollPaddingTop) || 0, max: root.scrollHeight - innerHeight,
   });
+  const glide = (to: number) => {
+    const from = scrollY;
+    const dur = glideTime(Math.abs(to - from));
+    const t0 = performance.now();
+    gliding = true;
+    root.style.scrollSnapType = 'none';
+    root.style.scrollBehavior = 'auto';
+    const tick = (now: number) => {
+      const k = Math.min(1, (now - t0) / dur);
+      scrollTo(0, from + (to - from) * ease(k));
+      if (k < 1) { requestAnimationFrame(tick); return; }
+      root.style.scrollSnapType = '';
+      root.style.scrollBehavior = '';
+      gliding = false;
+    };
+    requestAnimationFrame(tick);
+    return dur;
+  };
   addEventListener('wheel', (e) => {
     if (!active() || e.ctrlKey || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
     const now = performance.now();
-    if (now < lockUntil) { e.preventDefault(); lockUntil = Math.max(lockUntil, now + 240); return; }
+    if (gliding || now < lockUntil) { e.preventDefault(); lockUntil = Math.max(lockUntil, now + 240); return; }
     const dir = Math.sign(e.deltaY);
     const to = nextStop(stops(), scrollY, dir);
     if (to === undefined) return;
@@ -38,7 +61,7 @@ export function snapGate(selector: string, active: () => boolean): void {
     const delta = Math.abs(e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * innerHeight : e.deltaY);
     if (gap > innerHeight * 1.05 && delta < gap) return;
     e.preventDefault();
-    lockUntil = now + (still.matches ? 300 : 750);
-    scrollTo({ top: to, behavior: still.matches ? 'auto' : 'smooth' });
+    if (still.matches) { scrollTo(0, to); lockUntil = now + 300; return; }
+    lockUntil = now + glide(to) + 240;
   }, { passive: false });
 }

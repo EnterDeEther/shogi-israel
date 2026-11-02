@@ -209,9 +209,9 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
     const start = () => {
       io?.disconnect();
       const top = col && !wide.matches ? parseFloat(getComputedStyle(col).top) + col.offsetHeight : 0;
-      const line = Math.round(wide.matches ? innerHeight / 2 : top + (innerHeight - top) * 0.4);
+      const line = Math.round(wide.matches ? innerHeight / 2 : top + 60);
       const pad = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
-      story.style.setProperty('--snap-m', `${Math.max(0, line - 30 - pad)}px`);
+      story.style.setProperty('--snap-m', `${Math.max(0, Math.round(top - pad))}px`);
       io = new IntersectionObserver((ents) => ents.forEach((en) => { if (en.isIntersecting) set(en.target.getAttribute('data-s') || ''); }), { rootMargin: `-${line}px 0px -${Math.max(0, innerHeight - line - 1)}px 0px` });
       steps.forEach((s) => io!.observe(s));
     };

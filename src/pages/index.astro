@@ -42,7 +42,7 @@ if (hasCourse) Astro.csp?.insertScriptHash(`sha256-${createHash('sha256').update
   :global(html[data-learner] [data-learner-only]) { display: revert; }
   :global(html[data-learner] [data-newcomer]) { display: none; }
 
-  :global(html:not([data-learner]):not(.tour-on):has([data-story])) { scroll-snap-type: y mandatory; }
+  :global(html:not([data-learner]):not(.tour-on):has([data-story])) { scroll-snap-type: y proximity; }
   :global(html:has([data-story]) .site-footer) { scroll-snap-align: end; }
   .home > :global([data-news-bar]) { margin-top: 56px; }
   :global(html[data-learner]) .home > :global([data-news-bar]) { margin-top: 14px; }
