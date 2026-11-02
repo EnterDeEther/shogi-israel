@@ -74,9 +74,8 @@ const DESK_SETTINGS: NavLink = { href: '/settings/', label: 'הגדרות' };
       </details>
     )}
 
-    <a class="settings-btn" href={DESK_SETTINGS.href} data-settings-link aria-current={here(DESK_SETTINGS)} aria-label="הגדרות" title="הגדרות">
+    <a class="settings-btn" data-tour="settings" href={DESK_SETTINGS.href} data-settings-link aria-current={here(DESK_SETTINGS)} aria-label="הגדרות" title="הגדרות">
       <Icon name="settings" size={22} />
-      <span class="settings-cap" aria-hidden="true">הגדרות</span>
     </a>
 
     <button type="button" class="theme-btn" data-theme-toggle aria-label="מעבר למצב כהה" aria-pressed="false">
@@ -105,7 +104,7 @@ const DESK_SETTINGS: NavLink = { href: '/settings/', label: 'הגדרות' };
             </a>
           </div>
         )}
-        <a class="solo settings-row" href={SETTINGS.href} data-settings-link aria-current={here(SETTINGS) ?? here(DESK_SETTINGS)}>
+        <a class="solo settings-row" data-tour="settings" href={SETTINGS.href} data-settings-link aria-current={here(SETTINGS) ?? here(DESK_SETTINGS)}>
           <span class="ico"><Icon name="settings" /></span>
           <span class="label">הגדרות</span>
           <span class="hint">מראה, סימון הכלים, צלילים</span>
@@ -347,11 +346,9 @@ const DESK_SETTINGS: NavLink = { href: '/settings/', label: 'הגדרות' };
     .nav-wide { display: flex; align-items: center; gap: 22px; margin-inline-start: auto; }
     .theme-btn { margin-inline-start: 0; }
     .settings-btn {
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-      min-width: 44px; height: 48px; padding: 0 4px; border-radius: 12px; flex-shrink: 0; color: var(--ink); text-decoration: none;
+      display: grid; place-items: center; width: 44px; height: 44px; border-radius: 999px; flex-shrink: 0; color: var(--ink); text-decoration: none;
       transition: background-color .15s ease, transform .16s var(--ease-out); -webkit-tap-highlight-color: transparent;
     }
-    .settings-cap { font-size: 11px; font-weight: 700; line-height: 1; letter-spacing: 0.2px; white-space: nowrap; }
     .settings-btn:hover { background: color-mix(in srgb, var(--ink) 7%, transparent); }
     .settings-btn:active { transform: scale(0.88); transition-duration: .1s; }
     .inbox { position: relative; margin-inline-start: 0; }
@@ -361,9 +358,12 @@ const DESK_SETTINGS: NavLink = { href: '/settings/', label: 'הגדרות' };
     }
   }
   @media (min-width: 1040px) { .bar:has(.quick) { gap: 10px; } .bar:has(.quick) .nav-wide { gap: 18px; } }
+  @media (min-width: 1280px) { .bar:has(.settings-btn) { gap: 8px; } .bar:has(.settings-btn) .nav-wide { gap: 16px; } }
   @media (min-width: 1040px) and (max-width: 1279px) {
     .bar:has(.quick) .nav-wide { gap: 11px; }
-    .bar:has(.quick) > .theme-btn, .bar:has(.quick) .inbox summary { width: 40px; }
+    .bar:has(.quick) > .theme-btn, .bar:has(.quick) .inbox summary, .settings-btn { width: 40px; }
+    .bar:has(.settings-btn) { gap: 6px; }
+    .bar:has(.settings-btn) .nav-wide { gap: 9px; }
   }
   .nav-wide .account :global(svg) { flex-shrink: 0; }
   .nav-wide .top, .nav-group summary {
@@ -376,7 +376,7 @@ const DESK_SETTINGS: NavLink = { href: '/settings/', label: 'הגדרות' };
   .nav-group summary::-webkit-details-marker { display: none; }
   .nav-group summary:hover { border-bottom-color: var(--seal); }
   .nav-group summary.current { border-bottom-color: color-mix(in srgb, var(--seal) 45%, transparent); }
-  .nav-group summary svg { transition: transform .3s var(--ease-out); }
+  .nav-group summary svg { flex-shrink: 0; transition: transform .3s var(--ease-out); }
   .nav-group[open] summary svg { transform: rotate(180deg); }
   .nav-menu {
     position: absolute; top: calc(100% + 10px); inset-inline-start: -14px; width: max-content; min-width: 280px; max-width: 360px; z-index: 30;
