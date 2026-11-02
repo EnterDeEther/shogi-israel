@@ -15,11 +15,13 @@ import { bookMove } from './book';
 import { cancelSearches, getEngine } from './engine';
 import { type GameEnd, Line, START_SFEN } from './game';
 import { engineLabel, getLevel } from './levels';
-import { type ClockSetting, CURRENT, type GameRecord, newGameId, saveFinished } from './record';
+import { type ClockSetting, type GameRecord, isLocal, newGameId, type PlayMode, saveFinished, slotKey, touchDevice } from './record';
 import { liveBounds } from '../lib/live-bounds';
 import { SQUARE_RATIO } from '../lib/square-ratio';
 
 export interface PlaySettings {
+  /** 'local' = two players on one device, phones and tablets only. */
+  mode: PlayMode;
   level: number;
   color: Color | 'random';
   clock: ClockSetting | null;
@@ -36,12 +38,14 @@ interface Saved {
   record: GameRecord;
   clock: Clock | null;
   orientation: Color;
+  /** Date.now() of the last save: the header continues the most recent of the two slots. */
+  at?: number;
 }
 
 const SETTINGS = 'play.settings';
 const MIN_REPLY_MS = 350;
 
-export const defaultSettings = (): PlaySettings => ({ level: 1, color: 'sente', clock: null });
+export const defaultSettings = (): PlaySettings => ({ mode: 'ai', level: 1, color: 'sente', clock: null });
 
 export function loadSettings(): PlaySettings {
   const s = defaultSettings();
@@ -50,8 +54,15 @@ export function loadSettings(): PlaySettings {
     if (Number.isInteger(saved.level) && saved.level >= 1 && saved.level <= 10) s.level = saved.level;
     if (['sente', 'gote', 'random'].includes(saved.color)) s.color = saved.color;
     if (saved.clock && saved.clock.limit >= 0 && saved.clock.byoyomi >= 0) s.clock = saved.clock;
+    if (saved.mode === 'local') s.mode = 'local';
   } catch {
   }
+  try {
+    const vs = new URLSearchParams(window.location.search).get('vs');
+    if (vs === 'local' || vs === 'ai') s.mode = vs;
+  } catch {
+  }
+  if (!touchDevice()) s.mode = 'ai';
   try {
     const asked = Number(new URLSearchParams(window.location.search).get('level'));
     if (Number.isInteger(asked) && asked >= 1 && asked <= 10) s.level = asked;
@@ -71,7 +82,12 @@ export default class PlayCtrl {
   thinking = false;
   engineError = false;
   setupOpen = true;
-  resignConfirm = false;
+  /** The side asked "resign?" (two players: each side has its own button). */
+  resignConfirm: Color | null = null;
+  /** Two players: the side that offered a draw, until the other side answers or a move is made. */
+  drawOffer: Color | null = null;
+  /** Engines can't run here: only two-player games are possible (phones and tablets). */
+  aiBlocked = false;
   private aiToken = 0;
   private flagTimer?: number;
 
@@ -83,6 +99,9 @@ export default class PlayCtrl {
     this.resume();
   }
 
+  get local(): boolean {
+    return isLocal(this.record);
+  }
   get playerColor(): Color {
     return this.record?.playerColor ?? 'sente';
   }
@@ -102,10 +121,11 @@ export default class PlayCtrl {
     return !!this.record && !this.ended;
   }
   get myTurn(): boolean {
-    return this.playing && this.line.current.turn === this.playerColor && !this.thinking;
+    return this.playing && !this.thinking && (this.local || this.line.current.turn === this.playerColor);
   }
   get takebackPlies(): number {
     if (!this.record) return 0;
+    if (this.local) return this.line.plies.length ? 1 : 0;
     const n = this.line.current.turn === this.playerColor ? 2 : 1;
     const plies = this.line.plies;
     if (plies.length < n) return 0;
@@ -166,7 +186,7 @@ export default class PlayCtrl {
       sfen: { board, hands },
       orientation: this.orientation,
       turnColor: pos.turn,
-      activeColor: this.live && this.playing ? this.playerColor : undefined,
+      activeColor: this.live && this.playing ? (this.local ? pos.turn : this.playerColor) : undefined,
       lastDests: this.lastDests(ply),
       checks: pos.isCheck(),
       movable: { dests: canMove ? shogigroundMoveDests(pos) : new Map() },
@@ -188,14 +208,15 @@ export default class PlayCtrl {
       return;
     }
     this.apply(usi);
-    if (this.playing) this.aiMove();
+    if (this.playing && !this.local) this.aiMove();
   }
 
   private apply(usi: string): void {
     this.switchClock();
     this.line = this.line.play(usi);
     this.record!.moves = this.line.usis;
-    this.resignConfirm = false;
+    this.resignConfirm = null;
+    this.drawOffer = null;
     const end = this.line.end();
     if (end) this.finish(end);
     else {
@@ -255,6 +276,7 @@ export default class PlayCtrl {
   }
 
   retry(): void {
+    if (this.local) return;
     if (this.playing && this.line.current.turn === this.aiColor && !this.thinking) this.aiMove();
   }
 
@@ -266,7 +288,8 @@ export default class PlayCtrl {
     this.stopAi();
     this.settings = settings;
     storage.set(SETTINGS, JSON.stringify(settings));
-    const playerColor: Color = settings.color === 'random' ? (Math.random() < 0.5 ? 'sente' : 'gote') : settings.color;
+    const local = settings.mode === 'local';
+    const playerColor: Color = local ? 'sente' : settings.color === 'random' ? (Math.random() < 0.5 ? 'sente' : 'gote') : settings.color;
     const level = getLevel(settings.level);
     this.line = new Line();
     this.record = {
@@ -277,9 +300,10 @@ export default class PlayCtrl {
       moves: [],
       playerColor,
       level: level.level,
-      engine: engineLabel[level.engine],
+      engine: local ? '' : engineLabel[level.engine],
       clock: settings.clock,
       takebacks: 0,
+      ...(local ? { mode: 'local' as const } : {}),
     };
     this.clock = settings.clock
       ? { setting: settings.clock, main: { sente: settings.clock.limit * 1000, gote: settings.clock.limit * 1000 } }
@@ -287,14 +311,15 @@ export default class PlayCtrl {
     this.orientation = playerColor;
     this.viewPly = undefined;
     this.setupOpen = false;
-    this.resignConfirm = false;
+    this.resignConfirm = null;
+    this.drawOffer = null;
     this.engineError = false;
     this.startClock();
     this.save();
     this.syncGround();
     playSound('gameStart');
     this.redraw();
-    if (this.line.current.turn !== playerColor) this.aiMove();
+    if (!local && this.line.current.turn !== playerColor) this.aiMove();
   }
 
   private finish(end: GameEnd, viaApply = false): void {
@@ -304,10 +329,11 @@ export default class PlayCtrl {
     this.record.result = end;
     this.record.endedAt = new Date().toISOString();
     this.record.moves = this.line.usis;
-    this.resignConfirm = false;
+    this.resignConfirm = null;
+    this.drawOffer = null;
     saveFinished({ ...this.record });
     this.save();
-    playSound(end.winner === this.playerColor ? 'win' : end.winner ? 'lose' : 'end');
+    playSound(this.local ? (end.winner ? 'win' : 'end') : end.winner === this.playerColor ? 'win' : end.winner ? 'lose' : 'end');
     if (viaApply) this.syncGround();
     this.redraw();
   }
@@ -324,35 +350,46 @@ export default class PlayCtrl {
       delete this.record.endedAt;
     }
     this.viewPly = undefined;
-    this.resignConfirm = false;
+    this.resignConfirm = null;
+    this.drawOffer = null;
     this.startClock();
     this.save();
     this.syncGround();
     this.redraw();
   }
 
-  resign(): void {
+  /** Asks first, then resigns. Two players: `color` is the side whose own button was pressed. */
+  resign(color: Color = this.playerColor): void {
     if (!this.playing) return;
-    if (!this.resignConfirm) {
-      this.resignConfirm = true;
+    if (this.resignConfirm !== color) {
+      this.resignConfirm = color;
       this.redraw();
       return;
     }
     this.stopAi();
-    this.finish({ reason: 'resign', winner: this.aiColor }, true);
+    this.finish({ reason: 'resign', winner: opposite(color) }, true);
   }
 
   cancelResign(): void {
-    this.resignConfirm = false;
+    this.resignConfirm = null;
+    this.redraw();
+  }
+
+  /** Two players: offer a draw, or accept the other side's offer. A move withdraws an offer. */
+  offerDraw(color: Color): void {
+    if (!this.playing || !this.local) return;
+    if (this.drawOffer === opposite(color)) return this.finish({ reason: 'agreement' }, true);
+    this.drawOffer = this.drawOffer === color ? null : color;
     this.redraw();
   }
 
   declareImpasse(): void {
     if (!this.canDeclareImpasse) return;
-    this.finish({ reason: 'impasse', winner: this.playerColor }, true);
+    this.finish({ reason: 'impasse', winner: this.local ? this.line.current.turn : this.playerColor }, true);
   }
 
   flip(): void {
+    if (this.local) return;
     this.orientation = opposite(this.orientation);
     this.save();
     this.syncGround();
@@ -371,15 +408,31 @@ export default class PlayCtrl {
     this.redraw();
   }
 
-  private discardCurrent(): void {
-    this.stopAi();
-    this.stopClock();
-    storage.remove(CURRENT);
+  private get slot(): string {
+    return slotKey(this.local ? 'local' : 'ai');
   }
 
   newGame(settings: PlaySettings): void {
-    if (this.playing) this.discardCurrent();
+    this.stopAi();
+    this.stopClock();
+    // a new game replaces the saved game of its own kind only: a game against the computer
+    // and a two-player game each keep their own slot
+    if (this.playing && (settings.mode === 'local') === this.local) storage.remove(this.slot);
     this.start(settings);
+  }
+
+  /** Go back to the saved game of the other kind (the setup offers it). */
+  switchTo(mode: PlayMode): void {
+    if ((mode === 'local') === this.local && this.record) return this.closeSetup();
+    const saved = this.readSlot(mode);
+    if (!saved) return;
+    this.stopAi();
+    this.stopClock();
+    this.load(saved);
+    this.setupOpen = false;
+    this.syncGround();
+    this.redraw();
+    if (this.playing && !this.local && this.line.current.turn !== this.playerColor) this.aiMove();
   }
 
   view(ply: number | undefined): void {
@@ -448,32 +501,52 @@ export default class PlayCtrl {
       ...this.clock,
       main: { sente: Math.max(0, this.timeLeft('sente').main), gote: Math.max(0, this.timeLeft('gote').main) },
     };
-    const saved: Saved = { record: this.record, clock, orientation: this.orientation };
-    storage.set(CURRENT, JSON.stringify(saved));
+    const saved: Saved = { record: this.record, clock, orientation: this.orientation, at: Date.now() };
+    storage.set(this.slot, JSON.stringify(saved));
+  }
+
+  private readSlot(mode: PlayMode): Saved | null {
+    try {
+      const saved = JSON.parse(storage.get(slotKey(mode)) || 'null') as Saved | null;
+      if (!saved?.record || saved.record.version !== 1) return null;
+      new Line(saved.record.startSfen, saved.record.moves); // throws on a broken record
+      return saved;
+    } catch (e) {
+      console.warn('could not read the saved game', e);
+      storage.remove(slotKey(mode));
+      return null;
+    }
+  }
+
+  private load(saved: Saved): void {
+    this.line = new Line(saved.record.startSfen, saved.record.moves);
+    this.record = saved.record;
+    this.clock = saved.clock ? { ...saved.clock, running: undefined, since: undefined } : null;
+    this.orientation = isLocal(saved.record) ? 'sente' : saved.orientation ?? saved.record.playerColor;
+    this.viewPly = undefined;
+    this.resignConfirm = null;
+    this.drawOffer = null;
+    this.engineError = false;
+    if (this.playing) this.startClock();
   }
 
   private resume(): void {
-    try {
-      const saved = JSON.parse(storage.get(CURRENT) || 'null') as Saved | null;
-      if (!saved?.record || saved.record.version !== 1) return;
-      this.line = new Line(saved.record.startSfen, saved.record.moves);
-      this.record = saved.record;
-      this.clock = saved.clock ? { ...saved.clock, running: undefined, since: undefined } : null;
-      this.orientation = saved.orientation ?? saved.record.playerColor;
+    const params = new URLSearchParams(window.location.search);
+    const touch = touchDevice();
+    const ai = this.readSlot('ai');
+    const local = touch ? this.readSlot('local') : null;
+    const vs = params.get('vs');
+    // ?vs=local / ?vs=ai pick a kind; otherwise continue the most recently played game
+    const saved = vs === 'local' && touch ? local
+      : vs === 'ai' ? ai
+      : ai && local ? ((local.at ?? 0) > (ai.at ?? 0) ? local : ai)
+      : ai ?? local;
+    if (saved) {
+      this.load(saved);
       this.setupOpen = false;
-      if (new URLSearchParams(window.location.search).has('new')) {
-        this.setupOpen = true;
-        history.replaceState(history.state, '', window.location.pathname + window.location.hash);
-      }
-      if (this.playing) {
-        this.startClock();
-        if (this.line.current.turn !== this.playerColor) this.aiMove();
-      }
-    } catch (e) {
-      console.warn('could not resume the saved game', e);
-      storage.remove(CURRENT);
-      this.line = new Line();
-      this.record = undefined;
+      if (this.playing && !this.local && this.line.current.turn !== this.playerColor) this.aiMove();
     }
+    if (params.has('new') || (vs && !saved)) this.setupOpen = true;
+    if (params.has('new') || vs) history.replaceState(history.state, '', window.location.pathname + window.location.hash);
   }
 }

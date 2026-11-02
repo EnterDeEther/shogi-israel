@@ -32,6 +32,7 @@ export const ICONS = {
   'news-moved': `<path d="M7 7L10.2 9.2L11 18.5H3L3.8 9.2Z" stroke-dasharray="0 2.4"/><path d="M17 5L20.2 7.2L21 16.5H13L13.8 7.2Z" fill="currentColor" fill-opacity=".18" stroke="none"/><path d="M17 5L20.2 7.2L21 16.5H13L13.8 7.2Z"/><path d="M5.5 20h9.5M12.8 17.8l2.2 2.2-2.2 2.2"/>`,
   'news-fixed': `<path d="M12 2.5L17.85 6.2L19.5 21H4.5L6.15 6.2Z" fill="currentColor" fill-opacity=".18" stroke="none"/><path d="M12 2.5L17.85 6.2L19.5 21H4.5L6.15 6.2Z"/><path d="M8.8 13.6l2.3 2.3 4.2-4.6"/>`,
   'news-important': `<path d="M12 2.5L17.85 6.2L19.5 21H4.5L6.15 6.2Z" fill="currentColor" fill-opacity=".18" stroke="none"/><path d="M12 2.5L17.85 6.2L19.5 21H4.5L6.15 6.2Z"/><path d="M12 9v5.2"/><circle cx="12" cy="17.2" r="1.1" fill="currentColor" stroke="none"/>`,
+  'two-players': `<path d="M3 12h18" stroke-opacity=".45"/><path d="M8 13.5L10.73 15.40L11.50 22H4.50L5.27 15.40Z" fill="currentColor" stroke="none"/><path d="M16 10.5L18.73 8.60L19.50 2H12.50L13.27 8.60Z" fill="currentColor" fill-opacity=".18" stroke="none"/><path d="M16 10.5L18.73 8.60L19.50 2H12.50L13.27 8.60Z"/>`,
 } as const;
 
 export const BRANDS = {

@@ -32,7 +32,7 @@ const DESK_SETTINGS: NavLink = { href: '/settings/', label: 'הגדרות' };
           </summary>
           <div class="nav-menu">
             {i.links.map((l) => (
-              <a href={l.href} class={l.sub ? 'sub' : undefined} aria-current={here(l)} {...ext(l)}>
+              <a href={l.href} class={[l.sub && 'sub', l.touchOnly && 'touch-only'].filter(Boolean).join(' ') || undefined} aria-current={here(l)} {...ext(l)}>
                 {l.icon && <span class="ico"><Icon name={l.icon} /></span>}
                 <span class="label">{l.label}{l.external && <span class="ext" aria-hidden="true">↗</span>}</span>
                 {l.hint && <span class="hint">{l.hint}</span>}
@@ -126,7 +126,7 @@ const DESK_SETTINGS: NavLink = { href: '/settings/', label: 'הגדרות' };
               {withChips(i.links).map((l) => Array.isArray(l) ? (
                 <li class="chips">{l.map((c) => <a href={c.href} aria-current={here(c)}>{c.label}</a>)}</li>
               ) : (
-                <li>
+                <li class={l.touchOnly ? 'touch-only' : undefined}>
                   <a href={l.href} aria-current={here(l)} {...ext(l)}>
                     {l.icon && <span class="ico"><Icon name={l.icon} /></span>}
                     <span class="label">{l.label}{l.external && <span class="ext" aria-hidden="true">↗</span>}</span>
@@ -418,7 +418,7 @@ const DESK_SETTINGS: NavLink = { href: '/settings/', label: 'הגדרות' };
 </style>
 
 <script>
-  import { gameInProgress } from '../play/record';
+  import { gameInProgress, openGameText, touchDevice } from '../play/record';
   import { pointSettingsLinks } from '../lib/settings-place';
 
   pointSettingsLinks();
@@ -438,8 +438,8 @@ const DESK_SETTINGS: NavLink = { href: '/settings/', label: 'הגדרות' };
     const game = gameInProgress();
     setAll('[data-quick-play]', (a) => {
       a.href = game ? '/play/' : '/play/?new';
-      if (game) say(a, '⟦המשך|המשיכי⟧ את המשחק', game.moves ? `רמה ${game.level}, אחרי ${game.moves} מהלכים` : `רמה ${game.level}, לפני המהלך הראשון`);
-      else say(a, '⟦שחק|שחקי⟧ עכשיו', 'נגד המחשב, עשר רמות');
+      if (game) say(a, '⟦המשך|המשיכי⟧ את המשחק', openGameText(game));
+      else say(a, '⟦שחק|שחקי⟧ עכשיו', touchDevice() ? 'נגד המחשב או חבר לידך' : 'נגד המחשב, עשר רמות');
     });
     document.querySelector('[data-quick-dot]')?.toggleAttribute('hidden', !game);
   }

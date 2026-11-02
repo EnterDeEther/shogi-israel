@@ -16,7 +16,8 @@ function fromHistory(): { played: number; won: number } {
   let played = 0;
   let won = 0;
   for (const r of readJson<GameRecord[]>(HISTORY_KEY, [])) {
-    if (!r || typeof r.level !== 'number') continue;
+    // the course counts games against the computer by level; two-player games have no level
+    if (!r || typeof r.level !== 'number' || r.mode === 'local') continue;
     const res = gameResult(r);
     if (res === 'abort') continue;
     played = Math.max(played, r.level);

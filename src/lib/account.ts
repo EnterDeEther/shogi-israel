@@ -155,7 +155,8 @@ export async function syncGames(): Promise<number> {
   const session = await getSession();
   if (!session) return 0;
   const sent = new Set(readJson<string[]>(SENT_KEY, []));
-  const todo = readJson<GameRecord[]>(HISTORY_KEY, []).filter((r) => r?.id && r.result && !sent.has(r.id));
+  // two-player games on one device stay on the device (no account sync for them yet)
+  const todo = readJson<GameRecord[]>(HISTORY_KEY, []).filter((r) => r?.id && r.result && r.mode !== 'local' && !sent.has(r.id));
   if (!todo.length) return 0;
   const { recordKif } = await import('../play/record-kif');
   const rows = todo.map((r) => {
