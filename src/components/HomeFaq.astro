@@ -29,9 +29,17 @@ const faq = HOME_FAQ.map((id) => FAQ.find((f) => f.id === id)).filter((f) => !!f
   .faq details { border-bottom: 1px solid var(--rule); }
   .faq summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; font-weight: 700; font-size: 18px; }
   .faq summary::-webkit-details-marker { display: none; }
-  .faq summary::after { content: "+"; flex: none; font: 400 26px/1 var(--f-body); color: var(--seal); transition: rotate .2s; }
+  .faq summary::after { content: "+"; flex: none; font: 400 26px/1 var(--f-body); color: var(--seal); transition: rotate .22s var(--ease-out); }
   .faq details[open] summary::after { rotate: 45deg; }
   .faq details p { margin: 0; padding-bottom: 16px; color: var(--ink-2); line-height: 1.65; }
+  .faq details::details-content { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows .22s var(--ease-out), opacity .22s var(--ease-out), content-visibility .22s allow-discrete; }
+  .faq details[open]::details-content { grid-template-rows: 1fr; opacity: 1; }
+  .faq details > p { min-height: 0; overflow: hidden; transition: padding-bottom .22s var(--ease-out); }
+  .faq details:not([open]) > p { padding-bottom: 0; }
+  @media (prefers-reduced-motion: reduce) {
+    .faq summary::after, .faq details > p { transition: none; }
+    .faq details::details-content { transition: opacity .2s ease, content-visibility .2s allow-discrete; }
+  }
   @media (max-width: 899px) and (orientation: landscape) and (max-height: 520px) { .faq { padding-inline-end: 58px; } }
   .endrow { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; margin-top: 18px; }
   .endrow > a:first-child { display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; }
