@@ -17,9 +17,17 @@ const faq = HOME_FAQ.map((id) => FAQ.find((f) => f.id === id)).filter((f) => !!f
   </div>
   <div class="endrow">
     <a href="/what-is-shogi/">לכל השאלות ←</a>
-    <a class="btn btn-ghost" href={TOUR_URL} data-tour-start>מה יש באתר? סיור קצר</a>
+    <a class="btn btn-ghost tour-go" href={TOUR_URL} data-tour-start data-nudge>
+      <span>מה יש באתר? סיור קצר</span>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
+    </a>
   </div>
 </section>
+
+<script>
+  const go = document.querySelector<HTMLElement>('.home-faq [data-nudge]');
+  if (go && 'IntersectionObserver' in window) new IntersectionObserver(([en]) => go.classList.toggle('nudging', en.isIntersecting), { threshold: 0.6 }).observe(go);
+</script>
 
 <style>
   .scene { margin-top: 56px; scroll-snap-align: start; }
@@ -41,8 +49,14 @@ const faq = HOME_FAQ.map((id) => FAQ.find((f) => f.id === id)).filter((f) => !!f
     .faq details::details-content { transition: opacity .2s ease, content-visibility .2s allow-discrete; }
   }
   @media (max-width: 899px) and (orientation: landscape) and (max-height: 520px) { .faq { padding-inline-end: 58px; } }
-  .endrow { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; margin-top: 18px; }
-  .endrow > a:first-child { display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; }
+  .endrow { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 18px; }
+  .endrow > a:first-child { display: inline-flex; align-items: center; min-height: 48px; padding-inline-end: 12px; font-weight: 700; }
+  @media (max-width: 599px) { .tour-go { align-self: stretch; max-width: 420px; } }
+  @media (prefers-reduced-motion: no-preference) {
+    .tour-go.nudging svg { animation: tour-nudge 4.8s var(--ease-out) .6s infinite; }
+    :global(html.tour-on) .tour-go svg { animation: none; }
+  }
+  @keyframes tour-nudge { 0%, 16%, 100% { translate: 0 0; } 7% { translate: -6px 0; } }
 
   @supports (animation-timeline: view()) {
     @media (prefers-reduced-motion: no-preference) {
