@@ -236,13 +236,16 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
 
 <div class="rail" data-rail data-newcomer aria-hidden="true"><span class="rail-fill"></span></div>
 <button type="button" class="more" data-more data-newcomer aria-label="לגלילה למטה">
+  <span class="lane"></span>
   <span class="pc" data-g aria-hidden="true">
-    <span class="sh">
-      <span class="lb">
-        <span class="ph" dir="rtl"><span>{pawn.h}</span></span>
-        <span class:list={['pcs', pawn.cs]} dir="rtl">{pawn.c}</span>
-        <span class="pl">{pawn.l}</span>
-        <span class="pk" lang="ja">{pawn.k}</span>
+    <span class="sq">
+      <span class="sh">
+        <span class="lb">
+          <span class="ph" dir="rtl"><span>{pawn.h}</span></span>
+          <span class:list={['pcs', pawn.cs]} dir="rtl">{pawn.c}</span>
+          <span class="pl">{pawn.l}</span>
+          <span class="pk" lang="ja">{pawn.k}</span>
+        </span>
       </span>
     </span>
   </span>
@@ -413,13 +416,19 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
     const open = new Set(['HTML', 'BODY', 'MAIN']);
     let at = -1, t = 0, done = false;
     const hide = () => { hint.removeAttribute('data-on'); at = -1; };
-    const roomy = () => {
+    const lane = hint.querySelector<HTMLElement>('.lane')!;
+    const piece = hint.querySelector<HTMLElement>('.pc')!;
+    const blocked = (x: number, y: number) => {
+      const el = document.elementsFromPoint(x, y).find((n) => !hint.contains(n));
+      return !!el && !open.has(el.tagName) && !el.matches('.home, .scene, .story, .steps, .step') && +getComputedStyle(el.closest('.card, .rv') ?? el).opacity > 0.2;
+    };
+    const room = () => {
       const r = hint.getBoundingClientRect();
+      const top = lane.getBoundingClientRect().top;
       const cx = r.left + r.width / 2;
-      return [r.top - 14, r.top + r.height / 2, r.bottom].every((y) => [cx - 48, cx, cx + 48].every((x) => {
-        const el = document.elementsFromPoint(x, y).find((n) => !hint.contains(n));
-        return !el || open.has(el.tagName) || el.matches('.home, .scene, .story, .steps, .step');
-      }));
+      let y = r.bottom - 10;
+      while (y >= top && ![cx - 22, cx, cx + 22].some((x) => blocked(x, y))) y -= 6;
+      return Math.round(r.bottom - piece.offsetHeight - (y < top ? top : y + 10));
     };
     const check = () => {
       if (done || wide.matches || html.hasAttribute('data-learner') || html.classList.contains('tour-on') || document.querySelector('dialog[open]')) { hide(); return; }
@@ -428,7 +437,9 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
       const end = document.querySelector<HTMLElement>('[data-flow-end]');
       if (end && here(end)) { done = true; hide(); return; }
       const card = [...document.querySelectorAll<HTMLElement>('.scene[data-snap]:not([data-flow-end]), .scene .step[data-snap]')].find(here);
-      if (!card || !roomy()) { hide(); return; }
+      const d = card ? room() : 0;
+      if (d < 32) { hide(); return; }
+      hint.style.setProperty('--d', `${d}px`);
       at = scrollY;
       hint.setAttribute('data-on', '');
     };
@@ -451,22 +462,55 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   .rail-fill { position: absolute; inset: 0; border-radius: inherit; background: color-mix(in srgb, var(--seal) 55%, transparent); transform-origin: top; transform: scaleY(0); }
   .rail :global(.rail-dot) { position: absolute; left: 50%; width: 4px; height: 4px; translate: -50% -50%; border-radius: 50%; background: color-mix(in srgb, var(--ink) 18%, var(--washi)); transition: background-color .4s ease; }
   .rail :global(.rail-dot[data-on]) { background: color-mix(in srgb, var(--seal) 60%, var(--washi)); }
-  .more { position: fixed; z-index: 14; left: 50%; top: calc(100svh - 66px); width: 48px; height: 48px; margin: 0 0 0 -24px; padding: 0; border: 0; border-radius: 50%; background: none; display: grid; place-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .5s ease, visibility 0s linear .5s, scale .16s var(--ease-out); }
+  .more { position: fixed; z-index: 14; left: 50%; top: calc(100svh - env(safe-area-inset-bottom, 0px) - 50px); width: 52px; height: 48px; margin: 0 0 0 -26px; padding: 0; border: 0; border-radius: 50%; background: none; display: grid; place-items: end center; cursor: pointer; -webkit-tap-highlight-color: transparent; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .5s ease, visibility 0s linear .5s, scale .16s var(--ease-out); }
   .more[data-on] { opacity: .85; visibility: visible; pointer-events: auto; transition: opacity .7s ease, visibility 0s, scale .16s var(--ease-out); }
   .more:active { scale: .97; }
   .more:focus-visible { outline: 2px solid var(--seal); outline-offset: 2px; }
-  .more .pc { width: 28px; aspect-ratio: 10 / 11; container-type: inline-size; display: grid; place-items: center; transform-origin: 50% 100%; }
+  .more .pc { width: 34px; aspect-ratio: 10 / 11; container-type: inline-size; display: grid; place-items: center; }
+  .more .lane { position: absolute; inset-inline: 0; bottom: 0; height: calc(30svh - env(safe-area-inset-bottom, 0px) - 2px); pointer-events: none; }
+  .more .sq { width: 100%; height: 100%; display: grid; place-items: center; transform-origin: 50% 100%; }
   .more .sh { width: 100%; height: 100%; transition: none; }
-  @media (prefers-reduced-motion: no-preference) { .more[data-on] .pc { animation: hop 2.8s ease-in-out infinite; } }
-  @keyframes hop {
-    0%, 62%, 100% { translate: 0 0; scale: 1; rotate: 0deg; }
-    6% { translate: 0 0; scale: 1.08 .9; rotate: 0deg; }
-    16% { translate: 0 -7px; scale: .94 1.07; rotate: -6deg; }
-    26% { translate: 0 0; scale: 1.1 .88; rotate: 0deg; }
-    32% { translate: 0 0; scale: .98 1.02; rotate: 0deg; }
-    40% { translate: 0 -3px; scale: .97 1.04; rotate: 5deg; }
-    48% { translate: 0 0; scale: 1.05 .94; rotate: 0deg; }
-    54% { translate: 0 0; scale: 1; rotate: 0deg; }
+  @media (prefers-reduced-motion: no-preference) { .more[data-on] .pc { animation: drop 3.3s infinite; } .more[data-on] .sq { animation: squash 3.3s infinite; } }
+  @keyframes drop {
+    0% { translate: 0 calc(var(--d) * -1); animation-timing-function: linear; }
+    5.45% { translate: 0 calc(var(--d) * -1); animation-timing-function: cubic-bezier(.333, 0, .667, .333); }
+    20.61% { translate: 0 0; animation-timing-function: cubic-bezier(.333, .667, .667, 1); }
+    28.9% { translate: 0 calc(var(--d) * -0.3); animation-timing-function: cubic-bezier(.333, 0, .667, .333); }
+    37.2% { translate: 0 0; animation-timing-function: cubic-bezier(.333, .667, .667, 1); }
+    41.75% { translate: 0 calc(var(--d) * -0.09); animation-timing-function: cubic-bezier(.333, 0, .667, .333); }
+    46.29% { translate: 0 0; animation-timing-function: cubic-bezier(.333, .667, .667, 1); }
+    48.78% { translate: 0 calc(var(--d) * -0.027); animation-timing-function: cubic-bezier(.333, 0, .667, .333); }
+    51.27% { translate: 0 0; animation-timing-function: cubic-bezier(.333, .667, .667, 1); }
+    52.64% { translate: 0 calc(var(--d) * -0.0081); animation-timing-function: cubic-bezier(.333, 0, .667, .333); }
+    54% { translate: 0 0; animation-timing-function: linear; }
+    75.76% { translate: 0 0; animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+    100% { translate: 0 calc(var(--d) * -1); }
+  }
+  @keyframes squash {
+    0% { scale: 1 1; }
+    5.45% { scale: 1 1; }
+    18.79% { scale: 0.93 1.07; }
+    20.61% { scale: 1.16 0.84; }
+    23.03% { scale: 0.965 1.035; }
+    28.9% { scale: 1 1; }
+    35.39% { scale: 0.965 1.035; }
+    37.2% { scale: 1.08 0.92; }
+    39.48% { scale: 0.983 1.018; }
+    41.75% { scale: 1 1; }
+    44.78% { scale: 0.983 1.017; }
+    46.29% { scale: 1.04 0.96; }
+    47.54% { scale: 0.992 1.008; }
+    48.78% { scale: 1 1; }
+    50.44% { scale: 0.992 1.008; }
+    51.27% { scale: 1.02 0.98; }
+    51.96% { scale: 0.996 1.004; }
+    52.64% { scale: 1 1; }
+    53.55% { scale: 0.992 1.008; }
+    54% { scale: 1.01 0.99; }
+    57.64% { scale: 1 1; }
+    75.76% { scale: 1 1; }
+    87.88% { scale: 0.97 1.03; }
+    100% { scale: 1 1; }
   }
   :global(html.tour-on) .more, :global(html.app-locked) .more { display: none; }
   :global(html.tour-on) .rail, :global(html.app-locked) .rail { display: none; }
