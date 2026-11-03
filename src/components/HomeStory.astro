@@ -37,6 +37,7 @@ const boards = (['a', 'b'] as const).map((key) => {
 const board = (key: 'a' | 'b') => boards.find((b) => b.key === key)!;
 const tray = (key: 'a' | 'b') => (BOARD_STORIES[key].first.hand || Object.values(BOARD_STORIES[key].steps).some((st) => st.hand) ? 0.95 : 0);
 const stageStyle = (key: 'a' | 'b') => `--tb:${tray(key)};--rows:${9 + tray(key)};aspect-ratio:9 / ${9 + tray(key)}`;
+const pawn = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 21.5L16.6 17.6L18 3H6L7.4 17.6Z" fill="currentColor" fill-opacity=".18" stroke="none"></path><path d="M12 21.5L16.6 17.6L18 3H6L7.4 17.6Z"></path><path d="M9.4 9.6l2.6 2.6 2.6-2.6"></path></svg>';
 const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>';
 const down = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"></path></svg>';
 const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7 10 .8 14.4 7 19 3.2 17.2 11.2H2.8Z" /></svg>';
@@ -197,6 +198,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
 </section>
 
 <div class="rail" data-rail data-newcomer aria-hidden="true"><span class="rail-fill"></span></div>
+<button type="button" class="more" data-more data-newcomer aria-label="לגלילה למטה"><Fragment set:html={pawn} /></button>
 
 <script>
   import { BOARD_STORIES, SHOW_CAPS, type BoardState } from '../lib/home-story';
@@ -342,12 +344,63 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   snapGate('[data-snap]', () => !html.hasAttribute('data-learner') && !html.classList.contains('tour-on') && !document.querySelector('dialog[open]'));
 </script>
 
+<script>
+  import { nextStop, snapStops } from '../lib/snap-gate';
+
+  const hint = document.querySelector<HTMLButtonElement>('[data-more]');
+  if (hint) {
+    const html = document.documentElement;
+    const wide = matchMedia('(min-width: 900px), (max-width: 899px) and (orientation: landscape) and (max-height: 520px)');
+    const still = matchMedia('(prefers-reduced-motion: reduce)');
+    const view = () => ({ h: innerHeight, scrollY, pad: parseFloat(getComputedStyle(html).scrollPaddingTop) || 0, max: html.scrollHeight - innerHeight });
+    const open = new Set(['HTML', 'BODY', 'MAIN']);
+    let at = -1, t = 0, done = false;
+    const hide = () => { hint.removeAttribute('data-on'); at = -1; };
+    const roomy = () => {
+      const r = hint.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      return [r.top - 14, r.top + r.height / 2, r.bottom].every((y) => [cx - 48, cx, cx + 48].every((x) => {
+        const el = document.elementsFromPoint(x, y).find((n) => !hint.contains(n));
+        return !el || open.has(el.tagName) || el.matches('.home, .scene, .story, .steps, .step');
+      }));
+    };
+    const check = () => {
+      if (done || wide.matches || html.hasAttribute('data-learner') || html.classList.contains('tour-on') || document.querySelector('dialog[open]')) { hide(); return; }
+      const v = view();
+      const here = (el: HTMLElement) => snapStops([el], v).some((y) => Math.abs(y - scrollY) <= 4);
+      const end = document.querySelector<HTMLElement>('[data-flow-end]');
+      if (end && here(end)) { done = true; hide(); return; }
+      const card = [...document.querySelectorAll<HTMLElement>('.scene[data-snap]:not([data-flow-end]), .scene .step[data-snap]')].find(here);
+      if (!card || !roomy()) { hide(); return; }
+      at = scrollY;
+      hint.setAttribute('data-on', '');
+    };
+    const later = () => { clearTimeout(t); t = window.setTimeout(check, 1000); };
+    addEventListener('scroll', () => { if (at >= 0 && Math.abs(scrollY - at) > 8) hide(); later(); }, { passive: true });
+    addEventListener('resize', later);
+    addEventListener('load', later);
+    later();
+    hint.addEventListener('click', () => {
+      const to = nextStop(snapStops(document.querySelectorAll<HTMLElement>('[data-snap]'), view()), scrollY, 1);
+      hide();
+      if (to !== undefined) scrollTo({ top: to, behavior: still.matches ? 'auto' : 'smooth' });
+    });
+  }
+</script>
+
 <style>
   .rail { position: fixed; right: 3px; top: 88px; bottom: 36px; width: 2px; border-radius: 2px; background: color-mix(in srgb, var(--ink) 7%, transparent); z-index: 15; pointer-events: none; opacity: 0; transition: opacity .6s ease; }
   .rail[data-on] { opacity: 1; }
   .rail-fill { position: absolute; inset: 0; border-radius: inherit; background: color-mix(in srgb, var(--seal) 55%, transparent); transform-origin: top; transform: scaleY(0); }
   .rail :global(.rail-dot) { position: absolute; left: 50%; width: 4px; height: 4px; translate: -50% -50%; border-radius: 50%; background: color-mix(in srgb, var(--ink) 18%, var(--washi)); transition: background-color .4s ease; }
   .rail :global(.rail-dot[data-on]) { background: color-mix(in srgb, var(--seal) 60%, var(--washi)); }
+  .more { position: fixed; z-index: 14; left: 50%; top: calc(100svh - 62px); width: 44px; height: 44px; margin: 0 0 0 -22px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--muted); display: grid; place-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .5s ease, visibility 0s linear .5s, scale .16s var(--ease-out); }
+  .more[data-on] { opacity: .85; visibility: visible; pointer-events: auto; transition: opacity .7s ease, visibility 0s, scale .16s var(--ease-out); }
+  .more:active { scale: .97; }
+  .more:focus-visible { outline: 2px solid var(--seal); outline-offset: 2px; }
+  @media (prefers-reduced-motion: no-preference) { .more[data-on] :global(svg) { animation: bob 1.6s ease-in-out infinite; } }
+  @keyframes bob { 50% { translate: 0 4px; } }
+  :global(html.tour-on) .more, :global(html.app-locked) .more { display: none; }
   :global(html.tour-on) .rail, :global(html.app-locked) .rail { display: none; }
   @media (min-width: 900px) { .rail { right: 6px; top: 124px; bottom: 56px; } }
   .know { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 10px; margin: 14px auto 0; font-size: 15px; color: var(--ink-2); }
