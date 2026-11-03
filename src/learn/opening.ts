@@ -3,7 +3,7 @@
 import { makeSfen, parseSfen } from 'shogiops/sfen';
 import type { Position } from 'shogiops/variant/position';
 import { makeSquareName, parseUsi } from 'shogiops/util';
-import { i18n, i18nFormat } from './i18n';
+import { i18nFormat } from './i18n';
 import { describeLine, hintShown, nextMoveShapes, pieceList } from './describe';
 import type { IncompleteLevel, IncompleteStage, Level, UsiWithColor } from './interfaces';
 import { createLevel } from './level';
@@ -77,7 +77,7 @@ export function openingStage(d: OpeningStage): IncompleteStage {
     slice.forEach((u) => play(pos, u));
     p += slice.length;
     return {
-      goal: `${l.aim} ${i18n('il_followArrow')}`,
+      goal: l.aim.includes('==') ? l.aim : `==${l.aim}==`,
       sfen,
       nbMoves: text.orders.length,
       success: scenarioSuccess,
