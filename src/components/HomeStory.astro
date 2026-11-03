@@ -94,9 +94,14 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
     <div class="story" data-story={key}>
       <div class="stage-col" aria-hidden="true">
         {key === 'c' ? (
-          <div class="show" data-show data-step="c1">
-            <span class="big" data-a lang="ja"><span class="sh"><b>王</b></span></span>
-            <span class="big" data-b><span class="sh"><span class="ph crown" dir="rtl"><Fragment set:html={crown} /><span>מ</span></span></span></span>
+          <div class="show" data-show data-face="1">
+            <span class="big"><span class="sh">
+              <span class="lb" data-f="0"><span class="pk" lang="ja">{labels('K', 0, false).k}</span></span>
+              <span class="lb" data-f="1"><span class="ph crown" dir="rtl"><Fragment set:html={crown} /><span>{labels('K', 0, false).h}</span></span></span>
+              <span class="lb" data-f="2"><span class="pl">{labels('K', 0, false).l}</span></span>
+              <span class="lb" data-f="3"><span class:list={['pcs', labels('K', 0, false).cs]} dir="rtl">{labels('K', 0, false).c}</span></span>
+            </span></span>
+            <span class="sets" dir="rtl"><span>יפנית</span><span>עברית</span><span>אנגלית</span><span>שחמט</span></span>
           </div>
         ) : (
           <div class="stage" data-stage data-zone={on(board(key).state.zone)} data-hand={on(board(key).state.hand)} style={stageStyle(key)} data-still>
@@ -183,9 +188,9 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
 
 <section class="scene wrap after" data-newcomer aria-labelledby="story-us-h">
   <div class="comm rv">
-    <h2 id="story-us-h">לא לבד</h2>
-    <p>אני דין. למדתי שוגי מסרטונים ביוטיוב, והפסדתי שוב ושוב למחשב עד שהבנתי למה. חיפשתי מקום כזה בעברית ומצאתי כמעט כלום, אז בניתי אותו.</p>
-    <p>הקהילה קטנה ומתחילה. ⟦בוא|בואי⟧ להיות מהראשונים.</p>
+    <h2 id="story-us-h">איזה כיף ⟦שאתה|שאת⟧ פה</h2>
+    <p>אני דין, וזה פרויקט התשוקה שלי. גיליתי את השוגי דרך אנימה, והתחלתי ללמוד מסרטונים ביוטיוב. שיחקתי המון מול המחשב והפסדתי הרבה פעמים, עד שהבנתי: המחשב לא מחליף משחק מול אדם אחר. חיפשתי מקום בארץ שבו אוכל לשחק עם אחרים, לא מצאתי, אז החלטתי לבנות אותו.</p>
+    <p>הקהילה קטנה, והיא גדלה כל יום. ⟦בוא תצטרף|בואי תצטרפי⟧ אליי, ונבנה ביחד תרבות שוגי בארץ :)</p>
     <ul class="chips">
       <li><a href={WHATSAPP_URL} rel="noopener">קהילת הוואטסאפ</a></li>
       <li><a href={FACEBOOK_GROUP_URL} rel="noopener">קבוצת הפייסבוק</a></li>
@@ -199,7 +204,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
 <div class="rail" data-rail data-newcomer aria-hidden="true"><span class="rail-fill"></span></div>
 
 <script>
-  import { BOARD_STORIES, SHOW_CAPS, type BoardState } from '../lib/home-story';
+  import { BOARD_STORIES, type BoardState } from '../lib/home-story';
   import { snapGate, snapStops } from '../lib/snap-gate';
 
   const wide = matchMedia('(min-width: 900px), (max-width: 899px) and (orientation: landscape) and (max-height: 520px)');
@@ -287,17 +292,26 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
 
   document.querySelectorAll<HTMLElement>('[data-story="c"]').forEach((story) => {
     const show = story.querySelector<HTMLElement>('[data-show]');
-    const cap = story.querySelector<HTMLElement>('[data-cap]');
-    if (!show || !cap) return;
-    const set = (k: string) => { if (!SHOW_CAPS[k]) return; show.dataset.step = k; cap.textContent = SHOW_CAPS[k]; };
+    if (!show) return;
+    const HOLD = 1800;
+    let face = 1, want = false, seen = true, timer = 0;
+    const put = (i: number) => { face = i % 4; show.dataset.face = String(face); };
+    const halt = () => { clearTimeout(timer); timer = 0; };
+    const live = () => want && seen && !document.hidden && !still.matches;
+    const next = () => { timer = 0; if (!live()) return; if (!document.documentElement.classList.contains('tour-on')) put(face + 1); timer = window.setTimeout(next, HOLD); };
+    const resume = () => { if (live() && !timer) timer = window.setTimeout(next, HOLD); else if (!live()) halt(); };
     let stop = () => {};
-    if (below(story)) set('c0');
-    watch(story, (k, back) => {
+    const rest = () => { stop(); want = false; halt(); put(still.matches ? 1 : 0); };
+    if (below(story) && !still.matches) put(0);
+    watch(story, () => {
       stop();
-      if (back || still.matches) { set(k); return; }
-      set('c0');
-      stop = settle(() => set(k));
-    }, () => { stop(); set('c0'); });
+      halt();
+      if (still.matches) { put(1); return; }
+      stop = settle(() => { want = true; next(); });
+    }, rest);
+    if ('IntersectionObserver' in window) new IntersectionObserver(([en]) => { seen = en.isIntersecting; resume(); }).observe(show);
+    document.addEventListener('visibilitychange', resume);
+    still.addEventListener('change', () => { if (still.matches) { halt(); put(1); } else resume(); });
   });
 
   const html = document.documentElement;
@@ -497,11 +511,14 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   .big { position: absolute; width: 36%; aspect-ratio: 10 / 11; left: 32%; top: 21.7%; container-type: inline-size; display: grid; place-items: center; color: var(--piece-ink);
     transition: translate .6s var(--ease-out), opacity .4s ease, scale .6s var(--ease-out); }
   .big .sh { width: 100%; height: 100%; }
-  .big b { position: relative; z-index: 1; font: 800 46cqw/1 var(--f-kanji); }
-  .big .ph { position: relative; z-index: 1; font-size: 40cqw; padding-top: 14%; }
-  .show [data-b] { opacity: 0; }
-  .show[data-step="c1"] [data-a] { opacity: 0; scale: .9; }
-  .show[data-step="c1"] [data-b] { opacity: 1; }
+  .show .lb { grid-area: 1 / 1; opacity: 0; scale: .92; transition: opacity .7s var(--ease-out), scale .7s var(--ease-out); }
+  .show .lb .pk, .show .lb .pl, .show .lb .pcs { display: inline; }
+  .show .lb .ph { display: inline-flex; }
+  .show[data-face="0"] [data-f="0"], .show[data-face="1"] [data-f="1"], .show[data-face="2"] [data-f="2"], .show[data-face="3"] [data-f="3"] { opacity: 1; scale: 1; }
+  .sets { position: absolute; inset-inline: 0; bottom: 4%; display: flex; justify-content: center; gap: 12px; font-size: 12px; color: color-mix(in srgb, var(--muted) 60%, transparent); }
+  .sets span { transition: color .7s var(--ease-out); }
+  .show[data-face="0"] .sets span:nth-child(1), .show[data-face="1"] .sets span:nth-child(2), .show[data-face="2"] .sets span:nth-child(3), .show[data-face="3"] .sets span:nth-child(4) { color: var(--ink-2); }
+  :global(html.tour-on) .show .lb, :global(html.tour-on) .sets span { transition: none; }
 
   .phases { list-style: none; margin: 14px 0 12px; padding: 0; display: grid; gap: 14px; }
   .phase { display: grid; grid-template-columns: 44px 1fr; gap: 14px; align-items: start; padding: 16px 18px; background: var(--surface); border-radius: 14px; box-shadow: var(--shadow-1); }
@@ -540,6 +557,6 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   }
   @keyframes rise { from { opacity: 0; translate: 0 28px; } to { opacity: 1; translate: 0 0; } }
   @media (prefers-reduced-motion: reduce) {
-    .layer .pc, .sh, .zone, .tray span, .big { transition: none !important; }
+    .layer .pc, .sh, .zone, .tray span, .big, .show .lb, .sets span { transition: none !important; }
   }
 </style>
