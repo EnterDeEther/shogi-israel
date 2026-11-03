@@ -65,7 +65,7 @@ export const BOARD_STORIES: Record<'a' | 'b', { first: BoardState; steps: Record
   },
 };
 
-export const SHOW_CAPS: Record<string, string> = { c0: 'מלך בסט יפני', c1: 'אותו מלך, באות עברית' };
+export const SHOW_CAPS: Record<string, string> = { c1: 'זהו המלך, בכל גרסה' };
 
 export const STORY: Record<'a' | 'c' | 'b', StoryStep[]> = {
   a: [
@@ -73,7 +73,7 @@ export const STORY: Record<'a' | 'c' | 'b', StoryStep[]> = {
     { key: 'a2', text: 'לכל צבא 20 כלים, וכל סוג זז אחרת. נכיר אותם אחד אחד. לשני הצדדים אותו צבע: מה שאומר של מי הכלי הוא <strong>הכיוון</strong>. החוד של הכלים שלך פונה קדימה, אל היריב, והחוד של הכלים שלו פונה אליך.' },
   ],
   c: [
-    { key: 'c1', text: 'על כלים יפניים כתוב <strong>קאנג׳י</strong>, הכתב היפני. כאן באתר כל כלי מסומן ב<strong>אות עברית</strong>: המלך הוא מ. אפשר לעבור בכל רגע לקאנג׳י, לאותיות באנגלית או לסמלי שחמט.' },
+    { key: 'c1', text: 'על כלי שוגי במקור כתוב <strong>קאנג׳י</strong>, הכתב היפני. כאן באתר כל כלי מסומן ב<strong>אות עברית</strong>. אפשר לעבור בכל רגע לקאנג׳י, לאותיות באנגלית או לסמלי שחמט.' },
   ],
   b: [
     { key: 'b1', text: 'כלי שלך <strong>לוכד</strong> כלי של היריב: הוא נכנס למשבצת שלו, והכלי של היריב יורד מהלוח. ופה ההפתעה: הכלי שנלכד לא יוצא מהמשחק. מסובבים אותו, והוא <strong>עובר לצד שלך</strong> ומחכה ביד, ליד הלוח.' },
