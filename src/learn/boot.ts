@@ -108,6 +108,7 @@ export function bootLearn(root: HTMLElement): LearnCtrl {
     const set = currentPieceSet();
     dialog.querySelectorAll<HTMLButtonElement>('[data-pieces-set]').forEach((b) =>
       b.setAttribute('aria-pressed', String(b.dataset.piecesSet === set)));
+    if (ctrl) redraw();
   });
 
   ctrl = new LearnCtrl({ pref: prefs }, redraw, root.dataset.stage || slugFromPath());

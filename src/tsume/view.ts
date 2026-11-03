@@ -1,4 +1,5 @@
 // AGPL-3.0-or-later, like the rest of this site.
+import { localMove } from '../lib/move-notation';
 import type { Role } from 'shogiops/types';
 import { el, icon, nextInCourse, pieceSetSwitch } from '../learn/view';
 import type TsumeCtrl from './ctrl';
@@ -74,7 +75,7 @@ function coach(ctrl: TsumeCtrl, go: Go): HTMLElement {
       title = 'נכון ✓';
       body.push(el('p', {}, ctrl.busy || !f.reply
         ? 'המגן עונה…'
-        : el('span', {}, 'המגן ענה ', el('bdi', { dir: 'ltr', class: 'mv-name' }, f.reply), `. תורך, ${yourMoves(left)} עד המט.`)));
+        : el('span', {}, 'המגן ענה ', el('bdi', { dir: 'ltr', class: 'mv-name' }, localMove(f.reply)), `. תורך, ${yourMoves(left)} עד המט.`)));
       break;
     case 'not-check':
       cls = 'bad';
@@ -89,7 +90,7 @@ function coach(ctrl: TsumeCtrl, go: Go): HTMLElement {
       body.push(el('p', {}, ctrl.busy
         ? 'המגן עונה…'
         : f.reply
-          ? el('span', {}, 'המגן ענה ', el('bdi', { dir: 'ltr', class: 'mv-name' }, f.reply),
+          ? el('span', {}, 'המגן ענה ', el('bdi', { dir: 'ltr', class: 'mv-name' }, localMove(f.reply)),
             lastMove ? ' ויצא מהשח.' : ', ומכאן כבר אין מט בזמן.')
           : 'למגן יש דרך לצאת מזה. ⟦נסה|נסי⟧ מהלך אחר.'));
       body.push(el('div', { class: 'buttons' }, btn('⟦נסה|נסי⟧ שוב', () => ctrl.retry(), true, 'retry')));
@@ -135,7 +136,7 @@ function coach(ctrl: TsumeCtrl, go: Go): HTMLElement {
 
 function recap(ctrl: TsumeCtrl): HTMLElement {
   return el('p', { class: 'recap small' }, 'הפתרון: ',
-    ...ctrl.line.plies.flatMap((p, i) => [i ? ' · ' : '', el('bdi', { dir: 'ltr' }, `${MARK[p.color]}${p.western}`)]));
+    ...ctrl.line.plies.flatMap((p, i) => [i ? ' · ' : '', el('bdi', { dir: 'ltr' }, `${MARK[p.color]}${localMove(p.western)}`)]));
 }
 
 function moveList(ctrl: TsumeCtrl, go: Go): HTMLElement {
@@ -150,7 +151,7 @@ function moveList(ctrl: TsumeCtrl, go: Go): HTMLElement {
       },
         el('span', { class: 'n' }, String(i + 1)),
         el('span', { class: 'mark', 'aria-hidden': 'true' }, MARK[p.color]),
-        el('bdi', { dir: 'ltr' }, p.western),
+        el('bdi', { dir: 'ltr' }, localMove(p.western)),
       )));
   });
   const box = el('div', { class: 'moves-box', 'data-moves': true });
