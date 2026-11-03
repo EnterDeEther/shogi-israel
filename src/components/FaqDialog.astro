@@ -47,9 +47,17 @@ import { FAQ } from '../lib/shogi-faq';
   details { border-bottom: 1px solid var(--rule); }
   summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; font-weight: 700; font-size: 18px; }
   summary::-webkit-details-marker { display: none; }
-  summary::after { content: "+"; flex: none; font: 400 26px/1 var(--f-body); color: var(--seal); transition: rotate .2s; }
+  summary::after { content: "+"; flex: none; font: 400 26px/1 var(--f-body); color: var(--seal); transition: rotate .22s var(--ease-out); }
   details[open] summary::after { rotate: 45deg; }
   details p { margin: 0; padding-bottom: 16px; color: var(--ink-2); line-height: 1.65; }
+  details::details-content { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows .22s var(--ease-out), opacity .22s var(--ease-out), content-visibility .22s allow-discrete; }
+  details[open]::details-content { grid-template-rows: 1fr; opacity: 1; }
+  details > p { min-height: 0; overflow: hidden; transition: padding-bottom .22s var(--ease-out); }
+  details:not([open]) > p { padding-bottom: 0; }
+  @media (prefers-reduced-motion: reduce) {
+    summary::after, details > p { transition: none; }
+    details::details-content { transition: opacity .2s ease, content-visibility .2s allow-discrete; }
+  }
   .faq-all { margin: 14px 0 0; }
   .faq-all a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; }
   @media (max-width: 600px) {

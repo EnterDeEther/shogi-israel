@@ -1,6 +1,7 @@
 ---
 import { chessOf, hebrewOf, kanjiOf, letterOf, type PieceType } from '../lib/sfen';
-import { BOARD_STORIES, HERO_ART, PHASES, SHOW_CAPS, STORY, allPieces, type StoryPiece } from '../lib/home-story';
+import { BOARD_STORIES, PHASES, SHOW_CAPS, STORY, allPieces, type StoryPiece } from '../lib/home-story';
+import { HERO_ART } from '../lib/home-hero';
 import { FIRST_GAME } from '../lib/first-game';
 import { pageExists, LISHOGI_TEAM } from '../lib/live';
 import { FACEBOOK_GROUP_URL, INSTAGRAM_URL, WHATSAPP_URL } from '../lib/nav';
@@ -23,6 +24,9 @@ const labels = (t: PieceType, g: 0 | 1, promoted: boolean) => {
     cs: plain.length > 1 ? 'two' : /[♔-♟-]/.test(plain) ? 'sym' : '',
   };
 };
+const n3 = (v: number) => +v.toFixed(3);
+const H = HERO_ART;
+const box = (p: { x: number; y: number; w?: number; h?: number }) => `left:calc(${n3(p.x)} * var(--q));top:calc(${n3(p.y)} * var(--q))${p.w ? `;width:calc(${n3(p.w)} * var(--q));height:calc(${n3(p.h!)} * var(--q))` : ''}`;
 const finalOf = (key: 'a' | 'b') => {
   const steps = Object.values(BOARD_STORIES[key].steps);
   const last = steps[steps.length - 1];
@@ -37,6 +41,7 @@ const boards = (['a', 'b'] as const).map((key) => {
 const board = (key: 'a' | 'b') => boards.find((b) => b.key === key)!;
 const tray = (key: 'a' | 'b') => (BOARD_STORIES[key].first.hand || Object.values(BOARD_STORIES[key].steps).some((st) => st.hand) ? 0.95 : 0);
 const stageStyle = (key: 'a' | 'b') => `--tb:${tray(key)};--rows:${9 + tray(key)};aspect-ratio:9 / ${9 + tray(key)}`;
+const pawn = labels('P', 1, false);
 const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>';
 const down = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"></path></svg>';
 const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7 10 .8 14.4 7 19 3.2 17.2 11.2H2.8Z" /></svg>';
@@ -58,7 +63,6 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
         <span data-hero-label>{hasTry ? '⟦צפה|צפי⟧ במשחק אחד, מהלך אחרי מהלך' : '⟦התחל|התחילי⟧ בחוקים הבסיסיים'}</span>
         <Fragment set:html={arrow} />
       </a>
-      <p class="small muted note">בלי הרשמה · בחינם · בעברית</p>
     </div>
     <ul class="side-doors">
       {hasChess && <li><a href="/chess/" data-chess-door><Icon name="chess" size={22} /><span><b>⟦משחק|משחקת⟧ שחמט?</b><span>יש לך מסלול משלך</span></span></a></li>}
@@ -66,24 +70,49 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
     </ul>
     <a class="cue" href="#story-1">או ⟦גלול|גללי⟧ למטה, ונכיר את המשחק בדקה<Fragment set:html={down} /></a>
   </div>
-  <div class="hero-art" aria-hidden="true">
-    {HERO_ART.map(([t, x, y, s], i) => {
-      const lb = labels(t, 0, false);
-      return (
-        <span class="pc" style={`--i:${i};--x:${x};--y:${y};--s:${s};z-index:${i === 0 ? 3 : 1}`}>
-          <span class="sh">
-            <span class="lb">
-              <span class:list={['ph', { two: lb.h.length > 1, crown: t === 'K' }]} dir="rtl">{t === 'K' && <Fragment set:html={crown} />}<span>{lb.h}</span></span>
-              <span class:list={['pcs', lb.cs]} dir="rtl">{lb.c}</span>
-              <span class="pl">{lb.l}</span>
-              <span class="pk" lang="ja">{lb.k}</span>
+  <div class="hero-art" aria-hidden="true" data-hero-art>
+    <Fragment set:html={`<style>${H.css}</style>`} />
+    <span class="ha" style={`--w:${n3(H.w)};--h:${n3(H.h)}`}>
+      <span class="ha-fade" style={box({ x: H.board.x, y: 0, w: H.board.w + 0.6, h: H.board.h + 0.6 })}>
+        <span class="ha-board" style={`${box({ x: 0, y: 0, w: H.board.w, h: H.board.h })};--lx:${n3(H.board.lx)};--ly:${n3(H.board.ly)}`}>
+          {H.hoshi.map((p) => <span class="hoshi" style={box({ x: p.x - H.board.x, y: p.y })}></span>)}
+        </span>
+      </span>
+      {H.stands.map((st) => <span class="ha-hand" style={box(st)}></span>)}
+      {H.flashes.map((f) => <span class="ha-ck" data-flash={f.i} data-on={on(f.on)} style={box(f)}></span>)}
+      {H.pieces.map((p) => {
+        const st = p.still;
+        return (
+          <span class="pc" data-hid={p.id} data-g={on(st.g)} data-p={on(st.pr)} style={`translate:calc(${n3(st.x)} * var(--q)) calc(${n3(st.y)} * var(--q));scale:${st.s}`}>
+            <span class="sh">
+              {[labels(p.t, 0, false), p.promotes ? labels(p.t, 0, true) : null].filter((lb) => !!lb).map((lb, i) => (
+                <span class:list={['lb', i ? 'hu' : 'hn']}>
+                  <span class:list={['ph', { two: lb.h.length > 1, crown: p.t === 'K' }]} dir="rtl">{p.t === 'K' && <Fragment set:html={crown} />}<span>{lb.h}</span></span>
+                  <span class:list={['pcs', lb.cs]} dir="rtl">{lb.c}</span>
+                  <span class="pl">{lb.l}</span>
+                  <span class="pk" lang="ja">{lb.k}</span>
+                </span>
+              ))}
             </span>
           </span>
-        </span>
-      );
-    })}
+        );
+      })}
+    </span>
   </div>
 </section>
+
+<script>
+  const art = document.querySelector<HTMLElement>('[data-hero-art]');
+  if (art) {
+    let seen = !('IntersectionObserver' in window), moving = 0;
+    const run = () => art.toggleAttribute('data-run', seen && !moving && !document.hidden);
+    const hold = () => { if (moving) clearTimeout(moving); else art.removeAttribute('data-run'); moving = window.setTimeout(() => { moving = 0; run(); }, 700); };
+    if (!seen) new IntersectionObserver(([en]) => { seen = en.isIntersecting; run(); }).observe(art);
+    for (const ev of ['scroll', 'touchstart', 'wheel']) addEventListener(ev, hold, { passive: true });
+    document.addEventListener('visibilitychange', run);
+    run();
+  }
+</script>
 
 {(['a', 'c', 'b'] as const).map((key, n) => (
   <section data-snap class="scene wrap" id={`story-${n + 1}`} data-newcomer aria-labelledby={`story-${key}-h`}>
@@ -94,9 +123,14 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
     <div class="story" data-story={key}>
       <div class="stage-col" aria-hidden="true">
         {key === 'c' ? (
-          <div class="show" data-show data-step="c1">
-            <span class="big" data-a lang="ja"><span class="sh"><b>王</b></span></span>
-            <span class="big" data-b><span class="sh"><span class="ph crown" dir="rtl"><Fragment set:html={crown} /><span>מ</span></span></span></span>
+          <div class="show" data-show data-face="1">
+            <span class="big"><span class="sh">
+              <span class="lb" data-f="0"><span class="pk" lang="ja">{labels('K', 0, false).k}</span></span>
+              <span class="lb" data-f="1"><span class="ph crown" dir="rtl"><Fragment set:html={crown} /><span>{labels('K', 0, false).h}</span></span></span>
+              <span class="lb" data-f="2"><span class="pl">{labels('K', 0, false).l}</span></span>
+              <span class="lb" data-f="3"><span class:list={['pcs', labels('K', 0, false).cs]} dir="rtl">{labels('K', 0, false).c}</span></span>
+            </span></span>
+            <span class="sets" dir="rtl"><span>יפנית</span><span>עברית</span><span>אנגלית</span><span>שחמט</span></span>
           </div>
         ) : (
           <div class="stage" data-stage data-zone={on(board(key).state.zone)} data-hand={on(board(key).state.hand)} style={stageStyle(key)} data-still>
@@ -175,31 +209,49 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   <p class="rules-line small rv">⟦מעדיף|מעדיפה⟧ לקרוא? <a href="/rules/">שמונה שיעורים קצרים של חוקים בסיסיים</a></p>
   {hasPlay && (
     <div class="also rv">
-      <b>כבר ⟦יודע|יודעת⟧ לשחק?</b>
-      <span>⟦שחק|שחקי⟧ עכשיו נגד המחשב, עשר רמות. <a href="/play/">⟦שחק|שחקי⟧ עכשיו ←</a><span class="touch-only"> או <a href="/play/?vs=local">שני שחקנים על אותו מכשיר ←</a></span></span>
+      <b>רוצה להתחיל לשחק כבר?</b>
+      <span class="also-go">
+        <a href="/play/">⟦שחק|שחקי⟧ נגד המחשב<Fragment set:html={arrow} /></a>
+        <a class="touch-only" href="/play/?vs=local">שני שחקנים על אותו המכשיר<Fragment set:html={arrow} /></a>
+      </span>
     </div>
   )}
 </section>
 
 <section class="scene wrap after" data-newcomer aria-labelledby="story-us-h">
   <div class="comm rv">
-    <h2 id="story-us-h">לא לבד</h2>
-    <p>אני דין. למדתי שוגי מסרטונים ביוטיוב, והפסדתי שוב ושוב למחשב עד שהבנתי למה. חיפשתי מקום כזה בעברית ומצאתי כמעט כלום, אז בניתי אותו.</p>
-    <p>הקהילה קטנה ומתחילה. ⟦בוא|בואי⟧ להיות מהראשונים.</p>
+    <h2 id="story-us-h">איזה כיף ⟦שאתה|שאת⟧ פה</h2>
+    <p>אני דין, וזה פרויקט התשוקה שלי. גיליתי את השוגי דרך אנימה, והתחלתי ללמוד מסרטונים ביוטיוב. שיחקתי המון מול המחשב והפסדתי הרבה פעמים, עד שהבנתי: המחשב לא מחליף משחק מול אדם אחר. חיפשתי מקום בארץ שבו אוכל לשחק עם אחרים, לא מצאתי, אז החלטתי לבנות אותו.</p>
+    <p>הקהילה קטנה, והיא גדלה כל יום. ⟦בוא תצטרף|בואי תצטרפי⟧ אליי, ונבנה ביחד תרבות שוגי בארץ :)</p>
     <ul class="chips">
-      <li><a href={WHATSAPP_URL} rel="noopener">קהילת הוואטסאפ</a></li>
-      <li><a href={FACEBOOK_GROUP_URL} rel="noopener">קבוצת הפייסבוק</a></li>
-      <li><a href={INSTAGRAM_URL} rel="noopener">אינסטגרם</a></li>
-      <li><a href={LISHOGI_TEAM} rel="noopener">הקבוצה שלנו בליש׳וגי</a></li>
-      <li><a href="/community/">דף הקהילה</a></li>
+      <li><a href={WHATSAPP_URL} rel="noopener"><Icon name="whatsapp-logo" />קהילת הוואטסאפ</a></li>
+      <li><a href={FACEBOOK_GROUP_URL} rel="noopener"><Icon name="facebook-logo" />קבוצת הפייסבוק</a></li>
+      <li><a href={INSTAGRAM_URL} rel="noopener"><Icon name="instagram-logo" />אינסטגרם</a></li>
+      <li><a href={LISHOGI_TEAM} rel="noopener"><Icon name="online" />הקבוצה שלנו בליש׳וגי</a></li>
+      <li><a href="/community/"><Icon name="group" />דף הקהילה</a></li>
     </ul>
   </div>
 </section>
 
 <div class="rail" data-rail data-newcomer aria-hidden="true"><span class="rail-fill"></span></div>
+<button type="button" class="more" data-more data-newcomer aria-label="לגלילה למטה">
+  <span class="lane"></span>
+  <span class="pc" data-g aria-hidden="true">
+    <span class="sq">
+      <span class="sh">
+        <span class="lb">
+          <span class="ph" dir="rtl"><span>{pawn.h}</span></span>
+          <span class:list={['pcs', pawn.cs]} dir="rtl">{pawn.c}</span>
+          <span class="pl">{pawn.l}</span>
+          <span class="pk" lang="ja">{pawn.k}</span>
+        </span>
+      </span>
+    </span>
+  </span>
+</button>
 
 <script>
-  import { BOARD_STORIES, SHOW_CAPS, type BoardState } from '../lib/home-story';
+  import { BOARD_STORIES, type BoardState } from '../lib/home-story';
   import { snapGate, snapStops } from '../lib/snap-gate';
 
   const wide = matchMedia('(min-width: 900px), (max-width: 899px) and (orientation: landscape) and (max-height: 520px)');
@@ -287,17 +339,26 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
 
   document.querySelectorAll<HTMLElement>('[data-story="c"]').forEach((story) => {
     const show = story.querySelector<HTMLElement>('[data-show]');
-    const cap = story.querySelector<HTMLElement>('[data-cap]');
-    if (!show || !cap) return;
-    const set = (k: string) => { if (!SHOW_CAPS[k]) return; show.dataset.step = k; cap.textContent = SHOW_CAPS[k]; };
+    if (!show) return;
+    const HOLD = 1800;
+    let face = 1, want = false, seen = true, timer = 0;
+    const put = (i: number) => { face = i % 4; show.dataset.face = String(face); };
+    const halt = () => { clearTimeout(timer); timer = 0; };
+    const live = () => want && seen && !document.hidden && !still.matches;
+    const next = () => { timer = 0; if (!live()) return; if (!document.documentElement.classList.contains('tour-on')) put(face + 1); timer = window.setTimeout(next, HOLD); };
+    const resume = () => { if (live() && !timer) timer = window.setTimeout(next, HOLD); else if (!live()) halt(); };
     let stop = () => {};
-    if (below(story)) set('c0');
-    watch(story, (k, back) => {
+    const rest = () => { stop(); want = false; halt(); put(still.matches ? 1 : 0); };
+    if (below(story) && !still.matches) put(0);
+    watch(story, () => {
       stop();
-      if (back || still.matches) { set(k); return; }
-      set('c0');
-      stop = settle(() => set(k));
-    }, () => { stop(); set('c0'); });
+      halt();
+      if (still.matches) { put(1); return; }
+      stop = settle(() => { want = true; next(); });
+    }, rest);
+    if ('IntersectionObserver' in window) new IntersectionObserver(([en]) => { seen = en.isIntersecting; resume(); }).observe(show);
+    document.addEventListener('visibilitychange', resume);
+    still.addEventListener('change', () => { if (still.matches) { halt(); put(1); } else resume(); });
   });
 
   const html = document.documentElement;
@@ -342,12 +403,116 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   snapGate('[data-snap]', () => !html.hasAttribute('data-learner') && !html.classList.contains('tour-on') && !document.querySelector('dialog[open]'));
 </script>
 
+<script>
+  import { nextStop, snapStops } from '../lib/snap-gate';
+
+  const hint = document.querySelector<HTMLButtonElement>('[data-more]');
+  if (hint) {
+    const html = document.documentElement;
+    const still = matchMedia('(prefers-reduced-motion: reduce)');
+    const view = () => ({ h: innerHeight, scrollY, pad: parseFloat(getComputedStyle(html).scrollPaddingTop) || 0, max: html.scrollHeight - innerHeight });
+    const open = new Set(['HTML', 'BODY', 'MAIN']);
+    let at = -1, t = 0, done = false;
+    const hide = () => { hint.removeAttribute('data-on'); at = -1; };
+    const lane = hint.querySelector<HTMLElement>('.lane')!;
+    const piece = hint.querySelector<HTMLElement>('.pc')!;
+    const blocked = (x: number, y: number) => {
+      const el = document.elementsFromPoint(x, y).find((n) => !hint.contains(n));
+      return !!el && !open.has(el.tagName) && !el.matches('.home, .scene, .story, .steps, .step') && +getComputedStyle(el.closest('.card, .rv') ?? el).opacity > 0.2;
+    };
+    const room = () => {
+      const r = hint.getBoundingClientRect();
+      const top = lane.getBoundingClientRect().top;
+      const cx = r.left + r.width / 2;
+      let y = r.bottom - 10;
+      while (y >= top && ![cx - 22, cx, cx + 22].some((x) => blocked(x, y))) y -= 6;
+      return Math.round(r.bottom - piece.offsetHeight - (y < top ? top : y + 10));
+    };
+    const check = () => {
+      if (done || document.hidden || html.hasAttribute('data-learner') || html.classList.contains('tour-on') || document.querySelector('dialog[open]')) { hide(); return; }
+      const v = view();
+      const stop = (el: HTMLElement | null) => (el ? snapStops([el], v)[0] : undefined);
+      const first = stop(document.getElementById('story-1'));
+      const end = stop(document.querySelector<HTMLElement>('[data-flow-end]'));
+      if (first === undefined || end === undefined) { hide(); return; }
+      if (scrollY >= end - 4) { done = true; hide(); return; }
+      const d = scrollY >= first - 4 ? room() : 0;
+      if (d < 60) { hide(); return; }
+      hint.style.setProperty('--d', `${d}px`);
+      at = scrollY;
+      hint.setAttribute('data-on', '');
+    };
+    const later = () => { clearTimeout(t); t = window.setTimeout(check, 1000); };
+    addEventListener('scroll', () => { if (at >= 0 && Math.abs(scrollY - at) > 8) hide(); later(); }, { passive: true });
+    addEventListener('resize', later);
+    addEventListener('load', later);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) hide(); else later(); });
+    later();
+    hint.addEventListener('click', () => {
+      const to = nextStop(snapStops(document.querySelectorAll<HTMLElement>('[data-snap]'), view()), scrollY, 1);
+      hide();
+      if (to !== undefined) scrollTo({ top: to, behavior: still.matches ? 'auto' : 'smooth' });
+    });
+  }
+</script>
+
 <style>
   .rail { position: fixed; right: 3px; top: 88px; bottom: 36px; width: 2px; border-radius: 2px; background: color-mix(in srgb, var(--ink) 7%, transparent); z-index: 15; pointer-events: none; opacity: 0; transition: opacity .6s ease; }
   .rail[data-on] { opacity: 1; }
   .rail-fill { position: absolute; inset: 0; border-radius: inherit; background: color-mix(in srgb, var(--seal) 55%, transparent); transform-origin: top; transform: scaleY(0); }
   .rail :global(.rail-dot) { position: absolute; left: 50%; width: 4px; height: 4px; translate: -50% -50%; border-radius: 50%; background: color-mix(in srgb, var(--ink) 18%, var(--washi)); transition: background-color .4s ease; }
   .rail :global(.rail-dot[data-on]) { background: color-mix(in srgb, var(--seal) 60%, var(--washi)); }
+  .more { position: fixed; z-index: 14; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 2px); width: 52px; height: 48px; margin: 0 0 0 -26px; padding: 0; border: 0; border-radius: 50%; background: none; display: grid; place-items: end center; cursor: pointer; -webkit-tap-highlight-color: transparent; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .5s ease, visibility 0s linear .5s, scale .16s var(--ease-out); }
+  .more[data-on] { opacity: .85; visibility: visible; pointer-events: auto; transition: opacity .7s ease, visibility 0s, scale .16s var(--ease-out); }
+  .more:active { scale: .97; }
+  .more:focus-visible { outline: 2px solid var(--seal); outline-offset: 2px; }
+  .more .pc { width: 34px; aspect-ratio: 10 / 11; container-type: inline-size; display: grid; place-items: center; }
+  .more .lane { position: absolute; inset-inline: 0; bottom: 0; height: calc(25vh - env(safe-area-inset-bottom, 0px) - 2px); height: calc(25dvh - env(safe-area-inset-bottom, 0px) - 2px); pointer-events: none; }
+  .more .sq { width: 100%; height: 100%; display: grid; place-items: center; transform-origin: 50% 100%; }
+  .more .sh { width: 100%; height: 100%; transition: none; }
+  @media (prefers-reduced-motion: no-preference) { .more[data-on] .pc { animation: drop 3.3s infinite; } .more[data-on] .sq { animation: squash 3.3s infinite; } }
+  @keyframes drop {
+    0% { translate: 0 calc(var(--d) * -1); animation-timing-function: linear; }
+    5.45% { translate: 0 calc(var(--d) * -1); animation-timing-function: cubic-bezier(.333, 0, .667, .333); }
+    20.61% { translate: 0 0; animation-timing-function: cubic-bezier(.333, .667, .667, 1); }
+    28.9% { translate: 0 calc(var(--d) * -0.3); animation-timing-function: cubic-bezier(.333, 0, .667, .333); }
+    37.2% { translate: 0 0; animation-timing-function: cubic-bezier(.333, .667, .667, 1); }
+    41.75% { translate: 0 calc(var(--d) * -0.09); animation-timing-function: cubic-bezier(.333, 0, .667, .333); }
+    46.29% { translate: 0 0; animation-timing-function: cubic-bezier(.333, .667, .667, 1); }
+    48.78% { translate: 0 calc(var(--d) * -0.027); animation-timing-function: cubic-bezier(.333, 0, .667, .333); }
+    51.27% { translate: 0 0; animation-timing-function: cubic-bezier(.333, .667, .667, 1); }
+    52.64% { translate: 0 calc(var(--d) * -0.0081); animation-timing-function: cubic-bezier(.333, 0, .667, .333); }
+    54% { translate: 0 0; animation-timing-function: linear; }
+    75.76% { translate: 0 0; animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+    100% { translate: 0 calc(var(--d) * -1); }
+  }
+  @keyframes squash {
+    0% { scale: 1 1; }
+    5.45% { scale: 1 1; }
+    18.79% { scale: 0.93 1.07; }
+    20.61% { scale: 1.16 0.84; }
+    23.03% { scale: 0.965 1.035; }
+    28.9% { scale: 1 1; }
+    35.39% { scale: 0.965 1.035; }
+    37.2% { scale: 1.08 0.92; }
+    39.48% { scale: 0.983 1.018; }
+    41.75% { scale: 1 1; }
+    44.78% { scale: 0.983 1.017; }
+    46.29% { scale: 1.04 0.96; }
+    47.54% { scale: 0.992 1.008; }
+    48.78% { scale: 1 1; }
+    50.44% { scale: 0.992 1.008; }
+    51.27% { scale: 1.02 0.98; }
+    51.96% { scale: 0.996 1.004; }
+    52.64% { scale: 1 1; }
+    53.55% { scale: 0.992 1.008; }
+    54% { scale: 1.01 0.99; }
+    57.64% { scale: 1 1; }
+    75.76% { scale: 1 1; }
+    87.88% { scale: 0.97 1.03; }
+    100% { scale: 1 1; }
+  }
+  :global(html.tour-on) .more, :global(html.app-locked) .more { display: none; }
   :global(html.tour-on) .rail, :global(html.app-locked) .rail { display: none; }
   @media (min-width: 900px) { .rail { right: 6px; top: 124px; bottom: 56px; } }
   .know { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 10px; margin: 14px auto 0; font-size: 15px; color: var(--ink-2); }
@@ -361,7 +526,6 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   .lead { margin: 0; font-size: 19px; line-height: 1.65; color: var(--ink-2); max-width: 30em; }
   .cta { display: flex; flex-direction: column; gap: 8px; padding-top: 6px; }
   .cta .btn { align-self: stretch; }
-  .note { margin: 0; text-align: center; }
   .side-doors { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .side-doors li { display: flex; }
   .side-doors li:only-child { grid-column: 1 / -1; }
@@ -373,26 +537,35 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   @media (min-width: 900px) { .side-doors { max-width: 520px; } }
   .cue { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; color: var(--muted); font-size: 15px; text-decoration: none; }
   .cue:hover { color: var(--ink); }
-  .hero-art { position: relative; height: 230px; display: grid; place-items: center; order: -1; }
-  .hero-art .pc { position: absolute; width: 64px; aspect-ratio: 10 / 11; container-type: inline-size; translate: calc(var(--x) * 110%) calc(var(--y) * 100%); scale: var(--s); }
-  .hero-art .sh { width: 100%; height: 100%; }
-  @media (prefers-reduced-motion: no-preference) {
-    .hero-art .pc { animation: land .9s var(--ease-out) both; animation-delay: calc(var(--i) * 90ms + 150ms); }
-  }
-  @keyframes land { from { opacity: 0; translate: calc(var(--x) * 110%) calc(var(--y) * 100% - 24px); } }
+  .hero-art { --play: paused; position: relative; height: 200px; display: grid; place-items: center; order: -1; container-type: size; }
+  .hero-art[data-run] { --play: running; }
+  .ha { --q: min(calc(100cqh / var(--h)), calc(100cqw / var(--w)), 72px); position: relative; width: calc(var(--w) * var(--q)); height: calc(var(--h) * var(--q)); direction: ltr; }
+  .ha > span { position: absolute; }
+  .ha-fade { -webkit-mask: linear-gradient(to right, transparent, #000 calc(.55 * var(--q))), linear-gradient(transparent, #000 calc(.4 * var(--q))); -webkit-mask-composite: source-in;
+    mask: linear-gradient(to right, transparent, #000 calc(.55 * var(--q))), linear-gradient(transparent, #000 calc(.4 * var(--q))); mask-composite: intersect; }
+  .ha-board { --gl: max(1px, calc(var(--q) * .024)); position: absolute; background-color: var(--kaya); border: solid var(--grid); border-width: 0 2px 2px 0; border-radius: 0 0 3px 0; box-shadow: var(--shadow-board);
+    background-image: linear-gradient(var(--grid) var(--gl), transparent var(--gl)), linear-gradient(90deg, var(--grid) var(--gl), transparent var(--gl));
+    background-size: var(--q) var(--q); background-position: calc(var(--lx) * var(--q) - var(--gl) / 2) calc(var(--ly) * var(--q) - var(--gl) / 2); }
+  .ha-board .hoshi { width: calc(var(--q) * .11); height: calc(var(--q) * .11); }
+  .ha-hand { border-radius: 4px; background: var(--kaya); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--grid) 45%, transparent), var(--shadow-board); }
+  .ha-ck { width: var(--q); height: var(--q); background: color-mix(in srgb, var(--seal) 24%, transparent); opacity: 0; }
+  .ha-ck[data-on] { opacity: 1; }
+  .ha .pc { left: 0; top: 0; width: var(--q); height: var(--q); container-type: size; display: grid; place-items: center; }
+  .ha .lb { grid-area: 1 / 1; }
+  .ha .pc .lb.hn { color: var(--piece-ink); }
+  .ha .pc .lb.hu { color: var(--piece-seal); opacity: 0; }
+  .ha .pc[data-p] .lb.hu { opacity: 1; }
+  .ha .pc[data-p] .lb.hn { opacity: 0; }
   @media (min-width: 900px) {
     .know { justify-content: flex-start; max-width: var(--page); }
     .hero { grid-template-columns: 1.1fr .9fr; align-items: center; gap: 56px; padding-block: 48px 16px; min-height: min(600px, calc(100svh - 180px)); }
     .cta .btn { align-self: flex-start; min-width: 360px; }
-    .note { text-align: start; }
     .cue { justify-content: flex-start; }
-    .hero-art { height: 420px; order: 2; }
-    .hero-art .pc { width: 96px; }
+    .hero-art { height: 360px; order: 2; }
   }
   @media (max-width: 899px) and (max-height: 780px) {
     .hero { gap: 14px; padding-top: 6px; }
     .hero-art { height: 172px; }
-    .hero-art .pc { width: 50px; }
   }
   @media (max-width: 380px) {
     .side-doors a { gap: 8px; padding: 8px 10px; }
@@ -401,8 +574,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   @media (max-width: 899px) and (orientation: landscape) and (max-height: 520px) {
     .hero { grid-template-columns: 1.1fr .9fr; align-items: center; gap: 24px; padding-top: 6px; }
     .hero h1 { font-size: 34px; }
-    .hero-art { height: 250px; order: 2; }
-    .hero-art .pc { width: 58px; }
+    .hero-art { height: min(250px, calc(100svh - 150px)); order: 2; align-self: start; }
   }
 
   .scene { margin-top: 56px; }
@@ -487,7 +659,6 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   :global(html[data-pieces="letters"]) .pl { display: inline; }
   :global(html[data-pieces="kanji"]) .ph { display: none; }
   :global(html[data-pieces="kanji"]) .pk { display: inline; }
-  .hero-art .lb { padding-top: 18%; }
 
   .cap { text-align: center; font-size: 14px; color: var(--muted); margin: 6px 0 0; min-height: 1.6em; }
 
@@ -497,11 +668,14 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   .big { position: absolute; width: 36%; aspect-ratio: 10 / 11; left: 32%; top: 21.7%; container-type: inline-size; display: grid; place-items: center; color: var(--piece-ink);
     transition: translate .6s var(--ease-out), opacity .4s ease, scale .6s var(--ease-out); }
   .big .sh { width: 100%; height: 100%; }
-  .big b { position: relative; z-index: 1; font: 800 46cqw/1 var(--f-kanji); }
-  .big .ph { position: relative; z-index: 1; font-size: 40cqw; padding-top: 14%; }
-  .show [data-b] { opacity: 0; }
-  .show[data-step="c1"] [data-a] { opacity: 0; scale: .9; }
-  .show[data-step="c1"] [data-b] { opacity: 1; }
+  .show .lb { grid-area: 1 / 1; opacity: 0; scale: .92; transition: opacity .7s var(--ease-out), scale .7s var(--ease-out); }
+  .show .lb .pk, .show .lb .pl, .show .lb .pcs { display: inline; }
+  .show .lb .ph { display: inline-flex; }
+  .show[data-face="0"] [data-f="0"], .show[data-face="1"] [data-f="1"], .show[data-face="2"] [data-f="2"], .show[data-face="3"] [data-f="3"] { opacity: 1; scale: 1; }
+  .sets { position: absolute; inset-inline: 0; bottom: 4%; display: flex; justify-content: center; gap: 12px; font-size: 12px; color: color-mix(in srgb, var(--muted) 60%, transparent); }
+  .sets span { transition: color .7s var(--ease-out); }
+  .show[data-face="0"] .sets span:nth-child(1), .show[data-face="1"] .sets span:nth-child(2), .show[data-face="2"] .sets span:nth-child(3), .show[data-face="3"] .sets span:nth-child(4) { color: var(--ink-2); }
+  :global(html.tour-on) .show .lb, :global(html.tour-on) .sets span { transition: none; }
 
   .phases { list-style: none; margin: 14px 0 12px; padding: 0; display: grid; gap: 14px; }
   .phase { display: grid; grid-template-columns: 44px 1fr; gap: 14px; align-items: start; padding: 16px 18px; background: var(--surface); border-radius: 14px; box-shadow: var(--shadow-1); }
@@ -520,17 +694,23 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   .go { font-weight: 800; color: var(--seal); }
   .pick.main .go { color: color-mix(in srgb, var(--seal) 45%, var(--washi)); }
   .rules-line { margin: 14px 0 0; color: var(--ink-2); }
-  .also { margin-top: 14px; padding: 14px 18px; border-radius: 14px; border: 1px dashed var(--rule); display: grid; gap: 4px; line-height: 1.6; color: var(--ink-2); }
+  .also { margin-top: 14px; padding: 14px 18px 16px; border-radius: 14px; border: 1px dashed var(--rule); display: grid; gap: 10px; line-height: 1.6; color: var(--ink-2); }
   .also b { color: var(--ink); }
-  .also a { font-weight: 700; }
+  .also-go { display: grid; gap: 8px; }
+  .also-go a { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 12px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--rule); color: var(--ink); font-weight: 700; text-decoration: none; transition: box-shadow .15s ease, color .15s ease, transform .16s var(--ease-out); }
+  .also-go a:active { transform: scale(.97); }
+  .also-go :global(svg) { flex: none; width: 18px; height: 18px; color: var(--seal); }
+  @media (hover: hover) and (pointer: fine) { .also-go a:hover { color: var(--seal); box-shadow: inset 0 0 0 1px var(--seal); } }
+  @media (min-width: 600px) { .also-go { display: flex; flex-wrap: wrap; } }
   @media (min-width: 900px) { .choose { grid-template-columns: 1.3fr 1fr 1fr; } }
 
   .comm { display: grid; gap: 12px; padding: 22px; border-radius: 16px; background: var(--washi-2); box-shadow: var(--shadow-1); max-width: 760px; }
   .comm h2 { font-size: 28px; }
   .comm p { margin: 0; color: var(--ink-2); line-height: 1.65; }
   .chips { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
-  .chips a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 999px; background: var(--surface); color: var(--ink); text-decoration: none; font-weight: 700; font-size: 15px; box-shadow: inset 0 0 0 1px var(--rule); }
+  .chips a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding-inline: 12px 16px; border-radius: 999px; background: var(--surface); color: var(--ink); text-decoration: none; font-weight: 700; font-size: 15px; box-shadow: inset 0 0 0 1px var(--rule); }
   .chips a:hover { color: var(--seal); box-shadow: inset 0 0 0 1px var(--seal); }
+  .chips :global(.icon) { flex: none; }
 
   @supports (animation-timeline: view()) {
     @media (prefers-reduced-motion: no-preference) {
@@ -540,6 +720,6 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   }
   @keyframes rise { from { opacity: 0; translate: 0 28px; } to { opacity: 1; translate: 0 0; } }
   @media (prefers-reduced-motion: reduce) {
-    .layer .pc, .sh, .zone, .tray span, .big { transition: none !important; }
+    .layer .pc, .sh, .zone, .tray span, .big, .show .lb, .sets span { transition: none !important; }
   }
 </style>

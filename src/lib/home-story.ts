@@ -52,7 +52,7 @@ export const BOARD_STORIES: Record<'a' | 'b', { first: BoardState; steps: Record
     first: EMPTY,
     steps: {
       a1: { pcs: offBoard(START.map((p) => ({ ...p, out: p.t !== 'K' }))), cap: 'המלך שלך למטה, המלך של היריב למעלה', pre: EMPTY },
-      a2: { pcs: START, cap: 'הכלים של היריב הפוכים, עם החוד כלפי מטה' },
+      a2: { pcs: START, cap: 'הכלים שלך למטה, הכלים של היריב למעלה' },
     },
   },
   b: {
@@ -65,15 +65,15 @@ export const BOARD_STORIES: Record<'a' | 'b', { first: BoardState; steps: Record
   },
 };
 
-export const SHOW_CAPS: Record<string, string> = { c0: 'מלך בסט יפני', c1: 'אותו מלך, באות עברית' };
+export const SHOW_CAPS: Record<string, string> = { c1: 'זהו המלך, בכל גרסה' };
 
 export const STORY: Record<'a' | 'c' | 'b', StoryStep[]> = {
   a: [
-    { key: 'a1', text: 'השם שוגי (<span lang="ja">将棋</span>) פירושו בערך <strong>משחק הגנרלים</strong>: שני שחקנים, לוח של 9 על 9, וכל אחד מפקד על צבא. בכל צבא יש <strong>מלך</strong>. המטרה: לתקוף את המלך של היריב כך שאין לו לאן לברוח. זה נקרא <strong>מט</strong>, ומי שנותן מט מנצח.' },
-    { key: 'a2', text: 'לכל צבא 20 כלים, וכל סוג זז אחרת. נכיר אותם אחד אחד. לשני הצדדים אותו צבע: מה שאומר של מי הכלי הוא <strong>הכיוון</strong>. החוד של הכלים שלך פונה קדימה, אל היריב, והחוד של הכלים שלו פונה אליך.' },
+    { key: 'a1', text: 'השם שוגי (<span lang="ja">将棋</span>) פירושו <strong>משחק הגנרלים</strong>: שני שחקנים, לוח של 9 על 9, וכל אחד מפקד על צבא. בכל צבא יש <strong>מלך</strong>. המטרה: לתקוף את המלך של היריב כך שאין לו לאן לברוח. זה נקרא <strong>מט</strong>, ומי שעושה מט מנצח.' },
+    { key: 'a2', text: 'לכל צבא 20 כלים, וכל כלי זז אחרת. נכיר אותם אחד אחד. הכלים של שני השחקנים באותו הצבע, ומה שמשייך כלי לשחקן הוא <strong>הכיוון</strong> שלו. החוד של הכלים שלך פונה אל היריב (למעלה), והחוד של הכלים של היריב פונה אליך (למטה).' },
   ],
   c: [
-    { key: 'c1', text: 'על כלים יפניים כתוב <strong>קאנג׳י</strong>, הכתב היפני. כאן באתר כל כלי מסומן ב<strong>אות עברית</strong>: המלך הוא מ. אפשר לעבור בכל רגע לקאנג׳י, לאותיות באנגלית או לסמלי שחמט.' },
+    { key: 'c1', text: 'על כלי שוגי במקור כתוב <strong>קאנג׳י</strong>, הכתב היפני. כאן באתר כל כלי מסומן ב<strong>אות עברית</strong>. אפשר לעבור בכל רגע לקאנג׳י, לאותיות באנגלית או לסמלי שחמט.' },
   ],
   b: [
     { key: 'b1', text: 'כלי שלך <strong>לוכד</strong> כלי של היריב: הוא נכנס למשבצת שלו, והכלי של היריב יורד מהלוח. ופה ההפתעה: הכלי שנלכד לא יוצא מהמשחק. מסובבים אותו, והוא <strong>עובר לצד שלך</strong> ומחכה ביד, ליד הלוח.' },
@@ -89,10 +89,6 @@ export const PHASES = [
 ];
 
 export const HOME_FAQ = ['need-chess', 'japanese', 'cost', 'length', 'community'];
-
-export const HERO_ART: [PieceType, number, number, number][] = [
-  ['K', 0, 0, 1.25], ['R', -1.25, -0.55, 0.9], ['B', 1.2, -0.6, 0.9], ['G', -0.7, 0.75, 0.8], ['S', 0.75, 0.8, 0.8], ['P', 0, -1.45, 0.7],
-];
 
 export const allPieces = (story: 'a' | 'b'): (StoryPiece & { promotes: boolean })[] => {
   const seen = new Map<string, StoryPiece & { promotes: boolean }>();
