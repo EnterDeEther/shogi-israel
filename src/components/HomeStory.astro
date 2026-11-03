@@ -410,7 +410,6 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   const hint = document.querySelector<HTMLButtonElement>('[data-more]');
   if (hint) {
     const html = document.documentElement;
-    const wide = matchMedia('(min-width: 900px), (max-width: 899px) and (orientation: landscape) and (max-height: 520px)');
     const still = matchMedia('(prefers-reduced-motion: reduce)');
     const view = () => ({ h: innerHeight, scrollY, pad: parseFloat(getComputedStyle(html).scrollPaddingTop) || 0, max: html.scrollHeight - innerHeight });
     const open = new Set(['HTML', 'BODY', 'MAIN']);
@@ -431,14 +430,15 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
       return Math.round(r.bottom - piece.offsetHeight - (y < top ? top : y + 10));
     };
     const check = () => {
-      if (done || wide.matches || html.hasAttribute('data-learner') || html.classList.contains('tour-on') || document.querySelector('dialog[open]')) { hide(); return; }
+      if (done || document.hidden || html.hasAttribute('data-learner') || html.classList.contains('tour-on') || document.querySelector('dialog[open]')) { hide(); return; }
       const v = view();
-      const here = (el: HTMLElement) => snapStops([el], v).some((y) => Math.abs(y - scrollY) <= 4);
-      const end = document.querySelector<HTMLElement>('[data-flow-end]');
-      if (end && here(end)) { done = true; hide(); return; }
-      const card = [...document.querySelectorAll<HTMLElement>('.scene[data-snap]:not([data-flow-end]), .scene .step[data-snap]')].find(here);
-      const d = card ? room() : 0;
-      if (d < 32) { hide(); return; }
+      const stop = (el: HTMLElement | null) => (el ? snapStops([el], v)[0] : undefined);
+      const first = stop(document.getElementById('story-1'));
+      const end = stop(document.querySelector<HTMLElement>('[data-flow-end]'));
+      if (first === undefined || end === undefined) { hide(); return; }
+      if (scrollY >= end - 4) { done = true; hide(); return; }
+      const d = scrollY >= first - 4 ? room() : 0;
+      if (d < 60) { hide(); return; }
       hint.style.setProperty('--d', `${d}px`);
       at = scrollY;
       hint.setAttribute('data-on', '');
@@ -447,6 +447,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
     addEventListener('scroll', () => { if (at >= 0 && Math.abs(scrollY - at) > 8) hide(); later(); }, { passive: true });
     addEventListener('resize', later);
     addEventListener('load', later);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) hide(); else later(); });
     later();
     hint.addEventListener('click', () => {
       const to = nextStop(snapStops(document.querySelectorAll<HTMLElement>('[data-snap]'), view()), scrollY, 1);
@@ -462,12 +463,12 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   .rail-fill { position: absolute; inset: 0; border-radius: inherit; background: color-mix(in srgb, var(--seal) 55%, transparent); transform-origin: top; transform: scaleY(0); }
   .rail :global(.rail-dot) { position: absolute; left: 50%; width: 4px; height: 4px; translate: -50% -50%; border-radius: 50%; background: color-mix(in srgb, var(--ink) 18%, var(--washi)); transition: background-color .4s ease; }
   .rail :global(.rail-dot[data-on]) { background: color-mix(in srgb, var(--seal) 60%, var(--washi)); }
-  .more { position: fixed; z-index: 14; left: 50%; top: calc(100svh - env(safe-area-inset-bottom, 0px) - 50px); width: 52px; height: 48px; margin: 0 0 0 -26px; padding: 0; border: 0; border-radius: 50%; background: none; display: grid; place-items: end center; cursor: pointer; -webkit-tap-highlight-color: transparent; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .5s ease, visibility 0s linear .5s, scale .16s var(--ease-out); }
+  .more { position: fixed; z-index: 14; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 2px); width: 52px; height: 48px; margin: 0 0 0 -26px; padding: 0; border: 0; border-radius: 50%; background: none; display: grid; place-items: end center; cursor: pointer; -webkit-tap-highlight-color: transparent; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .5s ease, visibility 0s linear .5s, scale .16s var(--ease-out); }
   .more[data-on] { opacity: .85; visibility: visible; pointer-events: auto; transition: opacity .7s ease, visibility 0s, scale .16s var(--ease-out); }
   .more:active { scale: .97; }
   .more:focus-visible { outline: 2px solid var(--seal); outline-offset: 2px; }
   .more .pc { width: 34px; aspect-ratio: 10 / 11; container-type: inline-size; display: grid; place-items: center; }
-  .more .lane { position: absolute; inset-inline: 0; bottom: 0; height: calc(30svh - env(safe-area-inset-bottom, 0px) - 2px); pointer-events: none; }
+  .more .lane { position: absolute; inset-inline: 0; bottom: 0; height: calc(25vh - env(safe-area-inset-bottom, 0px) - 2px); height: calc(25dvh - env(safe-area-inset-bottom, 0px) - 2px); pointer-events: none; }
   .more .sq { width: 100%; height: 100%; display: grid; place-items: center; transform-origin: 50% 100%; }
   .more .sh { width: 100%; height: 100%; transition: none; }
   @media (prefers-reduced-motion: no-preference) { .more[data-on] .pc { animation: drop 3.3s infinite; } .more[data-on] .sq { animation: squash 3.3s infinite; } }
