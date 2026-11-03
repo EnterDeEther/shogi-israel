@@ -19,7 +19,7 @@ interface Pc { id: string; t: PieceType; g: G; pr: boolean; at: string }
 interface St { x: number; y: number; s: number; lift: number; o: number; rot: number; g: G; pr: number; flip: number }
 interface Way extends St { t: number; ease: string }
 
-const LOOP = 10.5, START = 0.7, PLY = 1.25, TAKE = 1.6, HOLD = 9.5, OUT = 10;
+const LOOP = 10.85, START = 0.7, PLY = 1.25, TAKE = 1.6, HOLD = 9.85, OUT = 10.35, SPEED = 0.75;
 const EASE = 'var(--ease-out)', SOFT = 'ease-in-out', LIN = 'linear';
 const STAND = 1.12, GAP = 0.22, PITCH = 0.86;
 const ORDER: PieceType[] = ['R', 'B', 'G', 'S', 'N', 'L', 'P'];
@@ -165,7 +165,7 @@ export function heroLayout(sc: HeroScene) {
     }),
     hoshi: [{ x: bx + bw - 3, y: bh - 3 }, { x: bx + bw - 6, y: bh - 3 }].filter((p) => p.x > bx && p.y > 0),
     pieces, flashes: flashes.map((f, i) => ({ ...f, i, on: stillFlash.includes(f) })),
-    css: `@media (prefers-reduced-motion: no-preference){html:not(.tour-on) [data-hero-art]{--loop:${LOOP}s}${css.map((c) => c.startsWith('@') ? c : `html:not(.tour-on) ${c}`).join('')}}`,
+    css: `@media (prefers-reduced-motion: no-preference){html:not(.tour-on) [data-hero-art]{--loop:${+(LOOP * SPEED).toFixed(3)}s}${css.map((c) => c.startsWith('@') ? c : `html:not(.tour-on) ${c}`).join('')}}`,
   };
 }
 
