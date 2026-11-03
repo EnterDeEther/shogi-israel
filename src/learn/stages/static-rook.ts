@@ -5,9 +5,8 @@ import { scenarioFailure, scenarioSuccess } from '../assert';
 import type { IncompleteLevel, IncompleteStage } from '../interfaces';
 import { createLevel } from '../level';
 import { createScenario } from '../util';
-import { withGuide } from '../describe';
 
-const levels: IncompleteLevel[] = ([
+const levels: IncompleteLevel[] = [
   {
     goal: i18n('learn:il_staticRookPush'),
     sfen: 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1',
@@ -26,7 +25,7 @@ const levels: IncompleteLevel[] = ([
     scenario: createScenario(['2e2d', '2c2d', '2h2d', 'P*2c', '2d2h'], 'sente', true),
     why: [i18n('learn:il_whySR2_1'), i18n('learn:il_whySR2_2'), i18n('learn:il_whySR2_3')],
   },
-] as IncompleteLevel[]).map(withGuide);
+];
 
 const stage: IncompleteStage = {
   key: 'staticRook',

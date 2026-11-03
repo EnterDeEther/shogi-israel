@@ -5,7 +5,6 @@ import { scenarioFailure, scenarioSuccess } from '../assert';
 import type { IncompleteLevel, IncompleteStage } from '../interfaces';
 import { createLevel } from '../level';
 import { createScenario } from '../util';
-import { withGuide } from '../describe';
 
 const start = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1';
 const line = (goal: string, usis: string[], why: string[]): IncompleteLevel => ({
@@ -18,11 +17,11 @@ const line = (goal: string, usis: string[], why: string[]): IncompleteLevel => (
   why: why.map((k) => i18n(k)),
 });
 
-const levels: IncompleteLevel[] = ([
+const levels: IncompleteLevel[] = [
   line('learn:il_rangingFourth', ['7g7f', '3c3d', '6g6f', '8c8d', '2h6h'], ['learn:il_whyRR_open', 'learn:il_whyRR4_2', 'learn:il_whyRR4_3']),
   line('learn:il_rangingThird', ['7g7f', '3c3d', '7f7e', '8c8d', '2h7h'], ['learn:il_whyRR_open', 'learn:il_whyRR3_2', 'learn:il_whyRR3_3']),
   line('learn:il_rangingCentral', ['7g7f', '3c3d', '5g5f', '8c8d', '2h5h'], ['learn:il_whyRR_open', 'learn:il_whyRRC_2', 'learn:il_whyRRC_3']),
-] as IncompleteLevel[]).map(withGuide);
+];
 
 const stage: IncompleteStage = {
   key: 'rangingRook',

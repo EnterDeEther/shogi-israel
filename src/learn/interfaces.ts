@@ -46,7 +46,6 @@ export interface Level {
   text?: string;
   line?: Usi[];
   moveNames?: string[];
-  moveOrders?: string[];
   why?: string[];
   replies?: string[];
   replyNames?: string[];
