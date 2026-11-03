@@ -46,7 +46,7 @@ const boards = (['a', 'b'] as const).map((key) => {
 const board = (key: 'a' | 'b') => boards.find((b) => b.key === key)!;
 const tray = (key: 'a' | 'b') => (BOARD_STORIES[key].first.hand || Object.values(BOARD_STORIES[key].steps).some((st) => st.hand) ? 0.95 : 0);
 const stageStyle = (key: 'a' | 'b') => `--tb:${tray(key)};--rows:${9 + tray(key)};aspect-ratio:9 / ${9 + tray(key)}`;
-const pawn = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 21.5L16.6 17.6L18 3H6L7.4 17.6Z" fill="currentColor" fill-opacity=".18" stroke="none"></path><path d="M12 21.5L16.6 17.6L18 3H6L7.4 17.6Z"></path><path d="M9.4 9.6l2.6 2.6 2.6-2.6"></path></svg>';
+const pawn = labels('P', 1, false);
 const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>';
 const down = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"></path></svg>';
 const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7 10 .8 14.4 7 19 3.2 17.2 11.2H2.8Z" /></svg>';
@@ -235,7 +235,18 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
 </section>
 
 <div class="rail" data-rail data-newcomer aria-hidden="true"><span class="rail-fill"></span></div>
-<button type="button" class="more" data-more data-newcomer aria-label="לגלילה למטה"><Fragment set:html={pawn} /></button>
+<button type="button" class="more" data-more data-newcomer aria-label="לגלילה למטה">
+  <span class="pc" data-g aria-hidden="true">
+    <span class="sh">
+      <span class="lb">
+        <span class="ph" dir="rtl"><span>{pawn.h}</span></span>
+        <span class:list={['pcs', pawn.cs]} dir="rtl">{pawn.c}</span>
+        <span class="pl">{pawn.l}</span>
+        <span class="pk" lang="ja">{pawn.k}</span>
+      </span>
+    </span>
+  </span>
+</button>
 
 <script>
   import { BOARD_STORIES, type BoardState } from '../lib/home-story';
@@ -440,12 +451,23 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   .rail-fill { position: absolute; inset: 0; border-radius: inherit; background: color-mix(in srgb, var(--seal) 55%, transparent); transform-origin: top; transform: scaleY(0); }
   .rail :global(.rail-dot) { position: absolute; left: 50%; width: 4px; height: 4px; translate: -50% -50%; border-radius: 50%; background: color-mix(in srgb, var(--ink) 18%, var(--washi)); transition: background-color .4s ease; }
   .rail :global(.rail-dot[data-on]) { background: color-mix(in srgb, var(--seal) 60%, var(--washi)); }
-  .more { position: fixed; z-index: 14; left: 50%; top: calc(100svh - 62px); width: 44px; height: 44px; margin: 0 0 0 -22px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--muted); display: grid; place-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .5s ease, visibility 0s linear .5s, scale .16s var(--ease-out); }
+  .more { position: fixed; z-index: 14; left: 50%; top: calc(100svh - 66px); width: 48px; height: 48px; margin: 0 0 0 -24px; padding: 0; border: 0; border-radius: 50%; background: none; display: grid; place-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .5s ease, visibility 0s linear .5s, scale .16s var(--ease-out); }
   .more[data-on] { opacity: .85; visibility: visible; pointer-events: auto; transition: opacity .7s ease, visibility 0s, scale .16s var(--ease-out); }
   .more:active { scale: .97; }
   .more:focus-visible { outline: 2px solid var(--seal); outline-offset: 2px; }
-  @media (prefers-reduced-motion: no-preference) { .more[data-on] :global(svg) { animation: bob 1.6s ease-in-out infinite; } }
-  @keyframes bob { 50% { translate: 0 4px; } }
+  .more .pc { width: 28px; aspect-ratio: 10 / 11; container-type: inline-size; display: grid; place-items: center; transform-origin: 50% 100%; }
+  .more .sh { width: 100%; height: 100%; transition: none; }
+  @media (prefers-reduced-motion: no-preference) { .more[data-on] .pc { animation: hop 2.8s ease-in-out infinite; } }
+  @keyframes hop {
+    0%, 62%, 100% { translate: 0 0; scale: 1; rotate: 0deg; }
+    6% { translate: 0 0; scale: 1.08 .9; rotate: 0deg; }
+    16% { translate: 0 -7px; scale: .94 1.07; rotate: -6deg; }
+    26% { translate: 0 0; scale: 1.1 .88; rotate: 0deg; }
+    32% { translate: 0 0; scale: .98 1.02; rotate: 0deg; }
+    40% { translate: 0 -3px; scale: .97 1.04; rotate: 5deg; }
+    48% { translate: 0 0; scale: 1.05 .94; rotate: 0deg; }
+    54% { translate: 0 0; scale: 1; rotate: 0deg; }
+  }
   :global(html.tour-on) .more, :global(html.app-locked) .more { display: none; }
   :global(html.tour-on) .rail, :global(html.app-locked) .rail { display: none; }
   @media (min-width: 900px) { .rail { right: 6px; top: 124px; bottom: 56px; } }
