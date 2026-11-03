@@ -90,9 +90,44 @@ export const PHASES = [
 
 export const HOME_FAQ = ['need-chess', 'japanese', 'cost', 'length', 'community'];
 
-export const HERO_ART: [PieceType, number, number, number][] = [
-  ['K', 0, 0, 1.25], ['R', -1.25, -0.55, 0.9], ['B', 1.2, -0.6, 0.9], ['G', -0.7, 0.75, 0.8], ['S', 0.75, 0.8, 0.8], ['P', 0, -1.45, 0.7],
-];
+export interface HeroScene {
+  view: { r: number; c: number };
+  pcs: { t: PieceType; g: 0 | 1; r: number; c: number }[];
+  move: { t: PieceType; from: [number, number]; to: [number, number] };
+  took: PieceType;
+  hand: PieceType[];
+}
+
+export const HERO_SCENE: HeroScene = {
+  view: { r: 4.4, c: 4.4 },
+  pcs: [
+    { t: 'P', g: 1, r: 4, c: 5 }, { t: 'P', g: 1, r: 4, c: 8 },
+    { t: 'P', g: 0, r: 6, c: 4 }, { t: 'P', g: 0, r: 6, c: 6 }, { t: 'P', g: 0, r: 6, c: 8 },
+    { t: 'S', g: 0, r: 7, c: 6 },
+    { t: 'G', g: 0, r: 8, c: 5 }, { t: 'N', g: 0, r: 8, c: 7 }, { t: 'L', g: 0, r: 8, c: 8 },
+  ],
+  move: { t: 'R', from: [7, 7], to: [5, 7] },
+  took: 'S',
+  hand: ['P'],
+};
+
+export const heroLayout = (sc: HeroScene) => {
+  const at = (r: number, c: number) => ({ x: c - sc.view.c, y: r - sc.view.r });
+  const bw = 9 - sc.view.c, bh = 9 - sc.view.r, gap = 0.22, hw = 1.12, pitch = 0.86;
+  const hh = (sc.hand.length + 1) * pitch + 0.3;
+  const slot = (k: number) => ({ x: bw + gap + hw / 2 - 0.5, y: bh - 0.15 - pitch / 2 - k * pitch - 0.5 });
+  const from = at(...sc.move.from), to = at(...sc.move.to);
+  const mid = { x: from.x + (to.x - from.x) * 0.58, y: from.y + (to.y - from.y) * 0.58 };
+  const hoshi = [3, 6].flatMap((r) => [3, 6].map((c) => at(r, c))).filter((p) => p.x > 0 && p.y > 0);
+  return {
+    w: bw + gap + hw, h: bh, bw, bh, hand: { x: bw + gap, y: bh - hh, w: hw, h: hh },
+    line: { x: Math.ceil(sc.view.c) - sc.view.c, y: Math.ceil(sc.view.r) - sc.view.r },
+    hoshi, pcs: sc.pcs.map((p) => ({ ...p, ...at(p.r, p.c) })), held: sc.hand.map((t, k) => ({ t, ...slot(k) })),
+    mover: sc.move.t, took: sc.took, from, to, mid, aside: { x: to.x + 0.5, y: to.y - 0.06 }, home: slot(sc.hand.length),
+  };
+};
+
+export const HERO_ART = heroLayout(HERO_SCENE);
 
 export const allPieces = (story: 'a' | 'b'): (StoryPiece & { promotes: boolean })[] => {
   const seen = new Map<string, StoryPiece & { promotes: boolean }>();
