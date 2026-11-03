@@ -1,6 +1,7 @@
 ---
 import { chessOf, hebrewOf, kanjiOf, letterOf, type PieceType } from '../lib/sfen';
-import { BOARD_STORIES, HERO_ART, PHASES, SHOW_CAPS, STORY, allPieces, type StoryPiece } from '../lib/home-story';
+import { BOARD_STORIES, PHASES, SHOW_CAPS, STORY, allPieces, type StoryPiece } from '../lib/home-story';
+import { HERO_ART } from '../lib/home-hero';
 import { FIRST_GAME } from '../lib/first-game';
 import { pageExists, LISHOGI_TEAM } from '../lib/live';
 import { FACEBOOK_GROUP_URL, INSTAGRAM_URL, WHATSAPP_URL } from '../lib/nav';
@@ -24,14 +25,8 @@ const labels = (t: PieceType, g: 0 | 1, promoted: boolean) => {
   };
 };
 const n3 = (v: number) => +v.toFixed(3);
-const xy = (k: string, p: { x: number; y: number }) => `--${k}x:${n3(p.x)};--${k}y:${n3(p.y)}`;
 const H = HERO_ART;
-const heroPcs = [
-  ...H.pcs.map((p) => ({ t: p.t, g: p.g, cls: '', style: xy('', p) })),
-  ...H.held.map((p) => ({ t: p.t, g: 0 as const, cls: 'held', style: xy('', p) })),
-  { t: H.took, g: 1 as const, cls: 'tk', style: [xy('', H.to), xy('a', H.aside), xy('h', H.home)].join(';') },
-  { t: H.mover, g: 0 as const, cls: 'mv', style: [xy('', H.mid), xy('f', H.from), xy('t', H.to)].join(';') },
-];
+const box = (p: { x: number; y: number; w?: number; h?: number }) => `left:calc(${n3(p.x)} * var(--q));top:calc(${n3(p.y)} * var(--q))${p.w ? `;width:calc(${n3(p.w)} * var(--q));height:calc(${n3(p.h!)} * var(--q))` : ''}`;
 const finalOf = (key: 'a' | 'b') => {
   const steps = Object.values(BOARD_STORIES[key].steps);
   const last = steps[steps.length - 1];
@@ -76,30 +71,32 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
     <a class="cue" href="#story-1">או ⟦גלול|גללי⟧ למטה, ונכיר את המשחק בדקה<Fragment set:html={down} /></a>
   </div>
   <div class="hero-art" aria-hidden="true" data-hero-art>
+    <Fragment set:html={`<style>${H.css}</style>`} />
     <span class="ha" style={`--w:${n3(H.w)};--h:${n3(H.h)}`}>
-      <span class="ha-in">
-        <span class="ha-board" style={`width:calc(${n3(H.bw)} * var(--q));height:calc(${n3(H.bh)} * var(--q));${xy('l', H.line)}`}>
-          {H.hoshi.map((p) => <span class="hoshi" style={`left:calc(${n3(p.x)} * var(--q));top:calc(${n3(p.y)} * var(--q))`}></span>)}
+      <span class="ha-fade" style={box({ x: H.board.x, y: 0, w: H.board.w + 0.6, h: H.board.h + 0.6 })}>
+        <span class="ha-board" style={`${box({ x: 0, y: 0, w: H.board.w, h: H.board.h })};--lx:${n3(H.board.lx)};--ly:${n3(H.board.ly)}`}>
+          {H.hoshi.map((p) => <span class="hoshi" style={box({ x: p.x - H.board.x, y: p.y })}></span>)}
         </span>
-        <span class="ha-hand" style={`${xy('', H.hand)};width:calc(${n3(H.hand.w)} * var(--q));height:calc(${n3(H.hand.h)} * var(--q))`}></span>
-        <span class="ha-hl from" style={xy('', H.from)}></span>
-        <span class="ha-hl to" style={xy('', H.to)}></span>
-        {heroPcs.map((p) => {
-          const lb = labels(p.t, p.g, false);
-          return (
-            <span class:list={['pc', p.cls]} style={p.style} data-g={on(p.g)}>
-              <span class="sh">
-                <span class="lb">
+      </span>
+      {H.stands.map((st) => <span class="ha-hand" style={box(st)}></span>)}
+      {H.flashes.map((f) => <span class="ha-ck" data-flash={f.i} data-on={on(f.on)} style={box(f)}></span>)}
+      {H.pieces.map((p) => {
+        const st = p.still;
+        return (
+          <span class="pc" data-hid={p.id} data-g={on(st.g)} data-p={on(st.pr)} style={`translate:calc(${n3(st.x)} * var(--q)) calc(${n3(st.y)} * var(--q));scale:${st.s}`}>
+            <span class="sh">
+              {[labels(p.t, 0, false), p.promotes ? labels(p.t, 0, true) : null].filter((lb) => !!lb).map((lb, i) => (
+                <span class:list={['lb', i ? 'hu' : 'hn']}>
                   <span class:list={['ph', { two: lb.h.length > 1, crown: p.t === 'K' }]} dir="rtl">{p.t === 'K' && <Fragment set:html={crown} />}<span>{lb.h}</span></span>
                   <span class:list={['pcs', lb.cs]} dir="rtl">{lb.c}</span>
                   <span class="pl">{lb.l}</span>
                   <span class="pk" lang="ja">{lb.k}</span>
                 </span>
-              </span>
+              ))}
             </span>
-          );
-        })}
-      </span>
+          </span>
+        );
+      })}
     </span>
   </div>
 </section>
@@ -107,9 +104,11 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
 <script>
   const art = document.querySelector<HTMLElement>('[data-hero-art]');
   if (art) {
-    let seen = !('IntersectionObserver' in window);
-    const run = () => art.toggleAttribute('data-run', seen && !document.hidden);
+    let seen = !('IntersectionObserver' in window), moving = 0;
+    const run = () => art.toggleAttribute('data-run', seen && !moving && !document.hidden);
+    const hold = () => { if (moving) clearTimeout(moving); else art.removeAttribute('data-run'); moving = window.setTimeout(() => { moving = 0; run(); }, 700); };
     if (!seen) new IntersectionObserver(([en]) => { seen = en.isIntersecting; run(); }).observe(art);
+    for (const ev of ['scroll', 'touchstart', 'wheel']) addEventListener(ev, hold, { passive: true });
     document.addEventListener('visibilitychange', run);
     run();
   }
@@ -538,69 +537,31 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   @media (min-width: 900px) { .side-doors { max-width: 520px; } }
   .cue { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; color: var(--muted); font-size: 15px; text-decoration: none; }
   .cue:hover { color: var(--ink); }
-  .hero-art { --play: paused; position: relative; height: 230px; display: grid; place-items: center; order: -1; container-type: size; }
+  .hero-art { --play: paused; position: relative; height: 200px; display: grid; place-items: center; order: -1; container-type: size; }
   .hero-art[data-run] { --play: running; }
-  .ha { --q: min(calc(100cqh / var(--h)), calc(100cqw / var(--w)), 84px); position: relative; width: calc(var(--w) * var(--q)); height: calc(var(--h) * var(--q)); direction: ltr; }
-  .ha-in { position: absolute; inset: 0 calc(-.6 * var(--q)) calc(-.6 * var(--q)) 0;
-    -webkit-mask: linear-gradient(to right, transparent, #000 calc(.8 * var(--q))), linear-gradient(transparent, #000 calc(.7 * var(--q))); -webkit-mask-composite: source-in;
-    mask: linear-gradient(to right, transparent, #000 calc(.8 * var(--q))), linear-gradient(transparent, #000 calc(.7 * var(--q))); mask-composite: intersect; }
-  .ha-board { --gl: max(1px, calc(var(--q) * .024)); position: absolute; left: 0; top: 0; background-color: var(--kaya); border: solid var(--grid); border-width: 0 2px 2px 0; border-radius: 0 0 3px 0; box-shadow: var(--shadow-board);
+  .ha { --q: min(calc(100cqh / var(--h)), calc(100cqw / var(--w)), 72px); position: relative; width: calc(var(--w) * var(--q)); height: calc(var(--h) * var(--q)); direction: ltr; }
+  .ha > span { position: absolute; }
+  .ha-fade { -webkit-mask: linear-gradient(to right, transparent, #000 calc(.55 * var(--q))), linear-gradient(transparent, #000 calc(.4 * var(--q))); -webkit-mask-composite: source-in;
+    mask: linear-gradient(to right, transparent, #000 calc(.55 * var(--q))), linear-gradient(transparent, #000 calc(.4 * var(--q))); mask-composite: intersect; }
+  .ha-board { --gl: max(1px, calc(var(--q) * .024)); position: absolute; background-color: var(--kaya); border: solid var(--grid); border-width: 0 2px 2px 0; border-radius: 0 0 3px 0; box-shadow: var(--shadow-board);
     background-image: linear-gradient(var(--grid) var(--gl), transparent var(--gl)), linear-gradient(90deg, var(--grid) var(--gl), transparent var(--gl));
     background-size: var(--q) var(--q); background-position: calc(var(--lx) * var(--q) - var(--gl) / 2) calc(var(--ly) * var(--q) - var(--gl) / 2); }
   .ha-board .hoshi { width: calc(var(--q) * .11); height: calc(var(--q) * .11); }
-  .ha-hand { position: absolute; left: calc(var(--x) * var(--q)); top: calc(var(--y) * var(--q)); border-radius: 4px; background: var(--kaya); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--grid) 45%, transparent), var(--shadow-board); }
-  .ha-hl { position: absolute; left: calc(var(--x) * var(--q)); top: calc(var(--y) * var(--q)); width: var(--q); height: var(--q); background: color-mix(in srgb, var(--seal) 16%, transparent); opacity: 0; }
-  .ha-hl.from { opacity: 1; }
-  .ha .pc { position: absolute; left: 0; top: 0; width: var(--q); height: var(--q); container-type: size; display: grid; place-items: center; translate: calc(var(--x) * var(--q)) calc(var(--y) * var(--q)); }
-  .ha .held { scale: .82; }
-  .ha .tk { z-index: 1; }
-  .ha .mv { z-index: 2; scale: 1.08; filter: drop-shadow(0 6px 6px rgba(0, 0, 0, .28)); }
-  @media (prefers-reduced-motion: no-preference) {
-    :global(html:not(.tour-on)) .ha { --loop: 7.5s; }
-    :global(html:not(.tour-on)) .ha .mv { animation: ha-mv var(--loop) linear infinite var(--play) both; }
-    :global(html:not(.tour-on)) .ha .tk { animation: ha-tk var(--loop) linear infinite var(--play) both; }
-    :global(html:not(.tour-on)) .ha .tk .sh { animation: ha-turn var(--loop) linear infinite var(--play) both; }
-    :global(html:not(.tour-on)) .ha .tk .sh::after { animation: ha-wood var(--loop) linear infinite var(--play) both; }
-    :global(html:not(.tour-on)) .ha-hl { animation: ha-hl var(--loop) linear infinite var(--play) both; }
-  }
-  @keyframes ha-mv {
-    0%, 12% { translate: calc(var(--fx) * var(--q)) calc(var(--fy) * var(--q)); scale: 1; filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)); opacity: 1; animation-timing-function: ease-in-out; }
-    17% { translate: calc(var(--fx) * var(--q)) calc(var(--fy) * var(--q)); scale: 1.08; filter: drop-shadow(0 6px 6px rgba(0, 0, 0, .28)); opacity: 1; animation-timing-function: var(--ease-out); }
-    35% { translate: calc(var(--tx) * var(--q)) calc(var(--ty) * var(--q)); scale: 1.08; filter: drop-shadow(0 6px 6px rgba(0, 0, 0, .28)); opacity: 1; animation-timing-function: ease-in-out; }
-    39%, 84% { translate: calc(var(--tx) * var(--q)) calc(var(--ty) * var(--q)); scale: 1; filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)); opacity: 1; }
-    90% { translate: calc(var(--tx) * var(--q)) calc(var(--ty) * var(--q)); scale: 1; filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)); opacity: 0; }
-    91% { translate: calc(var(--fx) * var(--q)) calc(var(--fy) * var(--q)); scale: 1; filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)); opacity: 0; }
-    100% { translate: calc(var(--fx) * var(--q)) calc(var(--fy) * var(--q)); scale: 1; filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)); opacity: 1; }
-  }
-  @keyframes ha-tk {
-    0%, 27% { translate: calc(var(--x) * var(--q)) calc(var(--y) * var(--q)); scale: 1; filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)); opacity: 1; animation-timing-function: var(--ease-out); }
-    34%, 40% { translate: calc(var(--ax) * var(--q)) calc(var(--ay) * var(--q)); scale: .94; filter: drop-shadow(0 4px 5px rgba(0, 0, 0, .22)); opacity: 1; animation-timing-function: var(--ease-out); }
-    57%, 84% { translate: calc(var(--hx) * var(--q)) calc(var(--hy) * var(--q)); scale: .82; filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)); opacity: 1; }
-    90% { translate: calc(var(--hx) * var(--q)) calc(var(--hy) * var(--q)); scale: .82; opacity: 0; }
-    91% { translate: calc(var(--x) * var(--q)) calc(var(--y) * var(--q)); scale: 1; opacity: 0; }
-    100% { translate: calc(var(--x) * var(--q)) calc(var(--y) * var(--q)); scale: 1; opacity: 1; }
-  }
-  @keyframes ha-turn {
-    0%, 33% { rotate: 180deg; animation-timing-function: var(--ease-out); }
-    44%, 90% { rotate: 360deg; }
-    91%, 100% { rotate: 180deg; }
-  }
-  @keyframes ha-wood {
-    0%, 35% { background-color: var(--piece-gote); }
-    41%, 90% { background-color: var(--piece); }
-    91%, 100% { background-color: var(--piece-gote); }
-  }
-  @keyframes ha-hl {
-    0%, 33% { opacity: 0; }
-    39%, 84% { opacity: 1; }
-    90%, 100% { opacity: 0; }
-  }
+  .ha-hand { border-radius: 4px; background: var(--kaya); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--grid) 45%, transparent), var(--shadow-board); }
+  .ha-ck { width: var(--q); height: var(--q); background: color-mix(in srgb, var(--seal) 24%, transparent); opacity: 0; }
+  .ha-ck[data-on] { opacity: 1; }
+  .ha .pc { left: 0; top: 0; width: var(--q); height: var(--q); container-type: size; display: grid; place-items: center; }
+  .ha .lb { grid-area: 1 / 1; }
+  .ha .pc .lb.hn { color: var(--piece-ink); }
+  .ha .pc .lb.hu { color: var(--piece-seal); opacity: 0; }
+  .ha .pc[data-p] .lb.hu { opacity: 1; }
+  .ha .pc[data-p] .lb.hn { opacity: 0; }
   @media (min-width: 900px) {
     .know { justify-content: flex-start; max-width: var(--page); }
     .hero { grid-template-columns: 1.1fr .9fr; align-items: center; gap: 56px; padding-block: 48px 16px; min-height: min(600px, calc(100svh - 180px)); }
     .cta .btn { align-self: flex-start; min-width: 360px; }
     .cue { justify-content: flex-start; }
-    .hero-art { height: 420px; order: 2; }
+    .hero-art { height: 360px; order: 2; }
   }
   @media (max-width: 899px) and (max-height: 780px) {
     .hero { gap: 14px; padding-top: 6px; }
