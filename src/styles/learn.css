@@ -150,6 +150,8 @@ html[data-pieces="hebrew"] :is(.learn, .play) piece.king::after {
 :is(.learn, .play) sg-squares sq.selected { background-color: rgba(47, 107, 42, 0.35); }
 :is(.learn, .play) sg-squares sq.check { background: radial-gradient(ellipse at center, rgba(184, 54, 31, 0.9) 0%, rgba(184, 54, 31, 0) 75%); }
 :is(.learn, .play) sg-squares sq.help { background-color: rgba(47, 107, 42, 0.22); box-shadow: inset 0 0 0 2px rgba(47, 107, 42, 0.55); }
+:is(.learn, .play) sg-squares sq.mention { background-color: rgba(201, 138, 20, 0.28); box-shadow: inset 0 0 0 2px rgba(201, 138, 20, 0.85); }
+.learn .sq-ref { padding: 0 3px; border-radius: 4px; background: rgba(201, 138, 20, 0.22); box-shadow: inset 0 -2px 0 rgba(201, 138, 20, 0.85); font-variant-numeric: tabular-nums; }
 :is(.learn, .play) sg-squares sq.star::after {
   content: '★';
   position: absolute; inset: 0;
@@ -237,6 +239,8 @@ html[data-pieces="hebrew"] :is(.learn, .play) piece.king::after {
 .learn__table .title .subtitle { margin: 0; font-size: 16px; line-height: 1.5; }
 .learn__table .status { padding: 16px 18px; min-height: 120px; display: flex; flex-direction: column; justify-content: center; border-bottom: 1px solid var(--rule); }
 .learn__table .goal p { margin: 0; font: 600 18px/1.6 var(--f-body); }
+.learn__table .goal .next-move { margin-top: 10px; padding: 8px 10px; border-radius: 8px; background: rgba(47, 107, 42, 0.12); border-inline-start: 4px solid var(--ok-text); font: 500 16px/1.55 var(--f-body); }
+.learn__table .goal .next-move strong { color: var(--ok-text); }
 .learn__table .goal .counter { margin-top: 8px; font: 500 14px var(--f-body); color: var(--muted); }
 .learn__table .goal .seg { margin-top: 12px; }
 mark.learn-task {
@@ -417,8 +421,10 @@ mark.learn-task {
 .learn__coach .recap ol { margin: 4px 0 14px; padding-inline-start: 1.2em; font: 500 15px/1.55 var(--f-body); }
 .learn__coach .recap li { margin-bottom: 6px; }
 .learn__coach .recap .mv { font-weight: 800; }
+.learn__coach .did { margin: -4px 0 10px; font: 600 15px/1.5 var(--f-body); color: var(--muted); }
+.learn__coach .reply .did { margin: 0 0 4px; }
 .learn__coach .recap .rep { display: block; margin-top: 2px; font-size: 14px; color: var(--muted); }
-.learn__coach .recap .mv.opp::before, .learn__coach .reply .mv::before { content: '△ '; }
+.learn__coach .recap .mv.opp::before, .learn__coach .did.opp::before { content: '△ '; }
 .learn__coach .reply { margin: 0 0 12px; padding: 10px 12px; border-radius: 8px; background: var(--washi-2); }
 .learn__coach .reply p { margin: 0; font: 500 15px/1.55 var(--f-body); }
 .learn__coach .reply .eyebrow { margin-bottom: 2px; }

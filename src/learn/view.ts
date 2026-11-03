@@ -2,7 +2,9 @@
 import { categories, nextStage } from './categories';
 import type LearnCtrl from './ctrl';
 import { i18n, i18nFormat } from './i18n';
-import type { CourseLevel, Stage } from './interfaces';
+import type { CourseLevel, Level, Stage, UsiWithColor } from './interfaces';
+import { nextOrder } from './describe';
+import { createDrawable } from './ground';
 import { ownMoves } from './level';
 import { READ_MORE } from './read-more';
 import { chessNote, hasChessText, isChessRoute, setRoute, stageText } from './route';
@@ -59,6 +61,11 @@ const phaseOf = (categoryKey: string, stageKey?: string): string | undefined => 
 const phaseChip = (phase: string | undefined, stop = false) =>
   phase && el('p', { class: 'phase' }, el('a', { href: '/learn/guide/#phases', onclick: stop ? (e: Event) => e.stopPropagation() : undefined }, i18n(phase)));
 
+function nextLine(level: Level, usiCList: UsiWithColor[]): HTMLElement | null {
+  const order = nextOrder(level, usiCList);
+  return order ? el('p', { class: 'next-move' }, el('strong', {}, i18n('il_nextMove')), ' ', rich(order)) : null;
+}
+
 export function rich(text: string): DocumentFragment {
   const f = document.createDocumentFragment();
   text.split(/(==.+?==)/).forEach((chunk, j) => {
@@ -69,9 +76,10 @@ export function rich(text: string): DocumentFragment {
 }
 function inline(text: string): DocumentFragment {
   const f = document.createDocumentFragment();
-  text.split(/(\*\*[^*]+\*\*|\{\+?[KRBGSNLP]\}|\+?[KRBGSNLP](?:\d\d)?[-x*]\d\d\+?)/).forEach((part, i) => {
+  text.split(/(\*\*[^*]+\*\*|\{\+?[KRBGSNLP]\}|\+?[KRBGSNLP](?:\d\d)?[-x*]\d\d\+?|(?<!\d|\d[./:-])[1-9][1-9](?!\d|[./:-]\d))/).forEach((part, i) => {
     if (!part) return;
     if (i % 2 === 0) f.append(part);
+    else if (/^[1-9][1-9]$/.test(part)) f.append(el('bdi', { dir: 'ltr', class: 'sq-ref' }, part));
     else if (part.startsWith('**')) f.append(el('strong', {}, part.slice(2, -2)));
     else if (part.startsWith('{')) f.append(el('span', { class: 'pchip', 'data-p': part.slice(1, -1), 'aria-hidden': 'true' }));
     else f.append(el('bdi', { dir: 'ltr' }, part));
@@ -409,6 +417,7 @@ function renderLesson(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go, stageLin
     const pieceSwitch = stage.key === 'introduction' && level.id === 1;
     status = el('div', { class: 'goal' },
       el('p', {}, rich(level.goal)),
+      nextLine(level, vm.usiCList),
       pieceSwitch && pieceSetSwitch(),
       level.obstacles?.length
         ? el('p', { class: 'small counter' },
@@ -542,6 +551,14 @@ function levelTips(ctrl: LearnCtrl): Tip[] {
   return tips;
 }
 
+function markSquares(ctrl: LearnCtrl, names: string[]) {
+  const vm = ctrl.vm;
+  if (!vm?.level || !ctrl.shogiground) return;
+  const base = createDrawable(vm.level, vm.usiCList).squares ?? [];
+  const keys = [...new Set(names)].map((n) => `${n[0]}${'abcdefghi'[Number(n[1]) - 1]}` as Key);
+  ctrl.shogiground.setSquareHighlights(base.concat(keys.map((key) => ({ key, className: 'mention' }))));
+}
+
 function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
   const vm = ctrl.vm!;
   const { stage, level } = vm;
@@ -591,6 +608,7 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
   root.classList.toggle('has-coach', coach.open);
   if (!coach.open) {
     box.hidden = true;
+    markSquares(ctrl, []);
     return;
   }
 
@@ -598,7 +616,8 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
   const total = level.why?.length ?? 0;
   const name = (i?: number) => (i === undefined ? undefined : level.moveNames?.[i]);
   const reply = (i: number) => el('div', { class: 'reply' },
-    el('p', { class: 'eyebrow' }, i18n('il_opponentPlayed'), ' ', el('bdi', { dir: 'ltr', class: 'mv' }, level.replyNames?.[i] ?? '')),
+    el('p', { class: 'eyebrow' }, i18n('il_opponentPlayed')),
+    level.replyNames?.[i] ? el('p', { class: 'did opp' }, level.replyNames[i]) : null,
     el('p', {}, rich(level.replies![i])));
   const btn = (label: string, fn: () => void, primary = true, fid = 'coach-main') =>
     el('button', { type: 'button', class: `btn${primary ? ' primary' : ''}`, 'data-fid': fid, 'data-coach-focus': primary, onclick: go(fn) }, label);
@@ -610,14 +629,15 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
       el('h2', {}, i18n('il_coachIntroTitle')),
       el('p', { class: 'lead' }, rich(level.goal)),
       total ? el('p', { class: 'hint' }, i18n(level.replies ? 'il_coachIntroWhyReplies' : 'il_coachIntroWhy')) : null,
+      level.moveOrders && level.id === 1 ? el('p', { class: 'hint' }, rich(i18n('il_squareNames'))) : null,
       !knowsBubble && el('div', { class: 'how' }, icon('bulb'), el('p', {}, rich(i18n('il_coachHow')))),
       isCurrent && el('div', { class: 'buttons' }, btn(i18n('il_start'), () => setOpen(false))),
     ];
   } else if (tip.kind === 'move') {
     const i = tip.idx!;
     body = [
-      el('h2', {}, el('span', { class: 'tick', 'aria-hidden': 'true' }, '✓'), ' ',
-        name(i) ? el('bdi', { dir: 'ltr' }, name(i)!) : i18n('il_goodMove')),
+      el('h2', {}, el('span', { class: 'tick', 'aria-hidden': 'true' }, '✓'), ' ', i18n('il_goodMove')),
+      name(i) ? el('p', { class: 'did' }, name(i)!) : null,
       el('p', { class: 'lead' }, rich(level.why?.[i] ?? '')),
       total > 1 ? steps(i + 1, total) : null,
       isCurrent && el('div', { class: 'buttons' },
@@ -626,7 +646,8 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
   } else if (tip.kind === 'reply') {
     const i = tip.idx!;
     body = [
-      el('h2', {}, i18n('il_opponentPlayed'), ' ', el('bdi', { dir: 'ltr' }, level.replyNames?.[i] ?? '')),
+      el('h2', {}, i18n('il_opponentPlayed')),
+      level.replyNames?.[i] ? el('p', { class: 'did opp' }, level.replyNames[i]) : null,
       el('p', { class: 'lead' }, rich(level.replies![i])),
       isCurrent && el('div', { class: 'buttons' }, btn(i18n('il_yourTurn'), () => setOpen(false))),
     ];
@@ -636,9 +657,9 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
     const recap = level.why && level.moveNames
       ? el('div', { class: 'recap' },
           el('p', { class: 'eyebrow' }, i18n('il_recapTitle')),
-          el('ol', {}, ...level.why.map((w, i) => el('li', {}, el('bdi', { dir: 'ltr', class: 'mv' }, level.moveNames![i]), ' ', rich(w),
+          el('ol', {}, ...level.why.map((w, i) => el('li', {}, el('span', { class: 'mv' }, level.moveNames![i]), ' ', rich(w),
             level.replies?.[i] && level.replyNames?.[i] && i < lastIdx
-              ? el('span', { class: 'rep' }, ' ', el('bdi', { dir: 'ltr', class: 'mv opp' }, level.replyNames[i]), ' ', rich(level.replies[i]))
+              ? el('span', { class: 'rep' }, ' ', el('span', { class: 'mv opp' }, level.replyNames[i]), ' ', rich(level.replies[i]))
               : null))))
       : level.recap
         ? el('div', { class: 'recap' }, el('p', { class: 'eyebrow' }, i18n('il_recapTitle')), el('p', { class: 'lead' }, rich(level.recap)))
@@ -654,7 +675,7 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
         btn(i18n('il_again'), () => ctrl.restartLevel(), false, 'coach-again')),
     ];
   } else {
-    const expected = level.scenario && name(tip.idx);
+    const expected = level.scenario && tip.idx !== undefined ? level.moveOrders?.[tip.idx] : undefined;
     body = [
       el('h2', { class: 'bad' }, i18n('il_wrongTitle')),
       el('p', { class: 'lead' }, expected ? rich(i18nFormat('il_wrongPlan', expected)) : i18n('il_wrongTry')),
@@ -693,6 +714,7 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
   box.setAttribute('aria-modal', 'false');
   box.setAttribute('aria-label', i18n(`il_coach_${tip.kind}`));
   box.replaceChildren(card);
+  markSquares(ctrl, [...card.querySelectorAll<HTMLElement>('.coach-card > .lead .sq-ref, .coach-card > .hint .sq-ref, .coach-card > .did .sq-ref, .coach-card .reply .sq-ref')].map((e) => e.textContent ?? ''));
 
   if (fresh) {
     requestAnimationFrame(() => {
