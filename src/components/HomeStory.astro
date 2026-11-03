@@ -23,6 +23,15 @@ const labels = (t: PieceType, g: 0 | 1, promoted: boolean) => {
     cs: plain.length > 1 ? 'two' : /[♔-♟-]/.test(plain) ? 'sym' : '',
   };
 };
+const n3 = (v: number) => +v.toFixed(3);
+const xy = (k: string, p: { x: number; y: number }) => `--${k}x:${n3(p.x)};--${k}y:${n3(p.y)}`;
+const H = HERO_ART;
+const heroPcs = [
+  ...H.pcs.map((p) => ({ t: p.t, g: p.g, cls: '', style: xy('', p) })),
+  ...H.held.map((p) => ({ t: p.t, g: 0 as const, cls: 'held', style: xy('', p) })),
+  { t: H.took, g: 1 as const, cls: 'tk', style: [xy('', H.to), xy('a', H.aside), xy('h', H.home)].join(';') },
+  { t: H.mover, g: 0 as const, cls: 'mv', style: [xy('', H.mid), xy('f', H.from), xy('t', H.to)].join(';') },
+];
 const finalOf = (key: 'a' | 'b') => {
   const steps = Object.values(BOARD_STORIES[key].steps);
   const last = steps[steps.length - 1];
@@ -58,7 +67,6 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
         <span data-hero-label>{hasTry ? '⟦צפה|צפי⟧ במשחק אחד, מהלך אחרי מהלך' : '⟦התחל|התחילי⟧ בחוקים הבסיסיים'}</span>
         <Fragment set:html={arrow} />
       </a>
-      <p class="small muted note">בלי הרשמה · בחינם · בעברית</p>
     </div>
     <ul class="side-doors">
       {hasChess && <li><a href="/chess/" data-chess-door><Icon name="chess" size={22} /><span><b>⟦משחק|משחקת⟧ שחמט?</b><span>יש לך מסלול משלך</span></span></a></li>}
@@ -66,24 +74,45 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
     </ul>
     <a class="cue" href="#story-1">או ⟦גלול|גללי⟧ למטה, ונכיר את המשחק בדקה<Fragment set:html={down} /></a>
   </div>
-  <div class="hero-art" aria-hidden="true">
-    {HERO_ART.map(([t, x, y, s], i) => {
-      const lb = labels(t, 0, false);
-      return (
-        <span class="pc" style={`--i:${i};--x:${x};--y:${y};--s:${s};z-index:${i === 0 ? 3 : 1}`}>
-          <span class="sh">
-            <span class="lb">
-              <span class:list={['ph', { two: lb.h.length > 1, crown: t === 'K' }]} dir="rtl">{t === 'K' && <Fragment set:html={crown} />}<span>{lb.h}</span></span>
-              <span class:list={['pcs', lb.cs]} dir="rtl">{lb.c}</span>
-              <span class="pl">{lb.l}</span>
-              <span class="pk" lang="ja">{lb.k}</span>
-            </span>
-          </span>
+  <div class="hero-art" aria-hidden="true" data-hero-art>
+    <span class="ha" style={`--w:${n3(H.w)};--h:${n3(H.h)}`}>
+      <span class="ha-in">
+        <span class="ha-board" style={`width:calc(${n3(H.bw)} * var(--q));height:calc(${n3(H.bh)} * var(--q));${xy('l', H.line)}`}>
+          {H.hoshi.map((p) => <span class="hoshi" style={`left:calc(${n3(p.x)} * var(--q));top:calc(${n3(p.y)} * var(--q))`}></span>)}
         </span>
-      );
-    })}
+        <span class="ha-hand" style={`${xy('', H.hand)};width:calc(${n3(H.hand.w)} * var(--q));height:calc(${n3(H.hand.h)} * var(--q))`}></span>
+        <span class="ha-hl from" style={xy('', H.from)}></span>
+        <span class="ha-hl to" style={xy('', H.to)}></span>
+        {heroPcs.map((p) => {
+          const lb = labels(p.t, p.g, false);
+          return (
+            <span class:list={['pc', p.cls]} style={p.style} data-g={on(p.g)}>
+              <span class="sh">
+                <span class="lb">
+                  <span class:list={['ph', { two: lb.h.length > 1, crown: p.t === 'K' }]} dir="rtl">{p.t === 'K' && <Fragment set:html={crown} />}<span>{lb.h}</span></span>
+                  <span class:list={['pcs', lb.cs]} dir="rtl">{lb.c}</span>
+                  <span class="pl">{lb.l}</span>
+                  <span class="pk" lang="ja">{lb.k}</span>
+                </span>
+              </span>
+            </span>
+          );
+        })}
+      </span>
+    </span>
   </div>
 </section>
+
+<script>
+  const art = document.querySelector<HTMLElement>('[data-hero-art]');
+  if (art) {
+    let seen = !('IntersectionObserver' in window);
+    const run = () => art.toggleAttribute('data-run', seen && !document.hidden);
+    if (!seen) new IntersectionObserver(([en]) => { seen = en.isIntersecting; run(); }).observe(art);
+    document.addEventListener('visibilitychange', run);
+    run();
+  }
+</script>
 
 {(['a', 'c', 'b'] as const).map((key, n) => (
   <section data-snap class="scene wrap" id={`story-${n + 1}`} data-newcomer aria-labelledby={`story-${key}-h`}>
@@ -175,8 +204,11 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   <p class="rules-line small rv">⟦מעדיף|מעדיפה⟧ לקרוא? <a href="/rules/">שמונה שיעורים קצרים של חוקים בסיסיים</a></p>
   {hasPlay && (
     <div class="also rv">
-      <b>כבר ⟦יודע|יודעת⟧ לשחק?</b>
-      <span>⟦שחק|שחקי⟧ עכשיו נגד המחשב, עשר רמות. <a href="/play/">⟦שחק|שחקי⟧ עכשיו ←</a><span class="touch-only"> או <a href="/play/?vs=local">שני שחקנים על אותו מכשיר ←</a></span></span>
+      <b>רוצה להתחיל לשחק כבר?</b>
+      <span class="also-go">
+        <a href="/play/">⟦שחק|שחקי⟧ נגד המחשב<Fragment set:html={arrow} /></a>
+        <a class="touch-only" href="/play/?vs=local">שני שחקנים על אותו המכשיר<Fragment set:html={arrow} /></a>
+      </span>
     </div>
   )}
 </section>
@@ -361,7 +393,6 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   .lead { margin: 0; font-size: 19px; line-height: 1.65; color: var(--ink-2); max-width: 30em; }
   .cta { display: flex; flex-direction: column; gap: 8px; padding-top: 6px; }
   .cta .btn { align-self: stretch; }
-  .note { margin: 0; text-align: center; }
   .side-doors { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .side-doors li { display: flex; }
   .side-doors li:only-child { grid-column: 1 / -1; }
@@ -373,26 +404,73 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   @media (min-width: 900px) { .side-doors { max-width: 520px; } }
   .cue { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; color: var(--muted); font-size: 15px; text-decoration: none; }
   .cue:hover { color: var(--ink); }
-  .hero-art { position: relative; height: 230px; display: grid; place-items: center; order: -1; }
-  .hero-art .pc { position: absolute; width: 64px; aspect-ratio: 10 / 11; container-type: inline-size; translate: calc(var(--x) * 110%) calc(var(--y) * 100%); scale: var(--s); }
-  .hero-art .sh { width: 100%; height: 100%; }
+  .hero-art { --play: paused; position: relative; height: 230px; display: grid; place-items: center; order: -1; container-type: size; }
+  .hero-art[data-run] { --play: running; }
+  .ha { --q: min(calc(100cqh / var(--h)), calc(100cqw / var(--w)), 84px); position: relative; width: calc(var(--w) * var(--q)); height: calc(var(--h) * var(--q)); direction: ltr; }
+  .ha-in { position: absolute; inset: 0 calc(-.6 * var(--q)) calc(-.6 * var(--q)) 0;
+    -webkit-mask: linear-gradient(to right, transparent, #000 calc(.8 * var(--q))), linear-gradient(transparent, #000 calc(.7 * var(--q))); -webkit-mask-composite: source-in;
+    mask: linear-gradient(to right, transparent, #000 calc(.8 * var(--q))), linear-gradient(transparent, #000 calc(.7 * var(--q))); mask-composite: intersect; }
+  .ha-board { --gl: max(1px, calc(var(--q) * .024)); position: absolute; left: 0; top: 0; background-color: var(--kaya); border: solid var(--grid); border-width: 0 2px 2px 0; border-radius: 0 0 3px 0; box-shadow: var(--shadow-board);
+    background-image: linear-gradient(var(--grid) var(--gl), transparent var(--gl)), linear-gradient(90deg, var(--grid) var(--gl), transparent var(--gl));
+    background-size: var(--q) var(--q); background-position: calc(var(--lx) * var(--q) - var(--gl) / 2) calc(var(--ly) * var(--q) - var(--gl) / 2); }
+  .ha-board .hoshi { width: calc(var(--q) * .11); height: calc(var(--q) * .11); }
+  .ha-hand { position: absolute; left: calc(var(--x) * var(--q)); top: calc(var(--y) * var(--q)); border-radius: 4px; background: var(--kaya); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--grid) 45%, transparent), var(--shadow-board); }
+  .ha-hl { position: absolute; left: calc(var(--x) * var(--q)); top: calc(var(--y) * var(--q)); width: var(--q); height: var(--q); background: color-mix(in srgb, var(--seal) 16%, transparent); opacity: 0; }
+  .ha-hl.from { opacity: 1; }
+  .ha .pc { position: absolute; left: 0; top: 0; width: var(--q); height: var(--q); container-type: size; display: grid; place-items: center; translate: calc(var(--x) * var(--q)) calc(var(--y) * var(--q)); }
+  .ha .held { scale: .82; }
+  .ha .tk { z-index: 1; }
+  .ha .mv { z-index: 2; scale: 1.08; filter: drop-shadow(0 6px 6px rgba(0, 0, 0, .28)); }
   @media (prefers-reduced-motion: no-preference) {
-    .hero-art .pc { animation: land .9s var(--ease-out) both; animation-delay: calc(var(--i) * 90ms + 150ms); }
+    :global(html:not(.tour-on)) .ha { --loop: 7.5s; }
+    :global(html:not(.tour-on)) .ha .mv { animation: ha-mv var(--loop) linear infinite var(--play) both; }
+    :global(html:not(.tour-on)) .ha .tk { animation: ha-tk var(--loop) linear infinite var(--play) both; }
+    :global(html:not(.tour-on)) .ha .tk .sh { animation: ha-turn var(--loop) linear infinite var(--play) both; }
+    :global(html:not(.tour-on)) .ha .tk .sh::after { animation: ha-wood var(--loop) linear infinite var(--play) both; }
+    :global(html:not(.tour-on)) .ha-hl { animation: ha-hl var(--loop) linear infinite var(--play) both; }
   }
-  @keyframes land { from { opacity: 0; translate: calc(var(--x) * 110%) calc(var(--y) * 100% - 24px); } }
+  @keyframes ha-mv {
+    0%, 12% { translate: calc(var(--fx) * var(--q)) calc(var(--fy) * var(--q)); scale: 1; filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)); opacity: 1; animation-timing-function: ease-in-out; }
+    17% { translate: calc(var(--fx) * var(--q)) calc(var(--fy) * var(--q)); scale: 1.08; filter: drop-shadow(0 6px 6px rgba(0, 0, 0, .28)); opacity: 1; animation-timing-function: var(--ease-out); }
+    35% { translate: calc(var(--tx) * var(--q)) calc(var(--ty) * var(--q)); scale: 1.08; filter: drop-shadow(0 6px 6px rgba(0, 0, 0, .28)); opacity: 1; animation-timing-function: ease-in-out; }
+    39%, 84% { translate: calc(var(--tx) * var(--q)) calc(var(--ty) * var(--q)); scale: 1; filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)); opacity: 1; }
+    90% { translate: calc(var(--tx) * var(--q)) calc(var(--ty) * var(--q)); scale: 1; filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)); opacity: 0; }
+    91% { translate: calc(var(--fx) * var(--q)) calc(var(--fy) * var(--q)); scale: 1; filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)); opacity: 0; }
+    100% { translate: calc(var(--fx) * var(--q)) calc(var(--fy) * var(--q)); scale: 1; filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)); opacity: 1; }
+  }
+  @keyframes ha-tk {
+    0%, 27% { translate: calc(var(--x) * var(--q)) calc(var(--y) * var(--q)); scale: 1; filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)); opacity: 1; animation-timing-function: var(--ease-out); }
+    34%, 40% { translate: calc(var(--ax) * var(--q)) calc(var(--ay) * var(--q)); scale: .94; filter: drop-shadow(0 4px 5px rgba(0, 0, 0, .22)); opacity: 1; animation-timing-function: var(--ease-out); }
+    57%, 84% { translate: calc(var(--hx) * var(--q)) calc(var(--hy) * var(--q)); scale: .82; filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)); opacity: 1; }
+    90% { translate: calc(var(--hx) * var(--q)) calc(var(--hy) * var(--q)); scale: .82; opacity: 0; }
+    91% { translate: calc(var(--x) * var(--q)) calc(var(--y) * var(--q)); scale: 1; opacity: 0; }
+    100% { translate: calc(var(--x) * var(--q)) calc(var(--y) * var(--q)); scale: 1; opacity: 1; }
+  }
+  @keyframes ha-turn {
+    0%, 33% { rotate: 180deg; animation-timing-function: var(--ease-out); }
+    44%, 90% { rotate: 360deg; }
+    91%, 100% { rotate: 180deg; }
+  }
+  @keyframes ha-wood {
+    0%, 35% { background-color: var(--piece-gote); }
+    41%, 90% { background-color: var(--piece); }
+    91%, 100% { background-color: var(--piece-gote); }
+  }
+  @keyframes ha-hl {
+    0%, 33% { opacity: 0; }
+    39%, 84% { opacity: 1; }
+    90%, 100% { opacity: 0; }
+  }
   @media (min-width: 900px) {
     .know { justify-content: flex-start; max-width: var(--page); }
     .hero { grid-template-columns: 1.1fr .9fr; align-items: center; gap: 56px; padding-block: 48px 16px; min-height: min(600px, calc(100svh - 180px)); }
     .cta .btn { align-self: flex-start; min-width: 360px; }
-    .note { text-align: start; }
     .cue { justify-content: flex-start; }
     .hero-art { height: 420px; order: 2; }
-    .hero-art .pc { width: 96px; }
   }
   @media (max-width: 899px) and (max-height: 780px) {
     .hero { gap: 14px; padding-top: 6px; }
     .hero-art { height: 172px; }
-    .hero-art .pc { width: 50px; }
   }
   @media (max-width: 380px) {
     .side-doors a { gap: 8px; padding: 8px 10px; }
@@ -401,8 +479,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   @media (max-width: 899px) and (orientation: landscape) and (max-height: 520px) {
     .hero { grid-template-columns: 1.1fr .9fr; align-items: center; gap: 24px; padding-top: 6px; }
     .hero h1 { font-size: 34px; }
-    .hero-art { height: 250px; order: 2; }
-    .hero-art .pc { width: 58px; }
+    .hero-art { height: min(250px, calc(100svh - 150px)); order: 2; align-self: start; }
   }
 
   .scene { margin-top: 56px; }
@@ -487,7 +564,6 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   :global(html[data-pieces="letters"]) .pl { display: inline; }
   :global(html[data-pieces="kanji"]) .ph { display: none; }
   :global(html[data-pieces="kanji"]) .pk { display: inline; }
-  .hero-art .lb { padding-top: 18%; }
 
   .cap { text-align: center; font-size: 14px; color: var(--muted); margin: 6px 0 0; min-height: 1.6em; }
 
@@ -520,9 +596,14 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   .go { font-weight: 800; color: var(--seal); }
   .pick.main .go { color: color-mix(in srgb, var(--seal) 45%, var(--washi)); }
   .rules-line { margin: 14px 0 0; color: var(--ink-2); }
-  .also { margin-top: 14px; padding: 14px 18px; border-radius: 14px; border: 1px dashed var(--rule); display: grid; gap: 4px; line-height: 1.6; color: var(--ink-2); }
+  .also { margin-top: 14px; padding: 14px 18px 16px; border-radius: 14px; border: 1px dashed var(--rule); display: grid; gap: 10px; line-height: 1.6; color: var(--ink-2); }
   .also b { color: var(--ink); }
-  .also a { font-weight: 700; }
+  .also-go { display: grid; gap: 8px; }
+  .also-go a { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 12px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--rule); color: var(--ink); font-weight: 700; text-decoration: none; transition: box-shadow .15s ease, color .15s ease, transform .16s var(--ease-out); }
+  .also-go a:active { transform: scale(.97); }
+  .also-go :global(svg) { flex: none; width: 18px; height: 18px; color: var(--seal); }
+  @media (hover: hover) and (pointer: fine) { .also-go a:hover { color: var(--seal); box-shadow: inset 0 0 0 1px var(--seal); } }
+  @media (min-width: 600px) { .also-go { display: flex; flex-wrap: wrap; } }
   @media (min-width: 900px) { .choose { grid-template-columns: 1.3fr 1fr 1fr; } }
 
   .comm { display: grid; gap: 12px; padding: 22px; border-radius: 16px; background: var(--washi-2); box-shadow: var(--shadow-1); max-width: 760px; }
