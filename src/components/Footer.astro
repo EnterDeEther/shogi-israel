@@ -1,6 +1,7 @@
 ---
 import { CONTACT_EMAIL, isSection, liveNav } from '../lib/nav';
 import { TOUR_URL } from '../lib/tour';
+import Icon from './Icon.astro';
 
 const year = new Date().getFullYear();
 const items = liveNav();
@@ -13,23 +14,21 @@ const solos = items.filter((i) => !isSection(i));
       {sections.map((s) => (
         <div>
           <h2>{s.label}</h2>
-          <ul>{s.links.map((l) => <li><a href={l.href} rel={l.external ? 'noopener' : undefined}>{l.label}</a></li>)}</ul>
+          <ul>{s.links.map((l) => <li><a href={l.href} rel={l.external ? 'noopener' : undefined}>{s.tour === 'community' && l.icon && <Icon name={l.icon} size={17} class="fi" />}{l.label}</a></li>)}</ul>
         </div>
       ))}
-      {solos.length > 0 && (
-        <div>
-          <h2>עוד</h2>
-          <ul>{solos.map((l) => <li><a href={l.href} rel={l.external ? 'noopener' : undefined}>{l.label}</a></li>)}</ul>
-        </div>
-      )}
-    </nav>
-    <nav aria-label="קישורים משפטיים ומידע" class="legal">
-      <a href={TOUR_URL} data-tour-start>סיור באתר</a>
-      <a href="/accessibility/">הצהרת נגישות</a>
-      <a href="/privacy/">מדיניות פרטיות</a>
-      <a href="/about/#credits">קרדיטים</a>
-      <a href="/about/#contact">⟦צור|צרי⟧ קשר</a>
-      <a href="https://github.com/EnterDeEther/shogi-israel" rel="noopener">קוד המקור (AGPL-3.0)</a>
+      <div>
+        <h2>עוד</h2>
+        <ul>{solos.map((l) => <li><a href={l.href} rel={l.external ? 'noopener' : undefined}>{l.label}</a></li>)}</ul>
+        <ul class="fine">
+          <li><a href={TOUR_URL} data-tour-start>סיור באתר</a></li>
+          <li><a href="/accessibility/">הצהרת נגישות</a></li>
+          <li><a href="/privacy/">מדיניות פרטיות</a></li>
+          <li><a href="/about/#credits">קרדיטים</a></li>
+          <li><a href="/about/#contact">⟦צור|צרי⟧ קשר</a></li>
+          <li><a href="https://github.com/EnterDeEther/shogi-israel" rel="noopener">קוד המקור (AGPL-3.0)</a></li>
+        </ul>
+      </div>
     </nav>
     <p class="small muted">
       <span class="gm">הטקסטים מנוסחים בלשון זכר מטעמי נוחות אך פונים לשני המינים. <button type="button" class="link" data-gender-set="f">לעבור ללשון נקבה</button></span>
@@ -80,8 +79,10 @@ const solos = items.filter((i) => !isSection(i));
   .sitemap a { color: var(--ink); text-decoration: none; min-height: 32px; padding: 4px 0; line-height: 1.3; display: inline-flex; align-items: center; }
   .sitemap a:hover { color: var(--seal); text-decoration: underline; }
   @media (min-width: 900px) { .sitemap { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-  .legal { display: flex; flex-wrap: wrap; gap: 4px 20px; }
-  .legal a { color: var(--ink-2); min-height: 32px; display: inline-flex; align-items: center; }
+  .sitemap :global(.fi) { flex: none; margin-inline-end: 8px; opacity: 0.6; transition: opacity 160ms var(--ease-out); }
+  .sitemap a:hover :global(.fi) { opacity: 1; }
+  .sitemap .fine { margin-top: 4px; }
+  .sitemap .fine a { font-size: 13px; line-height: 1.25; color: var(--ink-2); min-height: 24px; padding: 2px 0; }
   p { margin: 0; line-height: 1.6; }
   .link { appearance: none; background: none; border: 0; padding: 0; font: inherit; color: var(--ink-2); text-decoration: underline; cursor: pointer; min-height: 32px; }
 </style>
