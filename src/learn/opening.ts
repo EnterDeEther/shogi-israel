@@ -4,7 +4,7 @@ import { makeSfen, parseSfen } from 'shogiops/sfen';
 import type { Position } from 'shogiops/variant/position';
 import { makeSquareName, parseUsi } from 'shogiops/util';
 import { i18n, i18nFormat } from './i18n';
-import { describeLine, nextMoveShapes, pieceList } from './describe';
+import { describeLine, hintShown, nextMoveShapes, pieceList } from './describe';
 import type { IncompleteLevel, IncompleteStage, Level, UsiWithColor } from './interfaces';
 import { createLevel } from './level';
 import { scenarioFailure, scenarioSuccess } from './assert';
@@ -114,9 +114,7 @@ export function whatIfStage(d: WhatIfStage): IncompleteStage {
       failure: scenarioFailure,
       scenario: createScenario(slice, 'sente', true),
       drawShapes: (level: Level, usiCList: UsiWithColor[]) =>
-        usiCList.length
-          ? nextMoveShapes(level, usiCList)
-          : 'from' in mistake ? [arrow(makeSquareName(mistake.from), makeSquareName(mistake.to), 'red')] : [],
+        [...(usiCList.length || !('from' in mistake) ? [] : [arrow(makeSquareName(mistake.from), makeSquareName(mistake.to), 'red')]), ...nextMoveShapes(level, usiCList)],
       why: l.why,
       moveOrders: text.orders,
       moveNames: text.done,
@@ -158,8 +156,8 @@ export function castleStage(d: CastleStage): IncompleteStage {
         const there = now.board.get(to);
         if (there?.color === piece.color && there.role === piece.role) return [];
         const home = now.board.get(from);
-        return home?.color === piece.color && home.role === piece.role
-          ? [arrow(makeSquareName(from), makeSquareName(to))]
+        return hintShown(level, usiCList) && home?.color === piece.color && home.role === piece.role
+          ? [circle(makeSquareName(to)), arrow(makeSquareName(from), makeSquareName(to))]
           : [circle(makeSquareName(to))];
       });
     };

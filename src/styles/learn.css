@@ -241,6 +241,8 @@ html[data-pieces="hebrew"] :is(.learn, .play) piece.king::after {
 .learn__table .goal p { margin: 0; font: 600 18px/1.6 var(--f-body); }
 .learn__table .goal .next-move { margin-top: 10px; padding: 8px 10px; border-radius: 8px; background: rgba(47, 107, 42, 0.12); border-inline-start: 4px solid var(--ok-text); font: 500 16px/1.55 var(--f-body); }
 .learn__table .goal .next-move strong { color: var(--ok-text); }
+.learn__table .goal .learn__hint { margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; font: 600 14px var(--f-body); }
+.learn__table .goal .learn__hint svg { width: 18px; height: 18px; }
 .learn__table .goal .counter { margin-top: 8px; font: 500 14px var(--f-body); color: var(--muted); }
 .learn__table .goal .seg { margin-top: 12px; }
 mark.learn-task {

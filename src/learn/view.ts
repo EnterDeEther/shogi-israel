@@ -3,7 +3,7 @@ import { categories, nextStage } from './categories';
 import type LearnCtrl from './ctrl';
 import { i18n, i18nFormat } from './i18n';
 import type { CourseLevel, Level, Stage, UsiWithColor } from './interfaces';
-import { nextOrder } from './describe';
+import { hintShown, nextOrder } from './describe';
 import { createDrawable } from './ground';
 import { ownMoves } from './level';
 import { READ_MORE } from './read-more';
@@ -60,6 +60,16 @@ const LEVEL_KEY: Record<CourseLevel, string> = { beginner: 'il_courseBeginner', 
 const phaseOf = (categoryKey: string, stageKey?: string): string | undefined => (stageKey && PHASE_BY_STAGE[stageKey]) || PHASE_BY_CATEGORY[categoryKey];
 const phaseChip = (phase: string | undefined, stop = false) =>
   phase && el('p', { class: 'phase' }, el('a', { href: '/learn/guide/#phases', onclick: stop ? (e: Event) => e.stopPropagation() : undefined }, i18n(phase)));
+
+function hintButton(ctrl: LearnCtrl, go: Go): HTMLElement | null {
+  const { level, usiCList } = ctrl.vm!;
+  if (!level.moveOrders && !level.line) return null;
+  const turn = level.scenario ? !!nextOrder(level, usiCList) : true;
+  if (!turn) return null;
+  const shown = hintShown(level, usiCList);
+  return el('button', { type: 'button', class: 'btn learn__hint', 'data-fid': 'hint', disabled: shown, onclick: go(() => ctrl.hint()) },
+    icon('bulb'), i18n(shown ? 'il_hintShown' : 'il_hint'));
+}
 
 function nextLine(level: Level, usiCList: UsiWithColor[]): HTMLElement | null {
   const order = nextOrder(level, usiCList);
@@ -418,6 +428,7 @@ function renderLesson(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go, stageLin
     status = el('div', { class: 'goal' },
       el('p', {}, rich(level.goal)),
       nextLine(level, vm.usiCList),
+      hintButton(ctrl, go),
       pieceSwitch && pieceSetSwitch(),
       level.obstacles?.length
         ? el('p', { class: 'small counter' },

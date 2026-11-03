@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test';
 import { stages } from '../src/learn/categories';
-import { nextMoveShapes, nextOrder } from '../src/learn/describe';
+import { hintShapes, nextMoveShapes, nextOrder } from '../src/learn/describe';
 import he from '../src/learn/i18n/he.json';
 
 const NOTATION = /\+?[KRBGSNLP](?:\d\d)?[-x*]\d\d\+?/;
@@ -13,7 +13,7 @@ test('lesson texts never use move notation', () => {
   for (const [k, v] of Object.entries(he)) if (k.startsWith('il_') && typeof v === 'string') expect(v, k).not.toMatch(NOTATION);
 });
 
-test('every guided move has a Hebrew order and an arrow', () => {
+test('every guided move has a Hebrew order, and the arrow waits for the hint button', () => {
   let guided = 0;
   for (const s of stages)
     for (const l of s.levels) {
@@ -27,7 +27,9 @@ test('every guided move has a Hebrew order and an arrow', () => {
         const order = nextOrder(l, done);
         expect(order, `${s.key} #${l.id} ply ${i}`).toBeTruthy();
         expect(order!).toMatch(/^⟦/);
-        if (s.key !== 'whatIf' || i > 0) expect(nextMoveShapes(l, done).length, `${s.key} #${l.id} ply ${i}`).toBe(1);
+        expect(hintShapes(l, done).length, `${s.key} #${l.id} ply ${i}`).toBe(1);
+        expect(nextMoveShapes(l, done).length, `${s.key} #${l.id} ply ${i}`).toBe(0);
+        expect(order!).not.toMatch(/חץ|עיגול/);
         guided++;
       }
     }

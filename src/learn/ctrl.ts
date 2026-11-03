@@ -6,6 +6,7 @@
 
 import type { Api } from 'shogiground/api';
 import { Shogiground } from 'shogiground/shogiground';
+import { showHint } from './describe';
 import type { Piece } from 'shogiground/types';
 import { opposite } from 'shogiground/util';
 import { shogigroundDropDests, shogigroundMoveDests } from 'shogiops/compat';
@@ -220,6 +221,12 @@ export default class LearnCtrl {
     this.applyOpponentMoveOrDrop();
     this.settle();
     this.redraw();
+  }
+
+  hint(): void {
+    if (!this.vm) return;
+    showHint(this.vm.level, this.vm.usiCList);
+    this.refreshBoard();
   }
 
   retryMove(): void {
