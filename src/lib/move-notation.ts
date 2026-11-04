@@ -12,5 +12,5 @@ const KANJI: Record<string, string> = {
 export function localMove(move: string, set: PieceSet = currentPieceSet()): string {
   const map = set === 'hebrew' ? HEBREW : set === 'kanji' ? KANJI : null;
   if (!map) return move;
-  return move.replace(/^(\+?[KRBGSNLP])/, (p) => map[p] ?? p);
+  return move.replace(/^(\+?[KRBGSNLP])(\d\d(?=[-x]))?/, (_, p: string, from?: string) => (map[p] ?? p) + (from ? `-${from}` : ''));
 }
