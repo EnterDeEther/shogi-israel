@@ -29,6 +29,13 @@
   .play { grid-template-columns: minmax(0, var(--bmax)) minmax(280px, 340px); }
   .play__board { max-width: var(--bmax); }
 }
+@media (min-width: 860px) and (hover: hover) and (pointer: fine) {
+  .play-island { --sgfit: clamp(360px, calc(100svh - 246px), 574px); }
+  .play-island .play { grid-template-columns: minmax(0, calc(var(--sgfit) + 26px)) minmax(280px, 340px); justify-content: center; }
+  .play-island .play__board { max-width: calc(var(--sgfit) + 26px); }
+  .play-island .replay .moves-box { height: clamp(48px, calc(var(--sgfit) - 360px), 220px); }
+}
+
 .play__sg.sg-wrap { border: 2px solid var(--grid); border-radius: 2px; box-shadow: var(--shadow-board); }
 .play__sgbox { position: relative; }
 .play__board:focus { outline: none; }
