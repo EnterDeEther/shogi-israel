@@ -496,6 +496,7 @@ export function render(ctrl: PlayCtrl, root: HTMLElement, openSettings: () => vo
   if (wasSetup && overlay.hidden) {
     const frame = ctrl.local ? q('[data-seat="top"]') : q('.play__board');
     requestAnimationFrame(() => {
+      if (!touch && matchMedia('(min-width: 860px)').matches) { if (window.scrollY > 0) window.scrollTo({ top: 0 }); return; }
       if (frame.getBoundingClientRect().top < (document.querySelector('.site-header')?.clientHeight ?? 0)) frame.scrollIntoView({ block: 'start' });
     });
   }
