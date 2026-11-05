@@ -505,8 +505,8 @@ export function render(ctrl: PlayCtrl, root: HTMLElement, openSettings: () => vo
   bar.hidden = support !== 'ok' && !touch;
   bar.replaceChildren(
     (ctrl.setupOpen && draft ? draft.mode === 'local' : ctrl.local)
-      ? el('p', { class: 'play__what' }, el('strong', {}, 'שני שחקנים'), ' · מכשיר אחד')
-      : el('p', { class: 'play__what' }, el('strong', {}, 'נגד המחשב'), ctrl.record && !ctrl.setupOpen ? ` · רמה ${ctrl.level.level}` : null),
+      ? el('p', { class: 'play__what' }, el('strong', {}, 'שני שחקנים'), ctrl.syncedFromAccount && !ctrl.setupOpen ? ' · ממשיכים מהמכשיר השני' : ' · מכשיר אחד')
+      : el('p', { class: 'play__what' }, el('strong', {}, 'נגד המחשב'), ctrl.record && !ctrl.setupOpen ? (ctrl.syncedFromAccount ? ' · ממשיכים מהמכשיר השני' : ` · רמה ${ctrl.level.level}`) : null),
     el('button', {
       type: 'button', class: 'btn play__new', 'data-fid': 'top-new', disabled: ctrl.setupOpen,
       onclick: go(() => ctrl.openSetup()),

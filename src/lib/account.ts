@@ -229,6 +229,7 @@ export function startSync() {
   document.addEventListener('shogi-il:game-end', () => { void syncGames(); later(); });
   void syncProgress();
   void syncGames();
+  void import('./open-game-sync').then((m) => m.startOpenGameSync());
   void touchLastSeen();
   void getSession().then((s) => s && syncGender(s));
 }

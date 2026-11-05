@@ -465,6 +465,7 @@ const DESK_SETTINGS: NavLink = { href: '/settings/', label: 'הגדרות' };
   refresh();
   document.addEventListener('progress-synced', () => void courseLink());
   document.addEventListener('shogi-il:game-end', playLink);
+  document.addEventListener('shogi-il:open-game-synced', playLink);
   addEventListener('pageshow', refresh);
   addEventListener('storage', (e) => { if (!e.key || e.key.startsWith('shogi-il.')) refresh(); });
 </script>
