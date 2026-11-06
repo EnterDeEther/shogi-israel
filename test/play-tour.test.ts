@@ -22,8 +22,8 @@ describe('play tour', () => {
 
   test('uses the glossary words and only promises what the page does', () => {
     const text = JSON.stringify([PLAY_TOUR, TIP_TEXT]);
-    for (const w of ['הצנחה', 'הכתרה', 'לכדת']) expect(text).toContain(w);
-    for (const w of ['מוכתר', 'בהיר', 'כהה', 'להניח']) expect(text).not.toContain(w);
+    for (const w of ['הצנחה', 'הכתרה', 'לכדת', 'אזור ההכתרה']) expect(text).toContain(w);
+    for (const w of ['מוכתר', 'בהיר', 'כהה', 'להניח', 'במקום מהלך']) expect(text).not.toContain(w);
     expect(PLAY_TOUR.intro.title).toBe('פעם ראשונה כאן?');
     expect(PLAY_TOUR.intro.primary).toBe('לסיור');
     expect(PLAY_TOUR.intro.secondary).toBe('ישר למשחק');
