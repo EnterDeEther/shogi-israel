@@ -27,11 +27,11 @@ const CLOSE_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" 
 
 let running = false;
 
-export function startTour(id: TourId, from?: HTMLElement | null): void {
-  if (running) return;
+export function startTour(id: TourId, from?: HTMLElement | null, opts: { at?: number } = {}): boolean {
+  if (running) return false;
   const tour = TOURS[id];
   const steps = stepsFor(tour.steps, (t) => find(t) !== null);
-  if (steps.length === 0) return;
+  if (steps.length === 0) return false;
   running = true;
   const root = document.documentElement;
   const firstTime = readTourEnd(store(), id) === null;
@@ -131,9 +131,10 @@ export function startTour(id: TourId, from?: HTMLElement | null): void {
       actions.append(back, h('button', { type: 'button', class: 'btn', 'data-act': 'next' }, 'הבא'));
       card.append(actions, h('button', { type: 'button', class: 'tour-skip', 'data-act': 'skip' }, '⟦דלג|דלגי⟧ על הסיור'));
     } else {
-      const next = nextStepLink();
+      const next = tour.end.stay ? { href: '', label: '' } : nextStepLink();
       card.append(h('h2', { class: 'tour-title', id: 'tour-title' }, tour.end.title), h('p', { class: 'tour-body', id: 'tour-body' }, tour.end.body));
-      actions.append(h('button', { type: 'button', class: 'btn btn-ghost', 'data-act': 'done' }, tour.end.secondary), h('a', { class: 'btn', href: next.href, 'data-act': 'finish' }, next.label));
+      if (tour.end.stay) actions.append(h('span'), h('button', { type: 'button', class: 'btn', 'data-act': 'done' }, tour.end.primary));
+      else actions.append(h('button', { type: 'button', class: 'btn btn-ghost', 'data-act': 'done' }, tour.end.secondary), h('a', { class: 'btn', href: next.href, 'data-act': 'finish' }, next.label));
       card.append(actions);
     }
   }
@@ -160,7 +161,7 @@ export function startTour(id: TourId, from?: HTMLElement | null): void {
     root.classList.remove('tour-on');
     if (!keepMenu) setMenu(false);
     writeTourEnd(store(), how, id);
-    document.dispatchEvent(new CustomEvent('tour-end', { detail: { id, how } }));
+    document.dispatchEvent(new CustomEvent('tour-end', { detail: { id, how, at } }));
     if (how === 'left') return;
     if (from?.isConnected) from.focus({ preventScroll: true });
     if (how === 'skipped' && firstTime) note(tour.again);
@@ -210,8 +211,9 @@ export function startTour(id: TourId, from?: HTMLElement | null): void {
 
   addEventListener('keydown', onKey, true);
   addEventListener('resize', onResize);
-  show(-1);
+  show(opts.at ?? -1);
   loop();
+  return true;
 }
 
 function note(text: string) {

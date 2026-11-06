@@ -240,3 +240,10 @@
   .play .ruser.seat { padding: 6px 8px; gap: 6px; }
   .seat-btn { padding: 0 7px; font-size: 12px; }
 }
+.play__zone { position: absolute; pointer-events: none; }
+.play .play-tip { padding: 12px 14px; border-bottom: 1px solid var(--rule); background: var(--washi-2); }
+.play .play-tip strong { display: block; margin-bottom: 4px; font-size: 17px; }
+.play .play-tip p { margin: 0 0 10px; line-height: 1.6; }
+.play .play-tip .btn { min-height: 40px; }
+@media (max-width: 859.98px) { .play .table-box > .play-tip { order: 0; } }
+.learn__settings .tour-row { margin: 4px 0 12px; }

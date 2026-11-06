@@ -11,6 +11,7 @@ export interface TourCard {
   body: string;
   primary: string;
   secondary: string;
+  stay?: boolean;
 }
 
 export interface Tour {
@@ -169,9 +170,59 @@ export const APP_TOUR: Tour = {
   },
 };
 
-export type TourId = 'site' | 'account' | 'app';
-export const TOURS: Record<TourId, Tour> = { site: SITE_TOUR, account: ACCOUNT_TOUR, app: APP_TOUR };
-export const isTourId = (v: string | null | undefined): v is TourId => v === 'site' || v === 'account' || v === 'app';
+export const PLAY_TOUR: Tour = {
+  name: 'סיור בעמוד',
+  again: 'אפשר לחזור לסיור מההגדרות, בשורה "סיור בעמוד".',
+  intro: {
+    title: 'פעם ראשונה כאן?',
+    body: () => 'סיור קצר בעמוד: מה כל דבר עושה. פחות מדקה. המשחק מחכה, והשעון לא רץ.',
+    primary: 'לסיור',
+    secondary: 'ישר למשחק',
+  },
+  steps: [
+    {
+      target: 'play-armies',
+      title: 'שני הצבאות',
+      body: 'הכלים שלך למטה. הכלים של המחשב למעלה והפוכים: החוד של כל כלי מצביע לכיוון היריב.',
+    },
+    {
+      target: 'play-hand',
+      title: 'היד שלך',
+      body: 'כלי שלכדת מגיע לכאן ועובר לצד שלך. לחיצה עליו ואז על משבצת פנויה: זו הצנחה, והיא המהלך שלך בתור הזה.',
+    },
+    {
+      target: 'play-zone',
+      title: 'אזור ההכתרה',
+      body: 'שלוש השורות האחרונות הן אזור ההכתרה. כלי שנכנס אליהן יכול לעבור הכתרה: הוא הופך לכלי חזק יותר, ומסומן באדום.',
+    },
+    {
+      target: 'play-tools',
+      title: 'הכפתורים',
+      body: 'החזרת מהלך: לקחת מהלך חזרה. הפיכת הלוח: לראות מהצד השני. כניעה: להודות בהפסד ולסיים את המשחק. משחק חדש. הגדרות: סימון הכלים, מראה האתר, נקודות, צלילים, והסיור הזה.',
+    },
+    {
+      target: 'play-moves',
+      title: 'רשימת המהלכים',
+      body: 'כל המהלכים נרשמים כאן. לחיצה על מהלך מראה את הלוח כמו שהיה אז, בלי לבטל שום דבר. KIF: רישום המשחק, להורדה או להעתקה.',
+    },
+    {
+      target: 'play-pieces',
+      title: 'סימון הכלים',
+      body: 'כאן מחליפים את הסימון על הכלים: עברית, שחמט, אנגלית או קאנג׳י. המשחק עצמו לא משתנה.',
+    },
+  ],
+  end: {
+    title: 'זהו, ⟦אתה|את⟧ ⟦מוכן|מוכנה⟧',
+    body: 'אפשר לפתוח את הסיור שוב מההגדרות, בשורה "סיור בעמוד".',
+    primary: 'למשחק',
+    secondary: 'סגירה',
+    stay: true,
+  },
+};
+
+export type TourId = 'site' | 'account' | 'app' | 'play';
+export const TOURS: Record<TourId, Tour> = { site: SITE_TOUR, account: ACCOUNT_TOUR, app: APP_TOUR, play: PLAY_TOUR };
+export const isTourId = (v: string | null | undefined): v is TourId => v === 'site' || v === 'account' || v === 'app' || v === 'play';
 
 export const stepsFor = (steps: TourStep[], has: (target: string) => boolean): TourStep[] => steps.filter((s) => has(s.target));
 

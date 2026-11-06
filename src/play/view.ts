@@ -13,6 +13,7 @@ import { recordKif } from './record-kif';
 import { scrollWithin } from '../lib/scroll-within';
 import { isAndroid, isInApp } from '../lib/install';
 import { countAd } from '../lib/ad-count';
+import { TIP_TEXT, newHere, playTour, welcomeTips } from './tour';
 
 const SIDE: Record<Color, string> = { sente: 'פותח', gote: 'משיב' };
 const MARK: Record<Color, string> = { sente: '☗', gote: '☖' };
@@ -234,12 +235,22 @@ function controls(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void, op
       tool('cog', 'הגדרות', openSettings),
     );
   }
-  return el('div', { class: 'tools', role: 'group', 'aria-label': 'פעולות במשחק' },
+  return el('div', { class: 'tools', role: 'group', 'aria-label': 'פעולות במשחק', 'data-tour': 'play-tools' },
     tool('undo', 'החזרת מהלך', () => ctrl.takeback(), { disabled: !ctrl.takebackPlies }),
     tool('flip', 'הפיכת הלוח', () => ctrl.flip()),
     tool('flag', 'כניעה', () => ctrl.resign(), { disabled: !ctrl.playing }),
     tool('plus', 'משחק חדש', () => ctrl.openSetup()),
     tool('cog', 'הגדרות', openSettings),
+  );
+}
+
+function tipBox(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void): HTMLElement | null {
+  if (!ctrl.tip || ctrl.local) return null;
+  const { title, body } = TIP_TEXT[ctrl.tip];
+  return el('div', { class: 'play-tip', role: 'status' },
+    el('strong', {}, title),
+    el('p', {}, body),
+    el('button', { type: 'button', class: 'btn', 'data-fid': 'tip-ok', onclick: go(() => ctrl.dismissTip()) }, 'הבנתי'),
   );
 }
 
@@ -420,7 +431,12 @@ function setupScreen(ctrl: PlayCtrl, draft: PlaySettings, go: (fn: () => void) =
     seg('שעון', CLOCKS.map((c) => ({ label: c.label, value: c.value })), draft.clock, (v) => (draft.clock = v), 'clocks'),
     clockHelp(),
     el('div', { class: 'buttons' },
-      el('button', { type: 'button', class: 'btn primary big', 'data-autofocus': true, 'data-fid': 'start', onclick: go(() => ctrl.newGame({ ...draft })) }, 'מתחילים'),
+      el('button', { type: 'button', class: 'btn primary big', 'data-autofocus': true, 'data-fid': 'start', onclick: go(() => {
+        const first = !local && newHere(ctrl);
+        if (first) welcomeTips();
+        ctrl.newGame({ ...draft });
+        if (first) void playTour(ctrl, true);
+      }) }, 'מתחילים'),
       waiting
         ? el('button', { type: 'button', class: 'link', 'data-fid': 'resume-other', onclick: go(() => ctrl.switchTo(draft.mode)) }, `או להמשיך את המשחק השמור (${openGameText(waiting)})`)
         : null,
@@ -549,15 +565,16 @@ export function render(ctrl: PlayCtrl, root: HTMLElement, openSettings: () => vo
   const movesScroll = table.querySelector('[data-moves]')?.scrollTop;
   table.replaceChildren(
     el('div', { class: 'table-box' },
+      tipBox(ctrl, go),
       ctrl.local ? null : playerRow(ctrl, top),
-      el('div', { class: 'replay' },
+      el('div', { class: 'replay', 'data-tour': 'play-moves' },
         el('div', { class: 'moves-head' }, el('strong', {}, 'מהלכים'), kifMenu(ctrl)),
         moveList(ctrl, go), navButtons(ctrl, go)),
       status(ctrl, go),
       controls(ctrl, go, openSettings),
       ctrl.local ? null : playerRow(ctrl, bottom),
     ),
-    el('div', { class: 'pieces-switch' }, pieceSetSwitch(), tipEl('pieces')),
+    el('div', { class: 'pieces-switch', 'data-tour': 'play-pieces' }, pieceSetSwitch(), tipEl('pieces')),
   );
   const box = table.querySelector<HTMLElement>('[data-moves]');
   if (box) {
