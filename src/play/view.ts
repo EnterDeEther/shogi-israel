@@ -14,6 +14,7 @@ import { scrollWithin } from '../lib/scroll-within';
 import { isAndroid, isInApp } from '../lib/install';
 import { countAd } from '../lib/ad-count';
 import { TIP_TEXT, newHere, playTour, welcomeTips } from './tour';
+import { currentPieceSet } from '../lib/piece-set';
 
 const SIDE: Record<Color, string> = { sente: 'פותח', gote: 'משיב' };
 const MARK: Record<Color, string> = { sente: '☗', gote: '☖' };
@@ -350,10 +351,11 @@ function status(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void): HTM
         el('button', { type: 'button', class: 'link', onclick: go(() => ctrl.openSetup()) }, 'הגדרות משחק'),
       ),
       kifButtons(ctrl),
-      local ? null : el('p', { class: 'small', 'data-signed-out-only': '' },
-        won ? 'כל הכבוד! ' : '', el('a', { href: '/account/?mode=signup' }, '⟦פתח|פתחי⟧ חשבון בחינם'), ' כדי לשמור את המשחקים שלך ולהתקדם במסלול, בכל מכשיר.'),
+      local ? null : el('div', { class: 'signup', 'data-signed-out-only': '' },
+        el('p', {}, won ? 'כל הכבוד! ' : '', 'בחשבון חינמי הרמה שהגעת אליה והמשחקים שלך נשמרים, בכל מכשיר.'),
+        el('a', { class: 'btn', href: '/account/?mode=signup', 'data-fid': 'signup' }, 'פתיחת חשבון בחינם')),
       won ? shareButton({ title: `ניצחתי את המחשב ברמה ${ctrl.level.level}`, sub: 'שוגי, השחמט היפני. משחקים בעברית ובחינם', kanji: '勝', path: '/play/' }, 'shogi-israel-win.png', 'btn share') : null,
-      local ? null : nextInCourse(),
+      local ? null : nextInCourse() ?? chessLink(),
     );
   }
   if (ctrl.engineError) {
@@ -451,6 +453,11 @@ function setupScreen(ctrl: PlayCtrl, draft: PlaySettings, go: (fn: () => void) =
       ? el('p', { class: 'small muted' }, sameKind ? 'משחק חדש יחליף את המשחק הנוכחי.' : 'המשחק הנוכחי נשמר, ואפשר לחזור אליו.')
       : null,
   );
+}
+
+function chessLink(): HTMLElement | null {
+  if (currentPieceSet() !== 'chess') return null;
+  return el('p', { class: 'small next-in-course' }, 'מה עוד שונה מהשחמט? ', el('a', { href: '/chess/', 'data-fid': 'chess-page' }, 'לעמוד לשחקני שחמט'));
 }
 
 function copyLink(): HTMLElement {
