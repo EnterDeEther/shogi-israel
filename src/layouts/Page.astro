@@ -1,9 +1,9 @@
 ---
 import Base from './Base.astro';
-interface Props { title: string; description: string; eyebrow?: string; updated?: string; piecesDefault?: 'chess' }
-const { title, description, eyebrow, updated, piecesDefault } = Astro.props;
+interface Props { title: string; description: string; eyebrow?: string; updated?: string; piecesDefault?: 'chess'; tabTitle?: string }
+const { title, description, eyebrow, updated, piecesDefault, tabTitle } = Astro.props;
 ---
-<Base title={title} description={description} piecesDefault={piecesDefault}>
+<Base title={title} description={description} piecesDefault={piecesDefault} tabTitle={tabTitle}>
   <div class="wrap page">
     {eyebrow && <p class="eyebrow">{eyebrow}</p>}
     <h1>{title}</h1>
