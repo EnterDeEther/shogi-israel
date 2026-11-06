@@ -11,6 +11,7 @@ import { engineLabel, getLevel, levels } from './levels';
 import { highestBeaten, openGameText, savedGame, touchDevice } from './record';
 import { recordKif } from './record-kif';
 import { scrollWithin } from '../lib/scroll-within';
+import { isAndroid, isInApp } from '../lib/install';
 
 const SIDE: Record<Color, string> = { sente: 'פותח', gote: 'משיב' };
 const MARK: Record<Color, string> = { sente: '☗', gote: '☖' };
@@ -397,7 +398,7 @@ function setupScreen(ctrl: PlayCtrl, draft: PlaySettings, go: (fn: () => void) =
         modeBtn('ai', 'נגד המחשב', '10 רמות', ctrl.aiBlocked),
         modeBtn('local', 'שני שחקנים', 'מכשיר אחד'))
       : null,
-    ctrl.aiBlocked ? el('p', { class: 'small muted' }, 'הדפדפן הזה לא מריץ את המחשב, אבל אפשר לשחק בו שני שחקנים על מכשיר אחד.') : null,
+    ctrl.aiBlocked ? (isInApp() ? inAppNote() : el('p', { class: 'small muted' }, 'הדפדפן הזה לא מריץ את המחשב, אבל אפשר לשחק בו שני שחקנים על מכשיר אחד.')) : null,
     local
       ? el('div', { class: 'local-how' },
         el('span', { class: 'mini-board', 'aria-hidden': 'true' }, el('span', {}, '☖ משיב'), el('i'), el('span', {}, '☗ פותח')),
@@ -436,6 +437,23 @@ function copyLink(): HTMLElement {
     navigator.clipboard?.writeText(location.href).then(() => { btn.textContent = 'הקישור הועתק. ⟦הדבק|הדביקי⟧ אותו בדפדפן'; }, () => {});
   });
   return btn;
+}
+
+function inAppNote(): HTMLElement {
+  const android = isAndroid();
+  const here = `${location.host}${location.pathname}${location.search}`;
+  return el('div', { class: 'inapp-note', role: 'note' },
+    el('strong', {}, android ? 'עוד לחיצה אחת ומשחקים נגד המחשב' : 'עוד צעד קטן ומשחקים נגד המחשב'),
+    el('p', {}, `הדפדפן שבתוך האפליקציה לא מריץ את המחשב. ${android ? 'ב־Chrome' : 'בדפדפן הרגיל'} זה עובד, בחינם ובלי הרשמה.`),
+    android
+      ? el('a', { class: 'btn primary', href: `intent://${here}#Intent;scheme=https;package=com.android.chrome;end`, 'data-fid': 'open-chrome' }, 'פתיחה ב־Chrome')
+      : null,
+    el('p', { class: 'small' }, android
+      ? 'אם הכפתור לא עובד: ⟦לחץ|לחצי⟧ על ⋮ למעלה ⟦ובחר|ובחרי⟧ פתיחה בדפדפן.'
+      : '⟦לחץ|לחצי⟧ על ⋯ ⟦ובחר|ובחרי⟧ פתיחה בדפדפן.'),
+    copyLink(),
+    el('p', { class: 'small muted' }, 'בינתיים אפשר לשחק כאן שני שחקנים על מכשיר אחד.'),
+  );
 }
 
 function unsupported(reason: 'isolation' | 'wasm'): HTMLElement {
@@ -497,7 +515,9 @@ export function render(ctrl: PlayCtrl, root: HTMLElement, openSettings: () => vo
     const frame = ctrl.local ? q('[data-seat="top"]') : q('.play__board');
     requestAnimationFrame(() => {
       if (!touch && matchMedia('(min-width: 860px)').matches) { if (window.scrollY > 0) window.scrollTo({ top: 0 }); return; }
-      if (frame.getBoundingClientRect().top < (document.querySelector('.site-header')?.clientHeight ?? 0)) frame.scrollIntoView({ block: 'start' });
+      const head = document.querySelector('.site-header')?.clientHeight ?? 0;
+      const top = frame.getBoundingClientRect().top;
+      if (top < head) window.scrollTo({ top: Math.max(0, window.scrollY + top - head - 8) });
     });
   }
 

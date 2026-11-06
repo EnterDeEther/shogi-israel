@@ -76,9 +76,22 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
       (function () {
         var root = document.documentElement;
         var pref = '';
+        var askedChess = /[?&]pieces=chess(?:&|$)/.test(location.search);
+        var preloadChess = function () {
+          var l = document.createElement('link');
+          l.rel = 'preload';
+          l.as = 'font';
+          l.type = 'font/woff2';
+          l.crossOrigin = 'anonymous';
+          l.href = '/fonts/chess-pieces.woff2';
+          document.head.appendChild(l);
+        };
         try {
           localStorage.removeItem('pieces');
           var pieces = localStorage.getItem('pieceSet');
+          if (!pieces && askedChess) {
+            try { localStorage.setItem('pieceSetHint', 'chess'); } catch (e) { pieces = 'chess'; }
+          }
           if (!pieces) {
             var route = localStorage.getItem('learnRoute');
             if (route !== 'chess' && route !== 'main') {
@@ -92,7 +105,10 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
           if (hfont === 'suez' || hfont === 'secular') root.setAttribute('data-hfont', hfont);
           if (localStorage.getItem('gender') === 'f') root.setAttribute('data-gender', 'f');
           pref = localStorage.getItem('theme') || '';
-        } catch (e) {}
+        } catch (e) {
+          if (askedChess) root.setAttribute('data-pieces', 'chess');
+        }
+        if (root.getAttribute('data-pieces') === 'chess') preloadChess();
         if (pref !== 'light' && pref !== 'dark') pref = '';
         var dark = pref ? pref === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
         root.setAttribute('data-theme', dark ? 'dark' : 'light');
