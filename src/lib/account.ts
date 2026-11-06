@@ -6,6 +6,7 @@ import { readLocal, writeLocal } from './progress-local';
 import { CONSENT_VERSION } from './consent';
 import { adSource } from './ad-source';
 import { applyGender, savedGender, type Gender } from './gender';
+import { OPEN_GAME_KEYS } from './visitor';
 
 export { readLocal };
 
@@ -148,6 +149,7 @@ function clearLocalGames() {
   try {
     localStorage.removeItem(HISTORY_KEY);
     localStorage.removeItem(SENT_KEY);
+    for (const key of OPEN_GAME_KEYS) localStorage.removeItem(key);
   } catch { }
 }
 
