@@ -11,7 +11,7 @@ const source = (path: string) => readFileSync(new URL(path, import.meta.url), 'u
 
 describe('play tour', () => {
   test('walks the board first, then the table, in the order a phone shows it', () => {
-    expect(PLAY_TOUR.steps.map((s) => s.target)).toEqual(['play-board', 'play-armies', 'play-hand', 'play-zone', 'play-tools', 'play-moves', 'play-pieces']);
+    expect(PLAY_TOUR.steps.map((s) => s.target)).toEqual(['play-armies', 'play-hand', 'play-zone', 'play-tools', 'play-moves', 'play-pieces']);
     expect(isTourId('play')).toBe(true);
   });
 

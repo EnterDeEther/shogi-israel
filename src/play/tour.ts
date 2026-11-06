@@ -64,7 +64,6 @@ export async function playTour(ctrl: PlayCtrl, intro: boolean, from?: HTMLElemen
   const sg = box.querySelector<HTMLElement>('[data-sg]');
   const board = sg?.querySelector<HTMLElement>('sg-board');
   sg?.setAttribute('data-tour', 'play-armies');
-  board?.setAttribute('data-tour', 'play-board');
   sg?.querySelector('sg-hand-wrap.hand-bottom')?.setAttribute('data-tour', 'play-hand');
   let zone = box.querySelector<HTMLElement>('.play__zone');
   if (!zone) {

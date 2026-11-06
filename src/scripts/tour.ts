@@ -161,7 +161,7 @@ export function startTour(id: TourId, from?: HTMLElement | null, opts: { at?: nu
     root.classList.remove('tour-on');
     if (!keepMenu) setMenu(false);
     writeTourEnd(store(), how, id);
-    document.dispatchEvent(new CustomEvent('tour-end', { detail: { id, how } }));
+    document.dispatchEvent(new CustomEvent('tour-end', { detail: { id, how, at } }));
     if (how === 'left') return;
     if (from?.isConnected) from.focus({ preventScroll: true });
     if (how === 'skipped' && firstTime) note(tour.again);
