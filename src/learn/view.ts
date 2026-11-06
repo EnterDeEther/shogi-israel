@@ -1,4 +1,5 @@
 // AGPL-3.0-or-later, like the rest of src/learn/.
+import { localMove } from '../lib/move-notation';
 import { categories, nextStage } from './categories';
 import type LearnCtrl from './ctrl';
 import { i18n, i18nFormat } from './i18n';
@@ -74,7 +75,7 @@ function inline(text: string): DocumentFragment {
     if (i % 2 === 0) f.append(part);
     else if (part.startsWith('**')) f.append(el('strong', {}, part.slice(2, -2)));
     else if (part.startsWith('{')) f.append(el('span', { class: 'pchip', 'data-p': part.slice(1, -1), 'aria-hidden': 'true' }));
-    else f.append(el('bdi', { dir: 'ltr' }, part));
+    else f.append(el('bdi', { dir: 'ltr' }, localMove(part)));
   });
   return f;
 }
@@ -598,7 +599,7 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
   const total = level.why?.length ?? 0;
   const name = (i?: number) => (i === undefined ? undefined : level.moveNames?.[i]);
   const reply = (i: number) => el('div', { class: 'reply' },
-    el('p', { class: 'eyebrow' }, i18n('il_opponentPlayed'), ' ', el('bdi', { dir: 'ltr', class: 'mv' }, level.replyNames?.[i] ?? '')),
+    el('p', { class: 'eyebrow' }, i18n('il_opponentPlayed'), ' ', el('bdi', { dir: 'ltr', class: 'mv' }, localMove(level.replyNames?.[i] ?? ''))),
     el('p', {}, rich(level.replies![i])));
   const btn = (label: string, fn: () => void, primary = true, fid = 'coach-main') =>
     el('button', { type: 'button', class: `btn${primary ? ' primary' : ''}`, 'data-fid': fid, 'data-coach-focus': primary, onclick: go(fn) }, label);
@@ -617,7 +618,7 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
     const i = tip.idx!;
     body = [
       el('h2', {}, el('span', { class: 'tick', 'aria-hidden': 'true' }, '✓'), ' ',
-        name(i) ? el('bdi', { dir: 'ltr' }, name(i)!) : i18n('il_goodMove')),
+        name(i) ? el('bdi', { dir: 'ltr' }, localMove(name(i)!)) : i18n('il_goodMove')),
       el('p', { class: 'lead' }, rich(level.why?.[i] ?? '')),
       total > 1 ? steps(i + 1, total) : null,
       isCurrent && el('div', { class: 'buttons' },
@@ -626,7 +627,7 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
   } else if (tip.kind === 'reply') {
     const i = tip.idx!;
     body = [
-      el('h2', {}, i18n('il_opponentPlayed'), ' ', el('bdi', { dir: 'ltr' }, level.replyNames?.[i] ?? '')),
+      el('h2', {}, i18n('il_opponentPlayed'), ' ', el('bdi', { dir: 'ltr' }, localMove(level.replyNames?.[i] ?? ''))),
       el('p', { class: 'lead' }, rich(level.replies![i])),
       isCurrent && el('div', { class: 'buttons' }, btn(i18n('il_yourTurn'), () => setOpen(false))),
     ];
@@ -636,9 +637,9 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
     const recap = level.why && level.moveNames
       ? el('div', { class: 'recap' },
           el('p', { class: 'eyebrow' }, i18n('il_recapTitle')),
-          el('ol', {}, ...level.why.map((w, i) => el('li', {}, el('bdi', { dir: 'ltr', class: 'mv' }, level.moveNames![i]), ' ', rich(w),
+          el('ol', {}, ...level.why.map((w, i) => el('li', {}, el('bdi', { dir: 'ltr', class: 'mv' }, localMove(level.moveNames![i])), ' ', rich(w),
             level.replies?.[i] && level.replyNames?.[i] && i < lastIdx
-              ? el('span', { class: 'rep' }, ' ', el('bdi', { dir: 'ltr', class: 'mv opp' }, level.replyNames[i]), ' ', rich(level.replies[i]))
+              ? el('span', { class: 'rep' }, ' ', el('bdi', { dir: 'ltr', class: 'mv opp' }, localMove(level.replyNames[i])), ' ', rich(level.replies[i]))
               : null))))
       : level.recap
         ? el('div', { class: 'recap' }, el('p', { class: 'eyebrow' }, i18n('il_recapTitle')), el('p', { class: 'lead' }, rich(level.recap)))

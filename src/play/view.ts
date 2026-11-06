@@ -1,4 +1,5 @@
 // AGPL-3.0-or-later, like the rest of this site.
+import { localMove } from '../lib/move-notation';
 import { el, icon, nextInCourse, pieceSetSwitch } from '../learn/view';
 import { shareButton } from '../lib/share-card';
 import { tipEl } from '../lib/info-tip-dom';
@@ -192,7 +193,7 @@ function moveList(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void): H
       },
         el('span', { class: 'n' }, String(i + 1)),
         el('span', { class: 'mark', 'aria-hidden': 'true' }, MARK[p.color]),
-        el('bdi', { dir: 'ltr' }, p.western),
+        el('bdi', { dir: 'ltr' }, localMove(p.western)),
       )));
   });
   const box = el('div', { class: 'moves-box', 'data-moves': true });
