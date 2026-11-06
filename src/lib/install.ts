@@ -26,7 +26,7 @@ export const isIpad = () => /iPad/.test(ua()) || (/Macintosh/.test(ua()) && navi
 export const isIos = () => /iPhone|iPad|iPod/.test(ua()) || (/Macintosh/.test(ua()) && navigator.maxTouchPoints > 1);
 export const isAndroid = () => /Android/.test(ua());
 const isIosOther = () => /CriOS|EdgiOS|FxiOS/.test(ua());
-const isInApp = () => /Instagram|FBAN|FBAV|FB_IAB|FBIOS|Line\/|MicroMessenger|TikTok|musical_ly|Snapchat/i.test(ua());
+export const isInApp = () => /Instagram|FBAN|FBAV|FB_IAB|FBIOS|Line\/|MicroMessenger|TikTok|musical_ly|Snapchat/i.test(ua());
 
 export function installWay(): InstallWay {
   if (isStandalone()) return 'installed';

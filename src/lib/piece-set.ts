@@ -32,12 +32,15 @@ export function routeOf(): 'chess' | 'main' | null {
   return null;
 }
 
+export const linkAsksChess = (search = typeof location === 'undefined' ? '' : location.search): boolean =>
+  new URLSearchParams(search).get('pieces') === 'chess';
+
 export function defaultPieceSet(): PieceSet {
   const route = routeOf();
   if (route) return route === 'chess' ? 'chess' : 'hebrew';
   let hint: string | null = null;
   try { hint = localStorage.getItem(CHESS_HINT_KEY); } catch {}
-  return hint === 'chess' || document.documentElement.dataset.piecesDefault === 'chess' ? 'chess' : 'hebrew';
+  return hint === 'chess' || linkAsksChess() || document.documentElement.dataset.piecesDefault === 'chess' ? 'chess' : 'hebrew';
 }
 
 export function markChessPlayer(): void {

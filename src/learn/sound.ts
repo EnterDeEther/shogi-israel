@@ -184,7 +184,7 @@ const DEF: Record<Synth, Def> = {
   win: {
     len: 3.8, db: -5,
     r: (d) => {
-      [0, 0.34, 0.58, 0.74, 0.85, 0.93, 0.99, 1.04, 1.08].forEach((t, i) => clap(d, t, 1 - i * 0.06));
+      [0, 0.34, 0.58, 0.74, 0.85, 0.93, 0.99, 1.04, 1.08].forEach((t, i) => clap(d, t, 65 * (1 - i * 0.06)));
       rin(d, 1.2, NOTE.D5, { amp: 0.9, decay: 2 });
       koto(d, 1.2, NOTE.D4, { amp: 0.5, t60: 1.8 });
     },
