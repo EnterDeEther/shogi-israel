@@ -12,9 +12,9 @@ import type { LearnPrefs } from '../learn/prefs';
 import { play as playSound, playMove } from '../learn/sound';
 import { storage } from '../learn/storage';
 import { bookMove } from './book';
-import { cancelSearches, getEngine } from './engine';
+import { cancelSearches, engineTitle, getEngine } from './engine';
 import { type GameEnd, Line, START_SFEN } from './game';
-import { engineLabel, getLevel } from './levels';
+import { getLevel } from './levels';
 import { type ClockSetting, type GameRecord, isLocal, newGameId, type PlayMode, saveFinished, slotKey, touchDevice } from './record';
 import { liveBounds } from '../lib/live-bounds';
 import { SQUARE_RATIO } from '../lib/square-ratio';
@@ -89,6 +89,7 @@ export default class PlayCtrl {
   drawOffer: Color | null = null;
   /** Engines can't run here: only two-player games are possible (phones and tablets). */
   aiBlocked = false;
+  maxLevel = 10;
   syncedFromAccount = false;
   private syncNoteTimer?: number;
   private askedNew = false;
@@ -286,6 +287,7 @@ export default class PlayCtrl {
   }
 
   preload(level = this.settings.level): void {
+    if (getLevel(level).level > this.maxLevel) return;
     getEngine(getLevel(level).engine).catch(() => {});
   }
 
@@ -305,7 +307,7 @@ export default class PlayCtrl {
       moves: [],
       playerColor,
       level: level.level,
-      engine: local ? '' : engineLabel[level.engine],
+      engine: local ? '' : engineTitle(level),
       clock: settings.clock,
       takebacks: 0,
       ...(local ? { mode: 'local' as const } : {}),

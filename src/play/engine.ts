@@ -1,5 +1,5 @@
 // AGPL-3.0-or-later, like the rest of this site.
-import type { AiLevel, EngineName } from './levels';
+import { type AiLevel, type EngineName, engineLabel } from './levels';
 
 interface EngineModule {
   addMessageListener(fn: (line: string) => void): void;
@@ -13,7 +13,11 @@ const SOURCES: Record<EngineName, { dir: string; script: string; global: string 
   yaneuraou: { dir: '/engines/yaneuraou/', script: 'yaneuraou.k-p.js', global: 'YaneuraOu_K_P' },
 };
 
-export function engineSupport(): 'ok' | 'isolation' | 'wasm' {
+export type Support = 'ok' | 'isolation' | 'wasm';
+
+export const LITE_MAX_LEVEL = 4;
+
+export function engineSupport(): Support {
   if (typeof WebAssembly !== 'object') return 'wasm';
   const simd = new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123, 3, 2, 1, 0, 10, 10, 1, 8, 0, 65, 0, 253, 15, 253, 98, 11]);
   if (!WebAssembly.validate(simd)) return 'wasm';
@@ -32,11 +36,62 @@ function loadScript(src: string): Promise<void> {
   });
 }
 
+let known: Support | undefined;
+const support = (): Support => (known ??= engineSupport());
+
+export function maxLevel(s: Support = support()): number {
+  if (s === 'ok') return 10;
+  return typeof Worker === 'function' ? LITE_MAX_LEVEL : 0;
+}
+
+const useLite = (name: EngineName) => name === 'fairy' && support() !== 'ok';
+
+export function engineTitle(level: AiLevel): string {
+  return useLite(level.engine) ? 'מנוע שוגי ישראל' : engineLabel[level.engine];
+}
+
 export interface SearchResult {
   usi: string;
 }
 
-export class UsiEngine {
+interface Engine {
+  search(sfen: string, moves: string[], level: AiLevel): Promise<SearchResult | undefined>;
+  cancel(): void;
+}
+
+class LiteEngine implements Engine {
+  private worker = new Worker(new URL('./lite-worker.ts', import.meta.url), { type: 'module' });
+  private searchId = 0;
+  private waiting = new Map<number, { resolve: (r: SearchResult | undefined) => void; reject: (e: Error) => void }>();
+
+  constructor() {
+    this.worker.onmessage = (e: MessageEvent<{ id: number; usi?: string; error?: string }>) => {
+      const job = this.waiting.get(e.data.id);
+      if (!job) return;
+      this.waiting.delete(e.data.id);
+      if (e.data.error || !e.data.usi) job.reject(new Error(e.data.error ?? 'lite: no move'));
+      else job.resolve(e.data.id === this.searchId ? { usi: e.data.usi } : undefined);
+    };
+    this.worker.onerror = (e) => {
+      for (const job of this.waiting.values()) job.reject(new Error(e.message || 'lite: worker failed'));
+      this.waiting.clear();
+    };
+  }
+
+  search(sfen: string, moves: string[], level: AiLevel): Promise<SearchResult | undefined> {
+    const id = ++this.searchId;
+    return new Promise((resolve, reject) => {
+      this.waiting.set(id, { resolve, reject });
+      this.worker.postMessage({ id, sfen, moves, level: level.level });
+    });
+  }
+
+  cancel(): void {
+    this.searchId++;
+  }
+}
+
+export class UsiEngine implements Engine {
   private pending?: (line: string) => void;
   private idle: Promise<void> = Promise.resolve();
   private searchId = 0;
@@ -108,12 +163,12 @@ export class UsiEngine {
 
 }
 
-const loading: Partial<Record<EngineName, Promise<UsiEngine>>> = {};
-const loaded: UsiEngine[] = [];
+const loading: Partial<Record<EngineName, Promise<Engine>>> = {};
+const loaded: Engine[] = [];
 
-export function getEngine(name: EngineName): Promise<UsiEngine> {
+export function getEngine(name: EngineName): Promise<Engine> {
   if (!loading[name]) {
-    const p = UsiEngine.load(name);
+    const p: Promise<Engine> = useLite(name) ? Promise.resolve().then(() => new LiteEngine()) : UsiEngine.load(name);
     loading[name] = p;
     p.then((e) => loaded.push(e), () => delete loading[name]);
   }

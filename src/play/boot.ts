@@ -6,7 +6,7 @@ import { preloadSounds } from '../learn/sound';
 import { soundControls } from '../learn/sound-prefs';
 import { el, hebrewFontSwitch, icon, pieceSetSwitch } from '../learn/view';
 import PlayCtrl from './ctrl';
-import { engineSupport } from './engine';
+import { engineSupport, maxLevel } from './engine';
 import { clockText, mount, render } from './view';
 import { currentPieceSet } from '../lib/piece-set';
 
@@ -87,11 +87,13 @@ export function bootPlay(root: HTMLElement): PlayCtrl {
   });
 
   ctrl = new PlayCtrl(prefs, redraw);
+  ctrl.maxLevel = maxLevel(support);
+  ctrl.aiBlocked = ctrl.maxLevel === 0;
   ctrl.ground.attach({ board });
   apply(prefs);
   void preloadSounds();
   ctrl.syncGround();
-  if (support === 'ok' && ctrl.setupOpen) ctrl.preload();
+  if (!ctrl.aiBlocked && ctrl.setupOpen) ctrl.preload();
 
   attachKeyboard(
     { shogiground: ctrl.ground, get vm() { return { level: { color: ctrl.playerColor } }; } },

@@ -7,7 +7,8 @@ import { copyText, downloadKif, kifFileName, LISHOGI_IMPORT_URL } from '../lib/k
 import type PlayCtrl from './ctrl';
 import type { PlaySettings } from './ctrl';
 import type { GameEnd } from './game';
-import { engineLabel, getLevel, levels } from './levels';
+import { engineTitle, maxLevel, type Support } from './engine';
+import { getLevel, levels } from './levels';
 import { highestBeaten, openGameText, savedGame, touchDevice } from './record';
 import { recordKif } from './record-kif';
 import { scrollWithin } from '../lib/scroll-within';
@@ -169,7 +170,7 @@ function playerRow(ctrl: PlayCtrl, color: Color): HTMLElement {
     el('span', { class: 'mark', 'aria-hidden': 'true' }, MARK[color]),
     el('span', { class: 'who' },
       el('strong', {}, isAi ? `המחשב · רמה ${level.level}` : '⟦אתה|את⟧'),
-      el('span', { class: 'small muted' }, isAi ? `${SIDE[color]} · ${engineLabel[level.engine]}` : SIDE[color]),
+      el('span', { class: 'small muted' }, isAi ? `${SIDE[color]} · ${engineTitle(level)}` : SIDE[color]),
     ),
     ctrl.clock
       ? el('span', {
@@ -332,7 +333,7 @@ function status(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void): HTM
       ctrl.record.takebacks ? el('p', { class: 'small muted' }, `החזרת ${ctrl.record.takebacks === 1 ? 'מהלך אחד' : `${ctrl.record.takebacks} מהלכים`} במשחק הזה.`) : null,
       el('div', { class: 'buttons' },
         next
-          ? el('button', { type: 'button', class: 'btn primary', 'data-fid': 'next-level', onclick: go(() => ctrl.newGame({ ...ctrl.settings, level: ctrl.level.level + 1 })) }, `לרמה ${ctrl.level.level + 1}`)
+          ? el('button', { type: 'button', class: 'btn primary', 'data-fid': 'next-level', onclick: go(() => nextLevel(ctrl)) }, `לרמה ${ctrl.level.level + 1}`)
           : null,
         el('button', { type: 'button', class: `btn${next ? '' : ' primary'}`, 'data-fid': 'again', onclick: go(() => ctrl.newGame(ctrl.settings)) }, 'משחק נוסף'),
         el('button', { type: 'button', class: 'link', onclick: go(() => ctrl.openSetup()) }, 'הגדרות משחק'),
@@ -373,6 +374,7 @@ function setupScreen(ctrl: PlayCtrl, draft: PlaySettings, go: (fn: () => void) =
   if (!touch) draft.mode = 'ai';
   if (ctrl.aiBlocked) draft.mode = 'local';
   const local = draft.mode === 'local';
+  const tooHigh = !local && draft.level > ctrl.maxLevel;
   const beaten = highestBeaten();
   const lv = getLevel(draft.level);
   const seg = <T>(label: string, options: { label: string; value: T; sub?: string }[], cur: T, pick: (v: T) => void, cls = '', tip?: TipId) =>
@@ -395,7 +397,7 @@ function setupScreen(ctrl: PlayCtrl, draft: PlaySettings, go: (fn: () => void) =
     el('h2', { id: 'play-setup-title' }, touch ? 'משחק חדש' : 'משחק נגד המחשב'),
     touch
       ? el('div', { class: 'mode-pick', role: 'group', 'aria-label': 'סוג המשחק' },
-        modeBtn('ai', 'נגד המחשב', '10 רמות', ctrl.aiBlocked),
+        modeBtn('ai', 'נגד המחשב', ctrl.maxLevel < 10 && !ctrl.aiBlocked ? `רמות 1 עד ${ctrl.maxLevel} כאן` : '10 רמות', ctrl.aiBlocked),
         modeBtn('local', 'שני שחקנים', 'מכשיר אחד'))
       : null,
     ctrl.aiBlocked ? (isInApp() ? inAppNote() : el('p', { class: 'small muted' }, 'הדפדפן הזה לא מריץ את המחשב, אבל אפשר לשחק בו שני שחקנים על מכשיר אחד.')) : null,
@@ -408,9 +410,11 @@ function setupScreen(ctrl: PlayCtrl, draft: PlaySettings, go: (fn: () => void) =
       draft.level = v;
       ctrl.preload(v);
     }, 'levels'),
-    local ? null : el('p', { class: 'level-hint' },
+    local || tooHigh ? null : el('p', { class: 'level-hint' },
       el('strong', {}, `רמה ${lv.level}: `), levelHint[lv.level],
       beaten ? el('span', { class: 'small muted beaten' }, ` · הרמה הגבוהה שניצחת: ${beaten}`) : null),
+    tooHigh ? (isInApp() ? inAppNote(lv.level, ctrl.maxLevel) : el('p', { class: 'level-hint', role: 'note' },
+      el('strong', {}, `רמה ${lv.level}: `), `הדפדפן הזה מריץ רק את רמות 1 עד ${ctrl.maxLevel}. ב־Chrome, Firefox, Edge או Safari עדכניים כל 10 הרמות עובדות.`)) : null,
     local ? null : seg<PlaySettings['color']>('⟦אתה|את⟧ ⟦משחק|משחקת⟧', [
       { label: 'פותח', value: 'sente', sub: '⟦אתה|את⟧ ⟦מתחיל|מתחילה⟧' },
       { label: 'אקראי', value: 'random' },
@@ -419,11 +423,11 @@ function setupScreen(ctrl: PlayCtrl, draft: PlaySettings, go: (fn: () => void) =
     seg('שעון', CLOCKS.map((c) => ({ label: c.label, value: c.value })), draft.clock, (v) => (draft.clock = v), 'clocks'),
     clockHelp(),
     el('div', { class: 'buttons' },
-      el('button', { type: 'button', class: 'btn primary big', 'data-autofocus': true, 'data-fid': 'start', onclick: go(() => ctrl.newGame({ ...draft })) }, 'מתחילים'),
+      el('button', { type: 'button', class: 'btn primary big', 'data-autofocus': true, 'data-fid': 'start', disabled: tooHigh, onclick: go(() => ctrl.newGame({ ...draft })) }, 'מתחילים'),
       waiting
         ? el('button', { type: 'button', class: 'link', 'data-fid': 'resume-other', onclick: go(() => ctrl.switchTo(draft.mode)) }, `או להמשיך את המשחק השמור (${openGameText(waiting)})`)
         : null,
-      ctrl.record && !ctrl.aiBlocked ? el('button', { type: 'button', class: 'link', onclick: go(() => ctrl.closeSetup()) }, ctrl.playing ? 'חזרה למשחק' : 'סגירה') : null,
+      ctrl.record && !ctrl.aiBlocked && !stuck(ctrl) ? el('button', { type: 'button', class: 'link', onclick: go(() => ctrl.closeSetup()) }, ctrl.playing ? 'חזרה למשחק' : 'סגירה') : null,
     ),
     ctrl.playing
       ? el('p', { class: 'small muted' }, sameKind ? 'משחק חדש יחליף את המשחק הנוכחי.' : 'המשחק הנוכחי נשמר, ואפשר לחזור אליו.')
@@ -439,12 +443,26 @@ function copyLink(): HTMLElement {
   return btn;
 }
 
-function inAppNote(): HTMLElement {
+function stuck(ctrl: PlayCtrl): boolean {
+  return !ctrl.local && ctrl.playing && ctrl.level.level > ctrl.maxLevel;
+}
+
+function nextLevel(ctrl: PlayCtrl): void {
+  const settings = { ...ctrl.settings, mode: 'ai' as const, level: ctrl.level.level + 1 };
+  if (settings.level <= ctrl.maxLevel) return ctrl.newGame(settings);
+  draft = settings;
+  ctrl.openSetup();
+}
+
+function inAppNote(level?: number, max?: number): HTMLElement {
   const android = isAndroid();
   const here = `${location.host}${location.pathname}${location.search}`;
+  const browser = android ? 'ב־Chrome' : 'בדפדפן הרגיל';
   return el('div', { class: 'inapp-note', role: 'note' },
-    el('strong', {}, android ? 'עוד לחיצה אחת ומשחקים נגד המחשב' : 'עוד צעד קטן ומשחקים נגד המחשב'),
-    el('p', {}, `הדפדפן שבתוך האפליקציה לא מריץ את המחשב. ${android ? 'ב־Chrome' : 'בדפדפן הרגיל'} זה עובד, בחינם ובלי הרשמה.`),
+    el('strong', {}, `${android ? 'עוד לחיצה אחת' : 'עוד צעד קטן'} ומשחקים ${level ? `ברמה ${level}` : 'נגד המחשב'}`),
+    el('p', {}, level
+      ? `הדפדפן שבתוך האפליקציה מריץ רק את רמות 1 עד ${max}. ${browser} כל 10 הרמות עובדות, בחינם ובלי הרשמה.`
+      : `הדפדפן שבתוך האפליקציה לא מריץ את המחשב. ${browser} זה עובד, בחינם ובלי הרשמה.`),
     android
       ? el('a', { class: 'btn primary', href: `intent://${here}#Intent;scheme=https;package=com.android.chrome;end`, 'data-fid': 'open-chrome' }, 'פתיחה ב־Chrome')
       : null,
@@ -452,7 +470,7 @@ function inAppNote(): HTMLElement {
       ? 'אם הכפתור לא עובד: ⟦לחץ|לחצי⟧ על ⋮ למעלה ⟦ובחר|ובחרי⟧ פתיחה בדפדפן.'
       : '⟦לחץ|לחצי⟧ על ⋯ ⟦ובחר|ובחרי⟧ פתיחה בדפדפן.'),
     copyLink(),
-    el('p', { class: 'small muted' }, 'בינתיים אפשר לשחק כאן שני שחקנים על מכשיר אחד.'),
+    el('p', { class: 'small muted' }, level ? `בינתיים אפשר לשחק כאן ברמות 1 עד ${max}.` : 'בינתיים אפשר לשחק כאן שני שחקנים על מכשיר אחד.'),
   );
 }
 
@@ -486,19 +504,21 @@ function clockHelp(): HTMLElement {
 
 let draft: PlaySettings | undefined;
 
-export function render(ctrl: PlayCtrl, root: HTMLElement, openSettings: () => void, support: 'ok' | 'isolation' | 'wasm'): void {
+export function render(ctrl: PlayCtrl, root: HTMLElement, openSettings: () => void, support: Support): void {
   const focusedId = (document.activeElement as HTMLElement | null)?.dataset?.fid;
   const go = (fn: () => void) => (e: Event) => { e.preventDefault(); e.stopPropagation(); fn(); };
   const q = <T extends HTMLElement = HTMLElement>(s: string) => root.querySelector<T>(s)!;
 
   const overlay = q('[data-overlay]');
   const touch = touchDevice();
-  ctrl.aiBlocked = support !== 'ok';
+  ctrl.maxLevel = maxLevel(support);
+  ctrl.aiBlocked = ctrl.maxLevel === 0;
   // engines can't run here: phones and tablets can still play two players on one device
   if (ctrl.aiBlocked && touch && !ctrl.local) ctrl.setupOpen = true;
-  if (support !== 'ok' && !touch) {
+  if (stuck(ctrl)) ctrl.setupOpen = true;
+  if (ctrl.aiBlocked && !touch) {
     overlay.hidden = false;
-    overlay.replaceChildren(unsupported(support));
+    overlay.replaceChildren(unsupported(support === 'wasm' ? 'wasm' : 'isolation'));
   } else if (ctrl.setupOpen) {
     draft ??= { ...ctrl.settings };
     const rerender = () => render(ctrl, root, openSettings, support);
