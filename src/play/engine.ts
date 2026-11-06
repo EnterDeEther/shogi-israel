@@ -18,6 +18,7 @@ export type Support = 'ok' | 'isolation' | 'wasm';
 export const LITE_MAX_LEVEL = 4;
 
 export function engineSupport(): Support {
+  if (new URLSearchParams(location.search).get('engine') === 'lite') return 'isolation';
   if (typeof WebAssembly !== 'object') return 'wasm';
   const simd = new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123, 3, 2, 1, 0, 10, 10, 1, 8, 0, 65, 0, 253, 15, 253, 98, 11]);
   if (!WebAssembly.validate(simd)) return 'wasm';
