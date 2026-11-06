@@ -18,6 +18,7 @@ import { engineLabel, getLevel } from './levels';
 import { type ClockSetting, type GameRecord, isLocal, newGameId, type PlayMode, saveFinished, slotKey, touchDevice } from './record';
 import { liveBounds } from '../lib/live-bounds';
 import { SQUARE_RATIO } from '../lib/square-ratio';
+import { accountsEnabled, hasStoredSession } from '../lib/account-config';
 
 export interface PlaySettings {
   /** 'local' = two players on one device, phones and tablets only. */
@@ -88,6 +89,9 @@ export default class PlayCtrl {
   drawOffer: Color | null = null;
   /** Engines can't run here: only two-player games are possible (phones and tablets). */
   aiBlocked = false;
+  syncedFromAccount = false;
+  private syncNoteTimer?: number;
+  private askedNew = false;
   private aiToken = 0;
   private flagTimer?: number;
 
@@ -97,6 +101,7 @@ export default class PlayCtrl {
   ) {
     this.ground = liveBounds(Shogiground(this.groundConfig()));
     this.resume();
+    document.addEventListener('shogi-il:open-game-synced', (e) => this.onAccountGame((e as CustomEvent<PlayMode[]>).detail));
   }
 
   get local(): boolean {
@@ -503,6 +508,60 @@ export default class PlayCtrl {
     };
     const saved: Saved = { record: this.record, clock, orientation: this.orientation, at: Date.now() };
     storage.set(this.slot, JSON.stringify(saved));
+    document.dispatchEvent(new CustomEvent<PlayMode>('shogi-il:game-saved', { detail: this.local ? 'local' : 'ai' }));
+  }
+
+  private aiToMove(): boolean {
+    return this.playing && !this.local && !this.thinking && this.line.current.turn !== this.playerColor;
+  }
+
+  private aiAfterAccountCheck(): void {
+    if (!accountsEnabled || !hasStoredSession()) {
+      if (this.aiToMove()) this.aiMove();
+      return;
+    }
+    let done = false;
+    const go = () => {
+      if (done) return;
+      done = true;
+      if (this.aiToMove()) this.aiMove();
+    };
+    document.addEventListener('shogi-il:open-games-checked', go, { once: true });
+    window.setTimeout(go, 4000);
+  }
+
+  private onAccountGame(modes: PlayMode[]): void {
+    const current: PlayMode = this.local ? 'local' : 'ai';
+    const touch = touchDevice();
+    let pick: PlayMode | null = null;
+    if (this.record) pick = modes.includes(current) ? current : null;
+    else {
+      const ai = modes.includes('ai') ? this.readSlot('ai') : null;
+      const local = touch && modes.includes('local') ? this.readSlot('local') : null;
+      pick = ai && local ? ((local.at ?? 0) > (ai.at ?? 0) ? 'local' : 'ai') : ai ? 'ai' : local ? 'local' : null;
+    }
+    const saved = pick && this.readSlot(pick);
+    if (!saved) {
+      this.redraw();
+      return;
+    }
+    const before = this.record;
+    const changed = !before || before.id !== saved.record.id || before.moves.join(' ') !== saved.record.moves.join(' ') || !!before.result !== !!saved.record.result;
+    this.stopAi();
+    this.stopClock();
+    this.load(saved);
+    if (!before && !this.askedNew) this.setupOpen = false;
+    if (changed) {
+      this.syncedFromAccount = true;
+      window.clearTimeout(this.syncNoteTimer);
+      this.syncNoteTimer = window.setTimeout(() => {
+        this.syncedFromAccount = false;
+        this.redraw();
+      }, 8000);
+    }
+    this.syncGround();
+    this.redraw();
+    if (this.aiToMove()) this.aiMove();
   }
 
   private readSlot(mode: PlayMode): Saved | null {
@@ -544,8 +603,9 @@ export default class PlayCtrl {
     if (saved) {
       this.load(saved);
       this.setupOpen = false;
-      if (this.playing && !this.local && this.line.current.turn !== this.playerColor) this.aiMove();
+      this.aiAfterAccountCheck();
     }
+    this.askedNew = params.has('new') || !!vs;
     if (params.has('new') || (vs && !saved)) this.setupOpen = true;
     if (params.has('new') || vs) history.replaceState(history.state, '', window.location.pathname + window.location.hash);
   }

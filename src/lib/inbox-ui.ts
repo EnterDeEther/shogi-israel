@@ -95,7 +95,7 @@ export function startInbox() {
   list.addEventListener('click', (e) => { if ((e.target as HTMLElement).closest('a')) box.open = false; });
 
   const redraw = () => { if (!box.open) draw(); };
-  for (const ev of ['progress-synced', 'progress-reset', 'shogi-il:game-end']) document.addEventListener(ev, redraw);
+  for (const ev of ['progress-synced', 'progress-reset', 'shogi-il:game-end', 'shogi-il:open-game-synced']) document.addEventListener(ev, redraw);
   document.addEventListener('progress-changed', () => setTimeout(redraw, 0));
   window.addEventListener('storage', redraw);
   draw();

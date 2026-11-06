@@ -220,6 +220,7 @@ import { APP_TOUR_URL } from '../lib/tour';
   onInstallChange(install);
   document.addEventListener('progress-synced', course);
   addEventListener('pageshow', refresh);
+  document.addEventListener('shogi-il:open-game-synced', refresh);
   addEventListener('storage', (e) => { if (!e.key || e.key.startsWith('shogi-il.')) refresh(); });
   if (location.hash === '#install') requestAnimationFrame(() => document.getElementById('install')?.scrollIntoView({ block: 'start' }));
   const openSettings = () => {
