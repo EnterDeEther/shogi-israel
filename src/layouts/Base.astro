@@ -47,6 +47,7 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
     <meta name="apple-mobile-web-app-title" content="שוגי ישראל" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#ECE4D4" media="(prefers-color-scheme: light)" data-theme-color="light" />
     <meta name="theme-color" content="#221A14" media="(prefers-color-scheme: dark)" data-theme-color="dark" />
     <meta property="og:type" content="website" />
@@ -113,6 +114,8 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
         var dark = pref ? pref === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
         root.setAttribute('data-theme', dark ? 'dark' : 'light');
         root.setAttribute('data-theme-pref', pref || 'auto');
+        var cs = document.querySelector('meta[name="color-scheme"]');
+        if (cs) cs.setAttribute('content', dark ? 'dark' : 'only light');
       })();
     </script>
   </head>
@@ -182,6 +185,7 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
         const dark = pref === 'auto' ? scheme.matches : pref === 'dark';
         root.setAttribute('data-theme', dark ? 'dark' : 'light');
         root.setAttribute('data-theme-pref', pref);
+        document.querySelector<HTMLMetaElement>('meta[name="color-scheme"]')?.setAttribute('content', dark ? 'dark' : 'only light');
         document.querySelectorAll<HTMLMetaElement>('meta[data-theme-color]').forEach((m) => {
           const own = m.dataset.themeColor as 'light' | 'dark';
           m.content = pref === 'auto' ? COLORS[own] : COLORS[dark ? 'dark' : 'light'];
