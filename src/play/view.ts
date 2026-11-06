@@ -401,6 +401,11 @@ function setupScreen(ctrl: PlayCtrl, draft: PlaySettings, go: (fn: () => void) =
       type: 'button', class: 'mode', 'data-fid': `mode-${mode}`, disabled, 'aria-pressed': String(draft.mode === mode),
       onclick: (e: Event) => { e.preventDefault(); draft.mode = mode; if (mode === 'ai') ctrl.preload(draft.level); rerender(); },
     }, el('strong', {}, label), el('span', { class: 'sub' }, sub));
+  if (ctrl.aiBlocked && isInApp()) {
+    return el('div', { class: 'screen setup', role: 'dialog', 'aria-modal': 'false', 'aria-labelledby': 'play-setup-title' },
+      el('h2', { id: 'play-setup-title' }, 'משחק נגד המחשב'),
+      inAppNote());
+  }
   const sameKind = !!ctrl.record && ctrl.local === local;
   const waiting = sameKind ? null : savedGame(draft.mode);
   return el('div', { class: 'screen setup', role: 'dialog', 'aria-modal': 'false', 'aria-labelledby': 'play-setup-title' },
@@ -410,7 +415,7 @@ function setupScreen(ctrl: PlayCtrl, draft: PlaySettings, go: (fn: () => void) =
         modeBtn('ai', 'נגד המחשב', '10 רמות', ctrl.aiBlocked),
         modeBtn('local', 'שני שחקנים', 'מכשיר אחד'))
       : null,
-    ctrl.aiBlocked ? (isInApp() ? inAppNote() : el('p', { class: 'small muted' }, 'הדפדפן הזה לא מריץ את המחשב, אבל אפשר לשחק בו שני שחקנים על מכשיר אחד.')) : null,
+    ctrl.aiBlocked ? el('p', { class: 'small muted' }, 'הדפדפן הזה לא מריץ את המחשב, אבל אפשר לשחק בו שני שחקנים על מכשיר אחד.') : null,
     local
       ? el('div', { class: 'local-how' },
         el('span', { class: 'mini-board', 'aria-hidden': 'true' }, el('span', {}, '☖ משיב'), el('i'), el('span', {}, '☗ פותח')),
@@ -470,7 +475,6 @@ function inAppNote(): HTMLElement {
       ? 'אם הכפתור לא עובד: ⟦לחץ|לחצי⟧ על ⋮ למעלה ⟦ובחר|ובחרי⟧ פתיחה בדפדפן.'
       : '⟦לחץ|לחצי⟧ על ⋯ ⟦ובחר|ובחרי⟧ פתיחה בדפדפן.'),
     copyLink(),
-    el('p', { class: 'small muted' }, 'בינתיים אפשר לשחק כאן שני שחקנים על מכשיר אחד.'),
   );
 }
 
@@ -540,7 +544,7 @@ export function render(ctrl: PlayCtrl, root: HTMLElement, openSettings: () => vo
   }
 
   const bar = q('[data-bar]');
-  bar.hidden = support !== 'ok' && !touch;
+  bar.hidden = (support !== 'ok' && !touch) || (ctrl.aiBlocked && ctrl.setupOpen && isInApp());
   bar.replaceChildren(
     (ctrl.setupOpen && draft ? draft.mode === 'local' : ctrl.local)
       ? el('p', { class: 'play__what' }, el('strong', {}, 'שני שחקנים'), ctrl.syncedFromAccount && !ctrl.setupOpen ? ' · ממשיכים מהמכשיר השני' : ' · מכשיר אחד')
