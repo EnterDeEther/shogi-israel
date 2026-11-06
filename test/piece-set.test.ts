@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import he from '../src/learn/i18n/he.json';
 import { chessOf, type PieceType } from '../src/lib/sfen';
-import { choosePieceSet, defaultPieceSet, markChessPlayer, pieceSetOf, refreshPieceSet, savedPieceSet } from '../src/lib/piece-set';
+import { choosePieceSet, defaultPieceSet, linkAsksChess, markChessPlayer, pieceSetOf, refreshPieceSet, savedPieceSet } from '../src/lib/piece-set';
 
 const mem = new Map<string, string>();
 (globalThis as { localStorage?: unknown }).localStorage = {
@@ -81,6 +81,12 @@ describe('default piece set', () => {
     expect(dataset.pieces).toBe('chess');
     expect(events).toContain('pieces-changed');
     expect(savedPieceSet()).toBeNull();
+  });
+  test('a link with pieces=chess asks for the chess set, other values do not', () => {
+    expect(linkAsksChess('?pieces=chess&utm_source=meta&utm_campaign=x')).toBe(true);
+    expect(linkAsksChess('?utm_source=meta&pieces=chess')).toBe(true);
+    expect(linkAsksChess('?pieces=kanji')).toBe(false);
+    expect(linkAsksChess('')).toBe(false);
   });
   test('a set the learner picked always wins', () => {
     mem.set('learnRoute', 'chess');
