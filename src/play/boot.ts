@@ -9,9 +9,11 @@ import PlayCtrl from './ctrl';
 import { engineSupport } from './engine';
 import { clockText, mount, render } from './view';
 import { currentPieceSet } from '../lib/piece-set';
+import { startAdCounts } from '../lib/ad-count';
 
 export function bootPlay(root: HTMLElement): PlayCtrl {
   const prefs = loadPrefs();
+  startAdCounts();
   const support = engineSupport();
   const { board } = mount(root);
   let ctrl: PlayCtrl;

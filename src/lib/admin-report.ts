@@ -197,6 +197,26 @@ export function reportEmail(r: Report): Email {
   return { subject, html, text };
 }
 
+export interface AdPlayRow { campaign: string; event: string; level: number; n: number }
+
+export function adPlayLines(rows: AdPlayRow[]): string[] {
+  const by = new Map<string, AdPlayRow[]>();
+  for (const r of rows) by.set(r.campaign, [...(by.get(r.campaign) ?? []), r]);
+  const sum = (list: AdPlayRow[], event: string, level?: number) =>
+    list.filter((r) => r.event === event && (level === undefined || r.level === level)).reduce((a, r) => a + r.n, 0);
+  return [...by].sort((a, b) => sum(b[1], 'start') - sum(a[1], 'start')).map(([campaign, list]) => {
+    const parts = [`התחילו משחק נגד המחשב ${sum(list, 'start') - sum(list, 'start', 0)}`];
+    const local = sum(list, 'start', 0);
+    if (local) parts.push(`שני שחקנים ${local}`);
+    const wins = [...new Set(list.filter((r) => r.event === 'win').map((r) => r.level))].sort((a, b) => a - b);
+    if (wins.length) parts.push(`ניצחו: ${wins.map((l) => `רמה ${l} ${sum(list, 'win', l)}`).join(', ')}`);
+    const tour = sum(list, 'tour_done') + sum(list, 'tour_part');
+    if (tour || sum(list, 'tour_skip')) parts.push(`סיור: נכנסו ${tour} (עד הסוף ${sum(list, 'tour_done')}), דילגו ${sum(list, 'tour_skip')}`);
+    if (sum(list, 'inapp_card')) parts.push(`כרטיס "פתיחה בדפדפן" הוצג ${sum(list, 'inapp_card')}, לחצו על Chrome ${sum(list, 'open_chrome')}`);
+    return `ממודעה ${campaign}: ${parts.join('. ')}. (לפי לשונית, לא לפי אדם)`;
+  });
+}
+
 export interface SignupInput { nickname: string; created_at: string; total: number; email_week: boolean; ad?: string | null }
 export function signupEmail(list: SignupInput[]): Email {
   const names = list.map((s) => s.nickname).join(', ');
