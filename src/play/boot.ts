@@ -9,6 +9,7 @@ import PlayCtrl from './ctrl';
 import { engineSupport } from './engine';
 import { clockText, mount, render } from './view';
 import { currentPieceSet } from '../lib/piece-set';
+import { playTour } from './tour';
 
 export function bootPlay(root: HTMLElement): PlayCtrl {
   const prefs = loadPrefs();
@@ -44,6 +45,16 @@ export function bootPlay(root: HTMLElement): PlayCtrl {
         },
       }),
       el('span', {}, label));
+  const tourRow = el('p', { class: 'tour-row' },
+    el('button', {
+      type: 'button', class: 'link', 'data-fid': 'play-tour',
+      onclick: (e: Event) => {
+        e.preventDefault();
+        dialog.close();
+        if (ctrl.setupOpen) ctrl.closeSetup();
+        void playTour(ctrl, false);
+      },
+    }, 'סיור בעמוד'));
   const dialog = el('dialog', { class: 'learn__settings', 'aria-labelledby': 'play-settings-title' },
     el('form', { method: 'dialog' },
       el('div', { class: 'head' },
@@ -62,6 +73,7 @@ export function bootPlay(root: HTMLElement): PlayCtrl {
         el('legend', {}, i18n('il_prefSound')),
         soundControls('play-snd', 'pref'),
       ),
+      tourRow,
       el('details', { class: 'kbd' },
         el('summary', {}, i18n('il_kbdTitle')),
         el('ul', {}, ...i18n('il_kbdKeys').split('|').map((line) => {
@@ -74,6 +86,7 @@ export function bootPlay(root: HTMLElement): PlayCtrl {
   );
   document.body.append(dialog);
   const openSettings = () => {
+    tourRow.hidden = !ctrl.record || ctrl.local;
     try {
       dialog.showModal();
     } catch {

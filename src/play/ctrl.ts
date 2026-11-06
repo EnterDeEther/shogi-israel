@@ -16,6 +16,7 @@ import { cancelSearches, getEngine } from './engine';
 import { type GameEnd, Line, START_SFEN } from './game';
 import { engineLabel, getLevel } from './levels';
 import { type ClockSetting, type GameRecord, isLocal, newGameId, type PlayMode, saveFinished, slotKey, touchDevice } from './record';
+import { type PlayTip, tipDue, tipSeen } from './tour';
 import { liveBounds } from '../lib/live-bounds';
 import { SQUARE_RATIO } from '../lib/square-ratio';
 import { accountsEnabled, hasStoredSession } from '../lib/account-config';
@@ -89,6 +90,8 @@ export default class PlayCtrl {
   drawOffer: Color | null = null;
   /** Engines can't run here: only two-player games are possible (phones and tablets). */
   aiBlocked = false;
+  held = false;
+  tip: PlayTip | null = null;
   syncedFromAccount = false;
   private syncNoteTimer?: number;
   private askedNew = false;
@@ -126,7 +129,7 @@ export default class PlayCtrl {
     return !!this.record && !this.ended;
   }
   get myTurn(): boolean {
-    return this.playing && !this.thinking && (this.local || this.line.current.turn === this.playerColor);
+    return this.playing && !this.thinking && !this.held && (this.local || this.line.current.turn === this.playerColor);
   }
   get takebackPlies(): number {
     if (!this.record) return 0;
@@ -151,9 +154,11 @@ export default class PlayCtrl {
         promotesTo: (role) => promote('standard')(role as Role),
         movePromotionDialog: (orig: Key, dest: Key) => {
           const piece = this.ground.state.pieces.get(orig) as OpsPiece | undefined;
-          return !!piece &&
+          const ask = !!piece &&
             pieceCanPromote('standard')(piece, parseSquareName(orig)!, parseSquareName(dest)!, undefined) &&
             !pieceForcePromote('standard')(piece, parseSquareName(dest)!);
+          if (ask && this.showTip('promote')) this.redraw();
+          return ask;
         },
         forceMovePromotion: (orig: Key, dest: Key) => {
           const piece = this.ground.state.pieces.get(orig) as OpsPiece | undefined;
@@ -219,6 +224,8 @@ export default class PlayCtrl {
   private apply(usi: string): void {
     this.switchClock();
     this.line = this.line.play(usi);
+    const last = this.line.plies[this.line.plies.length - 1];
+    if (last.capture) this.showTip(last.color === this.playerColor ? 'capture' : 'captured');
     this.record!.moves = this.line.usis;
     this.resignConfirm = null;
     this.drawOffer = null;
@@ -232,7 +239,38 @@ export default class PlayCtrl {
     this.redraw();
   }
 
+  hold(): void {
+    if (this.held) return;
+    this.held = true;
+    this.stopAi();
+    this.stopClock();
+    this.syncGround();
+    this.redraw();
+  }
+
+  release(): void {
+    if (!this.held) return;
+    this.held = false;
+    this.startClock();
+    this.syncGround();
+    this.redraw();
+    if (this.aiToMove()) this.aiMove();
+  }
+
+  private showTip(tip: PlayTip): boolean {
+    if (this.local || this.tip || !tipDue(tip)) return false;
+    tipSeen(tip);
+    this.tip = tip;
+    return true;
+  }
+
+  dismissTip(): void {
+    this.tip = null;
+    this.redraw();
+  }
+
   private async aiMove(): Promise<void> {
+    if (this.held) return;
     const token = ++this.aiToken;
     this.thinking = true;
     this.engineError = false;
@@ -319,6 +357,7 @@ export default class PlayCtrl {
     this.resignConfirm = null;
     this.drawOffer = null;
     this.engineError = false;
+    this.tip = null;
     this.startClock();
     this.save();
     this.syncGround();
