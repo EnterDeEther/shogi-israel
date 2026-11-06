@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { adLabel, buildReport, REPORT_FROM, reportEmail, reportsDue, signupEmail, totals, type Email, type PlayerInput, type Totals } from '../src/lib/admin-report.js';
+import { adLabel, adPlayLines, buildReport, REPORT_FROM, reportEmail, reportsDue, signupEmail, totals, type Email, type PlayerInput, type Totals } from '../src/lib/admin-report.js';
 import { israelDay } from '../src/lib/notify.js';
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -83,7 +83,12 @@ export async function GET(request: Request): Promise<Response> {
   const reports = [];
   for (const kind of kinds) {
     const from = israelDay(new Date(now.getTime() - (kind === 'daily' ? 1 : 7) * DAY)).ymd;
-    reports.push(buildReport(kind, list, await snapshotsAsOf(e.db, from), now));
+    const report = buildReport(kind, list, await snapshotsAsOf(e.db, from), now);
+    if (kind === 'weekly') {
+      const { data: ads, error } = await e.db.from('ad_play_counts').select('campaign, event, level, n').gte('day', from).limit(5000);
+      if (!error && ads?.length) report.insights.push(...adPlayLines(ads));
+    }
+    reports.push(report);
   }
   if (dry) return Response.json(reports);
 

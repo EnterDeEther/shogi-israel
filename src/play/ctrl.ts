@@ -323,6 +323,7 @@ export default class PlayCtrl {
     this.save();
     this.syncGround();
     playSound('gameStart');
+    document.dispatchEvent(new CustomEvent('shogi-il:game-start', { detail: { mode: local ? 'local' : 'ai', level: level.level } }));
     this.redraw();
     if (!local && this.line.current.turn !== playerColor) this.aiMove();
   }

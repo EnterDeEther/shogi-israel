@@ -12,6 +12,7 @@ import { highestBeaten, openGameText, savedGame, touchDevice } from './record';
 import { recordKif } from './record-kif';
 import { scrollWithin } from '../lib/scroll-within';
 import { isAndroid, isInApp } from '../lib/install';
+import { countAd } from '../lib/ad-count';
 
 const SIDE: Record<Color, string> = { sente: 'פותח', gote: 'משיב' };
 const MARK: Record<Color, string> = { sente: '☗', gote: '☖' };
@@ -440,13 +441,14 @@ function copyLink(): HTMLElement {
 }
 
 function inAppNote(): HTMLElement {
+  countAd('inapp_card');
   const android = isAndroid();
   const here = `${location.host}${location.pathname}${location.search}`;
   return el('div', { class: 'inapp-note', role: 'note' },
     el('strong', {}, android ? 'עוד לחיצה אחת ומשחקים נגד המחשב' : 'עוד צעד קטן ומשחקים נגד המחשב'),
     el('p', {}, `הדפדפן שבתוך האפליקציה לא מריץ את המחשב. ${android ? 'ב־Chrome' : 'בדפדפן הרגיל'} זה עובד, בחינם ובלי הרשמה.`),
     android
-      ? el('a', { class: 'btn primary', href: `intent://${here}#Intent;scheme=https;package=com.android.chrome;end`, 'data-fid': 'open-chrome' }, 'פתיחה ב־Chrome')
+      ? el('a', { class: 'btn primary', href: `intent://${here}#Intent;scheme=https;package=com.android.chrome;end`, 'data-fid': 'open-chrome', onclick: () => countAd('open_chrome') }, 'פתיחה ב־Chrome')
       : null,
     el('p', { class: 'small' }, android
       ? 'אם הכפתור לא עובד: ⟦לחץ|לחצי⟧ על ⋮ למעלה ⟦ובחר|ובחרי⟧ פתיחה בדפדפן.'
