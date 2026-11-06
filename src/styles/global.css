@@ -68,7 +68,7 @@
   --page: 1120px;
   --text: 680px;
   --gutter: 20px;
-  color-scheme: light;
+  color-scheme: only light;
 }
 
 @media (prefers-color-scheme: dark) {

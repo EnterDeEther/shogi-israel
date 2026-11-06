@@ -10,6 +10,7 @@ import { stageUrl } from './urls';
 import { average } from './util';
 import { courseNext } from '../lib/next-step';
 import { currentPieceSet, currentHebrewFont, HEBREW_FONTS } from '../lib/piece-set';
+import { ICONS } from '../lib/icons';
 
 const congratsKeys = [
   'awesome', 'excellent', 'greatJob', 'perfect', 'outstanding',
@@ -727,9 +728,17 @@ export function hebrewFontSwitch(): HTMLElement {
   );
 }
 
+export function themeSwitch(): HTMLElement {
+  const pref = document.documentElement.getAttribute('data-theme-pref') || 'auto';
+  const opts: [string, string][] = [['auto', 'כמו המכשיר'], ['light', 'בהיר'], ['dark', 'כהה']];
+  return el('div', { class: 'seg', role: 'group', 'aria-label': i18n('il_theme') },
+    ...opts.map(([id, label]) => el('button', { type: 'button', 'data-theme-set': id, 'aria-pressed': String(id === pref) }, label)),
+  );
+}
+
 const icons: Record<string, string> = {
   restart: '<path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4.5h4.5"/>',
-  cog: '<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>',
+  cog: ICONS.settings,
   close: '<path d="M6 6l12 12M18 6L6 18"/>',
   minimize: '<path d="M6 12h12"/>',
   bulb: '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/>',
