@@ -127,6 +127,8 @@
 .play .result .buttons { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
 .play .result .btn { color: inherit; border-color: currentColor; }
 .play .result .btn.primary { color: var(--on-seal); border-color: var(--seal); }
+.play .result .signup { margin: 12px 0 10px; }
+.play .result .signup p { margin: 0 0 8px; }
 
 .play .tools { display: flex; }
 .play .tool {
