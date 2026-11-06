@@ -443,8 +443,8 @@ function inAppNote(): HTMLElement {
   const android = isAndroid();
   const here = `${location.host}${location.pathname}${location.search}`;
   return el('div', { class: 'inapp-note', role: 'note' },
-    el('strong', {}, 'כדי לשחק נגד המחשב, ⟦פתח|פתחי⟧ את הדף בדפדפן'),
-    el('p', {}, 'הדפדפן שבתוך האפליקציה לא מריץ את המחשב. בדפדפן הרגיל הכול עובד, באותו קישור.'),
+    el('strong', {}, android ? 'עוד לחיצה אחת ומשחקים נגד המחשב' : 'עוד צעד קטן ומשחקים נגד המחשב'),
+    el('p', {}, `הדפדפן שבתוך האפליקציה לא מריץ את המחשב. ${android ? 'ב־Chrome' : 'בדפדפן הרגיל'} זה עובד, בחינם ובלי הרשמה.`),
     android
       ? el('a', { class: 'btn primary', href: `intent://${here}#Intent;scheme=https;package=com.android.chrome;end`, 'data-fid': 'open-chrome' }, 'פתיחה ב־Chrome')
       : null,
