@@ -4,7 +4,7 @@ import { attachKeyboard } from '../learn/keyboard';
 import { type LearnPrefs, type SwitchPref, loadPrefs, savePrefs } from '../learn/prefs';
 import { preloadSounds } from '../learn/sound';
 import { soundControls } from '../learn/sound-prefs';
-import { el, hebrewFontSwitch, icon, pieceSetSwitch } from '../learn/view';
+import { el, hebrewFontSwitch, icon, pieceSetSwitch, themeSwitch } from '../learn/view';
 import TsumeCtrl from './ctrl';
 import { type Length, loadPuzzles, nextUnsolved } from './puzzles';
 import { mount, render } from './view';
@@ -52,6 +52,7 @@ export async function bootTsume(root: HTMLElement): Promise<void> {
       ),
       el('fieldset', {}, el('legend', {}, i18n('il_pieceSet')), pieceSetSwitch()),
       el('fieldset', { class: 'hfont-row' }, el('legend', {}, i18n('il_hebrewFont')), hebrewFontSwitch()),
+      el('fieldset', {}, el('legend', {}, i18n('il_theme')), themeSwitch()),
       el('fieldset', {},
         el('legend', {}, i18n('il_board')),
         toggle('coords', i18n('il_prefCoords')),
