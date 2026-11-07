@@ -1,4 +1,5 @@
 import { play } from '../learn/sound';
+import { lessonMove } from '../lib/move-notation';
 
 const lessonId = document.querySelector<HTMLElement>('[data-lesson]')?.dataset.lesson ?? '';
 
@@ -102,7 +103,7 @@ function setupBoardTask(task: HTMLElement, answer: string) {
     if (matches(answer, sq)) {
       mark(s, 'ok', '✓');
       play('success');
-      say('is-ok', `נכון! משבצת ${sq}.` + (why ? ` ${why}` : ''));
+      say('is-ok', `נכון! משבצת ${sq}.` + (why ? ` ${lessonMove(why)}` : ''));
       task.classList.add('done');
       fig.classList.add('revealed');
       const label = task.querySelector('.task-label');
@@ -112,7 +113,7 @@ function setupBoardTask(task: HTMLElement, answer: string) {
       misses++;
       mark(s, 'no', '✗');
       play('fail');
-      say('is-no', `לא. זו משבצת ${sq} (${what}). ⟦נסה|נסי⟧ שוב.` + (hint && misses >= 2 ? ` רמז: ${hint}` : ''));
+      say('is-no', `לא. זו משבצת ${sq} (${what}). ⟦נסה|נסי⟧ שוב.` + (hint && misses >= 2 ? ` רמז: ${lessonMove(hint)}` : ''));
     }
   };
 

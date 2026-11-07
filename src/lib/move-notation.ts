@@ -8,9 +8,36 @@ const KANJI: Record<string, string> = {
   K: '玉', R: '飛', B: '角', G: '金', S: '銀', N: '桂', L: '香', P: '歩',
   '+R': '龍', '+B': '馬', '+S': '全', '+N': '圭', '+L': '杏', '+P': 'と',
 };
+const CHESS_BASE: Record<string, string> = {
+  K: '♚︎', R: '♜︎', B: '♝︎', G: '', S: '', N: '♞︎', L: '', P: '♟︎',
+};
+const CHESS: Record<string, string> = Object.fromEntries(
+  Object.entries(CHESS_BASE).flatMap(([k, v]) => [[k, v], [`+${k}`, `+${v}`]]),
+);
+
+const MOVE = /(\+?[KRBGSNLP])(\d\d(?=[-x*]))?([-x*])(\d\d)([+=]?)/g;
+
+function mapFor(set: PieceSet, lessons: boolean): Record<string, string> | null {
+  if (set === 'hebrew') return HEBREW;
+  if (set === 'kanji') return KANJI;
+  if (set === 'chess' && lessons) return CHESS;
+  return null;
+}
+
+function convert(set: PieceSet, lessons: boolean) {
+  const map = mapFor(set, lessons);
+  return (whole: string, p: string, from: string | undefined, sep: string, to: string, end: string): string => {
+    if (!map) return whole;
+    return (map[p] ?? p) + (from ? `-${from}` : '') + (sep === 'x' ? '×' : sep) + to + end;
+  };
+}
 
 export function localMove(move: string, set: PieceSet = currentPieceSet()): string {
-  const map = set === 'hebrew' ? HEBREW : set === 'kanji' ? KANJI : null;
-  if (!map) return move;
-  return move.replace(/^(\+?[KRBGSNLP])(\d\d(?=[-x]))?/, (_, p: string, from?: string) => (map[p] ?? p) + (from ? `-${from}` : ''));
+  return move.replace(MOVE, convert(set, false));
 }
+
+export function lessonMove(text: string, set: PieceSet = currentPieceSet()): string {
+  return text.replace(MOVE, convert(set, true));
+}
+
+export const isMoveText = (text: string): boolean => new RegExp(MOVE.source).test(text);
