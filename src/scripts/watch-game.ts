@@ -107,7 +107,7 @@ export function bootWatchGame(root: HTMLElement): void {
       const starts = ph.first === step;
       phaseBox.hidden = !starts;
       if (starts) {
-        q('[data-phase-name]').textContent = `שלב ${ply.phase + 1}: ${ph.name}`;
+        q('[data-phase-name]').textContent = ph.name;
         setRich(q('[data-phase-note]'), ph.note);
       }
       q('[data-who]').textContent = `מהלך ${step} מתוך ${N} · ${step % 2 ? 'הפותח' : 'המשיב'}`;
