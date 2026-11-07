@@ -384,7 +384,7 @@ mark.learn-task {
 .learn__table .why ol { margin: 0; padding-inline-start: 1.3em; font-size: .92rem; line-height: 1.5; }
 .learn__table .why li { opacity: .7; margin-bottom: 4px; }
 .learn__table .why li.latest { opacity: 1; font-weight: 600; }
-.learn bdi[dir="ltr"] { white-space: nowrap; }
+.learn bdi[dir="ltr"], .learn bdi.mvn { white-space: nowrap; }
 
 .learn__coach[hidden], .learn__bubble[hidden] { display: none; }
 .learn__coach { grid-area: table; z-index: 6; align-self: start; min-width: 0; }
@@ -419,8 +419,7 @@ mark.learn-task {
 .learn__coach .recap ol { margin: 4px 0 14px; padding-inline-start: 1.2em; font: 500 15px/1.55 var(--f-body); }
 .learn__coach .recap li { margin-bottom: 6px; }
 .learn__coach .recap .mv { font-weight: 800; }
-.learn__coach .recap .rep { display: block; margin-top: 2px; font-size: 14px; color: var(--muted); }
-.learn__coach .recap .mv.opp::before, .learn__coach .reply .mv::before { content: '△ '; }
+.learn__coach .reply .mv::before { content: '△ '; }
 .learn__coach .reply { margin: 0 0 12px; padding: 10px 12px; border-radius: 8px; background: var(--washi-2); }
 .learn__coach .reply p { margin: 0; font: 500 15px/1.55 var(--f-body); }
 .learn__coach .reply .eyebrow { margin-bottom: 2px; }

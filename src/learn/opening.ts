@@ -3,12 +3,12 @@
 import { makeSfen, parseSfen } from 'shogiops/sfen';
 import type { Position } from 'shogiops/variant/position';
 import { makeSquareName, parseUsi } from 'shogiops/util';
-import { i18nFormat } from './i18n';
+import { i18n, i18nFormat } from './i18n';
 import type { IncompleteLevel, IncompleteStage, Level, UsiWithColor } from './interfaces';
 import { createLevel } from './level';
 import { scenarioFailure, scenarioSuccess } from './assert';
 import { arrow, circle } from './shapes';
-import { createScenario, currentPosition } from './util';
+import { createScenario, currentPosition, usiDests } from './util';
 
 const START = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1';
 
@@ -45,6 +45,8 @@ export interface WhatIfStage {
 export interface CastleLevel {
   aim: string;
   build: string;
+  setup?: string;
+  recap?: string;
 }
 export interface CastleStage {
   key: string;
@@ -89,13 +91,15 @@ export function openingStage(d: OpeningStage): IncompleteStage {
   for (; p < 2 * (d.skip ?? 0); p++) playWestern(pos, plies[p]);
   const levels: IncompleteLevel[] = d.levels.map((l) => {
     const sfen = makeSfen(pos);
+    const lastDests = p > 0 ? usiDests(plies[p - 1]) : undefined;
     const slice = plies.slice(p, Math.min(p + 2 * l.why.length, plies.length));
     const all = slice.map((u) => playWestern(pos, u));
     const western = all.filter((_, i) => i % 2 === 0);
     p += slice.length;
     return {
-      goal: `${l.aim} ${i18nFormat('il_movesList', western.join(', '))}`,
+      goal: `${l.aim.includes('==') ? l.aim : `==${l.aim}==`} ${i18nFormat('il_movesList', western.join(', '))}`,
       sfen,
+      lastDests,
       nbMoves: western.length,
       success: scenarioSuccess,
       failure: scenarioFailure,
@@ -142,12 +146,26 @@ export function whatIfStage(d: WhatIfStage): IncompleteStage {
   };
 }
 
+const ONE_WAY = new Set(['pawn', 'lance', 'knight']);
+
 export function castleStage(d: CastleStage): IncompleteStage {
   const levels: IncompleteLevel[] = d.levels.map((l) => {
-    const build = l.build.trim().split(/\s+/);
     const pos = startPos();
-    const western = build.map((u) => playWestern(pos, u, true));
-    const start = startPos();
+    for (const u of (l.setup ?? '').trim().split(/\s+/).filter(Boolean)) playWestern(pos, u, true);
+    pos.turn = 'sente';
+    const sfen = makeSfen(pos);
+    const start = parseSfen('standard', sfen, false).unwrap();
+    const allowed = new Set([...start.board.color('sente')].map((sq) => `${start.board.get(sq)!.role}@${sq}`));
+    const build = l.build.trim().split(/\s+/);
+    let anyOrder = false;
+    const western = build.map((u, i) => {
+      pos.turn = 'sente';
+      anyOrder ||= build.slice(i + 1).some((v) => pos.isLegal(parseUsi(v)!));
+      const text = playWestern(pos, u, true);
+      const to = parseUsi(u)!.to;
+      allowed.add(`${pos.board.get(to)!.role}@${to}`);
+      return text;
+    });
     const target = [...pos.board.color('sente')].map((sq) => ({ sq, piece: pos.board.get(sq)! }));
     const moved = target.filter(({ sq, piece }) => {
       const was = start.board.get(sq);
@@ -160,13 +178,23 @@ export function castleStage(d: CastleStage): IncompleteStage {
         return p?.color === piece.color && p.role === piece.role;
       });
     };
+    const failure = (level: Level, usiCList: UsiWithColor[]) => {
+      const now = currentPosition(level, usiCList);
+      return [...now.board.color('sente')].some((sq) => {
+        const role = now.board.get(sq)!.role;
+        return ONE_WAY.has(role) && !allowed.has(`${role}@${sq}`);
+      });
+    };
     return {
-      goal: `${l.aim} ${i18nFormat('il_movesAnyOrder', western.join(', '))}`,
-      sfen: START,
+      goal: `${l.aim} ${i18nFormat(anyOrder ? 'il_movesAnyOrder' : 'il_movesInOrder', western.join(', '))}`,
+      sfen,
       nbMoves: build.length,
       success,
+      failure,
+      failureHint: () => i18n('il_castleDeadEnd'),
       drawShapes: () => moved.map(({ sq }) => circle(makeSquareName(sq))),
       line: build,
+      recap: l.recap,
     };
   });
   return {

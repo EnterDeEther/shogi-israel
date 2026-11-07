@@ -105,7 +105,7 @@ export function initLevelConfig(level: Level): Config {
     turnColor: level.color,
     activeColor: level.color,
     orientation: level.color,
-    lastDests: [],
+    lastDests: level.lastDests ?? [],
     drawable: createDrawable(level),
   };
 }

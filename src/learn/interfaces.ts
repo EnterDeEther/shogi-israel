@@ -40,6 +40,7 @@ export interface Level {
 
   obstacles?: Key[];
   scenario?: UsiWithColor[];
+  lastDests?: Key[];
 
   drawShapes?: VmEvaluation<DrawShape[]>;
   squareHighlights?: VmEvaluation<SquareHighlight[]>;

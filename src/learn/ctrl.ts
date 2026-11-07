@@ -27,7 +27,7 @@ import {
 } from './shogi';
 import { play as playSound, playMove } from './sound';
 import { stageSlug, stageUrl } from './urls';
-import { currentPosition } from './util';
+import { currentPosition, usiDests } from './util';
 import { liveBounds } from '../lib/live-bounds';
 
 export default class LearnCtrl {
@@ -233,7 +233,7 @@ export default class LearnCtrl {
     vm.levelState = 'play';
     vm.coach = undefined;
     const sfen = makeSfen(currentPosition(vm.level, vm.usiCList)).split(' ');
-    this.shogiground.set({ sfen: { board: sfen[0], hands: sfen[2] }, lastDests: [] });
+    this.shogiground.set({ sfen: { board: sfen[0], hands: sfen[2] }, lastDests: keep ? usiDests(vm.usiCList[keep - 1].usi) : vm.level.lastDests ?? [] });
     this.refreshBoard();
     this.redraw();
   }

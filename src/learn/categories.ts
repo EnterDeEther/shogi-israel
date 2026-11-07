@@ -73,7 +73,7 @@ export const categories: Category[] = [
       staticRook,
       rangingRook,
       ...[
-        op.fourthFileRook, op.centralRook, op.thirdFileRook, op.yagura, op.bishopExchange,
+        op.fourthFileRook, op.yagura, op.centralRook, op.thirdFileRook, op.bishopExchange,
         op.ishida, op.quickIshida, op.opposingRook, op.doubleRangingRook, op.sidePawn, op.twistingRook,
       ].map(openingStage),
     ].map(createStage),

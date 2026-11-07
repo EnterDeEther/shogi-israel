@@ -1,13 +1,14 @@
 import { describe, expect, test } from 'bun:test';
 import { shogigroundDropDests, shogigroundMoveDests } from 'shogiops/compat';
-import { makeSfen } from 'shogiops/sfen';
+import { makeSfen, parseSfen } from 'shogiops/sfen';
 import { makeUsi, parseSquareName } from 'shogiops/util';
 import { pieceCanPromote, pieceForcePromote } from 'shogiops/variant/util';
 import { stages } from '../src/learn/categories';
+import { playWestern } from '../src/learn/opening';
 import he from '../src/learn/i18n/he.json';
 import type { Level, UsiWithColor } from '../src/learn/interfaces';
 import { illegalShogigroundDropDests, illegalShogigroundMoveDests } from '../src/learn/shogi';
-import { currentPosition } from '../src/learn/util';
+import { currentPosition, usiDests } from '../src/learn/util';
 
 function withOpponent(level: Level, list: UsiWithColor[]): UsiWithColor[] {
   const sc = level.scenario;
@@ -150,4 +151,53 @@ test('each "what if" punishment wins material', () => {
     const gain = material(currentPosition(l, l.scenario)) - material(currentPosition(l, []));
     expect(gain, `whatIf #${l.id}`).toBeGreaterThanOrEqual(4);
   }
+});
+
+test('every move name matches its scenario move', () => {
+  for (const s of stages)
+    for (const l of s.levels)
+      if (l.moveNames && l.scenario) {
+        const pos = parseSfen('standard', l.sfen, false).unwrap();
+        const names = l.scenario.map((u) => playWestern(pos, u.usi)).filter((_, i) => l.scenario![i].color === l.color);
+        expect(names, `${s.key} #${l.id}`).toEqual(l.moveNames);
+      }
+});
+
+const stageOf = (key: string) => stages.find((s) => s.key === key)!;
+const own = (usis: string[]): UsiWithColor[] => usis.map((usi) => ({ usi, color: 'sente' }));
+
+test('a castle says when a pawn, lance or knight left the plan', () => {
+  const mino = stageOf('rangingCastles').levels[0];
+  expect(mino.failure!(mino, own(['9g9f']))).toBe(true);
+  expect(mino.failure!(mino, own(['7g7f', '7f7e']))).toBe(true);
+  expect(mino.failure!(mino, own(['7g7f', '6g6f', '1g1f']))).toBe(false);
+  expect(mino.failure!(mino, own(['4i5h', '5h4i']))).toBe(false);
+  expect(mino.failureHint!(mino, own(['9g9f']))).toBe(he.il_castleDeadEnd);
+  const yagura = stageOf('staticCastles').levels[1];
+  expect(yagura.failure!(yagura, own(['1g1f']))).toBe(true);
+});
+
+test('castle upgrades start from the castle before them', () => {
+  const levels = stageOf('rangingCastles').levels;
+  expect(levels.map((l) => l.nbMoves)).toEqual([9, 2, 3, 5]);
+  const anyOrder = he.il_movesAnyOrder.split('%s')[0];
+  const inOrder = he.il_movesInOrder.split('%s')[0];
+  expect(levels.map((l) => l.goal.includes(anyOrder) ? 'any' : l.goal.includes(inOrder) ? 'order' : '')).toEqual(['any', 'order', 'order', 'any']);
+  const after = (l: Level) => makeSfen(currentPosition(l, own(l.line!))).split(' ')[0];
+  expect(levels[1].sfen.split(' ')[0]).toBe(after(levels[0]));
+  expect(levels[2].sfen.split(' ')[0]).toBe(after(levels[1]));
+  for (const l of [...levels, ...stageOf('staticCastles').levels]) expect(l.recap, `castle #${l.id}`).toBeTruthy();
+});
+
+test('an exercise that starts after the opponent moved shows that move', () => {
+  expect(stageOf('primitiveClimbingSilver').levels[0].lastDests).toEqual(['8e', '8f']);
+  const ffr = stageOf('fourthFileRook').levels;
+  expect(ffr[0].lastDests).toBeUndefined();
+  const prev = ffr[0].scenario!;
+  expect(ffr[1].lastDests).toEqual(usiDests(prev[prev.length - 1].usi));
+});
+
+test('opening tasks mark the aim as well as the move list', () => {
+  for (const key of ['fourthFileRook', 'yagura', 'primitiveClimbingSilver', 'spearingSparrow'])
+    for (const l of stageOf(key).levels) expect(l.goal.startsWith('=='), `${key} #${l.id}`).toBe(true);
 });
