@@ -27,3 +27,9 @@ test('lesson text converts every move and leaves other text alone', () => {
   expect(lessonMove('טור 2, שורה 6', 'hebrew')).toBe('טור 2, שורה 6');
   expect(lessonMove('P-76', 'letters')).toBe('P-76');
 });
+
+test('lesson moves write the own king as 王 and the opponent king as 玉', () => {
+  expect(lessonMove('K-48', 'kanji')).toBe('王-48');
+  expect(lessonMove('K-42', 'kanji', true)).toBe('玉-42');
+  expect(localMove('K-48', 'kanji')).toBe('玉-48');
+});

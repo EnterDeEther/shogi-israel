@@ -111,3 +111,9 @@ export function pieceMovesHighlihts(piece: Piece, key: Key): SquareHighlight[] {
     return { key: k, className: 'help' };
   });
 }
+
+export function promotionZoneHighlights(): SquareHighlight[] {
+  return ['a', 'b', 'c'].flatMap(r =>
+    [...'987654321'].map(f => ({ key: `${f}${r}` as Key, className: 'help' })),
+  );
+}

@@ -8,7 +8,7 @@ import { i18n } from '../i18n';
 import { obstaclesCaptured } from '../assert';
 import type { IncompleteLevel, IncompleteStage } from '../interfaces';
 import { createLevel } from '../level';
-import { arrow, initial, pieceMovesHighlihts } from '../shapes';
+import { arrow, initial, pieceMovesHighlihts, promotionZoneHighlights } from '../shapes';
 import { toPiece } from '../util';
 
 const levels: IncompleteLevel[] = [
@@ -49,6 +49,7 @@ const levels: IncompleteLevel[] = [
     nbMoves: 3,
     success: obstaclesCaptured,
     obstacles: ['5d', '4d', '4c'],
+    squareHighlights: promotionZoneHighlights,
   },
   {
     goal: i18n('learn:silverSummary'),
@@ -65,7 +66,7 @@ const levels: IncompleteLevel[] = [
     sfen: '9/9/9/9/9/4+S4/9/9/9 b -',
     nbMoves: 2,
     success: obstaclesCaptured,
-    obstacles: ['5d'],
+    obstacles: ['5g', '6f'],
     squareHighlights: initial(pieceMovesHighlihts(toPiece('+S'), '5f')),
   },
 ];

@@ -8,7 +8,7 @@ import { i18n } from '../i18n';
 import { obstaclesCaptured } from '../assert';
 import type { IncompleteLevel, IncompleteStage } from '../interfaces';
 import { createLevel } from '../level';
-import { arrow, circle, initial, pieceMovesHighlihts } from '../shapes';
+import { arrow, circle, initial, pieceMovesHighlihts, promotionZoneHighlights } from '../shapes';
 import { toPiece } from '../util';
 
 const levels: IncompleteLevel[] = [
@@ -28,7 +28,7 @@ const levels: IncompleteLevel[] = [
     nbMoves: 7,
     success: obstaclesCaptured,
     obstacles: ['8h', '7i', '7e', '5i', '5g', '4h'],
-    drawShapes: initial([circle(toPiece('B')), circle('5e'), arrow('5e', '8h')]),
+    drawShapes: initial([circle(toPiece('B')), circle('6f'), arrow('6f', '8h')]),
   },
   {
     goal: i18n('learn:bishopPromotion'),
@@ -37,6 +37,7 @@ const levels: IncompleteLevel[] = [
     nbMoves: 3,
     success: obstaclesCaptured,
     obstacles: ['2b', '3b', '8g'],
+    squareHighlights: promotionZoneHighlights,
   },
   {
     goal: i18n('learn:bishopSummary'),
