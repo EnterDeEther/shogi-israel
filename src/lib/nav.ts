@@ -52,7 +52,7 @@ export const NAV: NavItem[] = [
       { href: '/learn/#level-intermediate', label: 'בינוניים', sub: true },
       { href: '/learn/#level-advanced', label: 'מתקדמים', sub: true },
       { href: '/rules/', label: 'חוקים בסיסיים', hint: 'קריאה: כל החוקים מאפס', icon: 'rules' },
-      { href: '/learn/guide/', label: 'פתיחות, מבצרים ואסטרטגיה', hint: 'מה זה ולמה', icon: 'castle' },
+      { href: '/learn/guide/', label: 'פתיחות, מבצרים ואסטרטגיה', hint: 'איך משחק בנוי', icon: 'castle' },
       { href: '/tsume/', label: 'בעיות מט', hint: 'אימון לסוף המשחק: מט ב־1 עד 7 מהלכים', icon: 'king' },
     ],
   },

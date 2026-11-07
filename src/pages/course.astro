@@ -314,7 +314,16 @@ const CHECK = [
     $('[data-check-count]').textContent = `שאלה ${i + 1} מתוך ${checks.length}`;
     $$<HTMLButtonElement>('[data-check-answer]', checks[i])[0]?.focus();
   }
-  $('[data-check-start]').addEventListener('click', () => { score = 0; showStep('check'); showCheck(0); });
+  function resetChecks() {
+    checks.forEach((c) => {
+      $$<HTMLButtonElement>('[data-check-answer]', c).forEach((x) => { x.disabled = false; delete x.dataset.result; });
+      const why = $('[data-check-why]', c);
+      why.hidden = true;
+      why.querySelector('[data-verdict]')?.remove();
+      $('[data-check-next]', c).hidden = true;
+    });
+  }
+  $('[data-check-start]').addEventListener('click', () => { score = 0; resetChecks(); showStep('check'); showCheck(0); });
   checks.forEach((c, i) => {
     $$<HTMLButtonElement>('[data-check-answer]', c).forEach((b) => b.addEventListener('click', () => {
       const right = b.dataset.checkAnswer === c.dataset.answer;
@@ -326,7 +335,10 @@ const CHECK = [
       });
       const why = $('[data-check-why]', c);
       why.hidden = false;
-      why.prepend(right ? 'נכון. ' : 'לא בדיוק. ');
+      const verdict = document.createElement('span');
+      verdict.dataset.verdict = '';
+      verdict.textContent = right ? 'נכון. ' : 'לא בדיוק. ';
+      why.prepend(verdict);
       const next = $<HTMLButtonElement>('[data-check-next]', c);
       next.hidden = false;
       next.focus();
