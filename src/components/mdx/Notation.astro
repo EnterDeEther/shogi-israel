@@ -4,7 +4,7 @@ interface Props { raw?: boolean }
 const { raw = false } = Astro.props;
 const text = (await Astro.slots.render('default')).replace(/<[^>]+>/g, '').trim();
 ---
-{raw ? <bdi dir="ltr" class="nt">{text}</bdi> : <bdi dir="ltr" class="nt" data-mv={text}>{lessonMove(text, 'hebrew')}</bdi>}
+{raw ? <bdi dir="ltr" class="nt">{text}</bdi> : <bdi dir="auto" class="nt" data-mv={text}>{lessonMove(text, 'hebrew')}</bdi>}
 
 <script>
   import { lessonMove } from '../../lib/move-notation';

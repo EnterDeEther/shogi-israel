@@ -8,7 +8,6 @@ import { RANKS, rankFor, stepXp, XP } from '../lib/xp';
 import { emptyProgress } from '../lib/progress-sync';
 import { accountsEnabled } from '../lib/account-config';
 import { pageExists } from '../lib/live';
-import { WHATSAPP_URL } from '../lib/nav';
 
 const empty = emptyProgress();
 const PATHS = [
@@ -26,50 +25,51 @@ const levelEnd = (units: typeof CURRICULUM, route: 'main' | 'chess') => {
   });
 };
 const accountsOn = accountsEnabled && pageExists('/account/');
+const courseTitle = accountsOn ? 'מסלול לימוד אישי' : 'מסלול הלימוד';
 
 const CHECK = [
   {
     sfen: '4k4/9/9/9/9/9/4P4/9/4K4 b P 1', highlight: '54',
     q: 'יש לך חייל ביד. מותר להצניח אותו על המשבצת המסומנת?',
     options: [['yes', 'כן'], ['no', 'לא']], answer: 'no',
-    why: 'אסור: כבר יש לך חייל לא מוכתר באותו טור. שני חיילים בטור אחד הם מהלך לא חוקי.',
+    why: 'אסור: בטור הזה כבר יש לך חייל לא מוכתר, ואי אפשר להצניח חייל שני לאותו טור.',
   },
   {
     sfen: '4k4/9/4P4/9/9/9/9/9/4K4 b G 1', highlight: '',
     q: 'יש לך גנרל זהב ביד. לאן ⟦תצניח|תצניחי⟧ אותו כדי לתת מט?',
-    options: [['5b', 'ישר מול המלך, צמוד אליו'], ['4b', 'באלכסון, ליד המלך'], ['4a', 'בשורה של המלך, משבצת לצדו']], answer: '5b',
+    options: [['5b', 'ישר מול המלך, צמוד אליו'], ['4b', 'באלכסון, ליד המלך'], ['4a', 'בשורה של המלך, משבצת לצידו']], answer: '5b',
     why: 'ישר מול המלך: החייל שומר על הגנרל, והגנרל סוגר את כל המשבצות שהמלך יכול לברוח אליהן.',
   },
   {
     sfen: 'lnsgkgsnl/5r1b1/ppppp2pp/5pp2/7P1/2P6/PP1PPPP1P/1B5R1/LNSGKGSNL b - 7', highlight: '',
     q: 'אחרי כמה מהלכי פתיחה: מי משחק כאן צריח נודד?',
     options: [['gote', 'המשיב (למעלה)'], ['sente', 'הפותח (למטה)'], ['both', 'שניהם']], answer: 'gote',
-    why: 'הצריח של המשיב עבר מהצד הימני שלו לטור 4. הצריח של הפותח נשאר במקומו: צריח קבוע.',
+    why: 'הצריח של המשיב עבר מטור 8 לצד השני, לטור 4: צריח נודד. הצריח של הפותח נשאר בטור 2: צריח קבוע.',
   },
 ];
 ---
 <Base
-  title="מסלול לימוד אישי: מאיפה מתחילים"
+  title={`${courseTitle}: מאיפה מתחילים`}
   description="מסלול לימוד שוגי בעברית ובחינם, בשלוש רמות: מתחילים, בינוניים ומתקדמים. כל כלי וכל כלל מוסבר לפני שמשתמשים בו, ויש גם מסלול לשחקני שחמט."
 >
   <div class="wrap page" data-course>
     <p class="eyebrow">⟦למד|למדי⟧ לשחק</p>
-    <h1>מסלול לימוד אישי<span data-route-only="chess" hidden> לשחקני שחמט</span></h1>
-    <p class="lead" data-route-only="main">כל מה שיש באתר ללמוד, בסדר אחד ובשלוש רמות: מתחילים, בינוניים ומתקדמים. כל כלי וכל כלל מוסבר לפני שמשתמשים בו, כך שאפשר להתחיל בלי לדעת כלום, גם לא שחמט.</p>
-    <p class="lead" data-route-only="chess" hidden>מסלול נפרד, רק עם מה שחדש לשחקן שחמט: חמשת הכלים החדשים, הכלל שאין בשחמט, ומבצרים במקום הצרחה. מה שכבר מוכר לך הוא חזרה מהירה, וכל הסבר משווה לשחמט. <a href="/course/?route=main" data-route-switch="main">למסלול הרגיל, בלי השוואות לשחמט</a></p>
+    <h1>{courseTitle}<span data-route-only="chess" hidden> לשחקני שחמט</span></h1>
+    <p class="lead" data-route-only="main">כל השיעורים באתר, לפי הסדר ובשלוש רמות. כל כלי וכל כלל מוסבר לפני שמשתמשים בו, אז אפשר להתחיל בלי לדעת כלום, גם לא שחמט.</p>
+    <p class="lead" data-route-only="chess" hidden>מסלול נפרד, רק עם מה שחדש לשחקן שחמט: חמשת הכלים שזזים אחרת, החזרת כלים שלכדת ללוח, ומבצרים במקום הצרחה. כל הסבר משווה לשחמט. <a href="/course/?route=main" data-route-switch="main">למסלול הרגיל, בלי השוואות לשחמט</a></p>
     <p class="small muted" data-route-only="main"><a href="/course/?route=chess" data-route-switch="chess">⟦משחק|משחקת⟧ שחמט? יש מסלול נפרד בשבילך</a></p>
-    <p class="phases-note small muted">בכל שיעור כתוב לאיזה משלושת שלבי המשחק הוא שייך: פתיחה, אמצע המשחק או סוף המשחק.<InfoTip id="phases" /></p>
+    <p class="phases-note small muted">בחלק מהשיעורים כתוב אם הם שייכים לפתיחה, לאמצע המשחק או לסוף המשחק.<InfoTip id="phases" /></p>
 
     <section class="gate card" data-gate aria-labelledby="gate-h">
       <h2 id="gate-h">מסלול אישי, נקודות ודרגות</h2>
       {accountsOn ? (
         <>
-          <p>עם חשבון (בחינם) המסלול נהיה שלך: ⟦אתה|את⟧ עונה על שתי שאלות ⟦ומקבל|ומקבלת⟧ נקודת התחלה, רואה בכל רגע את הצעד הבא, ⟦וצובר|וצוברת⟧ נקודות שמעלות אותך בדרגה, מ־15 קיו ועד דאן (<a href="/ranks/#site">דרגות של לימוד, לא דרגה רשמית</a>). ההתקדמות נשמרת בכל מכשיר.</p>
+          <p>עם חשבון בחינם ⟦תענה|תעני⟧ על שתי שאלות ⟦ותקבל|ותקבלי⟧ נקודת התחלה, ⟦תראה|תראי⟧ תמיד מה הצעד הבא, ⟦ותצבור|ותצברי⟧ נקודות שמעלות אותך בדרגה (<a href="/ranks/#site">דרגת לימוד, לא דרגה רשמית</a>). ההתקדמות נשמרת בכל מכשיר.</p>
           <p class="small muted">מה שכבר עשית בדפדפן הזה נכנס לחשבון ונספר.</p>
           <p class="gate-cta"><a class="btn" href="/account/?mode=signup"><span>⟦פתח|פתחי⟧ חשבון בחינם</span></a> <a href="/account/?mode=signin">כבר יש לך חשבון? כניסה</a></p>
         </>
       ) : (
-        <p>המסלול האישי ייפתח יחד עם החשבונות באתר. בינתיים אפשר ללמוד לפי הסדר שכאן.</p>
+        <p>כל אלה יגיעו כשיהיה אפשר לפתוח חשבון באתר.</p>
       )}
       <p class="small muted">כל השיעורים פתוחים גם בלי חשבון. הנה המסלול המלא:</p>
     </section>
@@ -78,10 +78,10 @@ const CHECK = [
       <h2 id="place-h">מאיפה מתחילים?</h2>
       <div data-place-step="questions">
         <fieldset class="q">
-          <legend>כמה שוגי ⟦שיחקת|שיחקת⟧?</legend>
+          <legend>כמה שוגי שיחקת?</legend>
           <div class="opts" role="group">
             <button type="button" class="opt" data-exp="none" aria-pressed="false"><strong>אף פעם</strong><span class="small muted">או רק ראיתי פעם</span></button>
-            <button type="button" class="opt" data-exp="rules" aria-pressed="false"><strong>אני ⟦מכיר|מכירה⟧ את החוקים</strong><span class="small muted">יודע איך הכלים זזים</span></button>
+            <button type="button" class="opt" data-exp="rules" aria-pressed="false"><strong>אני ⟦מכיר|מכירה⟧ את החוקים</strong><span class="small muted">איך הכלים זזים, הצנחה, שח ומט</span></button>
             <button type="button" class="opt" data-exp="plays" aria-pressed="false"><strong>אני ⟦משחק|משחקת⟧</strong><span class="small muted">שיחקתי לא מעט משחקים</span></button>
           </div>
         </fieldset>
@@ -96,14 +96,14 @@ const CHECK = [
           <button type="button" class="btn" data-place-go><span>זהו, ⟦הראה|הראי⟧ לי מאיפה להתחיל</span></button>
           <button type="button" class="btn btn-ghost" data-check-start hidden><span>בדיקה קצרה על הלוח (רשות, שתי דקות)</span></button>
         </div>
-        <p class="small muted"><button type="button" class="link" data-manual>⟦אבחר|אבחר⟧ רמה בעצמי</button> · אפשר לשנות את זה בכל רגע, וכל השיעורים נשארים פתוחים.</p>
+        <p class="small muted"><button type="button" class="link" data-manual>אבחר רמה בעצמי</button> · אפשר לשנות את זה בכל רגע, וכל השיעורים נשארים פתוחים.</p>
       </div>
 
       <div data-place-step="check" hidden>
         <p class="small muted" data-check-count></p>
         {CHECK.map((c, i) => (
           <div class="check" data-check={i} data-answer={c.answer} hidden>
-            <Board sfen={c.sfen} highlight={c.highlight} toggle={false} size="compact" />
+            <Board sfen={c.sfen} highlight={c.highlight} toggle={false} size="compact" reader />
             <p class="check-q"><strong>{c.q}</strong></p>
             <div class="opts" role="group">
               {c.options.map(([v, label]) => <button type="button" class="opt" data-check-answer={v}><strong>{label}</strong></button>)}
@@ -126,7 +126,7 @@ const CHECK = [
             </button>
           ))}
         </div>
-        <label class="chess-box small"><input type="checkbox" data-pick-chess /> ⟦אני משחק|אני משחקת⟧ שחמט: המסלול לשחקני שחמט</label>
+        <label class="chess-box small"><input type="checkbox" data-pick-chess /> אני ⟦משחק|משחקת⟧ שחמט: המסלול לשחקני שחמט</label>
         <p class="small"><button type="button" class="link" data-back-questions>חזרה לשאלות</button></p>
       </div>
     </section>
@@ -156,8 +156,8 @@ const CHECK = [
         <details class="rank-how">
           <summary class="small">איך צוברים נקודות?</summary>
           <ul class="small">
-            <li>כוכב בתרגול על הלוח: {XP.star} נקודות (עד 3 כוכבים בכל תרגיל)</li>
-            <li>שיעור בחוקים הבסיסיים: {XP.rules}</li>
+            <li>תרגיל על הלוח: {XP.star} כפול הניקוד בתרגיל (עד 3)</li>
+            <li>שיעור כתוב: {XP.rules}</li>
             <li>בעיית מט: {XP.tsume[1]} (מט ב־1), {XP.tsume[3]} (ב־3), {XP.tsume[5]} (ב־5), {XP.tsume[7]} (ב־7)</li>
             <li>משחק ראשון שסיימת בכל רמה נגד המחשב: {XP.played}</li>
             <li>ניצחון ראשון בכל רמה: {XP.won} כפול מספר הרמה</li>
@@ -165,15 +165,15 @@ const CHECK = [
             <li>בונוס על כל צעד שהשלמת במסלול: {XP.step}</li>
             <li>בונוס על חלק שהשלמת כולו (למשל "כלי השוגי"): {XP.unit}</li>
           </ul>
-          <p class="small muted">כל דבר נספר פעם אחת: חזרה על תרגיל או בעיה שכבר פתרת לא מוסיפה נקודות, ושיפור מכוכב אחד לשלושה מוסיף רק את ההפרש. צעד שסומן "כבר מוכר" לא נותן נקודות עד ⟦שתעשה|שתעשי⟧ אותו. הדרגות נקראות על שם דרגות השוגי, קיו ודאן, אבל מודדות התקדמות בלימוד באתר, לא כוח משחק (<a href="/ranks/">איך זה עובד בעולם</a>). יש {RANKS.length} דרגות, מ־{RANKS[0].name} ועד {RANKS[RANKS.length - 1].name}.</p>
+          <p class="small muted">כל דבר נספר פעם אחת: חזרה על תרגיל או בעיה שכבר פתרת לא מוסיפה נקודות, ושיפור מנקודה אחת לשלוש מוסיף רק את ההפרש. צעד שסומן "כבר מוכר" לא נותן נקודות עד ⟦שתעשה|שתעשי⟧ אותו. יש {RANKS.length} דרגות, מ־{RANKS[0].name} ועד {RANKS[RANKS.length - 1].name}.</p>
         </details>
       </div>
     </section>
 
     <section class="done-all card" data-done-all hidden>
       <h2>סיימת את המסלול!</h2>
-      <p>עברת את כל שלוש הרמות. מכאן ⟦המשך|המשיכי⟧ לשחק: נגד המחשב ברמות גבוהות יותר, עם ישראלים בקהילה, ומול שחקנים מכל העולם.</p>
-      <p><a href="/play/?level=5">נגד המחשב, מרמה 5 והלאה</a> · <a href="/tsume/7/">בעיות מט ב־7 מהלכים</a> · <a href={WHATSAPP_URL} rel="noopener">קהילת הוואטסאפ</a> · <a href="/lishogi/">יריבים מכל העולם בלישוגי</a></p>
+      <p>עברת את כל שלוש הרמות. מכאן ⟦המשך|המשיכי⟧ לשחק ולתרגל:</p>
+      <p><a href="/play/?level=5">נגד המחשב, מרמה 5 והלאה</a> · <a href="/tsume/7/">בעיות מט ב־7 מהלכים</a> · <a href="/lishogi/">יריבים מכל העולם בלישוגי</a></p>
     </section>
 
     <div class="overall" data-overall hidden>
@@ -192,7 +192,7 @@ const CHECK = [
         {LEVELS.map((l, i) => (
           <section class="level" id={route === 'main' ? l : `${route}-${l}`} data-level={l} aria-labelledby={`${route}-${l}-h`}>
             <header class="level-head">
-              <p class="level-tag">רמה {i + 1} מתוך {LEVELS.length} · בסופה בערך {levelEnd(units, route)[i]} בדרגות הלימוד<InfoTip id="rank" /></p>
+              <p class="level-tag">רמה {i + 1} מתוך {LEVELS.length}{accountsOn && <> · בסופה ⟦תגיע|תגיעי⟧ בערך ל־{levelEnd(units, route)[i]} בדרגות הלימוד<InfoTip id="rank" /></>}</p>
               <h2 id={`${route}-${l}-h`}>{info[l].title}</h2>
               <p class="level-goal"><strong>המטרה: {info[l].goal}.</strong> {info[l].why}</p>
               <p class="level-known small" data-level-known hidden>כבר מוכר לך, לפי נקודת ההתחלה. הכול נשאר פתוח לחזרה, וצעד ⟦שתעשה|שתעשי⟧ ייספר.</p>
@@ -297,8 +297,8 @@ const CHECK = [
   }
   const whyFor = (start: CourseLevel, checked: boolean) =>
     checked
-      ? `ענית נכון על ${score} מתוך 3 בבדיקה, ולכן ${LEVEL_INFO[start].title}.`
-      : start === 'beginner' ? 'מתחילים מההתחלה: כל כלי וכל כלל, אחד אחרי השני.' : 'החוקים כבר מוכרים לך, אז מתחילים בבינוניים. רמת המתחילים נשארת פתוחה לרענון.';
+      ? `ענית נכון על ${score} מתוך 3, ולכן זו נקודת ההתחלה שלך.`
+      : start === 'beginner' ? 'מתחילים מההתחלה: כל כלי וכל כלל, אחד אחרי השני.' : 'החוקים כבר מוכרים לך, אז מתחילים ברמת הבינוניים. רמת המתחילים נשארת פתוחה לחזרה.';
 
   $$<HTMLButtonElement>('[data-exp]').forEach((b) => b.addEventListener('click', () => { exp = b.dataset.exp as Experience; syncQuestions(); }));
   $$<HTMLButtonElement>('[data-chess]').forEach((b) => b.addEventListener('click', () => { chess = b.dataset.chess === 'yes'; syncQuestions(); render(); }));
@@ -314,7 +314,16 @@ const CHECK = [
     $('[data-check-count]').textContent = `שאלה ${i + 1} מתוך ${checks.length}`;
     $$<HTMLButtonElement>('[data-check-answer]', checks[i])[0]?.focus();
   }
-  $('[data-check-start]').addEventListener('click', () => { score = 0; showStep('check'); showCheck(0); });
+  function resetChecks() {
+    checks.forEach((c) => {
+      $$<HTMLButtonElement>('[data-check-answer]', c).forEach((x) => { x.disabled = false; delete x.dataset.result; });
+      const why = $('[data-check-why]', c);
+      why.hidden = true;
+      why.querySelector('[data-verdict]')?.remove();
+      $('[data-check-next]', c).hidden = true;
+    });
+  }
+  $('[data-check-start]').addEventListener('click', () => { score = 0; resetChecks(); showStep('check'); showCheck(0); });
   checks.forEach((c, i) => {
     $$<HTMLButtonElement>('[data-check-answer]', c).forEach((b) => b.addEventListener('click', () => {
       const right = b.dataset.checkAnswer === c.dataset.answer;
@@ -326,7 +335,10 @@ const CHECK = [
       });
       const why = $('[data-check-why]', c);
       why.hidden = false;
-      why.prepend(right ? 'נכון. ' : 'לא בדיוק. ');
+      const verdict = document.createElement('span');
+      verdict.dataset.verdict = '';
+      verdict.textContent = right ? 'נכון. ' : 'לא בדיוק. ';
+      why.prepend(verdict);
       const next = $<HTMLButtonElement>('[data-check-next]', c);
       next.hidden = false;
       next.focus();
@@ -350,7 +362,7 @@ const CHECK = [
   $<HTMLInputElement>('[data-pick-chess]').addEventListener('change', (e) => { chess = (e.target as HTMLInputElement).checked; syncQuestions(); render(); });
   $$<HTMLButtonElement>('[data-pick]').forEach((b) => b.addEventListener('click', () => {
     const start = b.dataset.pick as CourseLevel;
-    save($<HTMLInputElement>('[data-pick-chess]').checked ? 'chess' : 'main', start, `בחרת להתחיל ב${LEVEL_INFO[start].title}.`);
+    save($<HTMLInputElement>('[data-pick-chess]').checked ? 'chess' : 'main', start, `בחרת להתחיל ברמת ה${LEVEL_INFO[start].title}.`);
   }));
 
   function render(saved: SyncedProgress = readLocal(), why?: string) {

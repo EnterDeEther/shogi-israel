@@ -39,6 +39,13 @@ const NAME_HE_PROMOTED: Partial<Record<PieceType, string>> = {
 };
 
 export const SIDE_HE: Record<Side, string> = { sente: 'הפותח', gote: 'המשיב' };
+const READER_HE: Record<Side, string> = { sente: 'שלך', gote: 'של היריב' };
+
+const ownerOf = (side: Side, reader: boolean): string => (reader ? READER_HE[side] : `של ${SIDE_HE[side]}`);
+
+export function handLabel(side: Side, reader = false): string {
+  return `ביד ${ownerOf(side, reader)}`;
+}
 
 export function letterOf(p: Piece): string {
   return (p.promoted ? '+' : '') + LETTER[p.type];
@@ -103,7 +110,7 @@ export function parseSfen(sfen: string): Position {
   return { squares, hands: handsOut, turn: turn === 'w' ? 'gote' : 'sente' };
 }
 
-export function describe(pos: Position): string[] {
+export function describe(pos: Position, reader = false): string[] {
   const lines: string[] = [];
   for (const side of ['sente', 'gote'] as Side[]) {
     const own = pos.squares.filter((s) => s.piece?.side === side);
@@ -114,14 +121,14 @@ export function describe(pos: Position): string[] {
       groups.set(n, [...(groups.get(n) ?? []), s.id]);
     }
     const parts = [...groups.entries()].map(([n, sq]) => `${n} ב־${sq.join(', ')}`);
-    lines.push(`${SIDE_HE[side]}: ${parts.join('; ')}.`);
+    lines.push(`${reader ? `הכלים ${READER_HE[side]}` : SIDE_HE[side]}: ${parts.join('; ')}.`);
   }
   for (const side of ['sente', 'gote'] as Side[]) {
     const h = pos.hands[side];
     const entries = Object.entries(h) as [PieceType, number][];
     if (entries.length) {
       lines.push(
-        `ביד של ${SIDE_HE[side]}: ` +
+        `${handLabel(side, reader)}: ` +
           entries.map(([t, n]) => (n === 1 ? NAME_HE[t] : `${n} ${NAME_HE_PLURAL[t]}`)).join(', ') + '.',
       );
     }
@@ -130,7 +137,7 @@ export function describe(pos: Position): string[] {
   return lines;
 }
 
-export function squareLabel(s: Square): string {
+export function squareLabel(s: Square, reader = false): string {
   if (!s.piece) return `משבצת ${s.id}, ריקה`;
-  return `משבצת ${s.id}, ${nameOf(s.piece)} של ${SIDE_HE[s.piece.side]}`;
+  return `משבצת ${s.id}, ${nameOf(s.piece)} ${ownerOf(s.piece.side, reader)}`;
 }

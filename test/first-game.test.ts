@@ -67,5 +67,8 @@ describe('first game: nothing named before it is introduced', () => {
   test('piece marks are valid and stripped for screen readers', () => {
     for (const t of texts) for (const m of t.matchAll(/\{([^}]*)\}/g)) expect(m[1]).toMatch(/^\+?[KRBGSNLP]$/);
     expect(plainText('זה חייל {P}, הכלי')).toBe('זה חייל, הכלי');
+    for (const t of texts) expect((t.match(/\*\*/g) ?? []).length % 2, t).toBe(0);
+    expect(plainText('צריח מוכתר נקרא **דרקון** {+R}: הוא נע')).toBe('צריח מוכתר נקרא דרקון: הוא נע');
+    expect(plainText('נכנס ל**אזור ההכתרה**.')).toBe('נכנס לאזור ההכתרה.');
   });
 });

@@ -55,7 +55,10 @@ const GUIDE: Record<string, { anchor: string; text: string }> = {
 };
 
 const PHASE_BY_CATEGORY: Record<string, string> = { openings: 'il_phaseOpening', castles: 'il_phaseCastles', strategy: 'il_phaseMiddle' };
-const PHASE_BY_STAGE: Record<string, string> = { whatIf: 'il_phaseOpening', checkmate1: 'il_phaseEnd', value: 'il_phaseMiddle' };
+const PHASE_BY_STAGE: Record<string, string> = {
+  whatIf: 'il_phaseOpening', checkmate1: 'il_phaseEnd', value: 'il_phaseMiddle',
+  sittingSilver: 'il_phaseCastles', bishopSittingSilver: 'il_phaseCastles',
+};
 const LEVEL_KEY: Record<CourseLevel, string> = { beginner: 'il_courseBeginner', intermediate: 'il_courseIntermediate', advanced: 'il_courseAdvanced' };
 const phaseOf = (categoryKey: string, stageKey?: string): string | undefined => (stageKey && PHASE_BY_STAGE[stageKey]) || PHASE_BY_CATEGORY[categoryKey];
 const phaseChip = (phase: string | undefined, stop = false) =>
@@ -79,7 +82,7 @@ function inline(text: string): DocumentFragment {
       });
     else if (part.startsWith('**')) f.append(el('strong', {}, part.slice(2, -2)));
     else if (part.startsWith('{')) f.append(el('span', { class: 'pchip', 'data-p': part.slice(1, -1), 'aria-hidden': 'true' }));
-    else f.append(el('bdi', { dir: 'ltr', class: 'mvn' }, lessonMove(part)));
+    else f.append(el('bdi', { dir: 'auto', class: 'mvn' }, lessonMove(part)));
   });
   return f;
 }
@@ -112,13 +115,14 @@ export function stageImg(key: string): HTMLElement {
   if (role) return el('span', { class: 'stage-img piece-img', 'aria-hidden': 'true' }, el('piece', { class: `${role} sente` }));
   return el('span', { class: 'stage-img seal-img', 'aria-hidden': 'true', lang: 'ja' }, sealStages[key] ?? '将');
 }
+const levelScores = (ctrl: LearnCtrl, s: Stage) => ctrl.progress.get(s.key).slice(0, s.levels.length);
 const sealImg = (ch: string) => el('span', { class: 'stage-img seal-img', 'aria-hidden': 'true', lang: 'ja' }, ch);
 
 function stageStatuses(ctrl: LearnCtrl): Map<string, 'done' | 'ongoing' | 'future'> {
   const out = new Map<string, 'done' | 'ongoing' | 'future'>();
   let prevComplete = true;
   for (const s of ctrl.stages) {
-    const res = ctrl.progress.get(s.key).filter((x) => x > 0);
+    const res = levelScores(ctrl, s).filter((x) => x > 0);
     if (res.length === s.levels.length) out.set(s.key, 'done');
     else if (prevComplete || res.length > 0) {
       out.set(s.key, 'ongoing');
@@ -226,7 +230,7 @@ function renderHome(ctrl: LearnCtrl, _root: HTMLElement, q: Q, go: Go, stageLink
 
   const ribbon = (s: Stage, status: string) => {
     if (status === 'future') return null;
-    const res = ctrl.progress.get(s.key).filter((x) => x > 0);
+    const res = levelScores(ctrl, s).filter((x) => x > 0);
     const content: Child =
       status === 'ongoing'
         ? res.length > 0 ? el('bdi', { dir: 'ltr' }, `${res.length} / ${s.levels.length}`) : i18n('play')
@@ -249,7 +253,7 @@ function renderHome(ctrl: LearnCtrl, _root: HTMLElement, q: Q, go: Go, stageLink
         el('div', { class: 'categ_stages' },
           ...c.stages.map((s) => {
             const status = statuses.get(s.key)!;
-            const res = ctrl.progress.get(s.key).filter((x) => x > 0);
+            const res = levelScores(ctrl, s).filter((x) => x > 0);
             const a = stageLink(s, `stage ${status}`,
               ribbon(s, status),
               stageImg(s.key),
@@ -354,7 +358,7 @@ function renderLesson(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go, stageLin
     overlay.hidden = false;
     overlay.className = 'learn__overlay completed';
     const next = nextStage(stage.id);
-    const avg = Math.floor(average(ctrl.progress.get(stage.key)));
+    const avg = Math.floor(average(levelScores(ctrl, stage)));
     overlay.replaceChildren(
       el('div', { class: 'screen', role: 'dialog', 'aria-labelledby': 'learn-ov-title' },
         stars(avg),
@@ -603,7 +607,7 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
   const total = level.why?.length ?? 0;
   const name = (i?: number) => (i === undefined ? undefined : level.moveNames?.[i]);
   const reply = (i: number) => el('div', { class: 'reply' },
-    el('p', { class: 'eyebrow' }, i18n('il_opponentPlayed'), ' ', el('bdi', { dir: 'ltr', class: 'mv mvn' }, lessonMove(level.replyNames?.[i] ?? '', currentPieceSet(), true))),
+    el('p', { class: 'eyebrow' }, i18n('il_opponentPlayed'), ' ', el('bdi', { dir: 'auto', class: 'mv mvn' }, lessonMove(level.replyNames?.[i] ?? '', currentPieceSet(), true))),
     el('p', {}, rich(level.replies![i])));
   const btn = (label: string, fn: () => void, primary = true, fid = 'coach-main') =>
     el('button', { type: 'button', class: `btn${primary ? ' primary' : ''}`, 'data-fid': fid, 'data-coach-focus': primary, onclick: go(fn) }, label);
@@ -622,7 +626,7 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
     const i = tip.idx!;
     body = [
       el('h2', {}, el('span', { class: 'tick', 'aria-hidden': 'true' }, '✓'), ' ',
-        name(i) ? el('bdi', { dir: 'ltr', class: 'mvn' }, lessonMove(name(i)!)) : i18n('il_goodMove')),
+        name(i) ? el('bdi', { dir: 'auto', class: 'mvn' }, lessonMove(name(i)!)) : i18n('il_goodMove')),
       el('p', { class: 'lead' }, rich(level.why?.[i] ?? '')),
       total > 1 ? steps(i + 1, total) : null,
       isCurrent && el('div', { class: 'buttons' },
@@ -631,7 +635,7 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
   } else if (tip.kind === 'reply') {
     const i = tip.idx!;
     body = [
-      el('h2', {}, i18n('il_opponentPlayed'), ' ', el('bdi', { dir: 'ltr', class: 'mvn' }, lessonMove(level.replyNames?.[i] ?? '', currentPieceSet(), true))),
+      el('h2', {}, i18n('il_opponentPlayed'), ' ', el('bdi', { dir: 'auto', class: 'mvn' }, lessonMove(level.replyNames?.[i] ?? '', currentPieceSet(), true))),
       el('p', { class: 'lead' }, rich(level.replies![i])),
       isCurrent && el('div', { class: 'buttons' }, btn(i18n('il_yourTurn'), () => setOpen(false))),
     ];
@@ -641,10 +645,7 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
     const recap = level.why && level.moveNames
       ? el('div', { class: 'recap' },
           el('p', { class: 'eyebrow' }, i18n('il_recapTitle')),
-          el('ol', {}, ...level.why.map((w, i) => el('li', {}, el('bdi', { dir: 'ltr', class: 'mv mvn' }, lessonMove(level.moveNames![i])), ' ', rich(w),
-            level.replies?.[i] && level.replyNames?.[i] && i < lastIdx
-              ? el('span', { class: 'rep' }, ' ', el('bdi', { dir: 'ltr', class: 'mv opp mvn' }, lessonMove(level.replyNames[i], currentPieceSet(), true)), ' ', rich(level.replies[i]))
-              : null))))
+          el('ol', {}, ...level.why.map((w, i) => el('li', {}, el('bdi', { dir: 'auto', class: 'mv mvn' }, lessonMove(level.moveNames![i])), ' ', rich(w)))))
       : level.recap
         ? el('div', { class: 'recap' }, el('p', { class: 'eyebrow' }, i18n('il_recapTitle')), el('p', { class: 'lead' }, rich(level.recap)))
         : el('p', { class: 'lead' }, el('span', { class: 'muted' }, i18n('il_doneWith')), ' ', rich(level.goal.replace(/ ==המהלכים.*$/, '').replace(/==/g, '')));
@@ -660,9 +661,13 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
     ];
   } else {
     const expected = level.scenario && name(tip.idx);
+    const hint = level.failureHint?.(level, vm.usiCList);
+    const own = vm.usiCList.filter((u) => u.color === level.color);
+    const planned = level.scenario?.filter((u) => u.color === level.color)[tip.idx!]?.usi;
+    const unpromoted = own.length > 0 && planned === `${own[own.length - 1].usi}+`;
     body = [
       el('h2', { class: 'bad' }, i18n('il_wrongTitle')),
-      el('p', { class: 'lead' }, expected ? rich(i18nFormat('il_wrongPlan', expected)) : i18n('il_wrongTry')),
+      el('p', { class: 'lead' }, expected ? rich(i18nFormat(unpromoted ? 'il_wrongPromotion' : 'il_wrongPlan', expected)) : hint ? rich(hint) : i18n('il_wrongTry')),
       isCurrent && el('div', { class: 'buttons' }, btn(i18n('il_tryAgain'), () => ctrl.retryMove())),
     ];
   }
@@ -702,9 +707,11 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
   if (fresh) {
     requestAnimationFrame(() => {
       const board = root.querySelector<HTMLElement>('[data-board]')!.getBoundingClientRect();
+      const top = root.querySelector<HTMLElement>('.sg-hand-wrap.hand-top')?.getBoundingClientRect().top ?? board.top;
+      const header = Math.max(0, document.querySelector<HTMLElement>('.site-header')?.getBoundingClientRect().bottom ?? 0);
       const sheet = box.getBoundingClientRect();
       const narrow = getComputedStyle(box).position === 'fixed';
-      if (narrow && (board.top < 48 || board.bottom > sheet.top)) window.scrollBy({ top: board.top - 56, behavior: 'smooth' });
+      if (narrow && (top < header || board.bottom > sheet.top)) window.scrollBy({ top: top - header - 8, behavior: 'smooth' });
       if (tip.kind !== 'intro') box.querySelector<HTMLElement>('[data-coach-focus]')?.focus({ preventScroll: true });
     });
   }

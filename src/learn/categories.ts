@@ -4,6 +4,7 @@
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
 // Modified by Shogi Israel (shogi.co.il), 2026-10-24.
 // Modified by Shogi Israel (shogi.co.il), 2026-10-27.
+// Modified by Shogi Israel (shogi.co.il), 2026-11-07.
 
 import { i18n } from './i18n';
 import { castleStage, openingStage, whatIfStage } from './opening';
@@ -73,7 +74,7 @@ export const categories: Category[] = [
       staticRook,
       rangingRook,
       ...[
-        op.fourthFileRook, op.centralRook, op.thirdFileRook, op.yagura, op.bishopExchange,
+        op.fourthFileRook, op.yagura, op.centralRook, op.thirdFileRook, op.bishopExchange,
         op.ishida, op.quickIshida, op.opposingRook, op.doubleRangingRook, op.sidePawn, op.twistingRook,
       ].map(openingStage),
     ].map(createStage),

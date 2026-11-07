@@ -1,21 +1,42 @@
 import { Shogiground } from 'shogiground/shogiground';
 import { makeSquareName, parseUsi } from 'shogiops/util';
 import { FIRST_GAME, PHASES, PIECE_TOKEN, TAG_LABEL, firstGamePlies, plainText } from '../lib/first-game';
-import { markSeen } from '../lib/progress-local';
+import { hasAnyProgress, nextStep, stepHref } from '../lib/curriculum';
+import { LEVEL_COUNTS } from '../lib/level-counts';
+import { markSeen, readLocal } from '../lib/progress-local';
 import { playStep, preloadSounds } from '../learn/sound';
 import { liveBounds } from '../lib/live-bounds';
 import { SQUARE_RATIO } from '../lib/square-ratio';
 
-function setRich(el: HTMLElement, text: string): void {
-  const parts = text.split(PIECE_TOKEN);
-  el.replaceChildren(...parts.map((p, i) => {
+const BOLD = /\*\*(.+?)\*\*/;
+
+function chips(text: string): Node[] {
+  return text.split(PIECE_TOKEN).map((p, i) => {
     if (i % 2 === 0) return document.createTextNode(p);
     const chip = document.createElement('span');
     chip.className = 'pchip';
     chip.dataset.p = p;
     chip.setAttribute('aria-hidden', 'true');
     return chip;
+  });
+}
+
+function setRich(el: HTMLElement, text: string): void {
+  el.replaceChildren(...text.split(BOLD).flatMap((part, i) => {
+    if (i % 2 === 0) return chips(part);
+    const b = document.createElement('strong');
+    b.append(...chips(part));
+    return [b];
   }));
+}
+
+function courseForward(link: HTMLAnchorElement, label: HTMLElement): void {
+  const p = readLocal();
+  if (!hasAnyProgress(p)) return;
+  const n = nextStep(p, LEVEL_COUNTS);
+  const href = n ? stepHref(n.step, p, LEVEL_COUNTS) : '/course/';
+  link.href = href === location.pathname ? '/course/' : href;
+  label.textContent = 'לשלב הבא בקורס';
 }
 
 export function bootWatchGame(root: HTMLElement): void {
@@ -75,7 +96,10 @@ export function bootWatchGame(root: HTMLElement): void {
     panes.move.hidden = step === 0 || step > N;
     panes.summary.hidden = step <= N;
     root.dataset.step = step === 0 ? 'intro' : step > N ? 'summary' : 'move';
-    if (step === SUMMARY) markSeen('try-game');
+    if (step === SUMMARY) {
+      markSeen('try-game');
+      courseForward(q<HTMLAnchorElement>('[data-try-next]'), q('[data-try-next-label]'));
+    }
 
     if (step >= 1 && step <= N) {
       const m = FIRST_GAME[step - 1];
@@ -83,7 +107,7 @@ export function bootWatchGame(root: HTMLElement): void {
       const starts = ph.first === step;
       phaseBox.hidden = !starts;
       if (starts) {
-        q('[data-phase-name]').textContent = `שלב ${ply.phase + 1}: ${ph.name}`;
+        q('[data-phase-name]').textContent = ph.name;
         setRich(q('[data-phase-note]'), ph.note);
       }
       q('[data-who]').textContent = `מהלך ${step} מתוך ${N} · ${step % 2 ? 'הפותח' : 'המשיב'}`;
@@ -114,7 +138,7 @@ export function bootWatchGame(root: HTMLElement): void {
   back.addEventListener('click', () => show(step - 1));
   reset.addEventListener('click', () => { show(0); next.focus(); });
   q('[data-board]').addEventListener('keydown', (e) => {
-    const k: Record<string, number> = { ArrowRight: step + 1, ArrowLeft: step - 1, Home: 0, End: N };
+    const k: Record<string, number> = { ArrowLeft: step + 1, ArrowRight: step - 1, Home: 0, End: N };
     if (e.key in k) { e.preventDefault(); show(k[e.key]); }
   });
   show(0, false);

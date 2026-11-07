@@ -28,7 +28,7 @@ function mapFor(set: PieceSet, lessons: boolean, opponent: boolean): Record<stri
 function convert(set: PieceSet, lessons: boolean, opponent = false) {
   const map = mapFor(set, lessons, opponent);
   return (whole: string, p: string, from: string | undefined, sep: string, to: string, end: string): string => {
-    if (!map) return whole;
+    if (!map) return lessons ? p + (from ?? '') + (sep === 'x' ? '×' : sep) + to + end : whole;
     return (map[p] ?? p) + (from ? `-${from}` : '') + (sep === 'x' ? '×' : sep) + to + end;
   };
 }

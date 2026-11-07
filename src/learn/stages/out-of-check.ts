@@ -74,7 +74,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:getOutOfCheck'),
-    recap: i18n('il_b_outRecap'),
+    recap: i18n('il_b_out7Recap'),
     sfen: '9/9/9/9/9/9/3Ss4/3s5/3K5 b - 1',
     nbMoves: 1,
     success: not(check('sente')),
@@ -84,7 +84,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:getOutOfCheck'),
-    recap: i18n('il_b_outRecap'),
+    recap: i18n('il_b_out8Recap'),
     sfen: '9/9/9/7p1/8b/4sPK2/6g2/9/9 b - 1',
     nbMoves: 1,
     success: not(check('sente')),
@@ -94,7 +94,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:getOutOfCheck'),
-    recap: i18n('il_b_outRecap'),
+    recap: i18n('il_b_out9Recap'),
     sfen: '9/9/9/6n2/6p2/5Ks2/9/4r4/9 b - 1',
     nbMoves: 1,
     success: not(check('sente')),
@@ -104,7 +104,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:getOutOfCheck'),
-    recap: i18n('il_b_outRecap'),
+    recap: i18n('il_b_out10Recap'),
     sfen: '9/9/9/9/8P/8l/7P1/6rSK/7NL b P 1',
     nbMoves: 1,
     success: and(not(check('sente')), not(pieceOn(toPiece('P'), '1g'))),
@@ -114,7 +114,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:watchOutForYourOpponentsReply'),
-    recap: i18n('il_b_outRecapReply'),
+    recap: i18n('il_b_out11Recap'),
     sfen: '9/9/9/9/9/4b4/PPG6/LS7/K4r3 b L 1',
     nbMoves: 1,
     success: and(not(unprotectedCapture), not(check('sente'))),
@@ -125,7 +125,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:watchOutForYourOpponentsReply'),
-    recap: i18n('il_b_outRecapReply'),
+    recap: i18n('il_b_out12Recap'),
     sfen: '9/9/9/9/9/5+bn2/5GPPP/6SK1/5G1NL b g 1',
     nbMoves: 1,
     success: and(not(check('sente')), colorOn('sente', '3f')),

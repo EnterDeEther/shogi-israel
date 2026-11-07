@@ -3,6 +3,7 @@
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
 // Modified by Shogi Israel (shogi.co.il), 2026-10-24.
+// Modified by Shogi Israel (shogi.co.il), 2026-11-07.
 
 import type { Api } from 'shogiground/api';
 import { Shogiground } from 'shogiground/shogiground';
@@ -12,9 +13,10 @@ import { shogigroundDropDests, shogigroundMoveDests } from 'shogiops/compat';
 import type { Role } from 'shogiops/types';
 import { makeSfen } from 'shogiops/sfen';
 import { makeUsi, parseSquareName, parseUsi } from 'shogiops/util';
+import { sameScenarioMove } from './assert';
 import * as categories from './categories';
 import * as ground from './ground';
-import type { Category, LearnOpts, Stage, Vm } from './interfaces';
+import type { Category, LearnOpts, Stage, UsiWithColor, Vm } from './interfaces';
 import { calcScore } from './level';
 import { ProgressStorage } from './progress';
 import {
@@ -27,8 +29,10 @@ import {
 } from './shogi';
 import { play as playSound, playMove } from './sound';
 import { stageSlug, stageUrl } from './urls';
-import { currentPosition } from './util';
+import { currentPosition, usiDests } from './util';
 import { liveBounds } from '../lib/live-bounds';
+
+const FAILURE_PLY_DELAY = 600;
 
 export default class LearnCtrl {
   shogiground: Api;
@@ -171,12 +175,13 @@ export default class LearnCtrl {
       const scenario = this.vm.level.scenario;
       const usiCList = this.vm.usiCList;
       const sUsiC = scenario[usiCList.length];
+      const loose = this.vm.level.anyPromotion;
 
       if (
         sUsiC &&
         sUsiC.color !== this.vm.level.color &&
         usiCList.every((usiC, i) => {
-          return scenario[i].usi === usiC.usi && scenario[i].color === usiC.color;
+          return sameScenarioMove(scenario[i].usi, usiC.usi, loose) && scenario[i].color === usiC.color;
         })
       ) {
         this.vm.usiCList.push(sUsiC);
@@ -189,7 +194,7 @@ export default class LearnCtrl {
     const vm = this.vm!;
     const sc = vm.level.scenario;
     const next = sc?.[vm.usiCList.length];
-    return !!next && next.color !== vm.level.color && vm.usiCList.every((u, i) => sc![i].usi === u.usi && sc![i].color === u.color);
+    return !!next && next.color !== vm.level.color && vm.usiCList.every((u, i) => sameScenarioMove(sc![i].usi, u.usi, vm.level.anyPromotion) && sc![i].color === u.color);
   }
 
   private applyUserMoveOrDrop(usi: Usi): void {
@@ -225,15 +230,16 @@ export default class LearnCtrl {
   retryMove(): void {
     const vm = this.vm;
     if (!vm) return;
+    this.clearTimetouts();
     const sc = vm.level.scenario;
     if (!sc) return this.restartLevel();
     let keep = 0;
-    while (keep < vm.usiCList.length && sc[keep]?.usi === vm.usiCList[keep].usi && sc[keep]?.color === vm.usiCList[keep].color) keep++;
+    while (keep < vm.usiCList.length && sc[keep] && sameScenarioMove(sc[keep].usi, vm.usiCList[keep].usi, vm.level.anyPromotion) && sc[keep].color === vm.usiCList[keep].color) keep++;
     vm.usiCList = vm.usiCList.slice(0, keep);
     vm.levelState = 'play';
     vm.coach = undefined;
     const sfen = makeSfen(currentPosition(vm.level, vm.usiCList)).split(' ');
-    this.shogiground.set({ sfen: { board: sfen[0], hands: sfen[2] }, lastDests: [] });
+    this.shogiground.set({ sfen: { board: sfen[0], hands: sfen[2] }, lastDests: keep ? usiDests(vm.usiCList[keep - 1].usi) : vm.level.lastDests ?? [] });
     this.refreshBoard();
     this.redraw();
   }
@@ -245,7 +251,7 @@ export default class LearnCtrl {
 
       const pos = currentPosition(this.vm.level, this.vm.usiCList);
       if (this.vm.levelState === 'fail' && this.vm.level.showFailureMove) {
-        const usi =
+        const found =
           this.vm.level.showFailureMove === 'capture'
             ? findCapture(pos)
             : this.vm.level.showFailureMove === 'unprotected'
@@ -253,16 +259,37 @@ export default class LearnCtrl {
               : this.vm.level.showFailureMove === 'random'
                 ? findRandomMove(pos)
                 : this.vm.level.showFailureMove(this.vm.level, this.vm.usiCList);
-        const parsedUsi = usi && parseUsi(usi);
+        let color = opposite(this.vm.level.color);
+        const plies: UsiWithColor[] = [];
 
-        if (parsedUsi && pos.board.getRole(parsedUsi.to) !== 'king') {
-          const usiC = { usi: usi, color: opposite(this.vm.level.color) };
-          this.vm.usiCList.push(usiC);
+        for (const usi of typeof found === 'string' ? [found] : (found ?? [])) {
+          const parsedUsi = parseUsi(usi);
+          if (!parsedUsi || pos.board.getRole(parsedUsi.to) === 'king') break;
+          const usiC = { usi, color };
+          pos.turn = color;
           pos.play(parsedUsi);
-          ground.playUsi(this, usiC);
+          plies.push(usiC);
+          color = opposite(color);
         }
+
+        const vm = this.vm;
+        const play = (usiC: UsiWithColor) => {
+          vm.usiCList.push(usiC);
+          ground.playUsi(this, usiC);
+        };
+        plies.forEach((usiC, i) => {
+          if (i === 0) play(usiC);
+          else
+            this.timeouts.push(
+              window.setTimeout(() => {
+                if (this.vm !== vm) return;
+                play(usiC);
+                this.refreshBoard();
+              }, FAILURE_PLY_DELAY * i),
+            );
+        });
       }
-      this.refreshBoard(pos);
+      this.refreshBoard();
     }
   }
 

@@ -158,6 +158,7 @@ html[data-pieces="hebrew"] :is(.learn, .play) piece.king::after {
   font-size: clamp(16px, 5vw, 28px);
   line-height: 1;
 }
+.learn sg-squares sq.star::after { color: #C99A1E; -webkit-text-stroke: 1px var(--grid); }
 
 :is(.learn, .play) .sg-shapes g.green line { stroke: #2F6B2A; }
 :is(.learn, .play) .sg-shapes marker#arrowhead-green path { fill: #2F6B2A; }
@@ -384,7 +385,7 @@ mark.learn-task {
 .learn__table .why ol { margin: 0; padding-inline-start: 1.3em; font-size: .92rem; line-height: 1.5; }
 .learn__table .why li { opacity: .7; margin-bottom: 4px; }
 .learn__table .why li.latest { opacity: 1; font-weight: 600; }
-.learn bdi[dir="ltr"] { white-space: nowrap; }
+.learn bdi[dir="ltr"], .learn bdi.mvn { white-space: nowrap; }
 
 .learn__coach[hidden], .learn__bubble[hidden] { display: none; }
 .learn__coach { grid-area: table; z-index: 6; align-self: start; min-width: 0; }
@@ -419,8 +420,7 @@ mark.learn-task {
 .learn__coach .recap ol { margin: 4px 0 14px; padding-inline-start: 1.2em; font: 500 15px/1.55 var(--f-body); }
 .learn__coach .recap li { margin-bottom: 6px; }
 .learn__coach .recap .mv { font-weight: 800; }
-.learn__coach .recap .rep { display: block; margin-top: 2px; font-size: 14px; color: var(--muted); }
-.learn__coach .recap .mv.opp::before, .learn__coach .reply .mv::before { content: '△ '; }
+.learn__coach .reply .mv::before { content: '△ '; }
 .learn__coach .reply { margin: 0 0 12px; padding: 10px 12px; border-radius: 8px; background: var(--washi-2); }
 .learn__coach .reply p { margin: 0; font: 500 15px/1.55 var(--f-body); }
 .learn__coach .reply .eyebrow { margin-bottom: 2px; }
@@ -469,8 +469,8 @@ mark.learn-task {
 .learn__map .phase a, .learn__overlay .phase a { display: inline-block; padding: 2px 12px; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-2); text-decoration: none; }
 .learn__map .phase a:hover, .learn__overlay .phase a:hover { color: var(--seal); border-color: var(--seal); }
 
-.sg-wrap .sg-custom-svgs .rep-digit circle { fill: var(--seal); opacity: 0.85; }
-.sg-wrap .sg-custom-svgs .rep-digit path { fill: var(--on-seal); }
+.sg-wrap .sg-custom-svgs .rep-digit circle { fill: var(--ink); opacity: 0.85; }
+.sg-wrap .sg-custom-svgs .rep-digit path { fill: var(--washi); }
 
 .learn__map .course-level { display: flex; align-items: baseline; gap: 10px; margin: 36px 0 14px; font-size: 30px; font-weight: 800; color: var(--seal); }
 .learn__map .course-level:first-child { margin-top: 0; }

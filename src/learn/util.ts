@@ -3,10 +3,11 @@
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
 // Modified by Shogi Israel (shogi.co.il), 2026-10-24.
+// Modified by Shogi Israel (shogi.co.il), 2026-11-07.
 
 import { forsythToPiece, parseSfen } from 'shogiops/sfen';
 import type { Piece } from 'shogiops/types';
-import { opposite, parseSquareName, parseUsi } from 'shogiops/util';
+import { makeSquareName, opposite, parseSquareName, parseUsi } from 'shogiops/util';
 import type { Position } from 'shogiops/variant/position';
 import type { Level, Scenario, UsiWithColor } from './interfaces';
 
@@ -37,6 +38,12 @@ export function currentPosition(
     shogi.play(parseUsi(uc.usi)!);
   }
   return shogi;
+}
+
+export function usiDests(usi: Usi): Key[] {
+  const move = parseUsi(usi)!;
+  const to = makeSquareName(move.to) as Key;
+  return 'from' in move ? [makeSquareName(move.from) as Key, to] : [to];
 }
 
 export function toPiece(sfenPiece: string): Piece {
