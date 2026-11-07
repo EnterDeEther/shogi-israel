@@ -204,6 +204,10 @@ test('opening tasks mark the aim as well as the move list', () => {
     for (const l of stageOf(key).levels) expect(l.goal.startsWith('=='), `${key} #${l.id}`).toBe(true);
 });
 
+test('spearing the sparrow brings lance, rook, silver and knight before the edge push', () => {
+  expect(stageOf('spearingSparrow').levels.map((l) => l.moveNames)).toEqual([['L-17', 'R-18'], ['S-26', 'N-37', 'P-15']]);
+});
+
 test('piece value #8 accepts the sacrifice with or without promotion', () => {
   const level = stages.find((s) => s.key === 'value')!.levels[7];
   for (const line of [['7f4c+', 'S*3b', '3b4c+'], ['7f4c', 'S*3b', '3b4c'], ['7f4c', 'S*3b', '3b4c+'], ['7f4c+', 'S*3b', '3b4c']])
