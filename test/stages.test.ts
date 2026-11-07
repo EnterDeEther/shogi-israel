@@ -192,8 +192,9 @@ test('castle upgrades start from the castle before them', () => {
 
 test('an exercise that starts after the opponent moved shows that move', () => {
   expect(stageOf('primitiveClimbingSilver').levels[0].lastDests).toEqual(['8e', '8f']);
+  expect(stageOf('thirdFileRook').levels[0].lastDests).toBeUndefined();
   const ffr = stageOf('fourthFileRook').levels;
-  expect(ffr[0].lastDests).toBeUndefined();
+  expect(ffr[0].lastDests).toEqual(['8d', '8e']);
   const prev = ffr[0].scenario!;
   expect(ffr[1].lastDests).toEqual(usiDests(prev[prev.length - 1].usi));
 });
