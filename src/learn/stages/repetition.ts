@@ -18,7 +18,7 @@ const digits = {
   four: `<svg class="rep-digit" viewBox="24 24 16 16" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="30"/><path d="M33.7 48v-6.4H20v-5.3L34.5 16h5.4v20.2H44v5.4h-4.1V48h-6.2zm0-11.8V25.3L26 36.2h7.7z"/></svg>`,
 };
 
-const counter = (_l: Level, list: UsiWithColor[]) => [custom('5e', [digits.one, digits.two, digits.three, digits.four][Math.min(3, Math.floor(list.length / 4))])];
+const counter = (sq: Key) => (_l: Level, list: UsiWithColor[]) => [custom(sq, [digits.one, digits.two, digits.three, digits.four][Math.min(3, Math.floor(list.length / 4))])];
 
 const levels: IncompleteLevel[] = [
   {
@@ -28,7 +28,7 @@ const levels: IncompleteLevel[] = [
     nbMoves: 12,
     success: scenarioSuccess,
     failure: scenarioFailure,
-    drawShapes: counter,
+    drawShapes: counter('5e'),
     scenario: createScenario(
       [
         '9i8i',
@@ -55,7 +55,7 @@ const levels: IncompleteLevel[] = [
     nbMoves: 12,
     success: scenarioSuccess,
     failure: scenarioFailure,
-    drawShapes: counter,
+    drawShapes: counter('4g'),
     scenario: createScenario(
       [
         '9f8e',
