@@ -49,7 +49,7 @@ function walk() {
     s.levels.forEach((l) => out.push({ at: `${key}:${l.id}`, text: [l.goal, l.text ?? '', l.recap ?? ''].join(' ') }));
     out.push({ at: `${key}:complete`, text: s.complete });
   }
-  return out;
+  return out.map((x) => ({ ...x, text: x.text.replace(/[\u0591-\u05BD\u05BF-\u05C7]/g, '') }));
 }
 
 test('no beginner text uses a term before the stage that teaches it', () => {
