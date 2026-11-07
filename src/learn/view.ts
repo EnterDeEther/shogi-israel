@@ -1,4 +1,5 @@
 // AGPL-3.0-or-later, like the rest of src/learn/.
+import { lessonMove } from '../lib/move-notation';
 import { categories, nextStage } from './categories';
 import type LearnCtrl from './ctrl';
 import { i18n, i18nFormat } from './i18n';
@@ -70,12 +71,15 @@ export function rich(text: string): DocumentFragment {
 }
 function inline(text: string): DocumentFragment {
   const f = document.createDocumentFragment();
-  text.split(/(\*\*[^*]+\*\*|\{\+?[KRBGSNLP]\}|\+?[KRBGSNLP](?:\d\d)?[-x*]\d\d\+?)/).forEach((part, i) => {
+  text.split(/(\*\*[^*]+\*\*|\{\+?[KRBGSNLP]\}|\+?[KRBGSNLP](?:\d\d)?[-x*]\d\d[+=]?)/).forEach((part, i) => {
     if (!part) return;
-    if (i % 2 === 0) f.append(part);
+    if (i % 2 === 0)
+      part.split(/([\u3040-\u30ff\u3400-\u9fff\uf900-\ufaff]+)/).forEach((t, j) => {
+        if (t) f.append(j % 2 === 1 ? el('span', { lang: 'ja', class: 'cjk' }, t) : t);
+      });
     else if (part.startsWith('**')) f.append(el('strong', {}, part.slice(2, -2)));
     else if (part.startsWith('{')) f.append(el('span', { class: 'pchip', 'data-p': part.slice(1, -1), 'aria-hidden': 'true' }));
-    else f.append(el('bdi', { dir: 'ltr' }, part));
+    else f.append(el('bdi', { dir: 'ltr', class: 'mvn' }, lessonMove(part)));
   });
   return f;
 }
@@ -599,7 +603,7 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
   const total = level.why?.length ?? 0;
   const name = (i?: number) => (i === undefined ? undefined : level.moveNames?.[i]);
   const reply = (i: number) => el('div', { class: 'reply' },
-    el('p', { class: 'eyebrow' }, i18n('il_opponentPlayed'), ' ', el('bdi', { dir: 'ltr', class: 'mv' }, level.replyNames?.[i] ?? '')),
+    el('p', { class: 'eyebrow' }, i18n('il_opponentPlayed'), ' ', el('bdi', { dir: 'ltr', class: 'mv mvn' }, lessonMove(level.replyNames?.[i] ?? '', currentPieceSet(), true))),
     el('p', {}, rich(level.replies![i])));
   const btn = (label: string, fn: () => void, primary = true, fid = 'coach-main') =>
     el('button', { type: 'button', class: `btn${primary ? ' primary' : ''}`, 'data-fid': fid, 'data-coach-focus': primary, onclick: go(fn) }, label);
@@ -618,7 +622,7 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
     const i = tip.idx!;
     body = [
       el('h2', {}, el('span', { class: 'tick', 'aria-hidden': 'true' }, '✓'), ' ',
-        name(i) ? el('bdi', { dir: 'ltr' }, name(i)!) : i18n('il_goodMove')),
+        name(i) ? el('bdi', { dir: 'ltr', class: 'mvn' }, lessonMove(name(i)!)) : i18n('il_goodMove')),
       el('p', { class: 'lead' }, rich(level.why?.[i] ?? '')),
       total > 1 ? steps(i + 1, total) : null,
       isCurrent && el('div', { class: 'buttons' },
@@ -627,7 +631,7 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
   } else if (tip.kind === 'reply') {
     const i = tip.idx!;
     body = [
-      el('h2', {}, i18n('il_opponentPlayed'), ' ', el('bdi', { dir: 'ltr' }, level.replyNames?.[i] ?? '')),
+      el('h2', {}, i18n('il_opponentPlayed'), ' ', el('bdi', { dir: 'ltr', class: 'mvn' }, lessonMove(level.replyNames?.[i] ?? '', currentPieceSet(), true))),
       el('p', { class: 'lead' }, rich(level.replies![i])),
       isCurrent && el('div', { class: 'buttons' }, btn(i18n('il_yourTurn'), () => setOpen(false))),
     ];
@@ -637,9 +641,9 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
     const recap = level.why && level.moveNames
       ? el('div', { class: 'recap' },
           el('p', { class: 'eyebrow' }, i18n('il_recapTitle')),
-          el('ol', {}, ...level.why.map((w, i) => el('li', {}, el('bdi', { dir: 'ltr', class: 'mv' }, level.moveNames![i]), ' ', rich(w),
+          el('ol', {}, ...level.why.map((w, i) => el('li', {}, el('bdi', { dir: 'ltr', class: 'mv mvn' }, lessonMove(level.moveNames![i])), ' ', rich(w),
             level.replies?.[i] && level.replyNames?.[i] && i < lastIdx
-              ? el('span', { class: 'rep' }, ' ', el('bdi', { dir: 'ltr', class: 'mv opp' }, level.replyNames[i]), ' ', rich(level.replies[i]))
+              ? el('span', { class: 'rep' }, ' ', el('bdi', { dir: 'ltr', class: 'mv opp mvn' }, lessonMove(level.replyNames[i], currentPieceSet(), true)), ' ', rich(level.replies[i]))
               : null))))
       : level.recap
         ? el('div', { class: 'recap' }, el('p', { class: 'eyebrow' }, i18n('il_recapTitle')), el('p', { class: 'lead' }, rich(level.recap)))

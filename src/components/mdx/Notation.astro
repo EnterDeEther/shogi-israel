@@ -1,4 +1,14 @@
 ---
-
+import { lessonMove } from '../../lib/move-notation';
+interface Props { raw?: boolean }
+const { raw = false } = Astro.props;
+const text = (await Astro.slots.render('default')).replace(/<[^>]+>/g, '').trim();
 ---
-<bdi dir="ltr" class="nt"><slot /></bdi>
+{raw ? <bdi dir="ltr" class="nt">{text}</bdi> : <bdi dir="ltr" class="nt" data-mv={text}>{lessonMove(text, 'hebrew')}</bdi>}
+
+<script>
+  import { lessonMove } from '../../lib/move-notation';
+  const run = () => document.querySelectorAll<HTMLElement>('.nt[data-mv]').forEach((e) => { e.textContent = lessonMove(e.dataset.mv ?? ''); });
+  run();
+  document.addEventListener('pieces-changed', run);
+</script>

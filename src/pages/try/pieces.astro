@@ -15,18 +15,18 @@ const hasPlay = pageExists('/play/');
 ---
 <Base
   title="שלוש דקות, שלושה כלים: ⟦נסה|נסי⟧ שוגי בעצמך"
-  description="הצעד השני בשוגי: ⟦הזז|הזיזי⟧ צריח, רץ וחייל, ⟦ולכוד|ולכדי⟧ עם כל אחד מהם כלי של היריב. בשוגי כלי שלכדת לא נעלם, הוא נשאר ביד שלך. בלי הרשמה."
+  description="הצעד השני בשוגי: ⟦הזז|הזיזי⟧ צריח, רץ וחייל, ⟦ולכוד|ולכדי⟧ כלי של היריב עם כל אחד מהם. בשוגי, כלי שלכדת לא נעלם: הוא נשאר ביד שלך. בלי הרשמה."
 >
   <div class="wrap trypc" data-try data-state="ask">
     <header class="trypc__head">
-      <p class="eyebrow">ועכשיו ⟦אתה|את⟧ · שלוש דקות · שלושה כלים · בלי הרשמה</p>
+      <p class="eyebrow">שלוש דקות · שלושה כלים · בלי הרשמה</p>
       <h1>עכשיו ⟦תנסה|תנסי⟧ בעצמך.</h1>
-      <p class="lead trypc__lead">ראית משחק שלם. עכשיו נתחיל בכלי אחד: ⟦תראה|תראי⟧ איך הוא זז ⟦ותלכוד|ותלכדי⟧ איתו, ואז נעבור לכלי הבא. בסך הכול שלושה כלים, ⟦ואתה|ואת⟧ ⟦מחליט|מחליטה⟧ מתי להמשיך.</p>
+      <p class="lead trypc__lead">עם כל כלי ⟦תראה|תראי⟧ איך הוא זז ⟦ותלכוד|ותלכדי⟧ כלי של היריב. ⟦אתה|את⟧ ⟦מחליט|מחליטה⟧ מתי לעבור לכלי הבא.</p>
       <ol class="trypc__chips" aria-label="שלושת הכלים">
         {names.map((n, i) => <li data-chip><span class="n">{i + 1} · </span>{n}</li>)}
       </ol>
     </header>
-    <noscript><p>התרגול צריך JavaScript. אפשר ללמוד את אותו חומר בשיעור <a href="/rules/02-how-pieces-move/">איך כל כלי זז</a>.</p></noscript>
+    <noscript><p>התרגילים לא עובדים בדפדפן הזה. אפשר ללמוד את אותו חומר בשיעור <a href="/rules/02-how-pieces-move/">איך כל כלי זז</a>.</p></noscript>
 
     <div class="trypc__grid" data-play>
       <div class="trypc__side">
@@ -58,7 +58,7 @@ const hasPlay = pageExists('/play/');
             <button type="button" class="btn" data-next><span data-next-label></span><Fragment set:html={arrow} /></button>
             <button type="button" class="btn btn-ghost" data-again>עוד פעם</button>
           </div>
-          <p class="small muted">אין מעבר אוטומטי. ⟦המשך|המשיכי⟧ ⟦כשאתה|כשאת⟧ ⟦מוכן|מוכנה⟧.</p>
+          
         </div>
       </div>
       <div class="trypc__boardcol">
@@ -68,7 +68,7 @@ const hasPlay = pageExists('/play/');
             <div class="learn__sgbox"><div class="learn__sg" data-sg></div></div>
           </div>
         </div>
-        <p class="small muted">כלים שלכדת מופיעים מתחת ללוח: אלה הכלים שביד שלך.</p>
+        <p class="small muted">כלים שלכדת מופיעים מתחת ללוח, ביד שלך.</p>
       </div>
     </div>
 
@@ -79,27 +79,27 @@ const hasPlay = pageExists('/play/');
         <div class="end__hand">
           <strong>ביד שלך</strong>
           <ul>
-            <li><span class="big-piece" aria-hidden="true"><Piece>P</Piece></span>חייל</li>
-            <li><span class="big-piece" aria-hidden="true"><Piece>S</Piece></span>גנרל כסף</li>
-            <li><span class="big-piece" aria-hidden="true"><Piece>B</Piece></span>רץ</li>
+            <li><span class="big-piece" aria-hidden="true"><Piece p="P" /></span>חייל</li>
+            <li><span class="big-piece" aria-hidden="true"><Piece p="R" /></span>צריח</li>
+            <li><span class="big-piece" aria-hidden="true"><Piece p="B" /></span>רץ</li>
           </ul>
         </div>
         <div class="end__text">
-          <p class="big">בשוגי כלי שלכדת לא נעלם. הוא נשאר ביד שלך, ואפשר להצניח אותו בחזרה ללוח, בצד שלך.</p>
-          <p>זה אחד הדברים שמייחדים את השוגי, והתרגול הבא מראה איך עושים את זה.</p>
-          <a class="btn" href="/learn/drop/"><span>להצניח את הכלי הראשון</span><Fragment set:html={arrow} /></a>
-          {hasCourse && <p class="small muted">רוצה לשמור את ההתקדמות? אפשר <a href="/account/?mode=signup">להירשם בחינם</a>, ואפשר גם לא.</p>}
+          <p class="big">בשוגי, כלי שלכדת לא נעלם. הוא נשאר ביד שלך, ואפשר להחזיר אותו ללוח, והפעם הוא משחק בשבילך.</p>
+          <p>נלמד איך עושים את זה אחרי שנכיר את הלוח ואת כל הכלים.</p>
+          <a class="btn" href="/learn/introduction/" data-next-stage><span>לשלב הראשון: הלוח והכלים</span><Fragment set:html={arrow} /></a>
+          {hasCourse && <p class="small muted">רוצה לשמור את ההתקדמות? אפשר <a href="/account/?mode=signup">להירשם בחינם</a>.</p>}
         </div>
       </div>
 
       <h2 class="then">ואחר כך? ⟦אתה|את⟧ ⟦מחליט|מחליטה⟧</h2>
       <ul class="then__grid">
-        <li><a href="/rules/"><strong>שאר הכלים</strong><span>חוקים בסיסיים: איך כל כלי זז, בשיעורים קצרים שמסבירים גם למה.</span><em>לשיעורים</em></a></li>
-        {hasCourse && <li><a href="/course/"><strong>מסלול לימוד אישי</strong><span>מתאים את עצמו למי ⟦שאתה|שאת⟧ ועובר על פתיחה, אמצע המשחק וסוף המשחק. ההרשמה היא רק כדי לשמור התקדמות.</span><em>לפתוח את המסלול</em></a></li>}
-        <li><a href={WHATSAPP_URL} rel="noopener"><strong>קהילת הוואטסאפ</strong><span>קהילה קטנה ובתחילת הדרך. ⟦כתוב|כתבי⟧ "חדש" ואענה לך אישית.</span><em>להצטרף</em></a></li>
+        <li><a href="/rules/"><strong>שאר הכלים</strong><span>שיעורים כתובים: איך כל כלי זז, ושאר החוקים הבסיסיים.</span><em>לשיעורים</em></a></li>
+        {hasCourse && <li><a href="/course/"><strong>מסלול לימוד אישי</strong><span>כל השיעורים לפי הסדר: מהצעד הראשון, דרך הפתיחה ואמצע המשחק, ועד סוף המשחק.</span><em>לפתוח את המסלול</em></a></li>}
+        <li><a href={WHATSAPP_URL} rel="noopener"><strong>קהילת הוואטסאפ</strong><span>⟦כתוב|כתבי⟧ "חדש" בקבוצה, ונעזור לך להתחיל.</span><em>להצטרף</em></a></li>
       </ul>
-      {hasPlay && <p class="jump"><strong>כבר ⟦יודע|יודעת⟧ לשחק?</strong> אפשר לדלג ו<a href="/play/">לשחק נגד המחשב</a>, מרמה 1.</p>}
-      <p class="tour-offer small muted">רוצה לראות מה עוד יש באתר? <a href={TOUR_URL} data-tour-start>סיור קצר באתר</a></p>
+      {hasPlay && <p class="jump"><strong>כבר ⟦יודע|יודעת⟧ לשחק?</strong> אפשר <a href="/play/">לשחק נגד המחשב</a>, מרמה 1.</p>}
+      <p class="tour-offer small muted">רוצה לראות מה עוד יש באתר? <a href={TOUR_URL} data-tour-start>לסיור קצר</a></p>
     </section>
     <div class="sr-only" aria-live="polite" data-live></div>
   </div>
@@ -108,6 +108,13 @@ const hasPlay = pageExists('/play/');
 <script>
   import { bootTryPieces } from '../../scripts/try-pieces';
   document.querySelectorAll<HTMLElement>('[data-try]').forEach((el) => bootTryPieces(el));
+  import { readLocal } from '../../lib/progress-local';
+  const intro = readLocal().learn.stages.introduction?.scores ?? [];
+  const nextStage = document.querySelector<HTMLAnchorElement>('[data-next-stage]');
+  if (nextStage && intro.filter((s) => s > 0).length >= 3) {
+    nextStage.href = '/learn/king/';
+    nextStage.querySelector('span')!.textContent = 'הכלי הבא: המלך';
+  }
 </script>
 
 <style>

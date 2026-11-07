@@ -43,7 +43,7 @@ describe('three pieces try', () => {
       const dests = illegalShogigroundMoveDests(pos).get(e.piece) ?? [];
       expect(dests).toContain(e.target);
       expect(pos.board.get(parseSquareName(e.target)!)?.color).toBe('gote');
-      expect(e.sfen.split(' ')[2]).toBe(['-', 'P', 'PS'][i]);
+      expect(e.sfen.split(' ')[2]).toBe(['-', 'P', 'RP'][i]);
     });
   });
 });

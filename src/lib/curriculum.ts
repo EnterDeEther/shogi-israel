@@ -101,7 +101,7 @@ export const CURRICULUM: Unit[] = [
     ],
   },
   {
-    key: 'intermediate', level: 'intermediate', title: 'שלב ביניים',
+    key: 'intermediate', level: 'intermediate', title: 'הכנה למשחק שלם',
     why: 'כל מה שצריך למשחק אמיתי: איך מסדרים את הלוח, מתי משחק נגמר בתיקו, משחק שלם לצפייה, ומשחק ראשון משלך.',
     steps: [
       stage('setup', 'סידור הלוח', 'איך מעמידים את הכלים לפני משחק, בסדר המסורתי.', 8),
@@ -137,7 +137,7 @@ export const CURRICULUM: Unit[] = [
     ],
   },
   {
-    key: 'advanced', level: 'advanced', title: 'שלב מתקדם',
+    key: 'advanced', level: 'advanced', title: 'יסודות מתקדמים',
     why: 'כמה שווה כל כלי, ומתי כדאי לוותר על כלי כדי להגיע למלך.',
     steps: [
       stage('value', 'ערך הכלים', 'מתי חילוף משתלם, כשכל כלי שנלכד חוזר כהצנחה.', 15),

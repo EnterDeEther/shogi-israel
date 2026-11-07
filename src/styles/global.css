@@ -232,6 +232,7 @@ img, svg { max-width: 100%; }
 .btn-ghost:hover { background: color-mix(in srgb, var(--ink) 7%, transparent); color: var(--ink); }
 
 bdi.nt, .nt { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+html[data-pieces="chess"] :is(.nt, .mvn) { font-family: var(--f-chess), var(--f-body); }
 
 .rows { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
 .rows > li { border-bottom: 1px solid var(--rule); }
