@@ -3,7 +3,6 @@ import Base from '../../layouts/Base.astro';
 import Piece from '../../components/Piece.astro';
 import PieceToggle from '../../components/PieceToggle.astro';
 import { pageExists } from '../../lib/live';
-import { WHATSAPP_URL } from '../../lib/nav';
 import { TOUR_URL } from '../../lib/tour';
 import '../../styles/shogiground.css';
 import '../../styles/learn.css';
@@ -96,7 +95,6 @@ const hasPlay = pageExists('/play/');
       <ul class="then__grid">
         <li><a href="/rules/"><strong>שאר הכלים</strong><span>שיעורים כתובים: איך כל כלי זז, ושאר החוקים הבסיסיים.</span><em>לשיעורים</em></a></li>
         {hasCourse && <li><a href="/course/"><strong>מסלול לימוד אישי</strong><span>כל השיעורים לפי הסדר: מהצעד הראשון, דרך הפתיחה ואמצע המשחק, ועד סוף המשחק.</span><em>לפתוח את המסלול</em></a></li>}
-        <li><a href={WHATSAPP_URL} rel="noopener"><strong>קהילת הוואטסאפ</strong><span>⟦כתוב|כתבי⟧ "חדש" בקבוצה, ונעזור לך להתחיל.</span><em>להצטרף</em></a></li>
       </ul>
       {hasPlay && <p class="jump"><strong>כבר ⟦יודע|יודעת⟧ לשחק?</strong> אפשר <a href="/play/">לשחק נגד המחשב</a>, מרמה 1.</p>}
       <p class="tour-offer small muted">רוצה לראות מה עוד יש באתר? <a href={TOUR_URL} data-tour-start>לסיור קצר</a></p>

@@ -34,7 +34,7 @@ const TERMS: { name: string; re: RegExp; where: string }[] = [
   { name: 'block', re: /חסימ|לחסום|⟦חסום/, where: 'outOfCheck:intro' },
   { name: 'mate', re: W('[בלהו]?מט'), where: 'checkmate1:intro' },
   { name: 'game phases', re: /סוף המשחק|אמצע המשחק/, where: 'checkmate1:intro' },
-  { name: 'position', re: /עמדה/, where: 'setup:1' },
+  { name: 'position', re: /עמד[הת]/, where: 'setup:1' },
   { name: 'repetition', re: /חזרה מרובעת|תיקו/, where: 'repetition:intro' },
 ];
 
