@@ -3,6 +3,7 @@
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
 // Modified by Shogi Israel (shogi.co.il), 2026-10-24.
+// Modified by Shogi Israel (shogi.co.il), 2026-11-07.
 
 import { forsythToPiece, parseSfen } from 'shogiops/sfen';
 import type { Piece } from 'shogiops/types';
