@@ -21,6 +21,9 @@ describe('genderHtml', () => {
   test('shown attributes take the masculine form and keep both in data-g-*', () => {
     expect(genderHtml('<div aria-label="⟦בחר|בחרי⟧ תשובה" class="x">')).toBe('<div aria-label="בחר תשובה" class="x" data-g-aria-label="⟦בחר|בחרי⟧ תשובה">');
   });
+  test('task hints keep both forms for the task script', () => {
+    expect(genderHtml('<div data-task data-hint="⟦חפש|חפשי⟧ את המלך" data-why="⟦אתה|את⟧ צודק">')).toBe('<div data-task data-hint="חפש את המלך" data-why="אתה צודק" data-g-data-hint="⟦חפש|חפשי⟧ את המלך" data-g-data-why="⟦אתה|את⟧ צודק">');
+  });
   test('other attributes and raw-text elements take the masculine form', () => {
     expect(genderHtml('<meta content="⟦נסה|נסי⟧ שוגי">')).toBe('<meta content="נסה שוגי">');
     expect(genderHtml('<script>const t = "⟦נסה|נסי⟧";</script>')).toBe('<script>const t = "נסה";</script>');
