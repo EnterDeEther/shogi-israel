@@ -64,7 +64,7 @@ export const NAV: NavItem[] = [
     links: [
       { href: '/play/', label: '⟦שחק|שחקי⟧ עכשיו', hint: 'משחק מלא נגד המחשב, ישר בדפדפן', icon: 'cpu' },
       { href: '/play/?vs=local', label: 'שני שחקנים, מכשיר אחד', hint: 'חבר לידך? כל אחד מקבל צד של הלוח', icon: 'two-players', touchOnly: true },
-      { href: '/lishogi/', label: '⟦שחק|שחקי⟧ אונליין בליש׳וגי', hint: 'מדריך: משחקים מול כל העולם', icon: 'online' },
+      { href: '/lishogi/', label: '⟦שחק|שחקי⟧ אונליין בלישוגי', hint: 'מדריך: משחקים מול כל העולם', icon: 'online' },
     ],
   },
   {

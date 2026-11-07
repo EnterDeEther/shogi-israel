@@ -157,8 +157,8 @@ export function bootKifViewer(root: HTMLElement): void {
     const ok = await copyText(currentKif());
     window.open(LISHOGI_IMPORT_URL, '_blank', 'noopener');
     say(ok
-      ? 'רישום המשחק הועתק. בליש׳וגי ⟦הדבק|הדביקי⟧ אותו בתיבה (Ctrl+V) ⟦ולחץ|ולחצי⟧ IMPORT GAME.'
-      : 'פתחנו את ליש׳וגי. ⟦העתק|העתיקי⟧ את הטקסט מהתיבה למטה ⟦והדבק|והדביקי⟧ שם.');
+      ? 'רישום המשחק הועתק. בלישוגי ⟦הדבק|הדביקי⟧ אותו בתיבה (Ctrl+V) ⟦ולחץ|ולחצי⟧ IMPORT GAME.'
+      : 'פתחנו את לישוגי. ⟦העתק|העתיקי⟧ את הטקסט מהתיבה למטה ⟦והדבק|והדביקי⟧ שם.');
     if (!ok) input.value = currentKif();
   });
 

@@ -1,7 +1,7 @@
 export interface LessonStub { n: number; slug: string; title: string }
 
 export const RULES_COURSE: LessonStub[] = [
-  { n: 1, slug: '01-board-pieces-setup', title: 'הלוח, הכלים והעמדה הפותחת' },
+  { n: 1, slug: '01-board-pieces-setup', title: 'הלוח, הכלים ועמדת הפתיחה' },
   { n: 2, slug: '02-how-pieces-move', title: 'איך כל כלי זז' },
   { n: 3, slug: '03-promotion', title: 'הכתרה' },
   { n: 4, slug: '04-drops', title: 'לכידה והצנחה' },
