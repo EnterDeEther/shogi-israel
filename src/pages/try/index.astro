@@ -20,13 +20,13 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
         {PHASES.map((p, i) => <li data-phase-chip><span class="n">{i + 1}</span> {p.name}</li>)}
       </ol>
     </header>
-    <noscript><p>הצפייה במשחק לא עובדת בדפדפן הזה.</p></noscript>
+    <noscript><p>הצפייה במשחק לא נטענת בדפדפן הזה.</p></noscript>
 
     <div class="watch__grid">
       <div class="watch__boardcol">
         <div class="watch__tools"><span class="small muted" data-counter></span><PieceToggle tip /></div>
         <div class="learn watch__learn">
-          <div class="learn__board" dir="ltr" tabindex="0" role="application" aria-roledescription="לוח שוגי" aria-label="לוח המשחק. חצים ימינה ושמאלה: המהלך הבא והקודם" data-board>
+          <div class="learn__board" dir="ltr" tabindex="0" role="application" aria-roledescription="לוח שוגי" aria-label="לוח המשחק. חץ שמאלה: המהלך הבא. חץ ימינה: המהלך הקודם" data-board>
             <div class="learn__sgbox"><div class="learn__sg" data-sg></div></div>
           </div>
         </div>
@@ -45,7 +45,7 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
           </div>
           <div class="box">
             <h2>איך מזהים כלי</h2>
-            <p>על כל כלי כתוב סימן שאומר מה הוא. המלך, למשל, נראה כך: <span class="pchip" data-p="K" aria-hidden="true"></span>. כלים נוספים נכיר בדרך. בכפתורים שמעל הלוח אפשר לבחור איך ייראו הסימנים.</p>
+            <p>על כל כלי כתוב סימן שאומר מה הוא. המלך, למשל, נראה כך: <span class="pchip" data-p="K" role="img" aria-label="מלך"></span>. כלים נוספים נכיר בדרך. בכפתורים שמעל הלוח אפשר לבחור איך ייראו הסימנים.</p>
           </div>
           <div class="box">
             <h2>שלושה שלבים בכל משחק</h2>
@@ -77,7 +77,7 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
             {PHASES.map((p) => <li><strong>{p.name}</strong><span>{p.recap}</span></li>)}
           </ol>
           <p class="manners">ובמשחק אמיתי? לפני המשחק מברכים את היריב. בדרך כלל המפסיד נכנע עוד לפני המט ואומר "הפסדתי", ואז שני השחקנים מודים זה לזה.</p>
-          <a class="btn watch__try" href="/try/pieces/"><span>עכשיו תורך: ⟦הזז|הזיזי⟧ שלושה כלים</span><Fragment set:html={arrow} /></a>
+          <a class="btn watch__try" href="/try/pieces/" data-try-next><span data-try-next-label>עכשיו תורך: ⟦הזז|הזיזי⟧ שלושה כלים</span><Fragment set:html={arrow} /></a>
           <p class="small muted">זה לא משחק מושלם: בחרנו אותו כי הוא מראה היטב את שלושת השלבים.</p>
         </div>
       </div>

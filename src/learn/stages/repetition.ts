@@ -2,13 +2,13 @@
 // Source: https://github.com/WandererXII/lila/blob/89aea5f6f24c5e941c7cac8434a6e9e1acc15e94/ui/learn/src/stages/repetition.ts
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
-// Modified by Shogi Israel (shogi.co.il), 2026-10-27.
+// Modified by Shogi Israel (shogi.co.il), 2026-11-07.
 
 import { i18n } from '../i18n';
 import { scenarioFailure, scenarioSuccess } from '../assert';
-import type { IncompleteLevel, IncompleteStage } from '../interfaces';
+import type { IncompleteLevel, IncompleteStage, Level, UsiWithColor } from '../interfaces';
 import { createLevel } from '../level';
-import { concat, custom, onPly } from '../shapes';
+import { custom } from '../shapes';
 import { createScenario } from '../util';
 
 const digits = {
@@ -18,6 +18,8 @@ const digits = {
   four: `<svg class="rep-digit" viewBox="24 24 16 16" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="30"/><path d="M33.7 48v-6.4H20v-5.3L34.5 16h5.4v20.2H44v5.4h-4.1V48h-6.2zm0-11.8V25.3L26 36.2h7.7z"/></svg>`,
 };
 
+const counter = (_l: Level, list: UsiWithColor[]) => [custom('5e', [digits.one, digits.two, digits.three, digits.four][Math.min(3, Math.floor(list.length / 4))])];
+
 const levels: IncompleteLevel[] = [
   {
     goal: i18n('learn:ifTheSamePositionOccurs'),
@@ -26,12 +28,7 @@ const levels: IncompleteLevel[] = [
     nbMoves: 12,
     success: scenarioSuccess,
     failure: scenarioFailure,
-    drawShapes: concat(
-      onPly(0, [custom('5e', digits.one)]),
-      onPly(4, [custom('5e', digits.two)]),
-      onPly(8, [custom('5e', digits.three)]),
-      onPly(12, [custom('5e', digits.four)]),
-    ),
+    drawShapes: counter,
     scenario: createScenario(
       [
         '9i8i',
@@ -58,6 +55,7 @@ const levels: IncompleteLevel[] = [
     nbMoves: 12,
     success: scenarioSuccess,
     failure: scenarioFailure,
+    drawShapes: counter,
     scenario: createScenario(
       [
         '9f8e',

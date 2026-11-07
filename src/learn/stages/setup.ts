@@ -2,7 +2,7 @@
 // Source: https://github.com/WandererXII/lila/blob/89aea5f6f24c5e941c7cac8434a6e9e1acc15e94/ui/learn/src/stages/setup.ts
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
-// Modified by Shogi Israel (shogi.co.il), 2026-10-27.
+// Modified by Shogi Israel (shogi.co.il), 2026-11-07.
 
 import { i18n } from '../i18n';
 import { pieceOn, scenarioFailure, scenarioSuccess } from '../assert';
@@ -44,8 +44,8 @@ const levels: IncompleteLevel[] = [
     nbMoves: 2,
     success: scenarioSuccess,
     failure: scenarioFailure,
-    drawShapes: initial([circle('7i')]),
-    scenario: createScenario(['S*7i', 'S*7a', 'S*3i', 'S*3a'], 'sente', true),
+    drawShapes: concat(initial([circle('7i')]), onPly(2, [circle('3i')])),
+    scenario: createScenario(['S*7i', 'S*3a', 'S*3i', 'S*7a'], 'sente', true),
   },
   {
     goal: i18n('learn:dropTheKnights'),
@@ -54,6 +54,7 @@ const levels: IncompleteLevel[] = [
     nbMoves: 2,
     success: scenarioSuccess,
     failure: scenarioFailure,
+    drawShapes: concat(initial([circle('8i')]), onPly(2, [circle('2i')])),
     scenario: createScenario(['N*8i', 'N*2a', 'N*2i', 'N*8a'], 'sente', true),
   },
   {
@@ -63,6 +64,7 @@ const levels: IncompleteLevel[] = [
     nbMoves: 2,
     success: scenarioSuccess,
     failure: scenarioFailure,
+    drawShapes: concat(initial([circle('9i')]), onPly(2, [circle('1i')])),
     scenario: createScenario(['L*9i', 'P*1c', 'L*1i', 'P*2c'], 'sente', true),
   },
   {
@@ -72,6 +74,7 @@ const levels: IncompleteLevel[] = [
     nbMoves: 2,
     success: scenarioSuccess,
     failure: scenarioFailure,
+    drawShapes: concat(initial([circle('8h')]), onPly(2, [circle('2h')])),
     scenario: createScenario(['B*8h', 'P*3c', 'R*2h', 'P*4c'], 'sente', true),
   },
   {

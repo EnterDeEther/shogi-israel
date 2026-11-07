@@ -469,8 +469,8 @@ mark.learn-task {
 .learn__map .phase a, .learn__overlay .phase a { display: inline-block; padding: 2px 12px; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-2); text-decoration: none; }
 .learn__map .phase a:hover, .learn__overlay .phase a:hover { color: var(--seal); border-color: var(--seal); }
 
-.sg-wrap .sg-custom-svgs .rep-digit circle { fill: var(--seal); opacity: 0.85; }
-.sg-wrap .sg-custom-svgs .rep-digit path { fill: var(--on-seal); }
+.sg-wrap .sg-custom-svgs .rep-digit circle { fill: var(--ink); opacity: 0.85; }
+.sg-wrap .sg-custom-svgs .rep-digit path { fill: var(--washi); }
 
 .learn__map .course-level { display: flex; align-items: baseline; gap: 10px; margin: 36px 0 14px; font-size: 30px; font-weight: 800; color: var(--seal); }
 .learn__map .course-level:first-child { margin-top: 0; }

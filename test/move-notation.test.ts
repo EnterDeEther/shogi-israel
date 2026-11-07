@@ -28,6 +28,15 @@ test('lesson text converts every move and leaves other text alone', () => {
   expect(lessonMove('P-76', 'letters')).toBe('P-76');
 });
 
+test('lesson text in the English set writes captures with ×', () => {
+  expect(lessonMove('Bx22+', 'letters')).toBe('B×22+');
+  expect(lessonMove('S38x27+', 'letters')).toBe('S38×27+');
+  expect(lessonMove('G69-58', 'letters')).toBe('G69-58');
+  expect(lessonMove('S*55', 'letters')).toBe('S*55');
+  expect(lessonMove('+Rx28=', 'letters')).toBe('+R×28=');
+  expect(localMove('Bx22+', 'letters')).toBe('Bx22+');
+});
+
 test('lesson moves write the own king as 王 and the opponent king as 玉', () => {
   expect(lessonMove('K-48', 'kanji')).toBe('王-48');
   expect(lessonMove('K-42', 'kanji', true)).toBe('玉-42');

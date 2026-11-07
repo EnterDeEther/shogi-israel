@@ -4,7 +4,7 @@ const raw = (await Astro.slots.render('default')).replace(/<[^>]+>/g, '').trim()
 const m = raw.match(/^(.*?)\s*\(([^\s,()]+)([\s,]+[^)]*)?\)\s*$/);
 ---
 {m ? (
-  <span class="term"><strong>{m[1]}</strong> <bdi>(<span lang="ja">{m[2]}</span>{m[3] ?? ''})</bdi></span>
+  <span class="term"><strong>{m[1]}</strong> <bdi dir="rtl">(<span lang="ja">{m[2]}</span>{m[3] ?? ''})</bdi></span>
 ) : (
   <span class="term"><strong>{raw}</strong></span>
 )}
