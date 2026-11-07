@@ -100,7 +100,7 @@ export function bootWatchGame(root: HTMLElement): void {
       setRich(q('[data-why-text]'), m.why ?? '');
       if (announce) live.textContent = `מהלך ${step}: ${m.title}. ${plainText(m.text)}`;
     } else if (announce) {
-      live.textContent = step === 0 ? 'עמדת הפתיחה' : 'סיכום המשחק';
+      live.textContent = step === 0 ? 'העמדה הפותחת' : 'סיכום המשחק';
     }
 
     next.hidden = step > N;
