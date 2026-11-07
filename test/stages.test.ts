@@ -111,9 +111,9 @@ describe('every level is solvable with 3 stars', () => {
       );
 });
 
-test('42 stages, 194 levels', () => {
+test('42 stages, 195 levels', () => {
   expect(stages.length).toBe(42);
-  expect(stages.reduce((a, s) => a + s.levels.length, 0)).toBe(194);
+  expect(stages.reduce((a, s) => a + s.levels.length, 0)).toBe(195);
 });
 
 test('no string falls back to its key', () => {
@@ -194,7 +194,7 @@ test('an exercise that starts after the opponent moved shows that move', () => {
   expect(stageOf('primitiveClimbingSilver').levels[0].lastDests).toEqual(['8e', '8f']);
   expect(stageOf('thirdFileRook').levels[0].lastDests).toBeUndefined();
   const ffr = stageOf('fourthFileRook').levels;
-  expect(ffr[0].lastDests).toEqual(['8d', '8e']);
+  expect(ffr[0].lastDests).toBeUndefined();
   const prev = ffr[0].scenario!;
   expect(ffr[1].lastDests).toEqual(usiDests(prev[prev.length - 1].usi));
 });

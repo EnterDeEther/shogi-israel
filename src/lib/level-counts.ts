@@ -4,7 +4,7 @@ export const LEVEL_COUNTS: Record<string, number> = {
   capture: 6, drop: 9, protection: 13, check1: 5, outOfCheck: 12, checkmate1: 16,
   setup: 9, repetition: 3,
   value: 9,
-  staticRook: 2, rangingRook: 3, fourthFileRook: 5, centralRook: 3, thirdFileRook: 3, yagura: 5, bishopExchange: 2,
+  staticRook: 2, rangingRook: 3, fourthFileRook: 6, centralRook: 3, thirdFileRook: 3, yagura: 5, bishopExchange: 2,
   ishida: 3, quickIshida: 2, opposingRook: 3, doubleRangingRook: 3, sidePawn: 3, twistingRook: 3,
   rangingCastles: 4, staticCastles: 3,
   primitiveClimbingSilver: 3, climbingSilverVsRanging: 3, sittingSilver: 5, chainedSilver: 2, bishopClimbingSilver: 2,
