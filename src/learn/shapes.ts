@@ -3,6 +3,7 @@
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
 // Modified by Shogi Israel (shogi.co.il), 2026-10-24.
+// Modified by Shogi Israel (shogi.co.il), 2026-11-07.
 
 import type { DrawShape, SquareHighlight } from 'shogiground/draw';
 import { opposite } from 'shogiground/util';
@@ -89,6 +90,10 @@ export function onFailure<T extends Shape>(shapes: T[]): VmEvaluation<T[]> {
 
 export function checkShapes(level: Level, usiCList: UsiWithColor[]): DrawShape[] {
   if (!usiCList.length || !level.failure || !level.failure(level, usiCList)) return [];
+  return checkArrows(level, usiCList);
+}
+
+export function checkArrows(level: Level, usiCList: UsiWithColor[]): DrawShape[] {
   const pos = currentPosition(level, usiCList);
   const sideInCheck = inCheck(pos);
   if (sideInCheck) {

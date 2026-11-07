@@ -229,3 +229,16 @@ test('piece value #6 shows the whole mate after the king takes the dragon', () =
   const line = (show as string[]).map((usi, i) => ({ usi, color: i % 2 ? level.color : 'gote' }) as UsiWithColor);
   expect(currentPosition(level, [...played, ...line]).outcome()).toEqual({ result: 'checkmate', winner: 'gote' });
 });
+
+test('piece value #6 marks the checking gold in red after a wrong move', () => {
+  const level = stages.find((s) => s.key === 'value')!.levels[5];
+  const g = (usi: string): UsiWithColor => ({ usi, color: 'gote' });
+  const s = (usi: string): UsiWithColor => ({ usi, color: 'sente' });
+  const shapes = (list: UsiWithColor[]) => level.drawShapes!(level, list).map((d) => `${d.orig}${d.dest}:${d.brush}`);
+  expect(shapes([g('6b6h+')])).toEqual([]);
+  expect(shapes([g('6b6h+'), s('7h8g')])).toEqual([]);
+  expect(shapes([g('6b6h+'), s('7h6h'), g('G*6g')])).toEqual(['6g6h:red']);
+  expect(shapes([g('6b6h+'), s('7h6h'), g('G*6g'), s('6h6i')])).toEqual([]);
+  expect(shapes([g('6b6h+'), s('7h6h'), g('G*6g'), s('6h6i'), g('G*6h')])).toEqual(['6h6i:red']);
+  expect(shapes([g('6b6h+'), s('7h8i'), g('G*8h')])).toEqual(['8h8i:red']);
+});

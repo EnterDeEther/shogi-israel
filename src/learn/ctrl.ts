@@ -266,25 +266,30 @@ export default class LearnCtrl {
           const parsedUsi = parseUsi(usi);
           if (!parsedUsi || pos.board.getRole(parsedUsi.to) === 'king') break;
           const usiC = { usi, color };
-          this.vm.usiCList.push(usiC);
           pos.turn = color;
           pos.play(parsedUsi);
           plies.push(usiC);
           color = opposite(color);
         }
 
+        const vm = this.vm;
+        const play = (usiC: UsiWithColor) => {
+          vm.usiCList.push(usiC);
+          ground.playUsi(this, usiC);
+        };
         plies.forEach((usiC, i) => {
-          if (i === 0) ground.playUsi(this, usiC);
+          if (i === 0) play(usiC);
           else
             this.timeouts.push(
               window.setTimeout(() => {
-                ground.playUsi(this, usiC);
-                if (this.vm && i === plies.length - 1) this.refreshBoard();
+                if (this.vm !== vm) return;
+                play(usiC);
+                this.refreshBoard();
               }, FAILURE_PLY_DELAY * i),
             );
         });
       }
-      this.refreshBoard(pos);
+      this.refreshBoard();
     }
   }
 

@@ -10,7 +10,7 @@ import { parseSquareName, parseUsi } from 'shogiops/util';
 import { colorOn, extinct, not, pieceOn, scenarioFailure, scenarioSuccess } from '../assert';
 import type { IncompleteLevel, IncompleteStage, Level, UsiWithColor } from '../interfaces';
 import { createLevel } from '../level';
-import { arrow, checkShapes, circle, initial, onFailure } from '../shapes';
+import { arrow, checkArrows, checkShapes, circle, initial, onFailure } from '../shapes';
 import { findRandomMove } from '../shogi';
 import { createScenario, currentPosition, toPiece } from '../util';
 
@@ -76,6 +76,8 @@ const levels: IncompleteLevel[] = [
     success: scenarioSuccess,
     failure: scenarioFailure,
     scenario: createScenario(['6b6h+', '7h8g'], 'gote', true),
+    drawShapes: (level, usiCList) =>
+      scenarioFailure(level, usiCList.slice(0, level.scenario!.length)) ? checkArrows(level, usiCList) : [],
     showFailureMove: (_, usiCList) => {
       const lastUsiC = usiCList[usiCList.length - 1];
       if (lastUsiC?.usi === '7h6h') return ['G*6g', '6h6i', 'G*6h'];
