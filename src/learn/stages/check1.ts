@@ -12,7 +12,7 @@ import { arrow, checkShapes, concat, initial } from '../shapes';
 
 const levels: IncompleteLevel[] = [
   {
-    goal: i18n('learn:checkInOneGoal'),
+    goal: i18n('il_b_check1Goal1'),
     recap: i18n('il_b_checkRecap'),
     sfen: '5R3/4Ssk2/5p3/9/7L1/9/9/9/9 b r2b4g2s4n3l17p 3',
     nbMoves: 1,
@@ -30,8 +30,8 @@ const levels: IncompleteLevel[] = [
     drawShapes: checkShapes,
   },
   {
-    goal: i18n('learn:checkInOneGoal'),
-    recap: i18n('il_b_checkRecap'),
+    goal: i18n('il_b_check1Goal3'),
+    recap: i18n('il_b_check1Recap3'),
     sfen: '9/9/9/2B2r3/9/4L4/9/9/7k1 b - 1',
     nbMoves: 1,
     success: check('gote'),
@@ -41,7 +41,7 @@ const levels: IncompleteLevel[] = [
   {
     goal: i18n('learn:checkInOneGoal'),
     recap: i18n('il_b_checkRecap'),
-    sfen: '5+B2s/7k1/7N1/6Ss1/9/9/9/9/9 b r2b4g2s4n3l17p 1',
+    sfen: '5+B2s/7k1/7N1/6Ss1/9/9/9/9/9 b - 1',
     nbMoves: 1,
     success: check('gote'),
     failure: not(check('gote')),

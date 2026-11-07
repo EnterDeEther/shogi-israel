@@ -660,9 +660,10 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
     ];
   } else {
     const expected = level.scenario && name(tip.idx);
+    const hint = level.failureHint?.(level, vm.usiCList);
     body = [
       el('h2', { class: 'bad' }, i18n('il_wrongTitle')),
-      el('p', { class: 'lead' }, expected ? rich(i18nFormat('il_wrongPlan', expected)) : i18n('il_wrongTry')),
+      el('p', { class: 'lead' }, expected ? rich(i18nFormat('il_wrongPlan', expected)) : hint ? rich(hint) : i18n('il_wrongTry')),
       isCurrent && el('div', { class: 'buttons' }, btn(i18n('il_tryAgain'), () => ctrl.retryMove())),
     ];
   }
@@ -702,9 +703,11 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
   if (fresh) {
     requestAnimationFrame(() => {
       const board = root.querySelector<HTMLElement>('[data-board]')!.getBoundingClientRect();
+      const top = root.querySelector<HTMLElement>('.sg-hand-wrap.hand-top')?.getBoundingClientRect().top ?? board.top;
+      const header = Math.max(0, document.querySelector<HTMLElement>('.site-header')?.getBoundingClientRect().bottom ?? 0);
       const sheet = box.getBoundingClientRect();
       const narrow = getComputedStyle(box).position === 'fixed';
-      if (narrow && (board.top < 48 || board.bottom > sheet.top)) window.scrollBy({ top: board.top - 56, behavior: 'smooth' });
+      if (narrow && (top < header || board.bottom > sheet.top)) window.scrollBy({ top: top - header - 8, behavior: 'smooth' });
       if (tip.kind !== 'intro') box.querySelector<HTMLElement>('[data-coach-focus]')?.focus({ preventScroll: true });
     });
   }

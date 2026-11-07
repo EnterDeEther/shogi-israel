@@ -8,13 +8,13 @@ import { i18n } from '../i18n';
 import { anyCapture, not, unprotectedCapture } from '../assert';
 import type { IncompleteLevel, IncompleteStage } from '../interfaces';
 import { createLevel } from '../level';
-import { arrow, concat, initial, onSuccess } from '../shapes';
+import { arrow, circle, concat, initial, onSuccess } from '../shapes';
 
 const levels: IncompleteLevel[] = [
   {
     goal: i18n('learn:escape'),
     recap: i18n('il_b_escapeRecap'),
-    sfen: '9/1r7/9/9/9/2PP5/Pp7/1B7/LNS6 b - 1',
+    sfen: '9/1r7/9/9/9/2PP5/Pp7/1B7/LN1S5 b - 1',
     nbMoves: 1,
     success: not(anyCapture),
     failure: anyCapture,
@@ -34,11 +34,11 @@ const levels: IncompleteLevel[] = [
     goal: i18n('learn:noEscape'),
     recap: i18n('il_b_noEscapeRecap'),
     sfen: '9/9/2n6/2r6/4P4/2S6/1PBP5/2R6/9 b - 1',
-    nbMoves: 3,
+    nbMoves: 1,
     success: not(unprotectedCapture),
     failure: unprotectedCapture,
     drawShapes: concat(
-      initial([arrow('7d', '7f', 'red'), arrow('7h', '7g')]),
+      initial([arrow('7d', '7f', 'red'), circle('7g')]),
       onSuccess([arrow('7h', '7f')]),
     ),
     showFailureMove: 'unprotected',
@@ -67,7 +67,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:makeSureAllSafe'),
-    recap: i18n('il_b_protectRecap'),
+    recap: i18n('il_b_protect6Recap'),
     sfen: '9/9/7+P1/6s2/5N3/9/9/9/9 b - 1',
     nbMoves: 1,
     success: not(unprotectedCapture),
@@ -130,7 +130,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:dontLetThemTakeAnyUndefendedPiece'),
-    recap: i18n('il_b_protectRecap'),
+    recap: i18n('il_b_protect13Recap'),
     sfen: '8l/9/9/7n1/8P/8L/6PP1/6S2/7N1 b LP 1',
     nbMoves: 1,
     success: not(unprotectedCapture),

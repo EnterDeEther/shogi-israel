@@ -36,6 +36,7 @@ export interface Level {
 
   success: Assertion;
   failure?: Assertion;
+  failureHint?: VmEvaluation<string | undefined>;
 
   obstacles?: Key[];
   scenario?: UsiWithColor[];

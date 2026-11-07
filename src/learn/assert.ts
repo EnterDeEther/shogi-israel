@@ -6,7 +6,7 @@
 
 import type { Piece } from 'shogiground/types';
 import { samePiece } from 'shogiground/util';
-import type { Result } from 'shogiops/types';
+import type { Result, Role } from 'shogiops/types';
 import { opposite, parseSquareName, parseUsi } from 'shogiops/util';
 import type { Assertion, Level, UsiWithColor } from './interfaces';
 import { findCapture, findUnprotectedCapture } from './shogi';
@@ -84,6 +84,13 @@ export function pieceOn(piece: Piece, key: Key): Assertion {
     const shogi = currentPosition(level, usiCList);
     const boardPiece = shogi.board.get(parseSquareName(key));
     return !!boardPiece && samePiece(piece, boardPiece);
+  };
+}
+
+export function hasPiece(color: Color, role: Role): Assertion {
+  return (level: Level, usiCList: UsiWithColor[]) => {
+    const shogi = currentPosition(level, usiCList);
+    return shogi.board.pieces(color, role).nonEmpty();
   };
 }
 

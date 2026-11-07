@@ -24,7 +24,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:dropsCommonDeliverMate'),
-    recap: i18n('il_b_mateRecap'),
+    recap: i18n('il_b_mate2Recap'),
     sfen: '7k1/9/7S1/9/9/9/9/9/9 b S2r2b4g2s4n4l18p 1',
     nbMoves: 1,
     success: checkmate,
@@ -33,16 +33,17 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:attackYourOpponentsKing'),
-    recap: i18n('il_b_mateRecap'),
+    recap: i18n('il_b_mate3Recap'),
     sfen: '7nk/7bl/9/9/6N2/9/9/9/9 b 2rb4g4s2n3l18p 1',
     nbMoves: 1,
     success: checkmate,
     failure: not(checkmate),
+    failureHint: (_, usiCList) => (usiCList[0]?.usi === '3e2c+' ? i18n('il_b_mate3Fail') : undefined),
     showFailureMove: 'random',
   },
   {
     goal: i18n('learn:attackYourOpponentsKing'),
-    recap: i18n('il_b_mateRecap'),
+    recap: i18n('il_b_mate4Recap'),
     sfen: '4R3G/7k1/6ppp/9/9/9/9/9/9 b r2b3g4s4n4l15p 1',
     nbMoves: 1,
     success: checkmate,
@@ -51,7 +52,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:attackYourOpponentsKing'),
-    recap: i18n('il_b_mateRecap'),
+    recap: i18n('il_b_mate5Recap'),
     sfen: '7kl/7s1/6PSp/9/9/9/9/9/9 b 2r2b4g2s4n3l16p 1',
     nbMoves: 1,
     success: checkmate,
@@ -60,7 +61,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:attackYourOpponentsKing'),
-    recap: i18n('il_b_mateRecap'),
+    recap: i18n('il_b_mate6Recap'),
     sfen: '9/5n2+B/5pk2/9/7+R1/9/9/9/9 b rb4g4s3n4l17p 1',
     nbMoves: 1,
     success: checkmate,
@@ -69,7 +70,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:attackYourOpponentsKing'),
-    recap: i18n('il_b_mateRecap'),
+    recap: i18n('il_b_mate7Recap'),
     sfen: '5k3/6s2/5NB2/9/9/9/9/9/9 b 2rb4g3s3n4l18p 2',
     nbMoves: 1,
     success: checkmate,
@@ -78,7 +79,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:attackYourOpponentsKing'),
-    recap: i18n('il_b_mateRecap'),
+    recap: i18n('il_b_mate8Recap'),
     sfen: '4R3l/6g1k/5gsp1/6p1P/9/9/9/9/8L b r2b2g3s4n2l15p 1',
     nbMoves: 1,
     success: checkmate,
@@ -87,7 +88,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:chooseYourPieceCarefully'),
-    recap: i18n('il_b_mateChooseRecap'),
+    recap: i18n('il_b_mate9Recap'),
     sfen: '8l/6S1k/9/9/8g/9/9/9/9 b GS2r2b2g2s4n3l18p 1',
     nbMoves: 1,
     success: checkmate,
@@ -96,7 +97,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:chooseYourPieceCarefully'),
-    recap: i18n('il_b_mateChooseRecap'),
+    recap: i18n('il_b_mate10Recap'),
     sfen: '8l/7k1/7pb/7N1/9/9/9/9/9 b RGrb3g4s3n3l17p 1',
     nbMoves: 1,
     success: checkmate,
@@ -105,7 +106,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:chooseYourPieceCarefully'),
-    recap: i18n('il_b_mateChooseRecap'),
+    recap: i18n('il_b_mate11Recap'),
     sfen: '8l/6+Rgk/7pp/9/9/9/9/9/9 b GSr2b2g3s4n3l16p 1',
     nbMoves: 1,
     success: checkmate,
@@ -119,6 +120,7 @@ const levels: IncompleteLevel[] = [
     nbMoves: 1,
     success: and(checkmate, not(pieceOn(toPiece('P'), '1d'))),
     failure: or(not(checkmate), pieceOn(toPiece('P'), '1d')),
+    failureHint: (_, usiCList) => (usiCList[0]?.usi === 'P*1d' ? i18n('il_b_mate12Fail') : undefined),
     drawShapes: initial([circle(toPiece('P'), 'red'), circle(toPiece('L'))]),
     offerIllegalDests: true,
   },
@@ -133,7 +135,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:attackYourOpponentsKing'),
-    recap: i18n('il_b_mateRecap'),
+    recap: i18n('il_b_mate14Recap'),
     sfen: '8l/5BSk1/6p1P/9/9/9/9/9/9 b 2rb4g3s4n3l16p 1',
     nbMoves: 1,
     success: checkmate,
@@ -142,7 +144,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:attackYourOpponentsKing'),
-    recap: i18n('il_b_mateRecap'),
+    recap: i18n('il_b_mate15Recap'),
     sfen: '5lk2/8R/5Ps2/6N2/6L2/9/9/9/9 b r2b4g3s3n2l17p 1',
     nbMoves: 1,
     success: checkmate,
@@ -151,7 +153,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:attackYourOpponentsKing'),
-    recap: i18n('il_b_mateRecap'),
+    recap: i18n('il_b_mate16Recap'),
     sfen: '2R3gkl/3R3s1/7p1/7Np/9/9/9/9/9 b 2b3g3s3n3l16p 1',
     nbMoves: 1,
     success: checkmate,

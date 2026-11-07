@@ -11,9 +11,10 @@ interface Props {
   size?: 'full' | 'compact';
   reveal?: boolean;
   kanji?: boolean;
+  tone?: 'no' | 'ok';
 }
 
-const { sfen, highlight = '', zones = false, caption, toggle = true, size = 'full', reveal = false, kanji = false } = Astro.props;
+const { sfen, highlight = '', zones = false, caption, toggle = true, size = 'full', reveal = false, kanji = false, tone = 'no' } = Astro.props;
 const pos = parseSfen(sfen);
 const hl = new Set(highlight.split(',').map((s) => s.trim()).filter(Boolean));
 const files = [9, 8, 7, 6, 5, 4, 3, 2, 1];
@@ -32,7 +33,7 @@ const senteHand = handOf('sente');
 const handPieces = (hand: { t: string; n: number }[], side: 'sente' | 'gote') =>
   hand.map((h) => ({ n: h.n, p: { type: h.t as PieceType, side, promoted: false } }));
 ---
-<figure class:list={['board-fig', size, { reveal, kanji }]} data-board>
+<figure class:list={['board-fig', size, { reveal, kanji, 'hl-ok': tone === 'ok' }]} data-board>
   {toggle && !kanji && (
     <div class="board-head">
       <span class="small muted">סימון הכלים</span>
@@ -109,6 +110,8 @@ const handPieces = (hand: { t: string; n: number }[], side: 'sente' | 'gote') =>
     content: ""; position: absolute; top: 2px; left: 2px; width: 0; height: 0;
     border-top: 9px solid var(--seal); border-right: 9px solid transparent; z-index: 1;
   }
+  .hl-ok .sq.hl { box-shadow: inset 0 0 0 3px var(--sq-ok); }
+  .hl-ok .sq.hl::before { border-top-color: var(--sq-ok); }
 
   .pc {
     position: relative; width: 82%; height: 90%;

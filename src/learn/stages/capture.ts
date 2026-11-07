@@ -5,11 +5,13 @@
 // Modified by Shogi Israel (shogi.co.il), 2026-10-24.
 
 import { i18n } from '../i18n';
-import { anyCapture, extinct } from '../assert';
+import { and, anyCapture, extinct, hasPiece, or } from '../assert';
 import type { IncompleteLevel, IncompleteStage } from '../interfaces';
 import { createLevel } from '../level';
 import { arrow, circle, initial, onDest } from '../shapes';
 import { toPiece } from '../util';
+
+const earlyPromotion = and(hasPiece('sente', 'promotedsilver'), hasPiece('gote', 'tokin'));
 
 const levels: IncompleteLevel[] = [
   {
@@ -61,12 +63,13 @@ const levels: IncompleteLevel[] = [
     showFailureMove: 'capture',
   },
   {
-    goal: i18n('learn:takeTheEnemyPiecesAndDontLoseYours'),
-    recap: i18n('il_b_captureRecap'),
+    goal: i18n('il_b_capture6Goal'),
+    recap: i18n('il_b_capture6Recap'),
     sfen: '9/5l+p2/4S4/4pp3/9/9/9/9/9 b -',
-    nbMoves: 7,
+    nbMoves: 9,
     success: extinct('gote'),
-    failure: anyCapture,
+    failure: or(anyCapture, earlyPromotion),
+    failureHint: (level, usiCList) => (earlyPromotion(level, usiCList) ? i18n('il_b_capture6Fail') : undefined),
     showFailureMove: 'capture',
   },
 ];

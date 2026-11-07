@@ -37,6 +37,7 @@
   --fb-no-bg: #F6E1D9;
   --fb-no-fg: #6E1F0E;
   --sq-no: #F2D3C8;
+  --sq-ok: #2F6B2A;
   --won-bg: #E3EED6;
   --won-fg: #1E4A1B;
   --lost-bg: #F6DDD5;
@@ -93,6 +94,7 @@
     --fb-no-bg: #3A1F18;
     --fb-no-fg: #F2CFC4;
     --sq-no: #E9C2B4;
+    --sq-ok: #3C8434;
     --won-bg: #22341F;
     --won-fg: #CFE3B8;
     --lost-bg: #3A1E17;
@@ -133,6 +135,7 @@
   --fb-no-bg: #3A1F18;
   --fb-no-fg: #F2CFC4;
   --sq-no: #E9C2B4;
+  --sq-ok: #3C8434;
   --won-bg: #22341F;
   --won-fg: #CFE3B8;
   --lost-bg: #3A1E17;
