@@ -68,8 +68,8 @@ function setupBoardTask(task: HTMLElement, answer: string) {
     f.textContent = text;
   });
   const squares = [...grid.querySelectorAll<HTMLElement>('[data-sq]')];
-  const hint = task.dataset.hint;
-  const why = task.dataset.why;
+  const hint = task.dataset.gDataHint ?? task.dataset.hint;
+  const why = task.dataset.gDataWhy ?? task.dataset.why;
   let misses = 0;
   grid.classList.add('live');
   grid.removeAttribute('aria-hidden');
