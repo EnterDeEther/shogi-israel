@@ -115,13 +115,14 @@ export function stageImg(key: string): HTMLElement {
   if (role) return el('span', { class: 'stage-img piece-img', 'aria-hidden': 'true' }, el('piece', { class: `${role} sente` }));
   return el('span', { class: 'stage-img seal-img', 'aria-hidden': 'true', lang: 'ja' }, sealStages[key] ?? '将');
 }
+const levelScores = (ctrl: LearnCtrl, s: Stage) => ctrl.progress.get(s.key).slice(0, s.levels.length);
 const sealImg = (ch: string) => el('span', { class: 'stage-img seal-img', 'aria-hidden': 'true', lang: 'ja' }, ch);
 
 function stageStatuses(ctrl: LearnCtrl): Map<string, 'done' | 'ongoing' | 'future'> {
   const out = new Map<string, 'done' | 'ongoing' | 'future'>();
   let prevComplete = true;
   for (const s of ctrl.stages) {
-    const res = ctrl.progress.get(s.key).filter((x) => x > 0);
+    const res = levelScores(ctrl, s).filter((x) => x > 0);
     if (res.length === s.levels.length) out.set(s.key, 'done');
     else if (prevComplete || res.length > 0) {
       out.set(s.key, 'ongoing');
@@ -229,7 +230,7 @@ function renderHome(ctrl: LearnCtrl, _root: HTMLElement, q: Q, go: Go, stageLink
 
   const ribbon = (s: Stage, status: string) => {
     if (status === 'future') return null;
-    const res = ctrl.progress.get(s.key).filter((x) => x > 0);
+    const res = levelScores(ctrl, s).filter((x) => x > 0);
     const content: Child =
       status === 'ongoing'
         ? res.length > 0 ? el('bdi', { dir: 'ltr' }, `${res.length} / ${s.levels.length}`) : i18n('play')
@@ -252,7 +253,7 @@ function renderHome(ctrl: LearnCtrl, _root: HTMLElement, q: Q, go: Go, stageLink
         el('div', { class: 'categ_stages' },
           ...c.stages.map((s) => {
             const status = statuses.get(s.key)!;
-            const res = ctrl.progress.get(s.key).filter((x) => x > 0);
+            const res = levelScores(ctrl, s).filter((x) => x > 0);
             const a = stageLink(s, `stage ${status}`,
               ribbon(s, status),
               stageImg(s.key),
@@ -357,7 +358,7 @@ function renderLesson(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go, stageLin
     overlay.hidden = false;
     overlay.className = 'learn__overlay completed';
     const next = nextStage(stage.id);
-    const avg = Math.floor(average(ctrl.progress.get(stage.key)));
+    const avg = Math.floor(average(levelScores(ctrl, stage)));
     overlay.replaceChildren(
       el('div', { class: 'screen', role: 'dialog', 'aria-labelledby': 'learn-ov-title' },
         stars(avg),

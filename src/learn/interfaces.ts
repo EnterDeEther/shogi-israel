@@ -106,6 +106,7 @@ export interface LearnOpts {
 export interface LearnProgress {
   _id?: string;
   stages: Record<string, ProgressScore>;
+  v?: number;
 }
 
 interface ProgressScore {

@@ -16,7 +16,7 @@ import { makeUsi, parseSquareName, parseUsi } from 'shogiops/util';
 import { sameScenarioMove } from './assert';
 import * as categories from './categories';
 import * as ground from './ground';
-import type { Category, LearnOpts, Stage, Vm } from './interfaces';
+import type { Category, LearnOpts, Stage, UsiWithColor, Vm } from './interfaces';
 import { calcScore } from './level';
 import { ProgressStorage } from './progress';
 import {
@@ -31,6 +31,8 @@ import { play as playSound, playMove } from './sound';
 import { stageSlug, stageUrl } from './urls';
 import { currentPosition, usiDests } from './util';
 import { liveBounds } from '../lib/live-bounds';
+
+const FAILURE_PLY_DELAY = 600;
 
 export default class LearnCtrl {
   shogiground: Api;
@@ -228,6 +230,7 @@ export default class LearnCtrl {
   retryMove(): void {
     const vm = this.vm;
     if (!vm) return;
+    this.clearTimetouts();
     const sc = vm.level.scenario;
     if (!sc) return this.restartLevel();
     let keep = 0;
@@ -257,6 +260,7 @@ export default class LearnCtrl {
                 ? findRandomMove(pos)
                 : this.vm.level.showFailureMove(this.vm.level, this.vm.usiCList);
         let color = opposite(this.vm.level.color);
+        const plies: UsiWithColor[] = [];
 
         for (const usi of typeof found === 'string' ? [found] : (found ?? [])) {
           const parsedUsi = parseUsi(usi);
@@ -265,9 +269,20 @@ export default class LearnCtrl {
           this.vm.usiCList.push(usiC);
           pos.turn = color;
           pos.play(parsedUsi);
-          ground.playUsi(this, usiC);
+          plies.push(usiC);
           color = opposite(color);
         }
+
+        plies.forEach((usiC, i) => {
+          if (i === 0) ground.playUsi(this, usiC);
+          else
+            this.timeouts.push(
+              window.setTimeout(() => {
+                ground.playUsi(this, usiC);
+                if (this.vm && i === plies.length - 1) this.refreshBoard();
+              }, FAILURE_PLY_DELAY * i),
+            );
+        });
       }
       this.refreshBoard(pos);
     }

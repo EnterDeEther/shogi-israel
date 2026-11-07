@@ -10,7 +10,7 @@ import { parseSquareName, parseUsi } from 'shogiops/util';
 import { colorOn, extinct, not, pieceOn, scenarioFailure, scenarioSuccess } from '../assert';
 import type { IncompleteLevel, IncompleteStage, Level, UsiWithColor } from '../interfaces';
 import { createLevel } from '../level';
-import { arrow, circle, initial, onFailure } from '../shapes';
+import { arrow, checkShapes, circle, initial, onFailure } from '../shapes';
 import { findRandomMove } from '../shogi';
 import { createScenario, currentPosition, toPiece } from '../util';
 
@@ -76,7 +76,6 @@ const levels: IncompleteLevel[] = [
     success: scenarioSuccess,
     failure: scenarioFailure,
     scenario: createScenario(['6b6h+', '7h8g'], 'gote', true),
-    drawShapes: onFailure([circle(toPiece('g'), 'red')]),
     showFailureMove: (_, usiCList) => {
       const lastUsiC = usiCList[usiCList.length - 1];
       if (lastUsiC?.usi === '7h6h') return ['G*6g', '6h6i', 'G*6h'];
@@ -90,7 +89,10 @@ const levels: IncompleteLevel[] = [
     nbMoves: 1,
     success: pieceOn({ role: 'tokin', color: 'sente' }, '2b'),
     failure: not(pieceOn({ role: 'tokin', color: 'sente' }, '2b')),
-    drawShapes: onFailure([arrow(toPiece('g'), '8f', 'red')]),
+    drawShapes: (level, usiCList) =>
+      currentPosition(level, usiCList).hands.color('gote').get('gold')
+        ? onFailure([arrow(toPiece('g'), '8f', 'red')])(level, usiCList)
+        : checkShapes(level, usiCList),
     showFailureMove: (level, usiCList: UsiWithColor[]) => {
       const lastUsiC = usiCList[usiCList.length - 1];
       if (['3c3b', '2c3b', '2c1b', '1c1b'].includes(lastUsiC?.usi)) {

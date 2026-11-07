@@ -1,12 +1,12 @@
 import { describe, expect, test } from 'bun:test';
-import { emptyProgress, gameResult, merge, mergeSignIn, normalize, NICKNAME_RE, RESERVED_RE, stats } from '../src/lib/progress-sync';
+import { emptyProgress, gameResult, LEARN_VERSION, merge, mergeSignIn, normalize, NICKNAME_RE, RESERVED_RE, stats, upgradeLearn } from '../src/lib/progress-sync';
 
 describe('progress sync', () => {
   test('merge keeps the best score per level and every finished lesson', () => {
     const a = normalize({ learn: { stages: { king: { scores: [3, 1] } } }, rules: ['01'] });
     const b = normalize({ learn: { stages: { king: { scores: [2, 2, 3] }, gold: { scores: [1] } } }, rules: ['02', '01'] });
     const m = merge(a, b);
-    expect(m.learn).toEqual({ stages: { king: { scores: [3, 2, 3] }, gold: { scores: [1] } } });
+    expect(m.learn).toEqual({ stages: { king: { scores: [3, 2, 3] }, gold: { scores: [1] } }, v: LEARN_VERSION });
     expect(m.rules).toEqual(['01', '02']);
   });
 
@@ -22,7 +22,7 @@ describe('progress sync', () => {
       inbox: { read: ['b'], off: ['news'], offAt: '2026-10-20T10:00:00Z' },
     });
     const m = mergeSignIn(guest, account);
-    expect(m.learn).toEqual({ stages: { king: { scores: [3, 3] }, rook: { scores: [2] } } });
+    expect(m.learn).toEqual({ stages: { king: { scores: [3, 3] }, rook: { scores: [2] } }, v: LEARN_VERSION });
     expect(m.rules).toEqual(['01', '02']);
     expect(m.tsume).toEqual({ 1: [5, 7] });
     expect([m.course.route, m.course.start, m.course.placedAt]).toEqual(['chess', 'intermediate', '2026-10-20T10:00:00Z']);
@@ -43,8 +43,20 @@ describe('progress sync', () => {
   test('normalize survives junk', () => {
     expect(normalize(null)).toEqual(emptyProgress());
     const p = normalize({ learn: { stages: { x: { scores: [9, -1, 'a', null] }, y: 5 } }, rules: [1, 'a'] });
-    expect(p.learn).toEqual({ stages: { x: { scores: [3, 0, 0, 0] } } });
+    expect(p.learn).toEqual({ stages: { x: { scores: [3, 0, 0, 0] } }, v: LEARN_VERSION });
     expect(p.rules).toEqual(['a']);
+  });
+
+  test('old learn progress drops the removed first exercise of the 6th-file rook stage once', () => {
+    const old = normalize({ learn: { stages: { fourthFileRook: { scores: [3, 2, 3, 3, 3, 1] }, king: { scores: [3, 3] } } } });
+    expect(old.learn).toEqual({ stages: { fourthFileRook: { scores: [2, 3, 3, 3, 1] }, king: { scores: [3, 3] } }, v: LEARN_VERSION });
+    expect(normalize(old).learn).toEqual(old.learn);
+    expect(merge(old, normalize(old)).learn.stages.fourthFileRook.scores).toEqual([2, 3, 3, 3, 1]);
+    const stored = { stages: { fourthFileRook: { scores: [3] } } };
+    expect(upgradeLearn(stored)).toBe(true);
+    expect(stored).toEqual({ stages: { fourthFileRook: { scores: [] } }, v: LEARN_VERSION });
+    expect(upgradeLearn(stored)).toBe(false);
+    expect(stored.stages.fourthFileRook.scores).toEqual([]);
   });
 
   test('stats count stars, levels and finished stages', () => {

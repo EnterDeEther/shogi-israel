@@ -3,14 +3,19 @@
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
 // Modified by Shogi Israel (shogi.co.il), 2026-10-24.
+// Modified by Shogi Israel (shogi.co.il), 2026-11-07.
 
 import type { LearnOpts, LearnProgress, Score } from './interfaces';
 import { storage } from './storage';
+import { LEARN_VERSION, upgradeLearn } from '../lib/progress-sync';
 
-const defaultProgress: LearnProgress = {
-  stages: {},
-};
 const key = 'learn.progress';
+
+function read(stored: string): LearnProgress {
+  const progress: LearnProgress = JSON.parse(stored);
+  if (upgradeLearn(progress)) storage.set(key, JSON.stringify(progress));
+  return progress;
+}
 
 export class ProgressStorage {
   progress: LearnProgress;
@@ -18,7 +23,7 @@ export class ProgressStorage {
   constructor(opts: LearnOpts) {
     const storedProgess = storage.get(key);
 
-    this.progress = opts.data || (storedProgess ? JSON.parse(storedProgess) : defaultProgress);
+    this.progress = opts.data || (storedProgess ? read(storedProgess) : { stages: {}, v: LEARN_VERSION });
   }
 
   has(stageKey: string): boolean {
@@ -51,6 +56,6 @@ export class ProgressStorage {
 
   reload(): void {
     const stored = storage.get(key);
-    if (stored) this.progress = JSON.parse(stored);
+    if (stored) this.progress = read(stored);
   }
 }

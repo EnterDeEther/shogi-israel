@@ -1,4 +1,4 @@
-export interface LearnProgress { stages: Record<string, { scores: number[] }> }
+export interface LearnProgress { stages: Record<string, { scores: number[] }>; v?: number }
 export type Route = 'main' | 'chess';
 export type CourseLevel = 'beginner' | 'intermediate' | 'advanced';
 export interface CourseState {
@@ -35,9 +35,22 @@ export const INBOX_KEY = 'shogi-il.inbox';
 export const ROUTES: Route[] = ['main', 'chess'];
 export const COURSE_LEVELS: CourseLevel[] = ['beginner', 'intermediate', 'advanced'];
 
+export const LEARN_VERSION = 2;
+const DROPPED_LEVELS: Record<string, number> = { fourthFileRook: 1 };
+
+export function upgradeLearn(learn: { stages: Record<string, { scores: number[] }>; v?: unknown }): boolean {
+  if (typeof learn.v === 'number' && learn.v >= LEARN_VERSION) return false;
+  for (const [key, n] of Object.entries(DROPPED_LEVELS)) {
+    const stage = learn.stages?.[key];
+    if (stage && Array.isArray(stage.scores)) stage.scores = stage.scores.slice(n);
+  }
+  learn.v = LEARN_VERSION;
+  return true;
+}
+
 export const emptyCourse = (): CourseState => ({ route: null, start: null, placedAt: '', seen: [], skipped: [], played: 0, won: 0 });
 export const emptyInbox = (): InboxState => ({ read: [], off: [], offAt: '' });
-export const emptyProgress = (): SyncedProgress => ({ learn: { stages: {} }, rules: [], tsume: {}, course: emptyCourse(), inbox: emptyInbox() });
+export const emptyProgress = (): SyncedProgress => ({ learn: { stages: {}, v: LEARN_VERSION }, rules: [], tsume: {}, course: emptyCourse(), inbox: emptyInbox() });
 
 const strings = (v: unknown): string[] =>
   Array.isArray(v) ? [...new Set(v.filter((s: unknown): s is string => typeof s === 'string'))].sort() : [];
@@ -55,6 +68,7 @@ export function normalize(raw: unknown): SyncedProgress {
       out.learn.stages[key] = { scores: v.scores.map((s: unknown) => (typeof s === 'number' && s > 0 ? Math.min(3, Math.floor(s)) : 0)) };
     }
   }
+  upgradeLearn({ stages: out.learn.stages, v: r.learn?.v });
   out.rules = strings(r.rules);
   if (r.tsume && typeof r.tsume === 'object') {
     for (const [n, list] of Object.entries(r.tsume as Record<string, unknown>)) {

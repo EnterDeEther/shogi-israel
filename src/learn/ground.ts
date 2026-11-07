@@ -3,13 +3,14 @@
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
 // Modified by Shogi Israel (shogi.co.il), 2026-10-24.
+// Modified by Shogi Israel (shogi.co.il), 2026-11-07.
 
 import type { Config } from 'shogiground/config';
 import type { Drawable, SquareHighlight } from 'shogiground/draw';
 import { shogigroundDropDests, shogigroundMoveDests } from 'shogiops/compat';
 import type { Piece, Role } from 'shogiops/types';
 import { isDrop, makeSquareName, parseSquareName, parseUsi } from 'shogiops/util';
-import { pieceCanPromote, pieceForcePromote, promote } from 'shogiops/variant/util';
+import { pieceCanPromote, pieceForcePromote, promote, unpromote } from 'shogiops/variant/util';
 import type LearnCtrl from './ctrl';
 import type { Level, UsiWithColor } from './interfaces';
 import { illegalShogigroundDropDests, illegalShogigroundMoveDests, inCheck } from './shogi';
@@ -36,6 +37,9 @@ export function initConfig(ctrl: LearnCtrl): Config {
     promotion: {
       promotesTo: (role: Role) => {
         return promote('standard')(role);
+      },
+      unpromotesTo: (role: string) => {
+        return unpromote('standard')(role as Role);
       },
       movePromotionDialog: (orig: Key, dest: Key) => {
         const piece = ctrl.shogiground.state.pieces.get(orig) as Piece;
