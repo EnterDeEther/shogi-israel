@@ -8,7 +8,6 @@ import { RANKS, rankFor, stepXp, XP } from '../lib/xp';
 import { emptyProgress } from '../lib/progress-sync';
 import { accountsEnabled } from '../lib/account-config';
 import { pageExists } from '../lib/live';
-import { WHATSAPP_URL } from '../lib/nav';
 
 const empty = emptyProgress();
 const PATHS = [
@@ -26,6 +25,7 @@ const levelEnd = (units: typeof CURRICULUM, route: 'main' | 'chess') => {
   });
 };
 const accountsOn = accountsEnabled && pageExists('/account/');
+const courseTitle = accountsOn ? 'מסלול לימוד אישי' : 'מסלול הלימוד';
 
 const CHECK = [
   {
@@ -49,12 +49,12 @@ const CHECK = [
 ];
 ---
 <Base
-  title="מסלול לימוד אישי: מאיפה מתחילים"
+  title={`${courseTitle}: מאיפה מתחילים`}
   description="מסלול לימוד שוגי בעברית ובחינם, בשלוש רמות: מתחילים, בינוניים ומתקדמים. כל כלי וכל כלל מוסבר לפני שמשתמשים בו, ויש גם מסלול לשחקני שחמט."
 >
   <div class="wrap page" data-course>
     <p class="eyebrow">⟦למד|למדי⟧ לשחק</p>
-    <h1>מסלול לימוד אישי<span data-route-only="chess" hidden> לשחקני שחמט</span></h1>
+    <h1>{courseTitle}<span data-route-only="chess" hidden> לשחקני שחמט</span></h1>
     <p class="lead" data-route-only="main">כל השיעורים באתר, לפי הסדר ובשלוש רמות. כל כלי וכל כלל מוסבר לפני שמשתמשים בו, אז אפשר להתחיל בלי לדעת כלום, גם לא שחמט.</p>
     <p class="lead" data-route-only="chess" hidden>מסלול נפרד, רק עם מה שחדש לשחקן שחמט: חמשת הכלים שזזים אחרת, החזרת כלים שלכדת ללוח, ומבצרים במקום הצרחה. כל הסבר משווה לשחמט. <a href="/course/?route=main" data-route-switch="main">למסלול הרגיל, בלי השוואות לשחמט</a></p>
     <p class="small muted" data-route-only="main"><a href="/course/?route=chess" data-route-switch="chess">⟦משחק|משחקת⟧ שחמט? יש מסלול נפרד בשבילך</a></p>
@@ -103,7 +103,7 @@ const CHECK = [
         <p class="small muted" data-check-count></p>
         {CHECK.map((c, i) => (
           <div class="check" data-check={i} data-answer={c.answer} hidden>
-            <Board sfen={c.sfen} highlight={c.highlight} toggle={false} size="compact" />
+            <Board sfen={c.sfen} highlight={c.highlight} toggle={false} size="compact" reader />
             <p class="check-q"><strong>{c.q}</strong></p>
             <div class="opts" role="group">
               {c.options.map(([v, label]) => <button type="button" class="opt" data-check-answer={v}><strong>{label}</strong></button>)}
@@ -173,7 +173,7 @@ const CHECK = [
     <section class="done-all card" data-done-all hidden>
       <h2>סיימת את המסלול!</h2>
       <p>עברת את כל שלוש הרמות. מכאן ⟦המשך|המשיכי⟧ לשחק ולתרגל:</p>
-      <p><a href="/play/?level=5">נגד המחשב, מרמה 5 והלאה</a> · <a href="/tsume/7/">בעיות מט ב־7 מהלכים</a> · <a href={WHATSAPP_URL} rel="noopener">קהילת הוואטסאפ</a> · <a href="/lishogi/">יריבים מכל העולם בלישוגי</a></p>
+      <p><a href="/play/?level=5">נגד המחשב, מרמה 5 והלאה</a> · <a href="/tsume/7/">בעיות מט ב־7 מהלכים</a> · <a href="/lishogi/">יריבים מכל העולם בלישוגי</a></p>
     </section>
 
     <div class="overall" data-overall hidden>
@@ -192,7 +192,7 @@ const CHECK = [
         {LEVELS.map((l, i) => (
           <section class="level" id={route === 'main' ? l : `${route}-${l}`} data-level={l} aria-labelledby={`${route}-${l}-h`}>
             <header class="level-head">
-              <p class="level-tag">רמה {i + 1} מתוך {LEVELS.length} · בסופה ⟦תגיע|תגיעי⟧ בערך ל־{levelEnd(units, route)[i]} בדרגות הלימוד<InfoTip id="rank" /></p>
+              <p class="level-tag">רמה {i + 1} מתוך {LEVELS.length}{accountsOn && <> · בסופה ⟦תגיע|תגיעי⟧ בערך ל־{levelEnd(units, route)[i]} בדרגות הלימוד<InfoTip id="rank" /></>}</p>
               <h2 id={`${route}-${l}-h`}>{info[l].title}</h2>
               <p class="level-goal"><strong>המטרה: {info[l].goal}.</strong> {info[l].why}</p>
               <p class="level-known small" data-level-known hidden>כבר מוכר לך, לפי נקודת ההתחלה. הכול נשאר פתוח לחזרה, וצעד ⟦שתעשה|שתעשי⟧ ייספר.</p>

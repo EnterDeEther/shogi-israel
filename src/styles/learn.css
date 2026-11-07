@@ -158,6 +158,7 @@ html[data-pieces="hebrew"] :is(.learn, .play) piece.king::after {
   font-size: clamp(16px, 5vw, 28px);
   line-height: 1;
 }
+.learn sg-squares sq.star::after { color: #C99A1E; -webkit-text-stroke: 1px var(--grid); }
 
 :is(.learn, .play) .sg-shapes g.green line { stroke: #2F6B2A; }
 :is(.learn, .play) .sg-shapes marker#arrowhead-green path { fill: #2F6B2A; }

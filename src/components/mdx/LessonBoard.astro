@@ -1,0 +1,7 @@
+---
+import type { ComponentProps } from 'astro/types';
+import Board from '../Board.astro';
+
+type Props = ComponentProps<typeof Board>;
+---
+<Board {...Astro.props} reader />

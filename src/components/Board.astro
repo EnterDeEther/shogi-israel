@@ -12,9 +12,11 @@ interface Props {
   reveal?: boolean;
   kanji?: boolean;
   tone?: 'no' | 'ok';
+  reader?: boolean;
 }
 
-const { sfen, highlight = '', zones = false, caption, toggle = true, size = 'full', reveal = false, kanji = false, tone = 'no' } = Astro.props;
+const { sfen, highlight = '', zones = false, caption, toggle = true, size = 'full', reveal = false, kanji = false, tone = 'no', reader = false } = Astro.props;
+const handLabel = reader ? { gote: 'ביד של היריב', sente: 'ביד שלך' } : { gote: 'ביד של המשיב', sente: 'ביד של הפותח' };
 const pos = parseSfen(sfen);
 const hl = new Set(highlight.split(',').map((s) => s.trim()).filter(Boolean));
 const files = [9, 8, 7, 6, 5, 4, 3, 2, 1];
@@ -41,7 +43,7 @@ const handPieces = (hand: { t: string; n: number }[], side: 'sente' | 'gote') =>
     </div>
   )}
   {goteHand.length > 0 && (
-    <p class="hand gote small" aria-hidden="true">ביד של המשיב: {handPieces(goteHand, 'gote').map(({ n, p }, i) => <>{i > 0 && ' '}<bdi dir="ltr" class="hp"><span class="hh" dir="rtl">{hebrewOf(p)}</span><span class="hc" dir="rtl">{chessOf(p)}</span><span class="hlt">{letterOf(p)}</span><span class="hk" lang="ja">{kanjiOf(p)}</span>×{n}</bdi></>)}</p>
+    <p class="hand gote small" aria-hidden="true">{handLabel.gote}: {handPieces(goteHand, 'gote').map(({ n, p }, i) => <>{i > 0 && ' '}<bdi dir="ltr" class="hp"><span class="hh" dir="rtl">{hebrewOf(p)}</span><span class="hc" dir="rtl">{chessOf(p)}</span><span class="hlt">{letterOf(p)}</span><span class="hk" lang="ja">{kanjiOf(p)}</span>×{n}</bdi></>)}</p>
   )}
   <div class="bw" dir="ltr">
     <div class="files" aria-hidden="true">{files.map((f) => <span>{f}</span>)}</div>
@@ -70,7 +72,7 @@ const handPieces = (hand: { t: string; n: number }[], side: 'sente' | 'gote') =>
   </div>
   <p class="board-fb" data-board-fb role="status" aria-live="polite"></p>
   {senteHand.length > 0 && (
-    <p class="hand sente small" aria-hidden="true">ביד של הפותח: {handPieces(senteHand, 'sente').map(({ n, p }, i) => <>{i > 0 && ' '}<bdi dir="ltr" class="hp"><span class="hh" dir="rtl">{hebrewOf(p)}</span><span class="hc" dir="rtl">{chessOf(p)}</span><span class="hlt">{letterOf(p)}</span><span class="hk" lang="ja">{kanjiOf(p)}</span>×{n}</bdi></>)}</p>
+    <p class="hand sente small" aria-hidden="true">{handLabel.sente}: {handPieces(senteHand, 'sente').map(({ n, p }, i) => <>{i > 0 && ' '}<bdi dir="ltr" class="hp"><span class="hh" dir="rtl">{hebrewOf(p)}</span><span class="hc" dir="rtl">{chessOf(p)}</span><span class="hlt">{letterOf(p)}</span><span class="hk" lang="ja">{kanjiOf(p)}</span>×{n}</bdi></>)}</p>
   )}
   {caption && <figcaption class="cap">{caption}</figcaption>}
   <details class="alt">
