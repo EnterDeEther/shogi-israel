@@ -32,44 +32,44 @@ export const EXERCISES: Exercise[] = [
     sfen: '9/4p4/9/9/9/9/4R4/9/9 b - 1',
     piece: '5g',
     target: '5b',
-    learn: 'הצריח הוא אחד הכלים החזקים בשוגי. הוא נע בקו ישר, לכל כיוון, כמה משבצות ⟦שתרצה|שתרצי⟧.',
+    learn: 'הצריח נע קדימה, אחורה, ימינה או שמאלה, כמה משבצות ⟦שתרצה|שתרצי⟧.',
     title: 'הצריח: כל הקו פתוח',
-    task: '⟦העבר|העבירי⟧ את הצריח אל החייל של היריב ⟦ולכוד|ולכדי⟧ אותו. ⟦לחץ|לחצי⟧ על הצריח: הנקודות מראות לאן הוא יכול ללכת. אחר כך ⟦לחץ|לחצי⟧ על המשבצת.',
-    tip: 'כדי ללכוד כלי של היריב, נחת על המשבצת שלו.',
+    task: '⟦לכוד|לכדי⟧ עם הצריח את החייל של היריב. ⟦לחץ|לחצי⟧ על הצריח, ואז על החייל.',
+    tip: 'כשלוחצים על הצריח, מופיעות נקודות שמראות לאן הוא יכול לזוז.',
     moved: 'ככה הצריח זז: בקו ישר. עכשיו ⟦נסה|נסי⟧ להגיע אל החייל.',
     doneTitle: 'לכידה!',
-    doneText: 'הצריח נע בקו ישר ולכד את החייל. החייל יצא מהלוח ועבר ליד שלך.',
-    recap: 'הצריח נע בקווים ישרים, עד שהוא פוגש כלי. כלי שלכדת נשאר אצלך, ובהמשך נראה מה אפשר לעשות איתו.',
+    doneText: 'החייל של היריב יצא מהלוח, ועכשיו הוא ביד שלך.',
+    recap: 'הצריח נע ישר עד הכלי הראשון שבדרך. כאן זה היה החייל של היריב, ולכן הצריח יכול היה ללכוד אותו.',
     next: 'הכלי הבא: רץ',
   },
   {
     name: 'רץ',
-    sfen: '9/1s7/9/9/4B4/9/9/9/9 b P 1',
+    sfen: '9/1r7/9/9/4B4/9/9/9/9 b P 1',
     piece: '5e',
     target: '8b',
     learn: 'הרץ נע באלכסון, לכל כיוון, כמה משבצות ⟦שתרצה|שתרצי⟧.',
     title: 'הרץ: כל האלכסון פתוח',
-    task: '⟦העבר|העבירי⟧ את הרץ אל גנרל הכסף של היריב ⟦ולכוד|ולכדי⟧ אותו. הנקודות מראות את האלכסונים.',
-    tip: 'הרץ לא קופץ מעל כלים. הוא עוצר כשהוא פוגש כלי.',
-    moved: 'ככה הרץ זז: באלכסון. עכשיו ⟦נסה|נסי⟧ להגיע אל גנרל הכסף.',
+    task: '⟦לכוד|לכדי⟧ עם הרץ את הכלי של היריב.',
+    tip: '⟦חפש|חפשי⟧ את האלכסון שמוביל מהרץ אל הכלי של היריב.',
+    moved: 'ככה הרץ זז: באלכסון. עכשיו ⟦נסה|נסי⟧ להגיע אל הכלי של היריב.',
     doneTitle: 'לכידה שנייה!',
-    doneText: 'הרץ נע באלכסון ולכד את גנרל הכסף. עכשיו יש לך ביד שני כלים.',
-    recap: 'הרץ נע באלכסונים, עד שהוא פוגש כלי. הצריח והרץ הם שני הכלים החזקים ביותר בתחילת המשחק.',
+    doneText: 'עכשיו יש לך ביד שני כלים.',
+    recap: 'הרץ נע באלכסון עד הכלי הראשון שבדרך. האלכסון אל הכלי של היריב היה פנוי, ולכן הרץ יכול היה ללכוד אותו.',
     next: 'הכלי האחרון: חייל',
   },
   {
     name: 'חייל',
-    sfen: '9/9/9/9/3gbg3/4P4/9/9/9 b PS 1',
+    sfen: '9/9/9/9/3gbg3/4P4/9/9/9 b RP 1',
     piece: '5f',
     target: '5e',
-    learn: 'החייל הוא הכלי הקטן ביותר. הוא נע צעד אחד קדימה, ולוכד גם הוא ישר קדימה. בשחמט חייל לוכד באלכסון, ובשוגי לא.',
+    learn: 'החייל נע משבצת אחת ישר קדימה, ולוכד באותו כיוון.',
     title: 'החייל: צעד אחד קדימה',
-    task: '⟦לכוד|לכדי⟧ את הרץ של היריב עם החייל. רק הכלי שמולך בטווח. הכלים שבאלכסון לא.',
+    task: '⟦לכוד|לכדי⟧ עם החייל את הרץ של היריב, שעומד ישר מולו.',
     tip: 'החייל לא לוכד באלכסון, גם כשיש שם כלי.',
     moved: '',
     doneTitle: 'לכידה שלישית!',
     doneText: 'חייל קטן לכד רץ גדול. עכשיו יש לך ביד שלושה כלים.',
-    recap: 'החייל נע וגם לוכד צעד אחד קדימה. כל כלי נע בדרך שלו, וכל כלי שלכדת נשאר אצלך.',
+    recap: 'החייל לוכד רק ישר קדימה, ולכן שני הכלים שעמדו באלכסון לפניו היו בטוחים.',
     next: 'לסיום',
   },
 ];
@@ -126,7 +126,7 @@ export function bootTryPieces(root: HTMLElement): void {
     chips.forEach((c, i) => { c.dataset.state = i === n ? 'now' : i < n ? 'done' : ''; });
     q('[data-learn]').textContent = e.learn;
     q('[data-title]').textContent = e.title;
-    q('[data-task]').textContent = e.task;
+    q('[data-task]').replaceChildren(Object.assign(document.createElement('mark'), { className: 'learn-task', textContent: e.task }));
     q('[data-tip]').textContent = e.tip;
     feedback.hidden = true;
     ask.hidden = false;
@@ -168,7 +168,7 @@ export function bootTryPieces(root: HTMLElement): void {
     q('[data-done-text]').textContent = e.doneText;
     q('[data-recap]').textContent = e.recap;
     q('[data-next-label]').textContent = e.next;
-    q('[data-board-label]').textContent = 'לכידה! הכלי עבר ליד שלך';
+    q('[data-board-label]').textContent = 'לכידה! הכלי עכשיו ביד שלך';
     ask.hidden = true;
     done.hidden = false;
     root.dataset.state = 'done';
@@ -179,8 +179,9 @@ export function bootTryPieces(root: HTMLElement): void {
   q('[data-hint]').addEventListener('click', () => {
     const e = EXERCISES[ex];
     const at = [...pos.board.color('sente')].map(makeSquareName)[0] as Key;
-    ground.setAutoShapes([arrow(at ?? e.piece, e.target)]);
-    feedback.textContent = 'החץ מראה את הדרך. ⟦לחץ|לחצי⟧ על הכלי שלך, ואז על המשבצת שבסוף החץ.';
+    const from = at && illegalShogigroundMoveDests(pos).get(at)?.includes(e.target) ? at : (start(ex), e.piece);
+    ground.setAutoShapes([arrow(from, e.target)]);
+    feedback.textContent = '⟦לחץ|לחצי⟧ על הכלי שלך, ואז על המשבצת שבסוף החץ הירוק.';
     feedback.hidden = false;
   });
   q('[data-show]').addEventListener('click', () => {

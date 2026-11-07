@@ -12,7 +12,7 @@ export const asGender = (v: unknown): Gender => (v === 'f' ? 'f' : 'm');
 
 export const spans = (m: string, f: string): string => `<span class="gm">${m}</span><span class="gf">${f}</span>`;
 
-export const GENDER_ATTRS = ['aria-label', 'title', 'placeholder', 'alt', 'aria-description', 'data-tip'];
+export const GENDER_ATTRS = ['aria-label', 'title', 'placeholder', 'alt', 'aria-description', 'data-tip', 'data-hint', 'data-why'];
 
 export function genderHtml(html: string): string {
   if (!hasToken(html)) return html;

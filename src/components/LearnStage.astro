@@ -6,6 +6,7 @@ import { pageExists } from '../lib/live';
 import { categories, stages } from '../learn/categories';
 import { i18n } from '../learn/i18n';
 import { stageSlug, stageUrl } from '../learn/urls';
+import { lessonMove } from '../lib/move-notation';
 
 interface Props {
   stage?: string;
@@ -17,9 +18,14 @@ const LEVEL_KEY = { beginner: 'il_courseBeginner', intermediate: 'il_courseInter
 const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const rich = (text: string): string =>
   text.split(/(==.+?==)/).map((chunk, j) => (j % 2 === 1 ? `<mark class="learn-task">${inline(chunk.slice(2, -2))}</mark>` : inline(chunk))).join('');
+const plain = (text: string) =>
+  text.split(/([\u3040-\u30ff\u3400-\u9fff\uf900-\ufaff]+)/).map((part, i) => (i % 2 === 0 ? esc(part) : `<span lang="ja" class="cjk">${esc(part)}</span>`)).join('');
 const inline = (text: string) =>
-  text.split(/(\*\*[^*]+\*\*|\+?[KRBGSNLP](?:\d\d)?[-x*]\d\d\+?)/).map((part, i) =>
-    i % 2 === 0 ? esc(part) : part.startsWith('**') ? `<strong>${esc(part.slice(2, -2))}</strong>` : `<bdi dir="ltr">${esc(part)}</bdi>`).join('');
+  text.split(/(\*\*[^*]+\*\*|\{\+?[KRBGSNLP]\}|\+?[KRBGSNLP](?:\d\d)?[-x*]\d\d[+=]?)/).map((part, i) =>
+    i % 2 === 0 ? plain(part)
+    : part.startsWith('**') ? `<strong>${plain(part.slice(2, -2))}</strong>`
+    : part.startsWith('{') ? `<span class="pchip" data-p="${part.slice(1, -1)}" aria-hidden="true"></span>`
+    : `<bdi dir="ltr" class="nt" data-mv="${esc(part)}">${esc(lessonMove(part, 'hebrew'))}</bdi>`).join('');
 ---
 <section class="learn-island" data-learn data-stage={stage} data-has-play={pageExists('/play/') ? '' : undefined} data-has-account={pageExists('/account/') ? '' : undefined} data-has-lishogi-guide={pageExists('/lishogi/') ? '' : undefined} data-has-tsume={pageExists('/tsume/') ? '' : undefined} aria-label="שיעור אינטראקטיבי">
   {current ? <h1 class="visually-hidden">{current.title}</h1> : (
@@ -35,7 +41,7 @@ const inline = (text: string) =>
       ))}
     </div>
   )}
-  <noscript><p>השיעור האינטראקטיבי צריך JavaScript. אפשר ללמוד את אותו חומר בשיעורי <a href="/rules/">החוקים הבסיסיים</a>.</p></noscript>
+  <noscript><p>השיעור האינטראקטיבי לא נטען בדפדפן הזה. אפשר ללמוד את החוקים ב<a href="/rules/">שיעורים הכתובים</a>.</p></noscript>
 </section>
 {current && (
   <details class="stage-about">
@@ -55,13 +61,17 @@ const inline = (text: string) =>
   </details>
 )}
 <p class="small muted learn-credit">
-  מערכת השיעורים מבוססת על הקוד ועל מבנה הלימוד של <a href="https://lishogi.org/learn" rel="noopener">Lishogi</a> (רישיון AGPL-3.0). הטקסט בעברית שלנו.{' '}
+  מערכת השיעורים מבוססת על הקוד הפתוח ועל מבנה הלימוד של <a href="https://lishogi.org/learn" rel="noopener">לישוגי</a> (רישיון <bdi dir="ltr">AGPL-3.0</bdi>). את הטקסט בעברית כתבנו אנחנו.{' '}
   <a href="https://github.com/EnterDeEther/shogi-israel/tree/main/src/learn" rel="noopener">קוד המקור</a>
 </p>
 
 <script>
   import { bootLearn } from '../learn/boot';
+  import { lessonMove } from '../lib/move-notation';
   document.querySelectorAll<HTMLElement>('[data-learn]').forEach((el) => bootLearn(el));
+  const moves = () => document.querySelectorAll<HTMLElement>('.stage-about .nt[data-mv]').forEach((e) => { e.textContent = lessonMove(e.dataset.mv ?? ''); });
+  moves();
+  document.addEventListener('pieces-changed', moves);
 </script>
 
 <style>
