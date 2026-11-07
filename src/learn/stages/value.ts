@@ -65,6 +65,7 @@ const levels: IncompleteLevel[] = [
     nbMoves: 1,
     success: colorOn('sente', '3c'),
     failure: notSuccess,
+    showFailureMove: 'capture',
   },
   {
     goal: i18n('learn:theOpponentJustGaveAway'),
@@ -75,10 +76,10 @@ const levels: IncompleteLevel[] = [
     success: scenarioSuccess,
     failure: scenarioFailure,
     scenario: createScenario(['6b6h+', '7h8g'], 'gote', true),
-    drawShapes: onFailure([circle(toPiece('g'))]),
+    drawShapes: onFailure([circle(toPiece('g'), 'red')]),
     showFailureMove: (_, usiCList) => {
       const lastUsiC = usiCList[usiCList.length - 1];
-      if (lastUsiC?.usi === '7h6h') return 'G*6g';
+      if (lastUsiC?.usi === '7h6h') return ['G*6g', '6h6i', 'G*6h'];
       else return 'G*8h';
     },
   },
@@ -89,7 +90,7 @@ const levels: IncompleteLevel[] = [
     nbMoves: 1,
     success: pieceOn({ role: 'tokin', color: 'sente' }, '2b'),
     failure: not(pieceOn({ role: 'tokin', color: 'sente' }, '2b')),
-    drawShapes: onFailure([arrow(toPiece('g'), '8f')]),
+    drawShapes: onFailure([arrow(toPiece('g'), '8f', 'red')]),
     showFailureMove: (level, usiCList: UsiWithColor[]) => {
       const lastUsiC = usiCList[usiCList.length - 1];
       if (['3c3b', '2c3b', '2c1b', '1c1b'].includes(lastUsiC?.usi)) {
@@ -106,6 +107,7 @@ const levels: IncompleteLevel[] = [
     success: scenarioSuccess,
     failure: scenarioFailure,
     scenario: createScenario(['7f4c+', '3b4c', 'S*3b', '2a2b', '3b4c+'], 'sente', true),
+    anyPromotion: true,
   },
   {
     goal: i18n('learn:rememberWhichPieceIsTheMostValuable'),

@@ -4,6 +4,7 @@
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
 // Modified by Shogi Israel (shogi.co.il), 2026-10-24.
 // Modified by Shogi Israel (shogi.co.il), 2026-10-27.
+// Modified by Shogi Israel (shogi.co.il), 2026-11-07.
 
 import type { DrawShape, SquareHighlight } from 'shogiground/draw';
 
@@ -41,6 +42,7 @@ export interface Level {
   obstacles?: Key[];
   scenario?: UsiWithColor[];
   lastDests?: Key[];
+  anyPromotion?: boolean;
 
   drawShapes?: VmEvaluation<DrawShape[]>;
   squareHighlights?: VmEvaluation<SquareHighlight[]>;
@@ -54,7 +56,7 @@ export interface Level {
   recap?: string;
   nextButton?: boolean;
   offerIllegalDests?: boolean;
-  showFailureMove?: 'random' | 'capture' | 'unprotected' | VmEvaluation<Usi | undefined>;
+  showFailureMove?: 'random' | 'capture' | 'unprotected' | VmEvaluation<Usi | Usi[] | undefined>;
 }
 
 export type IncompleteLevel = Omit<Level, 'id' | 'color'> & Partial<Pick<Level, 'color'>>;

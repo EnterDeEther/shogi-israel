@@ -3,6 +3,7 @@
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
 // Modified by Shogi Israel (shogi.co.il), 2026-10-24.
+// Modified by Shogi Israel (shogi.co.il), 2026-11-07.
 
 import type { Piece } from 'shogiground/types';
 import { samePiece } from 'shogiground/util';
@@ -32,17 +33,25 @@ export function obstaclesCaptured(level: Level, usiCList: UsiWithColor[]): boole
   return obstacles.every(ob => usiCList.some(uc => parseUsi(uc.usi)!.to === parseSquareName(ob)!));
 }
 
+export function sameScenarioMove(expected: Usi, actual: Usi | undefined, loose?: boolean): boolean {
+  if (expected === actual) return true;
+  return !!loose && actual !== undefined && expected.replace(/\+$/, '') === actual.replace(/\+$/, '');
+}
+
 export function scenarioSuccess(level: Level, usiCList: UsiWithColor[]): boolean {
   const scenario = level.scenario;
   return !!scenario?.every(
-    (usiC, i) => usiC.usi === usiCList[i]?.usi && usiC.color === usiCList[i]?.color,
+    (usiC, i) =>
+      sameScenarioMove(usiC.usi, usiCList[i]?.usi, level.anyPromotion) && usiC.color === usiCList[i]?.color,
   );
 }
 
 export function scenarioFailure(level: Level, usiCList: UsiWithColor[]): boolean {
   const scenario = level.scenario;
   if (!scenario || usiCList.length > scenario.length) return false;
-  return usiCList.some((uc, i) => uc.usi !== scenario[i].usi || uc.color !== scenario[i].color);
+  return usiCList.some(
+    (uc, i) => !sameScenarioMove(scenario[i].usi, uc.usi, level.anyPromotion) || uc.color !== scenario[i].color,
+  );
 }
 
 export function extinct(color: Color): Assertion {

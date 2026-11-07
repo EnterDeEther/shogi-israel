@@ -3,17 +3,18 @@ import { shogigroundDropDests, shogigroundMoveDests } from 'shogiops/compat';
 import { makeSfen, parseSfen } from 'shogiops/sfen';
 import { makeUsi, parseSquareName } from 'shogiops/util';
 import { pieceCanPromote, pieceForcePromote } from 'shogiops/variant/util';
+import { sameScenarioMove } from '../src/learn/assert';
 import { stages } from '../src/learn/categories';
 import { playWestern } from '../src/learn/opening';
 import he from '../src/learn/i18n/he.json';
 import type { Level, UsiWithColor } from '../src/learn/interfaces';
-import { illegalShogigroundDropDests, illegalShogigroundMoveDests } from '../src/learn/shogi';
+import { findCapture, illegalShogigroundDropDests, illegalShogigroundMoveDests } from '../src/learn/shogi';
 import { currentPosition, usiDests } from '../src/learn/util';
 
 function withOpponent(level: Level, list: UsiWithColor[]): UsiWithColor[] {
   const sc = level.scenario;
   const next = sc?.[list.length];
-  if (sc && next && next.color !== level.color && list.every((u, i) => sc[i].usi === u.usi && sc[i].color === u.color))
+  if (sc && next && next.color !== level.color && list.every((u, i) => sameScenarioMove(sc[i].usi, u.usi, level.anyPromotion) && sc[i].color === u.color))
     return [...list, next];
   return list;
 }
@@ -200,4 +201,30 @@ test('an exercise that starts after the opponent moved shows that move', () => {
 test('opening tasks mark the aim as well as the move list', () => {
   for (const key of ['fourthFileRook', 'yagura', 'primitiveClimbingSilver', 'spearingSparrow'])
     for (const l of stageOf(key).levels) expect(l.goal.startsWith('=='), `${key} #${l.id}`).toBe(true);
+});
+
+test('piece value #8 accepts the sacrifice with or without promotion', () => {
+  const level = stages.find((s) => s.key === 'value')!.levels[7];
+  for (const line of [['7f4c+', 'S*3b', '3b4c+'], ['7f4c', 'S*3b', '3b4c'], ['7f4c', 'S*3b', '3b4c+'], ['7f4c+', 'S*3b', '3b4c']])
+    expect(playsOut(level, line), line.join(' ')).toBe(true);
+  expect(playsOut(level, ['7f5d', 'S*3b', '3b4c+'])).toBe(false);
+});
+
+test('piece value #5 shows the recapture after a bad rook exchange', () => {
+  const level = stages.find((s) => s.key === 'value')!.levels[4];
+  expect(level.showFailureMove).toBe('capture');
+  for (const [usi, reply] of [['6h6d', '6c6d'], ['6h6e', '6d6e']]) {
+    const pos = currentPosition(level, [{ usi, color: 'sente' }]);
+    expect(findCapture(pos), usi).toBe(reply);
+  }
+});
+
+test('piece value #6 shows the whole mate after the king takes the dragon', () => {
+  const level = stages.find((s) => s.key === 'value')!.levels[5];
+  const played: UsiWithColor[] = [...level.scenario!.slice(0, 1), { usi: '7h6h', color: 'sente' }];
+  expect(level.failure!(level, played)).toBe(true);
+  const show = typeof level.showFailureMove === 'function' ? level.showFailureMove(level, played) : undefined;
+  expect(show).toEqual(['G*6g', '6h6i', 'G*6h']);
+  const line = (show as string[]).map((usi, i) => ({ usi, color: i % 2 ? level.color : 'gote' }) as UsiWithColor);
+  expect(currentPosition(level, [...played, ...line]).outcome()).toEqual({ result: 'checkmate', winner: 'gote' });
 });
