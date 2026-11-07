@@ -8,7 +8,7 @@ import { i18n } from '../i18n';
 import { obstaclesCaptured } from '../assert';
 import type { IncompleteLevel, IncompleteStage } from '../interfaces';
 import { createLevel } from '../level';
-import { arrow, initial, pieceMovesHighlihts } from '../shapes';
+import { arrow, initial, pieceMovesHighlihts, promotionZoneHighlights } from '../shapes';
 import { toPiece } from '../util';
 
 const levels: IncompleteLevel[] = [
@@ -36,6 +36,7 @@ const levels: IncompleteLevel[] = [
     nbMoves: 4,
     success: obstaclesCaptured,
     obstacles: ['2h', '3i', '3b', '4c'],
+    squareHighlights: promotionZoneHighlights,
   },
   {
     goal: i18n('learn:rookSummary'),

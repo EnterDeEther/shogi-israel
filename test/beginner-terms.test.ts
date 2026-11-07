@@ -34,7 +34,7 @@ const TERMS: { name: string; re: RegExp; where: string }[] = [
   { name: 'block', re: /חסימ|לחסום|⟦חסום/, where: 'outOfCheck:intro' },
   { name: 'mate', re: W('[בלהו]?מט'), where: 'checkmate1:intro' },
   { name: 'game phases', re: /סוף המשחק|אמצע המשחק/, where: 'checkmate1:intro' },
-  { name: 'position', re: /עמדה/, where: 'setup:1' },
+  { name: 'position', re: /עמד[הת]/, where: 'setup:1' },
   { name: 'repetition', re: /חזרה מרובעת|תיקו/, where: 'repetition:intro' },
 ];
 
@@ -49,7 +49,7 @@ function walk() {
     s.levels.forEach((l) => out.push({ at: `${key}:${l.id}`, text: [l.goal, l.text ?? '', l.recap ?? ''].join(' ') }));
     out.push({ at: `${key}:complete`, text: s.complete });
   }
-  return out;
+  return out.map((x) => ({ ...x, text: x.text.replace(/[\u0591-\u05BD\u05BF-\u05C7]/g, '') }));
 }
 
 test('no beginner text uses a term before the stage that teaches it', () => {

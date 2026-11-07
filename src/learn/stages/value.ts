@@ -3,6 +3,7 @@
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
 // Modified by Shogi Israel (shogi.co.il), 2026-10-24.
+// Modified by Shogi Israel (shogi.co.il), 2026-11-07.
 
 import { i18n } from '../i18n';
 import { parseSquareName, parseUsi } from 'shogiops/util';
@@ -18,6 +19,7 @@ const notSuccess = () => true;
 const levels: IncompleteLevel[] = [
   {
     goal: i18n('learn:pawnsAreTheLeastValuable'),
+    recap: i18n('il_b_value1Recap'),
     sfen: '9/9/3pl4/2n1+R4/9/9/9/9/9 b - 1',
     nbMoves: 1,
     success: colorOn('sente', '7d'),
@@ -25,6 +27,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:knightSilverGold'),
+    recap: i18n('il_b_value2Recap'),
     sfen: '9/9/4ns3/4S4/3g5/9/9/9/9 b - 1',
     nbMoves: 1,
     success: colorOn('sente', '4c'),
@@ -33,6 +36,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:goldBishopRook'),
+    recap: i18n('il_b_value3Recap'),
     sfen: '9/9/9/5gb2/4p+Bn2/4srl2/4gs3/9/9 b - 1',
     nbMoves: 1,
     success: colorOn('sente', '4f'),
@@ -40,6 +44,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:takeAllThePiecesStartingFromTheMost'),
+    recap: i18n('il_b_value4Recap'),
     sfen: '9/9/9/3lg4/9/3+R1n3/2r1bp3/2s6/9 b - 1',
     nbMoves: 11,
     success: extinct('gote'),
@@ -55,6 +60,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:anExchangeIs'),
+    recap: i18n('il_b_value5Recap'),
     sfen: '9/6k2/3p2g2/3s5/7N1/9/9/3R5/9 b - 1',
     nbMoves: 1,
     success: colorOn('sente', '3c'),
@@ -62,6 +68,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:theOpponentJustGaveAway'),
+    recap: i18n('il_b_value6Recap'),
     sfen: '7k1/3r5/6+P+P+P/9/P3n4/2N6/2P6/2K6/L8 b 2g 1',
     color: 'sente',
     nbMoves: 2,
@@ -77,6 +84,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:yourKingsValueIsInfinite'),
+    recap: i18n('il_b_value7Recap'),
     sfen: '7k1/9/6+P+P+P/9/Pg2n4/2N6/1KP6/3+r5/L2G5 b g 1',
     nbMoves: 1,
     success: pieceOn({ role: 'tokin', color: 'sente' }, '2b'),
@@ -92,6 +100,7 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:twoGeneralsAreBetter'),
+    recap: i18n('il_b_value8Recap'),
     sfen: 'l6rl/2k3g2/2ppps3/pp3pp2/2P4pp/P1BP1P3/1P2P1PPP/2S4R1/L1K2G2L b b 1',
     nbMoves: 3,
     success: scenarioSuccess,
@@ -100,17 +109,18 @@ const levels: IncompleteLevel[] = [
   },
   {
     goal: i18n('learn:rememberWhichPieceIsTheMostValuable'),
+    recap: i18n('il_b_value9Recap'),
     sfen: 'ln+R5l/3r1gks1/5pnp1/2b3p1p/1p7/P3pP2P/1P1+b1GPP1/6SK1/5+p1NL b GSPgsnl3p 1',
     nbMoves: 1,
     success: scenarioSuccess,
     failure: scenarioFailure,
     drawShapes: initial([
-      arrow('7a', '7d'),
-      arrow('7a', '6b'),
-      arrow('7a', '8a'),
-      circle('7d'),
-      circle('6b'),
-      circle('8a'),
+      arrow('7a', '7d', 'red'),
+      arrow('7a', '6b', 'red'),
+      arrow('7a', '8a', 'red'),
+      circle('7d', 'red'),
+      circle('6b', 'red'),
+      circle('8a', 'red'),
     ]),
     scenario: createScenario(['S*2a']),
   },
