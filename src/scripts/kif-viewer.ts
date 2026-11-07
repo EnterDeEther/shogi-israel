@@ -1,3 +1,4 @@
+import { localMove } from '../lib/move-notation';
 import { Shogiground } from 'shogiground/shogiground';
 import { makeSfen } from 'shogiops/sfen';
 import { makeSquareName, parseUsi } from 'shogiops/util';
@@ -87,7 +88,7 @@ export function bootKifViewer(root: HTMLElement): void {
       const w = document.createElement('bdi');
       w.dir = 'ltr';
       w.className = 'w';
-      w.textContent = westernMove(positions[i], usi);
+      w.textContent = localMove(westernMove(positions[i], usi));
       const k = document.createElement('bdi');
       k.dir = 'ltr';
       k.className = 'k';
