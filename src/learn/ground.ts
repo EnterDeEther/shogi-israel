@@ -4,9 +4,10 @@
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
 // Modified by Shogi Israel (shogi.co.il), 2026-10-24.
 // Modified by Shogi Israel (shogi.co.il), 2026-11-07.
+// Modified by Shogi Israel (shogi.co.il), 2026-11-08.
 
 import type { Config } from 'shogiground/config';
-import type { Drawable, SquareHighlight } from 'shogiground/draw';
+import type { DrawShape, Drawable, SquareHighlight } from 'shogiground/draw';
 import { shogigroundDropDests, shogigroundMoveDests } from 'shogiops/compat';
 import type { Piece, Role } from 'shogiops/types';
 import { isDrop, makeSquareName, parseSquareName, parseUsi } from 'shogiops/util';
@@ -14,6 +15,7 @@ import { pieceCanPromote, pieceForcePromote, promote, unpromote } from 'shogiops
 import type LearnCtrl from './ctrl';
 import type { Level, UsiWithColor } from './interfaces';
 import { illegalShogigroundDropDests, illegalShogigroundMoveDests, inCheck } from './shogi';
+import { arrow } from './shapes';
 import { currentPosition } from './util';
 import { SQUARE_RATIO } from '../lib/square-ratio';
 
@@ -130,7 +132,19 @@ export function destsAndCheck(level: Level, usiCList: UsiWithColor[]): Config {
   };
 }
 
-export function createDrawable(level: Level, usiCList: UsiWithColor[] = []): Partial<Drawable> {
+export function hintShape(level: Level, usi: Usi): DrawShape {
+  const m = parseUsi(usi)!;
+  const dest = makeSquareName(m.to) as Key;
+  return isDrop(m) ? arrow({ role: m.role, color: level.color }, dest) : arrow(makeSquareName(m.from) as Key, dest);
+}
+
+function withHint(shapes: DrawShape[], hint?: DrawShape): DrawShape[] {
+  if (!hint) return shapes;
+  const same = (a: DrawShape) => JSON.stringify(a.orig) === JSON.stringify(hint.orig) && JSON.stringify(a.dest) === JSON.stringify(hint.dest);
+  return shapes.some(same) ? shapes.map((s) => (same(s) ? hint : s)) : shapes.concat(hint);
+}
+
+export function createDrawable(level: Level, usiCList: UsiWithColor[] = [], hint?: Usi): Partial<Drawable> {
   const obastacles: SquareHighlight[] = [];
   const usis = usiCList.map(uc => uc.usi);
   const dests = usis.map(u => makeSquareName(parseUsi(u)!.to));
@@ -143,7 +157,7 @@ export function createDrawable(level: Level, usiCList: UsiWithColor[] = []): Par
     });
 
   return {
-    shapes: drawShapes || [],
+    shapes: withHint(drawShapes || [], hint && hintShape(level, hint)),
     squares: (squares || []).concat(obastacles),
   };
 }

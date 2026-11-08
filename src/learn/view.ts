@@ -425,6 +425,7 @@ function renderLesson(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go, stageLin
             ' · ',
             left === 1 ? i18n('il_starsLeftOne') : i18nFormat('il_starsLeft', left))
         : null,
+      !level.text && !vm.waiting && hintBox(ctrl, go),
       whyList,
     );
   }
@@ -464,6 +465,38 @@ function renderLesson(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go, stageLin
           icon('cog'), el('span', {}, i18n('il_settings'))),
       ),
     ),
+  );
+}
+
+function boardInView(): void {
+  requestAnimationFrame(() => {
+    if (window.innerWidth >= 860) return;
+    const root = document.querySelector<HTMLElement>('.learn');
+    const board = root?.querySelector<HTMLElement>('[data-board]');
+    if (!board) return;
+    const top = root!.querySelector<HTMLElement>('.sg-hand-wrap.hand-top')?.getBoundingClientRect().top ?? board.getBoundingClientRect().top;
+    const header = Math.max(0, document.querySelector<HTMLElement>('.site-header')?.getBoundingClientRect().bottom ?? 0);
+    if (top < header) window.scrollBy({ top: top - header - 8, behavior: 'smooth' });
+  });
+}
+
+function hintBox(ctrl: LearnCtrl, go: Go): HTMLElement {
+  const vm = ctrl.vm!;
+  const label = el('span', {}, i18n('il_showMe'));
+  const button = el('button', {
+    type: 'button', class: 'hint-btn', 'data-fid': 'hint', 'aria-pressed': vm.hint ? 'true' : 'false',
+    onclick: (e: Event) => {
+      e.preventDefault();
+      button.disabled = true;
+      label.textContent = i18n('il_showMeWait');
+      window.setTimeout(() => { ctrl.showHint(); boardInView(); }, 30);
+    },
+  }, icon('hint'), label);
+  return el('div', { class: 'hint' },
+    button,
+    vm.hint && el('p', { class: 'hint-note', role: 'status' }, rich(i18n(vm.hintPromote === true ? 'il_showMeNotePromote' : vm.hintPromote === false ? 'il_showMeNoteNoPromote' : 'il_showMeNote'))),
+    vm.hintNone && el('p', { class: 'hint-note', role: 'status' }, rich(i18n('il_showMeNone')), ' ',
+      el('button', { type: 'button', class: 'linkish', 'data-fid': 'hint-restart', onclick: go(() => ctrl.restartLevel()) }, i18n('il_restart'))),
   );
 }
 
@@ -612,6 +645,9 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
   const btn = (label: string, fn: () => void, primary = true, fid = 'coach-main') =>
     el('button', { type: 'button', class: `btn${primary ? ' primary' : ''}`, 'data-fid': fid, 'data-coach-focus': primary, onclick: go(fn) }, label);
   const last = level.id === stage.levels.length;
+  const showMe = () => vm.levelState === 'play' && !level.text
+    ? btn(i18n('il_showMe'), () => { setOpen(false); ctrl.showHint(); }, false, 'coach-hint')
+    : null;
 
   let body: Child[] = [];
   if (tip.kind === 'intro') {
@@ -620,7 +656,7 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
       el('p', { class: 'lead' }, rich(level.goal)),
       total ? el('p', { class: 'hint' }, i18n(level.replies ? 'il_coachIntroWhyReplies' : 'il_coachIntroWhy')) : null,
       !knowsBubble && el('div', { class: 'how' }, icon('bulb'), el('p', {}, rich(i18n('il_coachHow')))),
-      isCurrent && el('div', { class: 'buttons' }, btn(i18n('il_start'), () => setOpen(false))),
+      isCurrent && el('div', { class: 'buttons' }, btn(i18n('il_start'), () => setOpen(false)), showMe()),
     ];
   } else if (tip.kind === 'move') {
     const i = tip.idx!;
@@ -637,7 +673,7 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
     body = [
       el('h2', {}, i18n('il_opponentPlayed'), ' ', el('bdi', { dir: 'auto', class: 'mvn' }, lessonMove(level.replyNames?.[i] ?? '', currentPieceSet(), true))),
       el('p', { class: 'lead' }, rich(level.replies![i])),
-      isCurrent && el('div', { class: 'buttons' }, btn(i18n('il_yourTurn'), () => setOpen(false))),
+      isCurrent && el('div', { class: 'buttons' }, btn(i18n('il_yourTurn'), () => setOpen(false)), showMe()),
     ];
   } else if (tip.kind === 'done') {
     const lastIdx = (level.why?.length ?? 0) - 1;
@@ -752,6 +788,7 @@ const icons: Record<string, string> = {
   cog: ICONS.settings,
   close: '<path d="M6 6l12 12M18 6L6 18"/>',
   minimize: '<path d="M6 12h12"/>',
+  hint: ICONS['show-move'],
   bulb: '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/>',
 };
 export function icon(name: string): HTMLElement {

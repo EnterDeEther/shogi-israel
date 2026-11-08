@@ -5,6 +5,7 @@
 // Modified by Shogi Israel (shogi.co.il), 2026-10-24.
 // Modified by Shogi Israel (shogi.co.il), 2026-10-27.
 // Modified by Shogi Israel (shogi.co.il), 2026-11-07.
+// Modified by Shogi Israel (shogi.co.il), 2026-11-08.
 
 import type { DrawShape, SquareHighlight } from 'shogiground/draw';
 
@@ -96,6 +97,9 @@ export interface Vm {
   score?: Score;
   coach?: 'intro' | 'move' | 'done' | 'fail';
   waiting?: boolean;
+  hint?: Usi;
+  hintNone?: boolean;
+  hintPromote?: boolean;
 }
 
 export interface LearnOpts {

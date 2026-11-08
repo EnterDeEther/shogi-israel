@@ -33,6 +33,7 @@ export const ICONS = {
   'news-fixed': `<path d="M12 2.5L17.85 6.2L19.5 21H4.5L6.15 6.2Z" fill="currentColor" fill-opacity=".18" stroke="none"/><path d="M12 2.5L17.85 6.2L19.5 21H4.5L6.15 6.2Z"/><path d="M8.8 13.6l2.3 2.3 4.2-4.6"/>`,
   'news-important': `<path d="M12 2.5L17.85 6.2L19.5 21H4.5L6.15 6.2Z" fill="currentColor" fill-opacity=".18" stroke="none"/><path d="M12 2.5L17.85 6.2L19.5 21H4.5L6.15 6.2Z"/><path d="M12 9v5.2"/><circle cx="12" cy="17.2" r="1.1" fill="currentColor" stroke="none"/>`,
   'two-players': `<path d="M3 12h18" stroke-opacity=".45"/><path d="M8 13.5L10.73 15.40L11.50 22H4.50L5.27 15.40Z" fill="currentColor" stroke="none"/><path d="M16 10.5L18.73 8.60L19.50 2H12.50L13.27 8.60Z" fill="currentColor" fill-opacity=".18" stroke="none"/><path d="M16 10.5L18.73 8.60L19.50 2H12.50L13.27 8.60Z"/>`,
+  'show-move': `<path d="M6.5 11.5L9.43 13.50L10.25 21H2.75L3.57 13.50Z" fill="currentColor" fill-opacity=".18" stroke="none"/><path d="M6.5 11.5L9.43 13.50L10.25 21H2.75L3.57 13.50Z"/><path d="M8 9.5C9 5.5 13 3.5 17.5 4.5" stroke-dasharray="0 2.6"/><path d="M15 2l3.2 2.6L15.6 7.8"/><rect x="15" y="10" width="6.5" height="6.5" rx="1" stroke-opacity=".55"/>`,
 } as const;
 
 export const BRANDS = {
