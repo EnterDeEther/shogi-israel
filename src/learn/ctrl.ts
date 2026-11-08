@@ -4,6 +4,7 @@
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
 // Modified by Shogi Israel (shogi.co.il), 2026-10-24.
 // Modified by Shogi Israel (shogi.co.il), 2026-11-07.
+// Modified by Shogi Israel (shogi.co.il), 2026-11-08.
 
 import type { Api } from 'shogiground/api';
 import { Shogiground } from 'shogiground/shogiground';
@@ -17,6 +18,8 @@ import { sameScenarioMove } from './assert';
 import * as categories from './categories';
 import * as ground from './ground';
 import type { Category, LearnOpts, Stage, UsiWithColor, Vm } from './interfaces';
+import { HINT_LINES } from './hint-lines';
+import { hintMove } from './hint';
 import { calcScore } from './level';
 import { ProgressStorage } from './progress';
 import {
@@ -197,8 +200,27 @@ export default class LearnCtrl {
     return !!next && next.color !== vm.level.color && vm.usiCList.every((u, i) => sameScenarioMove(sc![i].usi, u.usi, vm.level.anyPromotion) && sc![i].color === u.color);
   }
 
+  showHint(): void {
+    const vm = this.vm;
+    if (!vm || vm.levelState !== 'play' || vm.waiting) return;
+    const known = HINT_LINES[`${vm.stage.key}#${vm.level.id}`]?.split(' ');
+    const usi = hintMove(vm.level, vm.usiCList, known);
+    if (this.vm !== vm) return;
+    vm.hint = usi;
+    vm.hintNone = !usi;
+    this.shogiground.set({ drawable: ground.createDrawable(vm.level, vm.usiCList, usi) });
+    this.redraw();
+  }
+
+  private clearHint(): void {
+    if (!this.vm) return;
+    this.vm.hint = undefined;
+    this.vm.hintNone = undefined;
+  }
+
   private applyUserMoveOrDrop(usi: Usi): void {
     if (this.vm) {
+      this.clearHint();
       this.vm.usiCList.push({ usi, color: this.vm.level.color });
       const check = inCheck(currentPosition(this.vm.level, this.vm.usiCList));
       this.shogiground.set({ checks: check });
@@ -238,6 +260,7 @@ export default class LearnCtrl {
     vm.usiCList = vm.usiCList.slice(0, keep);
     vm.levelState = 'play';
     vm.coach = undefined;
+    this.clearHint();
     const sfen = makeSfen(currentPosition(vm.level, vm.usiCList)).split(' ');
     this.shogiground.set({ sfen: { board: sfen[0], hands: sfen[2] }, lastDests: keep ? usiDests(vm.usiCList[keep - 1].usi) : vm.level.lastDests ?? [] });
     this.refreshBoard();
@@ -318,7 +341,7 @@ export default class LearnCtrl {
               : shogigroundDropDests(pos)
             : new Map(),
         },
-        drawable: ground.createDrawable(this.vm.level, this.vm.usiCList),
+        drawable: ground.createDrawable(this.vm.level, this.vm.usiCList, this.vm.hint),
       });
     }
   }
