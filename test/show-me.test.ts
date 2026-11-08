@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { stages } from '../src/learn/categories';
-import { hintMove, withOpponent } from '../src/learn/hint';
+import { hintMove, userMoves, withOpponent } from '../src/learn/hint';
 import { HINT_LINES } from '../src/learn/hint-lines';
 import type { Level, UsiWithColor } from '../src/learn/interfaces';
 import { calcScore } from '../src/learn/level';
@@ -41,7 +41,6 @@ const own = (lvl: Level, usis: string[]): UsiWithColor[] => usis.map((usi) => ({
 
 test('"show me" still finishes after a wrong move', () => {
   for (const [stage, id, detour] of [
-    ['rangingCastles', 1, ['2h3h']],
     ['lance', 2, ['9i9b']],
     ['knight', 2, ['8h9f']],
     ['rook', 1, ['5h9h']],
@@ -55,4 +54,18 @@ test('"show me" points to the next move of a scripted line', () => {
   const lvl = stages.find((s) => s.levels.some((l) => l.scenario && l.why))!.levels.find((l) => l.scenario && l.why)!;
   const first = lvl.scenario!.find((u) => u.color === lvl.color)!.usi;
   expect(hintMove(lvl, withOpponent(lvl, []))).toBe(first);
+});
+
+const castles = stages.filter((s) => s.levels.some((l) => l.line));
+
+test('castle moves off the list or out of order are marked wrong', () => {
+  for (const s of castles)
+    for (const l of s.levels)
+      for (const usi of userMoves(l, [])) if (usi !== l.line![0]) expect(l.failure!(l, own(l, [usi])), `${s.key} #${l.id} ${usi}`).toBe(true);
+});
+
+test('"show me" in a castle points to the next listed move', () => {
+  for (const s of castles)
+    for (const l of s.levels)
+      for (let k = 0; k < l.line!.length; k++) expect(hintMove(l, own(l, l.line!.slice(0, k))), `${s.key} #${l.id} step ${k}`).toBe(l.line![k]);
 });
