@@ -14,6 +14,7 @@ import { shogigroundDropDests, shogigroundMoveDests } from 'shogiops/compat';
 import type { Role } from 'shogiops/types';
 import { makeSfen } from 'shogiops/sfen';
 import { makeUsi, parseSquareName, parseUsi } from 'shogiops/util';
+import { pieceCanPromote, pieceForcePromote } from 'shogiops/variant/util';
 import { sameScenarioMove } from './assert';
 import * as categories from './categories';
 import * as ground from './ground';
@@ -208,6 +209,13 @@ export default class LearnCtrl {
     if (this.vm !== vm) return;
     vm.hint = usi;
     vm.hintNone = !usi;
+    vm.hintPromote = undefined;
+    const m = usi ? parseUsi(usi) : undefined;
+    if (m && 'from' in m) {
+      const piece = currentPosition(vm.level, vm.usiCList).board.get(m.from);
+      if (piece && pieceCanPromote('standard')(piece, m.from, m.to, undefined) && !pieceForcePromote('standard')(piece, m.to))
+        vm.hintPromote = !!m.promotion;
+    }
     this.shogiground.set({ drawable: ground.createDrawable(vm.level, vm.usiCList, usi) });
     this.redraw();
   }
@@ -216,6 +224,7 @@ export default class LearnCtrl {
     if (!this.vm) return;
     this.vm.hint = undefined;
     this.vm.hintNone = undefined;
+    this.vm.hintPromote = undefined;
   }
 
   private applyUserMoveOrDrop(usi: Usi): void {

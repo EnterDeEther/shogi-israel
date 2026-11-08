@@ -99,6 +99,7 @@ export interface Vm {
   waiting?: boolean;
   hint?: Usi;
   hintNone?: boolean;
+  hintPromote?: boolean;
 }
 
 export interface LearnOpts {

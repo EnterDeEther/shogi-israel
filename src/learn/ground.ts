@@ -138,6 +138,12 @@ export function hintShape(level: Level, usi: Usi): DrawShape {
   return isDrop(m) ? arrow({ role: m.role, color: level.color }, dest) : arrow(makeSquareName(m.from) as Key, dest);
 }
 
+function withHint(shapes: DrawShape[], hint?: DrawShape): DrawShape[] {
+  if (!hint) return shapes;
+  const same = (a: DrawShape) => JSON.stringify(a.orig) === JSON.stringify(hint.orig) && JSON.stringify(a.dest) === JSON.stringify(hint.dest);
+  return shapes.some(same) ? shapes.map((s) => (same(s) ? hint : s)) : shapes.concat(hint);
+}
+
 export function createDrawable(level: Level, usiCList: UsiWithColor[] = [], hint?: Usi): Partial<Drawable> {
   const obastacles: SquareHighlight[] = [];
   const usis = usiCList.map(uc => uc.usi);
@@ -151,7 +157,7 @@ export function createDrawable(level: Level, usiCList: UsiWithColor[] = [], hint
     });
 
   return {
-    shapes: (drawShapes || []).concat(hint ? [hintShape(level, hint)] : []),
+    shapes: withHint(drawShapes || [], hint && hintShape(level, hint)),
     squares: (squares || []).concat(obastacles),
   };
 }

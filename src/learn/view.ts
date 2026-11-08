@@ -494,7 +494,7 @@ function hintBox(ctrl: LearnCtrl, go: Go): HTMLElement {
   }, icon('hint'), label);
   return el('div', { class: 'hint' },
     button,
-    vm.hint && el('p', { class: 'hint-note', role: 'status' }, rich(i18n('il_showMeNote'))),
+    vm.hint && el('p', { class: 'hint-note', role: 'status' }, rich(i18n(vm.hintPromote === true ? 'il_showMeNotePromote' : vm.hintPromote === false ? 'il_showMeNoteNoPromote' : 'il_showMeNote'))),
     vm.hintNone && el('p', { class: 'hint-note', role: 'status' }, rich(i18n('il_showMeNone')), ' ',
       el('button', { type: 'button', class: 'linkish', 'data-fid': 'hint-restart', onclick: go(() => ctrl.restartLevel()) }, i18n('il_restart'))),
   );
