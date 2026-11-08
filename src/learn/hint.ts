@@ -2,7 +2,6 @@ import { shogigroundDropDests, shogigroundMoveDests } from 'shogiops/compat';
 import { makeSfen } from 'shogiops/sfen';
 import { makeUsi, parseSquareName, parseUsi } from 'shogiops/util';
 import { pieceCanPromote, pieceForcePromote } from 'shogiops/variant/util';
-import { sameScenarioMove } from './assert';
 import type { Level, UsiWithColor } from './interfaces';
 import { illegalShogigroundDropDests, illegalShogigroundMoveDests } from './shogi';
 import { currentPosition } from './util';
@@ -14,9 +13,15 @@ export function withOpponent(level: Level, list: UsiWithColor[]): UsiWithColor[]
   return list;
 }
 
+export function missedPromotion(level: Level, list: UsiWithColor[]): boolean {
+  const own = list.filter((u) => u.color === level.color);
+  const planned = level.scenario?.filter((u) => u.color === level.color)[own.length - 1]?.usi;
+  return own.length > 0 && planned === `${own[own.length - 1].usi}+`;
+}
+
 function onTrack(level: Level, list: UsiWithColor[]): boolean {
   const sc = level.scenario;
-  return !!sc && list.every((u, i) => !!sc[i] && sameScenarioMove(sc[i].usi, u.usi, level.anyPromotion) && sc[i].color === u.color);
+  return !!sc && list.every((u, i) => sc[i]?.usi === u.usi && sc[i].color === u.color);
 }
 
 export function userMoves(level: Level, list: UsiWithColor[]): string[] {

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { makeSfen, parseSfen } from 'shogiops/sfen';
 import { stages } from '../src/learn/categories';
-import { solve, userMoves, withOpponent } from '../src/learn/hint';
+import { missedPromotion, solve, userMoves, withOpponent } from '../src/learn/hint';
 import { playWestern } from '../src/learn/opening';
 import he from '../src/learn/i18n/he.json';
 import type { Level, UsiWithColor } from '../src/learn/interfaces';
@@ -138,6 +138,33 @@ test('piece value #8 accepts the sacrifice only with both promotions', () => {
   expect(playsOut(level, ['7f4c+', 'S*3b', '3b4c+'])).toBe(true);
   for (const line of [['7f4c', 'S*3b', '3b4c'], ['7f4c', 'S*3b', '3b4c+'], ['7f4c+', 'S*3b', '3b4c'], ['7f5d', 'S*3b', '3b4c+']])
     expect(playsOut(level, line), line.join(' ')).toBe(false);
+});
+
+test('piece value #8 says to promote when a capture is played without promoting', () => {
+  const level = stages.find((s) => s.key === 'value')!.levels[7];
+  expect(level.moveNames).toBeUndefined();
+  const first = own(['7f4c']);
+  expect(level.failure!(level, first)).toBe(true);
+  expect(missedPromotion(level, first)).toBe(true);
+  expect(missedPromotion(level, own(['7f5d']))).toBe(false);
+  const last = [...withOpponent(level, own(['7f4c+'])), { usi: 'S*3b', color: 'sente' as const }];
+  const full = [...withOpponent(level, last), { usi: '3b4c', color: 'sente' as const }];
+  expect(level.failure!(level, full)).toBe(true);
+  expect(missedPromotion(level, full)).toBe(true);
+  expect(he.il_wrongPromotionShort).toContain('להכתיר');
+});
+
+test('every exercise with a move list must follow it exactly', () => {
+  const listed = [he.il_movesList, he.il_movesInOrder].map((t) => t.split('%s')[0]);
+  for (const stage of stages)
+    for (const level of stage.levels) {
+      const at = `${stage.key} #${level.id}`;
+      expect('anyPromotion' in level, at).toBe(false);
+      if (level.line || listed.some((t) => level.goal.includes(t))) {
+        expect(level.scenario?.length, at).toBeGreaterThan(0);
+        expect(level.failure, at).toBeDefined();
+      }
+    }
 });
 
 test('piece value #5 shows the recapture after a bad rook exchange', () => {
