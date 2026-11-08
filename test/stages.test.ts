@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { makeSfen, parseSfen } from 'shogiops/sfen';
 import { stages } from '../src/learn/categories';
-import { solve, userMoves, withOpponent } from '../src/learn/hint';
+import { missedPromotion, solve, userMoves, withOpponent } from '../src/learn/hint';
 import { playWestern } from '../src/learn/opening';
 import he from '../src/learn/i18n/he.json';
 import type { Level, UsiWithColor } from '../src/learn/interfaces';
@@ -85,7 +85,7 @@ test('every move name matches its scenario move', () => {
     for (const l of s.levels)
       if (l.moveNames && l.scenario) {
         const pos = parseSfen('standard', l.sfen, false).unwrap();
-        const names = l.scenario.map((u) => playWestern(pos, u.usi)).filter((_, i) => l.scenario![i].color === l.color);
+        const names = l.scenario.map((u) => { pos.turn = u.color; return playWestern(pos, u.usi); }).filter((_, i) => l.scenario![i].color === l.color);
         expect(names, `${s.key} #${l.id}`).toEqual(l.moveNames);
       }
 });
@@ -93,13 +93,13 @@ test('every move name matches its scenario move', () => {
 const stageOf = (key: string) => stages.find((s) => s.key === key)!;
 const own = (usis: string[]): UsiWithColor[] => usis.map((usi) => ({ usi, color: 'sente' }));
 
-test('a castle says when a pawn, lance or knight left the plan', () => {
+test('a castle accepts only the listed moves, in order', () => {
   const mino = stageOf('rangingCastles').levels[0];
   expect(mino.failure!(mino, own(['9g9f']))).toBe(true);
-  expect(mino.failure!(mino, own(['7g7f', '7f7e']))).toBe(true);
-  expect(mino.failure!(mino, own(['7g7f', '6g6f', '1g1f']))).toBe(false);
-  expect(mino.failure!(mino, own(['4i5h', '5h4i']))).toBe(false);
-  expect(mino.failureHint!(mino, own(['9g9f']))).toBe(he.il_castleDeadEnd);
+  expect(mino.failure!(mino, own(['6g6f']))).toBe(true);
+  expect(mino.failure!(mino, own(['4i5h', '5h4i']))).toBe(true);
+  expect(mino.failure!(mino, own(['7g7f', '6g6f', '2h6h']))).toBe(false);
+  expect(mino.success(mino, own(mino.line!))).toBe(true);
   const yagura = stageOf('staticCastles').levels[1];
   expect(yagura.failure!(yagura, own(['1g1f']))).toBe(true);
 });
@@ -107,9 +107,8 @@ test('a castle says when a pawn, lance or knight left the plan', () => {
 test('castle upgrades start from the castle before them', () => {
   const levels = stageOf('rangingCastles').levels;
   expect(levels.map((l) => l.nbMoves)).toEqual([9, 2, 3, 5]);
-  const anyOrder = he.il_movesAnyOrder.split('%s')[0];
   const inOrder = he.il_movesInOrder.split('%s')[0];
-  expect(levels.map((l) => l.goal.includes(anyOrder) ? 'any' : l.goal.includes(inOrder) ? 'order' : '')).toEqual(['any', 'order', 'order', 'any']);
+  for (const l of [...levels, ...stageOf('staticCastles').levels]) expect(l.goal.includes(inOrder), `castle #${l.id}`).toBe(true);
   const after = (l: Level) => makeSfen(currentPosition(l, own(l.line!))).split(' ')[0];
   expect(levels[1].sfen.split(' ')[0]).toBe(after(levels[0]));
   expect(levels[2].sfen.split(' ')[0]).toBe(after(levels[1]));
@@ -134,11 +133,38 @@ test('spearing the sparrow brings lance, rook, silver and knight before the edge
   expect(stageOf('spearingSparrow').levels.map((l) => l.moveNames)).toEqual([['L-17', 'R-18'], ['S-26', 'N-37', 'P-15']]);
 });
 
-test('piece value #8 accepts the sacrifice with or without promotion', () => {
+test('piece value #8 accepts the sacrifice only with both promotions', () => {
   const level = stages.find((s) => s.key === 'value')!.levels[7];
-  for (const line of [['7f4c+', 'S*3b', '3b4c+'], ['7f4c', 'S*3b', '3b4c'], ['7f4c', 'S*3b', '3b4c+'], ['7f4c+', 'S*3b', '3b4c']])
-    expect(playsOut(level, line), line.join(' ')).toBe(true);
-  expect(playsOut(level, ['7f5d', 'S*3b', '3b4c+'])).toBe(false);
+  expect(playsOut(level, ['7f4c+', 'S*3b', '3b4c+'])).toBe(true);
+  for (const line of [['7f4c', 'S*3b', '3b4c'], ['7f4c', 'S*3b', '3b4c+'], ['7f4c+', 'S*3b', '3b4c'], ['7f5d', 'S*3b', '3b4c+']])
+    expect(playsOut(level, line), line.join(' ')).toBe(false);
+});
+
+test('piece value #8 says to promote when a capture is played without promoting', () => {
+  const level = stages.find((s) => s.key === 'value')!.levels[7];
+  expect(level.moveNames).toBeUndefined();
+  const first = own(['7f4c']);
+  expect(level.failure!(level, first)).toBe(true);
+  expect(missedPromotion(level, first)).toBe(true);
+  expect(missedPromotion(level, own(['7f5d']))).toBe(false);
+  const last = [...withOpponent(level, own(['7f4c+'])), { usi: 'S*3b', color: 'sente' as const }];
+  const full = [...withOpponent(level, last), { usi: '3b4c', color: 'sente' as const }];
+  expect(level.failure!(level, full)).toBe(true);
+  expect(missedPromotion(level, full)).toBe(true);
+  expect(he.il_wrongPromotionShort).toContain('להכתיר');
+});
+
+test('every exercise with a move list must follow it exactly', () => {
+  const listed = [he.il_movesList, he.il_movesInOrder].map((t) => t.split('%s')[0]);
+  for (const stage of stages)
+    for (const level of stage.levels) {
+      const at = `${stage.key} #${level.id}`;
+      expect('anyPromotion' in level, at).toBe(false);
+      if (level.line || listed.some((t) => level.goal.includes(t))) {
+        expect(level.scenario?.length, at).toBeGreaterThan(0);
+        expect(level.failure, at).toBeDefined();
+      }
+    }
 });
 
 test('piece value #5 shows the recapture after a bad rook exchange', () => {

@@ -15,7 +15,6 @@ import type { Role } from 'shogiops/types';
 import { makeSfen } from 'shogiops/sfen';
 import { makeUsi, parseSquareName, parseUsi } from 'shogiops/util';
 import { pieceCanPromote, pieceForcePromote } from 'shogiops/variant/util';
-import { sameScenarioMove } from './assert';
 import * as categories from './categories';
 import * as ground from './ground';
 import type { Category, LearnOpts, Stage, UsiWithColor, Vm } from './interfaces';
@@ -179,13 +178,12 @@ export default class LearnCtrl {
       const scenario = this.vm.level.scenario;
       const usiCList = this.vm.usiCList;
       const sUsiC = scenario[usiCList.length];
-      const loose = this.vm.level.anyPromotion;
 
       if (
         sUsiC &&
         sUsiC.color !== this.vm.level.color &&
         usiCList.every((usiC, i) => {
-          return sameScenarioMove(scenario[i].usi, usiC.usi, loose) && scenario[i].color === usiC.color;
+          return scenario[i].usi === usiC.usi && scenario[i].color === usiC.color;
         })
       ) {
         this.vm.usiCList.push(sUsiC);
@@ -198,7 +196,7 @@ export default class LearnCtrl {
     const vm = this.vm!;
     const sc = vm.level.scenario;
     const next = sc?.[vm.usiCList.length];
-    return !!next && next.color !== vm.level.color && vm.usiCList.every((u, i) => sameScenarioMove(sc![i].usi, u.usi, vm.level.anyPromotion) && sc![i].color === u.color);
+    return !!next && next.color !== vm.level.color && vm.usiCList.every((u, i) => sc![i].usi === u.usi && sc![i].color === u.color);
   }
 
   showHint(): void {
@@ -265,7 +263,7 @@ export default class LearnCtrl {
     const sc = vm.level.scenario;
     if (!sc) return this.restartLevel();
     let keep = 0;
-    while (keep < vm.usiCList.length && sc[keep] && sameScenarioMove(sc[keep].usi, vm.usiCList[keep].usi, vm.level.anyPromotion) && sc[keep].color === vm.usiCList[keep].color) keep++;
+    while (keep < vm.usiCList.length && sc[keep]?.usi === vm.usiCList[keep].usi && sc[keep]?.color === vm.usiCList[keep].color) keep++;
     vm.usiCList = vm.usiCList.slice(0, keep);
     vm.levelState = 'play';
     vm.coach = undefined;

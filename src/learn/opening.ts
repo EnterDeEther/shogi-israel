@@ -3,12 +3,12 @@
 import { makeSfen, parseSfen } from 'shogiops/sfen';
 import type { Position } from 'shogiops/variant/position';
 import { makeSquareName, parseUsi } from 'shogiops/util';
-import { i18n, i18nFormat } from './i18n';
+import { i18nFormat } from './i18n';
 import type { IncompleteLevel, IncompleteStage, Level, UsiWithColor } from './interfaces';
 import { createLevel } from './level';
 import { scenarioFailure, scenarioSuccess } from './assert';
 import { arrow, circle } from './shapes';
-import { createScenario, currentPosition, usiDests } from './util';
+import { createScenario, usiDests } from './util';
 
 const START = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1';
 
@@ -146,8 +146,6 @@ export function whatIfStage(d: WhatIfStage): IncompleteStage {
   };
 }
 
-const ONE_WAY = new Set(['pawn', 'lance', 'knight']);
-
 export function castleStage(d: CastleStage): IncompleteStage {
   const levels: IncompleteLevel[] = d.levels.map((l) => {
     const pos = startPos();
@@ -155,44 +153,22 @@ export function castleStage(d: CastleStage): IncompleteStage {
     pos.turn = 'sente';
     const sfen = makeSfen(pos);
     const start = parseSfen('standard', sfen, false).unwrap();
-    const allowed = new Set([...start.board.color('sente')].map((sq) => `${start.board.get(sq)!.role}@${sq}`));
     const build = l.build.trim().split(/\s+/);
-    let anyOrder = false;
-    const western = build.map((u, i) => {
-      pos.turn = 'sente';
-      anyOrder ||= build.slice(i + 1).some((v) => pos.isLegal(parseUsi(v)!));
-      const text = playWestern(pos, u, true);
-      const to = parseUsi(u)!.to;
-      allowed.add(`${pos.board.get(to)!.role}@${to}`);
-      return text;
-    });
-    const target = [...pos.board.color('sente')].map((sq) => ({ sq, piece: pos.board.get(sq)! }));
-    const moved = target.filter(({ sq, piece }) => {
+    const western = build.map((u) => playWestern(pos, u, true));
+    const moved = [...pos.board.color('sente')].filter((sq) => {
       const was = start.board.get(sq);
-      return !was || was.role !== piece.role || was.color !== piece.color;
+      const now = pos.board.get(sq)!;
+      return !was || was.role !== now.role || was.color !== now.color;
     });
-    const success = (level: Level, usiCList: UsiWithColor[]) => {
-      const now = currentPosition(level, usiCList);
-      return target.every(({ sq, piece }) => {
-        const p = now.board.get(sq);
-        return p?.color === piece.color && p.role === piece.role;
-      });
-    };
-    const failure = (level: Level, usiCList: UsiWithColor[]) => {
-      const now = currentPosition(level, usiCList);
-      return [...now.board.color('sente')].some((sq) => {
-        const role = now.board.get(sq)!.role;
-        return ONE_WAY.has(role) && !allowed.has(`${role}@${sq}`);
-      });
-    };
     return {
-      goal: `${l.aim} ${i18nFormat(anyOrder ? 'il_movesAnyOrder' : 'il_movesInOrder', western.join(', '))}`,
+      goal: `${l.aim} ${i18nFormat('il_movesInOrder', western.join(', '))}`,
       sfen,
       nbMoves: build.length,
-      success,
-      failure,
-      failureHint: () => i18n('il_castleDeadEnd'),
-      drawShapes: () => moved.map(({ sq }) => circle(makeSquareName(sq))),
+      success: scenarioSuccess,
+      failure: scenarioFailure,
+      scenario: createScenario(build, 'sente'),
+      moveNames: western,
+      drawShapes: () => moved.map((sq) => circle(makeSquareName(sq))),
       line: build,
       recap: l.recap,
     };

@@ -3,6 +3,7 @@ import { lessonMove } from '../lib/move-notation';
 import { categories, nextStage } from './categories';
 import type LearnCtrl from './ctrl';
 import { i18n, i18nFormat } from './i18n';
+import { missedPromotion } from './hint';
 import type { CourseLevel, Stage } from './interfaces';
 import { ownMoves } from './level';
 import { READ_MORE } from './read-more';
@@ -698,12 +699,10 @@ function renderCoach(ctrl: LearnCtrl, root: HTMLElement, q: Q, go: Go) {
   } else {
     const expected = level.scenario && name(tip.idx);
     const hint = level.failureHint?.(level, vm.usiCList);
-    const own = vm.usiCList.filter((u) => u.color === level.color);
-    const planned = level.scenario?.filter((u) => u.color === level.color)[tip.idx!]?.usi;
-    const unpromoted = own.length > 0 && planned === `${own[own.length - 1].usi}+`;
+    const unpromoted = missedPromotion(level, vm.usiCList);
     body = [
       el('h2', { class: 'bad' }, i18n('il_wrongTitle')),
-      el('p', { class: 'lead' }, expected ? rich(i18nFormat(unpromoted ? 'il_wrongPromotion' : 'il_wrongPlan', expected)) : hint ? rich(hint) : i18n('il_wrongTry')),
+      el('p', { class: 'lead' }, expected ? rich(i18nFormat(unpromoted ? 'il_wrongPromotion' : 'il_wrongPlan', expected)) : unpromoted ? rich(i18n('il_wrongPromotionShort')) : hint ? rich(hint) : i18n('il_wrongTry')),
       isCurrent && el('div', { class: 'buttons' }, btn(i18n('il_tryAgain'), () => ctrl.retryMove())),
     ];
   }

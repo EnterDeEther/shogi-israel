@@ -4,6 +4,7 @@
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
 // Modified by Shogi Israel (shogi.co.il), 2026-10-24.
 // Modified by Shogi Israel (shogi.co.il), 2026-11-07.
+// Modified by Shogi Israel (shogi.co.il), 2026-11-08.
 
 import { i18n } from '../i18n';
 import { parseSquareName, parseUsi } from 'shogiops/util';
@@ -111,7 +112,6 @@ const levels: IncompleteLevel[] = [
     success: scenarioSuccess,
     failure: scenarioFailure,
     scenario: createScenario(['7f4c+', '3b4c', 'S*3b', '2a2b', '3b4c+'], 'sente', true),
-    anyPromotion: true,
   },
   {
     goal: i18n('learn:rememberWhichPieceIsTheMostValuable'),
