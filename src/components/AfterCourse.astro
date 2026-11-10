@@ -7,7 +7,7 @@ const { compact = false } = Astro.props;
 ---
 <ul class:list={['after', { compact }]} data-after-course>
   {AFTER_COURSE.map((it) => (
-    <li class="after-item">
+    <li class:list={['after-item', { 'touch-only': it.touch }]}>
       <span class="after-icon"><Icon name={it.icon} size={compact ? 20 : 22} /></span>
       <span class="after-body">
         <strong class="after-title" data-after-title={it.key}>{it.title}</strong>

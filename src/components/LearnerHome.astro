@@ -122,7 +122,7 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
 
   <section class="part" aria-labelledby="part-h">
     <h2 id="part-h">⟦אתה|את⟧ חלק מזה</h2>
-    <p>מצאת שיעור מבלבל, או מונח שאפשר לומר טוב יותר בעברית? <a href="/about/#contact">⟦כתוב|כתבי⟧ לי</a>, ואני אתקן. שאלות, עדכונים ומי רוצה לשחק: <a href={WHATSAPP} rel="noopener">הקהילה בוואטסאפ</a>.</p>
+    <p>מצאת שיעור מבלבל, או מונח שאפשר לומר טוב יותר בעברית? <a href="/about/#contact">⟦כתוב|כתבי⟧ לי</a>, ואני אתקן. <span data-part-community>שאלות, עדכונים ומי רוצה לשחק: <a href={WHATSAPP} rel="noopener">הקהילה בוואטסאפ</a>.</span></p>
   </section>
 </section>
 
@@ -136,7 +136,7 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
   import { tipEl } from '../lib/info-tip-dom';
   import { hasActivity } from '../lib/visitor';
   import { gameInProgress, openGameText } from '../play/record';
-  import { COMMUNITY_URL, nextLevel } from '../lib/after-course';
+  import { nextLevel } from '../lib/after-course';
   import { shareButton } from '../lib/share-card';
 
   const root = document.querySelector<HTMLElement>('[data-me]');
@@ -157,8 +157,6 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
     const link = $<HTMLAnchorElement>('[data-next-link]');
     const prog = $('[data-next-progress]');
     prog.hidden = true;
-    link.removeAttribute('target');
-    link.removeAttribute('rel');
     if (signedIn() && !placed) {
       text('[data-next-where]', 'מסלול לימוד אישי');
       text('[data-next-title]', 'מאיפה מתחילים?');
@@ -168,11 +166,10 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
     } else if (!next) {
       text('[data-next-where]', 'מסלול לימוד אישי');
       text('[data-next-title]', 'סיימת את כל המסלול!');
-      text('[data-next-why]', 'עברת את שלוש הרמות, מהמהלך הראשון ועד מט. מכאן הכי כיף לשחק מול אנשים: בקהילה בוואטסאפ מוצאים יריבים.');
-      text('[data-next-cta]', '⟦מצא|מצאי⟧ יריב בקהילה');
-      link.href = COMMUNITY_URL;
-      link.target = '_blank';
-      link.rel = 'noopener';
+      const lv = nextLevel(p.course.won);
+      text('[data-next-why]', 'עברת את שלוש הרמות, מהמהלך הראשון ועד מט. מכאן ממשיכים לשחק ולהשתפר: כל רמה חדשה שמנצחים מוסיפה נקודות לדרגה.');
+      text('[data-next-cta]', `⟦שחק|שחקי⟧ ברמה ${lv}`);
+      link.href = `/play/?level=${lv}`;
     } else {
       const { unit, step } = next;
       text('[data-next-where]', `הצעד הבא במסלול · ${whereLabel(unit)} · ${KIND_LABEL[step.kind]}, ${step.minutes} דק׳`);
@@ -201,6 +198,8 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
       $<HTMLAnchorElement>('[data-after-sec] [data-after-link="play"]').href = `/play/?level=${lv}`;
       text('[data-after-sec] [data-after-title="play"]', `המחשב, מרמה ${lv} והלאה`);
     }
+    const community = root.querySelector<HTMLElement>('[data-part-community]');
+    if (community) community.hidden = done;
     const head = root.querySelector('[data-invite-head]');
     if (head) head.textContent = done ? 'סיימת את כל המסלול, וההישג שמור רק בדפדפן הזה.' : 'כרגע ההתקדמות שלך שמורה רק בדפדפן הזה.';
     const place = root.querySelector<HTMLElement>('[data-invite-place]');

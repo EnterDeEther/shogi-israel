@@ -34,6 +34,12 @@ describe('after the course', () => {
     expect(nextLevel(10)).toBe(10);
   });
 
+  test('next steps keep players on the site, Lishogi last, no WhatsApp', () => {
+    expect(AFTER_COURSE.some((it) => /whatsapp/i.test(it.href))).toBe(false);
+    expect(AFTER_COURSE[0].href.startsWith('/play/')).toBe(true);
+    expect(AFTER_COURSE.at(-1)!.href).toBe('/lishogi/');
+  });
+
   test('every next step has a link and a call to action', () => {
     for (const it of AFTER_COURSE) {
       expect(it.href.length).toBeGreaterThan(0);
