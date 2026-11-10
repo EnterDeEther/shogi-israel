@@ -1,0 +1,27 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { friendOn } from '../../../friend/flag';
+import '../../../styles/shogiground.css';
+import '../../../styles/learn.css';
+import '../../../styles/play.css';
+import '../../../styles/friend.css';
+const on = friendOn();
+---
+<Base title="משחק עם חבר" description="משחק שוגי עם חבר." noindex>
+  <div class="wrap wrap--play">
+    <h1 class="sr-only">משחק עם חבר</h1>
+    {on ? (
+      <section class="play-island friend-game" data-friend-game aria-label="משחק עם חבר">
+        <noscript><p>המשחק צריך JavaScript.</p></noscript>
+      </section>
+    ) : (
+      <p class="lead">המשחק עם חבר עוד בבנייה. בינתיים אפשר <a href="/play/">לשחק נגד המחשב</a>.</p>
+    )}
+  </div>
+</Base>
+{on && (
+  <script>
+    import { bootFriendGame } from '../../../friend/boot';
+    document.querySelectorAll<HTMLElement>('[data-friend-game]').forEach((el) => void bootFriendGame(el));
+  </script>
+)}
