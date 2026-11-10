@@ -1,0 +1,38 @@
+---
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import KifViewer from '../../components/KifViewer.astro';
+import { friendOn } from '../../friend/flag';
+import '../../styles/friend.css';
+const on = friendOn();
+---
+<Base title="המשחקים שלי" description="כל המשחקים שלך: נגד המחשב ונגד חברים, עם צפייה חוזרת וקובץ KIF." noindex>
+  <div class="wrap page friend-page friend-page--wide">
+    <header class="friend-top">
+      <span class="ico"><Icon name="kif" size={30} /></span>
+      <div>
+        <h1>המשחקים שלי</h1>
+        <p class="muted">כל משחק שמור עם רישום מלא. אפשר לעבור עליו מהלך אחרי מהלך או להוריד קובץ KIF.</p>
+      </div>
+    </header>
+    {on ? (
+      <>
+        <section class="friend-card" data-games-list><p class="muted">טוענים…</p></section>
+        <section class="games-replay" data-games-replay hidden>
+          <h2 data-replay-title>צפייה חוזרת</h2>
+          <KifViewer />
+        </section>
+      </>
+    ) : (
+      <p class="lead">העמוד הזה עוד בבנייה.</p>
+    )}
+  </div>
+</Base>
+{on && (
+  <script>
+    import { bootGames } from '../../friend/games';
+    const list = document.querySelector<HTMLElement>('[data-games-list]');
+    const viewer = document.querySelector<HTMLElement>('[data-games-replay]');
+    if (list && viewer) void bootGames(list, viewer);
+  </script>
+)}

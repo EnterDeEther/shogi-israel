@@ -1,0 +1,30 @@
+---
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import { friendOn } from '../../friend/flag';
+import '../../styles/friend.css';
+const on = friendOn();
+---
+<Base title="משחק עם חבר" description="מזמינים חבר למשחק שוגי בקישור אחד. החבר יכול לשחק גם בלי הרשמה." noindex>
+  <div class="wrap page friend-page">
+    <header class="friend-top">
+      <span class="ico"><Icon name="online" size={30} /></span>
+      <div>
+        <h1>משחק עם חבר</h1>
+        <p class="muted">שולחים קישור, והחבר משחק מהטלפון שלו. משחק איטי או משחק חי.</p>
+      </div>
+    </header>
+    {on ? (
+      <div class="friend-hub" data-friend-hub><p>טוענים…</p></div>
+    ) : (
+      <p class="lead">המשחק עם חבר עוד בבנייה. בינתיים אפשר <a href="/play/">לשחק נגד המחשב</a>.</p>
+    )}
+  </div>
+</Base>
+{on && (
+  <script>
+    import { bootHub } from '../../friend/hub';
+    document.querySelectorAll<HTMLElement>('[data-friend-hub]').forEach((el) => void bootHub(el));
+    window.addEventListener('hashchange', () => location.reload());
+  </script>
+)}
