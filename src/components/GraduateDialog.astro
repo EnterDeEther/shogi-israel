@@ -1,0 +1,93 @@
+---
+import AfterCourse from './AfterCourse.astro';
+
+interface Props { accounts?: boolean }
+const { accounts = false } = Astro.props;
+---
+<dialog class="grad" data-grad aria-labelledby="grad-h">
+  <button type="button" class="grad-x" data-grad-close aria-label="סגירה">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+  </button>
+  <div class="grad-top">
+    <span class="grad-seal" lang="ja" aria-hidden="true" data-grad-kanji>卒</span>
+    <p class="grad-eyebrow">מסלול לימוד אישי</p>
+    <h2 id="grad-h" tabindex="-1" autofocus>סיימת את כל המסלול!</h2>
+    <p class="grad-lead">עברת את שלוש הרמות: מהמהלך הראשון, דרך פתיחות ומבצרים, ועד מט. <span data-grad-rank></span></p>
+    <div class="grad-share" data-grad-share></div>
+  </div>
+  <div class="grad-next">
+    <h3>מה עכשיו?</h3>
+    <AfterCourse compact />
+    {accounts && <p class="grad-guest" data-signed-out-only>ההישג שמור רק בדפדפן הזה. <a href="/account/?mode=signup">⟦פתח|פתחי⟧ חשבון בחינם</a> והוא יישמר בכל מכשיר.</p>}
+    <button type="button" class="btn grad-done" data-grad-close>סגירה</button>
+  </div>
+</dialog>
+
+<script>
+  import { finishedCourse, GRADUATED_KEY, nextLevel } from '../lib/after-course';
+  import { LEVEL_COUNTS } from '../lib/level-counts';
+  import { readLocal } from '../lib/progress-local';
+  import { rankFor, xpBreakdown } from '../lib/xp';
+  import { accountsEnabled, hasStoredSession } from '../lib/account-config';
+
+  const dialog = document.querySelector<HTMLDialogElement>('[data-grad]');
+  const seen = (): boolean => { try { return localStorage.getItem(GRADUATED_KEY) !== null; } catch { return true; } };
+  const mark = () => { try { localStorage.setItem(GRADUATED_KEY, new Date().toISOString()); } catch { } };
+  const eligible = () => {
+    const p = readLocal();
+    if (accountsEnabled && hasStoredSession() && !p.course.route) return null;
+    return finishedCourse(p, LEVEL_COUNTS) ? p : null;
+  };
+
+  async function open() {
+    if (!dialog || typeof dialog.showModal !== 'function' || dialog.open || seen()) return;
+    if (document.documentElement.classList.contains('app-locked') || document.documentElement.classList.contains('tour-on')) return;
+    const p = eligible();
+    if (!p) return;
+    mark();
+    const { rank } = rankFor(xpBreakdown(p, LEVEL_COUNTS).total);
+    dialog.querySelector('[data-grad-kanji]')!.textContent = rank.kanji;
+    dialog.querySelector('[data-grad-rank]')!.textContent = `דרגת הלימוד שלך: ${rank.name}.`;
+    const lv = nextLevel(p.course.won);
+    const play = dialog.querySelector<HTMLAnchorElement>('[data-after-link="play"]');
+    if (play) play.href = `/play/?level=${lv}`;
+    const title = dialog.querySelector('[data-after-title="play"]');
+    if (title) title.textContent = `המחשב, מרמה ${lv} והלאה`;
+    const { shareButton } = await import('../lib/share-card');
+    dialog.querySelector('[data-grad-share]')!.replaceChildren(shareButton({ title: 'סיימתי את מסלול הלימוד של שוגי', sub: `שלוש רמות, מהמהלך הראשון ועד מט · ${rank.name}`, kanji: rank.kanji, path: '/course/' }, 'shogi-israel-course.png', 'btn primary'));
+    dialog.showModal();
+    void import('../learn/sound').then((m) => m.play('rank')).catch(() => {});
+  }
+
+  if (dialog) {
+    const later = () => setTimeout(() => void open(), 900);
+    document.addEventListener('progress-changed', later);
+    document.addEventListener('shogi-il:game-end', later);
+    document.addEventListener('progress-synced', () => { if (!seen() && eligible()) mark(); });
+    dialog.querySelectorAll('[data-grad-close]').forEach((b) => b.addEventListener('click', () => dialog.close()));
+    dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+  }
+</script>
+
+<style>
+  .grad { width: min(520px, calc(100vw - 24px)); max-height: 90dvh; padding: 0; border: 1px solid var(--glass-edge); border-radius: 20px; background: var(--surface); color: var(--ink); box-shadow: var(--shadow-glass); overflow-y: auto; }
+  .grad::backdrop { background: rgba(10, 8, 4, 0.5); }
+  .grad[open] { animation: grad-in .35s var(--ease-out); }
+  @keyframes grad-in { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .grad[open] { animation: none; } }
+  .grad-x { position: absolute; inset-inline-end: 8px; top: 8px; display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 10px; background: none; color: var(--washi); cursor: pointer; }
+  .grad-x:hover { background: color-mix(in srgb, var(--washi) 15%, transparent); }
+  .grad-top { background: var(--ink); color: var(--washi); padding: 22px 20px 18px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; }
+  .grad-top p { margin: 0; }
+  .grad-seal { display: inline-flex; align-items: center; justify-content: center; min-width: 64px; height: 64px; padding: 0 10px; border-radius: 999px; background: var(--seal); color: var(--on-seal); font-family: var(--f-kanji); font-size: 21px; font-weight: 800; box-shadow: 0 0 0 5px color-mix(in srgb, var(--seal) 30%, transparent); margin-bottom: 4px; }
+  .grad-eyebrow { font-size: 14px; font-weight: 700; opacity: .8; }
+  .grad h2:focus { outline: none; }
+  .grad h2 { margin: 0; font-family: var(--f-display); font-size: clamp(28px, 7vw, 36px); line-height: 1.15; color: inherit; }
+  .grad-lead { font-size: 15.5px; line-height: 1.6; opacity: .9; max-width: 30em; }
+  .grad-share { margin-top: 6px; }
+  .grad-share :global(.btn) { background: var(--washi); color: var(--ink); border-color: var(--washi); }
+  .grad-next { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .grad-next h3 { margin: 0; font-size: 19px; }
+  .grad-guest { margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--ink-2); }
+  .grad-done { align-self: center; min-width: 140px; justify-content: center; }
+</style>

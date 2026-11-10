@@ -3,6 +3,7 @@ import { LEVELS, LEVEL_INFO } from '../lib/curriculum';
 import { WEEK_LENGTH } from '../tsume/week';
 import InfoTip from './InfoTip.astro';
 import Icon from './Icon.astro';
+import AfterCourse from './AfterCourse.astro';
 
 interface Props { weekCount: number; accounts?: boolean }
 const { weekCount, accounts = false } = Astro.props;
@@ -31,7 +32,10 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
           <div class="bar" aria-hidden="true"><span></span></div>
           <span class="small"></span>
         </div>
-        <a class="btn next-btn" href="/course/" data-next-link data-tour="next"><span data-next-cta>למסלול</span></a>
+        <div class="next-actions">
+          <a class="btn next-btn" href="/course/" data-next-link data-tour="next"><span data-next-cta>למסלול</span></a>
+          <span class="next-share" data-next-share hidden></span>
+        </div>
       </div>
     </div>
 
@@ -74,10 +78,10 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
 
   {accounts && (
     <div class="invite" data-signed-out-only data-invite aria-labelledby="invite-h">
-      <p class="invite-head" id="invite-h">כרגע ההתקדמות שלך שמורה רק בדפדפן הזה. עם חשבון בחינם:</p>
+      <p class="invite-head" id="invite-h"><span data-invite-head>כרגע ההתקדמות שלך שמורה רק בדפדפן הזה.</span> עם חשבון בחינם:</p>
       <ul class="invite-list">
         <li>ההתקדמות נשמרת בכל מכשיר, בטלפון ובמחשב.</li>
-        <li>מסלול אישי: עונה על שתי שאלות קצרות ⟦ומקבל|ומקבלת⟧ נקודת התחלה שמתאימה לך.</li>
+        <li data-invite-place>מסלול אישי: עונה על שתי שאלות קצרות ⟦ומקבל|ומקבלת⟧ נקודת התחלה שמתאימה לך.</li>
         <li>הנקודות ודרגת הלימוד שלך נשמרות בחשבון ולא הולכות לאיבוד.</li>
         <li>אם ⟦תרצה|תרצי⟧, בעיית השבוע במייל, פעם בשבוע לכל היותר.</li>
       </ul>
@@ -89,6 +93,13 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
       </div>
     </div>
   )}
+
+  <section class="block-sm" data-after-sec hidden aria-labelledby="after-h">
+    <div class="head-row">
+      <h2 id="after-h">מה עכשיו?</h2>
+    </div>
+    <AfterCourse />
+  </section>
 
   <section class="block-sm" aria-labelledby="path-h">
     <div class="head-row">
@@ -125,6 +136,8 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
   import { tipEl } from '../lib/info-tip-dom';
   import { hasActivity } from '../lib/visitor';
   import { gameInProgress, openGameText } from '../play/record';
+  import { COMMUNITY_URL, nextLevel } from '../lib/after-course';
+  import { shareButton } from '../lib/share-card';
 
   const root = document.querySelector<HTMLElement>('[data-me]');
   const html = document.documentElement;
@@ -144,6 +157,8 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
     const link = $<HTMLAnchorElement>('[data-next-link]');
     const prog = $('[data-next-progress]');
     prog.hidden = true;
+    link.removeAttribute('target');
+    link.removeAttribute('rel');
     if (signedIn() && !placed) {
       text('[data-next-where]', 'מסלול לימוד אישי');
       text('[data-next-title]', 'מאיפה מתחילים?');
@@ -153,9 +168,11 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
     } else if (!next) {
       text('[data-next-where]', 'מסלול לימוד אישי');
       text('[data-next-title]', 'סיימת את כל המסלול!');
-      text('[data-next-why]', 'מכאן ממשיכים להשתפר: בעיות מט ארוכות יותר, ומשחקים ברמות גבוהות יותר.');
-      text('[data-next-cta]', 'לבעיות המט');
-      link.href = '/tsume/';
+      text('[data-next-why]', 'עברת את שלוש הרמות, מהמהלך הראשון ועד מט. מכאן הכי כיף לשחק מול אנשים: בקהילה בוואטסאפ מוצאים יריבים.');
+      text('[data-next-cta]', '⟦מצא|מצאי⟧ יריב בקהילה');
+      link.href = COMMUNITY_URL;
+      link.target = '_blank';
+      link.rel = 'noopener';
     } else {
       const { unit, step } = next;
       text('[data-next-where]', `הצעד הבא במסלול · ${whereLabel(unit)} · ${KIND_LABEL[step.kind]}, ${step.minutes} דק׳`);
@@ -172,6 +189,22 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
         $('.small', prog).textContent = inStep ? `${up.done} מתוך ${up.of} בצעד הזה` : `${up.done} מתוך ${up.of} צעדים ב${unit.title}`;
       }
     }
+    const done = !next && !(signedIn() && !placed);
+    root.toggleAttribute('data-done', done);
+    $('[data-after-sec]').hidden = !done;
+    const share = $('[data-next-share]');
+    share.hidden = !done;
+    const r0 = rankFor(xpBreakdown(p, LEVEL_COUNTS).total).rank;
+    if (done && !share.firstChild) share.append(shareButton({ title: 'סיימתי את מסלול הלימוד של שוגי', sub: `שלוש רמות, מהמהלך הראשון ועד מט · ${r0.name}`, kanji: r0.kanji, path: '/course/' }, 'shogi-israel-course.png', 'btn next-share-btn'));
+    if (done) {
+      const lv = nextLevel(p.course.won);
+      $<HTMLAnchorElement>('[data-after-sec] [data-after-link="play"]').href = `/play/?level=${lv}`;
+      text('[data-after-sec] [data-after-title="play"]', `המחשב, מרמה ${lv} והלאה`);
+    }
+    const head = root.querySelector('[data-invite-head]');
+    if (head) head.textContent = done ? 'סיימת את כל המסלול, וההישג שמור רק בדפדפן הזה.' : 'כרגע ההתקדמות שלך שמורה רק בדפדפן הזה.';
+    const place = root.querySelector<HTMLElement>('[data-invite-place]');
+    if (place) place.hidden = done;
     const game = gameInProgress();
     const gameBox = $('[data-game]');
     gameBox.hidden = !game;
@@ -285,13 +318,17 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
   .next-why { font-size: 16.5px; line-height: 1.6; opacity: .88; max-width: 36em; }
   .next-why:empty { display: none; }
   .next-progress { display: flex; align-items: center; gap: 12px; }
+  .next-progress[hidden], .next-share[hidden], [data-after-sec][hidden], .invite-list li[hidden] { display: none; }
+  .next-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+  .next-share :global(.next-share-btn) { width: 100%; justify-content: center; background: transparent; color: var(--washi); border-color: color-mix(in srgb, var(--washi) 65%, transparent); }
   .next-progress .bar { flex: 1; max-width: 280px; background: color-mix(in srgb, var(--washi) 25%, transparent); }
-  .next-btn { align-self: stretch; background: var(--washi); color: var(--ink); border-color: var(--washi); margin-top: 4px; }
+  .next-btn { align-self: stretch; background: var(--washi); color: var(--ink); border-color: var(--washi); }
   .next-btn:hover { background: var(--kaya); color: #1C1B19; border-color: var(--kaya); }
   .me[data-has-game] [data-next-card] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-1); border: 1px solid var(--rule); padding: 16px 18px; }
   .me[data-has-game] [data-next-card] .next-title { font-size: 22px; }
   .me[data-has-game] [data-next-card] .next-progress .bar { background: var(--rule); }
   .me[data-has-game] [data-next-card] .next-btn { background: transparent; color: var(--ink); border-color: var(--rule); }
+  .me[data-has-game] [data-next-card] .next-share :global(.next-share-btn) { color: var(--ink); border-color: var(--rule); }
 
   .tiles { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
   .tile { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 14px 16px 6px; display: flex; flex-direction: column; gap: 4px; box-shadow: var(--shadow-1); }
@@ -345,6 +382,8 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
   @media (min-width: 700px) {
     .units { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .next-btn { align-self: flex-start; }
+    .next-actions { flex-direction: row; flex-wrap: wrap; align-items: center; }
+    .next-share :global(.next-share-btn) { width: auto; }
   }
   @media (min-width: 900px) {
     .me { padding-top: 44px; }

@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import Board from '../components/Board.astro';
 import InfoTip from '../components/InfoTip.astro';
+import AfterCourse from '../components/AfterCourse.astro';
 import { CHESS_CURRICULUM, CHESS_LEVEL_INFO, CURRICULUM, KIND_LABEL, LEVELS, LEVEL_INFO, stepHref } from '../lib/curriculum';
 import { LEVEL_COUNTS as levelCounts } from '../lib/level-counts';
 import { RANKS, rankFor, stepXp, XP } from '../lib/xp';
@@ -170,10 +171,11 @@ const CHECK = [
       </div>
     </section>
 
-    <section class="done-all card" data-done-all hidden>
-      <h2>סיימת את המסלול!</h2>
-      <p>עברת את כל שלוש הרמות. מכאן ⟦המשך|המשיכי⟧ לשחק ולתרגל:</p>
-      <p><a href="/play/?level=5">נגד המחשב, מרמה 5 והלאה</a> · <a href="/tsume/7/">בעיות מט ב־7 מהלכים</a> · <a href="/lishogi/">יריבים מכל העולם בלישוגי</a></p>
+    <section class="done-all card" id="done" data-done-all hidden>
+      <h2>סיימת את כל המסלול!</h2>
+      <p>עברת את שלוש הרמות, מהמהלך הראשון ועד מט. מה עכשיו?</p>
+      <AfterCourse />
+      <p class="done-share" data-done-share></p>
     </section>
 
     <div class="overall" data-overall hidden>
@@ -246,6 +248,7 @@ const CHECK = [
   import { LEVEL_COUNTS as levelCounts } from '../lib/level-counts';
   import { rankFor, xpBreakdown } from '../lib/xp';
   import { shareButton } from '../lib/share-card';
+  import { nextLevel } from '../lib/after-course';
 
   const root = document.querySelector<HTMLElement>('[data-course]')!;
   const signedIn = accountsEnabled && hasStoredSession();
@@ -393,6 +396,14 @@ const CHECK = [
     const showNext = (placed || hasAnyProgress(p)) && !picking;
     $('[data-next]').hidden = !showNext || !next;
     $('[data-done-all]').hidden = !showNext || !!next;
+    if (showNext && !next) {
+      const lv = nextLevel(p.course.won);
+      $<HTMLAnchorElement>('[data-done-all] [data-after-link="play"]').href = `/play/?level=${lv}`;
+      $('[data-done-all] [data-after-title="play"]').textContent = `המחשב, מרמה ${lv} והלאה`;
+      const { rank } = rankFor(xpBreakdown(p, levelCounts).total);
+      $('[data-done-share]').replaceChildren(shareButton({ title: 'סיימתי את מסלול הלימוד של שוגי', sub: `שלוש רמות, מהמהלך הראשון ועד מט · ${rank.name}`, kanji: rank.kanji, path: '/course/' }, 'shogi-israel-course.png', 'btn'));
+      if (location.hash === '#done') requestAnimationFrame(() => window.scrollTo({ top: $('[data-done-all]').getBoundingClientRect().top + window.scrollY - 90 }));
+    }
     if (next) {
       const { unit, step } = next;
       const c = stepCount(step, p, levelCounts);
@@ -569,6 +580,7 @@ const CHECK = [
   .done-all { margin: 0 0 16px; }
   .done-all h2 { margin: 0 0 6px; }
   .done-all p { margin: 0 0 6px; color: var(--ink-2); }
+  .done-all .done-share { margin: 12px 0 0; }
 
   .bar { height: 8px; border-radius: 999px; background: var(--rule); overflow: hidden; }
   .bar span { display: block; height: 100%; width: 0; background: var(--seal); border-radius: inherit; transition: width .3s; }

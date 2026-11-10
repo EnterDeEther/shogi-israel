@@ -1,0 +1,38 @@
+---
+import { AFTER_COURSE } from '../lib/after-course';
+import Icon from './Icon.astro';
+
+interface Props { compact?: boolean }
+const { compact = false } = Astro.props;
+---
+<ul class:list={['after', { compact }]} data-after-course>
+  {AFTER_COURSE.map((it) => (
+    <li class="after-item">
+      <span class="after-icon"><Icon name={it.icon} size={compact ? 20 : 22} /></span>
+      <span class="after-body">
+        <strong class="after-title" data-after-title={it.key}>{it.title}</strong>
+        {!compact && <span class="after-text">{it.text}</span>}
+        {!compact && <a class="after-link" href={it.href} data-after-link={it.key} rel={it.external ? 'noopener' : undefined} target={it.external ? '_blank' : undefined}>{it.cta} ←</a>}
+      </span>
+      {compact && <a class="after-link" href={it.href} data-after-link={it.key} rel={it.external ? 'noopener' : undefined} target={it.external ? '_blank' : undefined}>{it.cta} ←</a>}
+    </li>
+  ))}
+</ul>
+
+<style>
+  .after { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .after-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 14px; border: 1px solid var(--rule); border-radius: 12px; background: var(--surface); min-width: 0; }
+  .after-icon { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; background: var(--washi-2); color: var(--seal); }
+  .after-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .after-title { font-size: 16.5px; line-height: 1.35; color: var(--ink); }
+  .after-text { font-size: 14.5px; line-height: 1.5; color: var(--ink-2); }
+  .after-link { flex: none; display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; color: var(--seal); text-decoration: none; white-space: nowrap; }
+  .after-link:hover { text-decoration: underline; }
+  .after:not(.compact) .after-link { align-self: flex-start; min-height: 40px; }
+  .compact .after-item { padding: 6px 12px; align-items: center; }
+  .compact .after-icon { width: 34px; height: 34px; }
+  .compact .after-title { font-size: 15.5px; }
+  @media (min-width: 700px) {
+    .after:not(.compact) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+</style>
