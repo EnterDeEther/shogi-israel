@@ -156,8 +156,8 @@ import { APP_TOUR_URL } from '../lib/tour';
     if (!me && !hasAnyProgress(p)) return fill(a, '/try/', '⟦התחל|התחילי⟧ כאן', 'משחק אחד, מהלך אחרי מהלך, בלי ידע מוקדם');
     if (me && !p.course.route) return fill(a, '/course/', 'מסלול לימוד אישי', 'מאיפה מתחילים? שתי שאלות קצרות');
     const next = nextStep(p, LEVEL_COUNTS);
-    if (!next) return fill(a, '/course/', 'מסלול לימוד אישי', 'סיימת את כל המסלול');
-    fill(a, stepHref(next.step, p, LEVEL_COUNTS), '⟦המשך|המשיכי⟧ במסלול', next.step.title);
+    if (next) fill(a, stepHref(next.step, p, LEVEL_COUNTS), '⟦המשך|המשיכי⟧ במסלול', next.step.title);
+    else fill(a, '/course/#done', 'סיימת את כל המסלול!', 'מה עכשיו? יריבים, רמות גבוהות ובעיות קשות');
 
     const total = xpBreakdown(p, LEVEL_COUNTS).total;
     const { rank } = rankFor(total);
