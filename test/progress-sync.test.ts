@@ -1,7 +1,17 @@
 import { describe, expect, test } from 'bun:test';
-import { emptyProgress, gameResult, merge, mergeSignIn, normalize, NICKNAME_RE, RESERVED_RE, stats } from '../src/lib/progress-sync';
+import { emptyProgress, gameResult, merge, mergeSignIn, normalize, NICKNAME_RE, RESERVED_RE, same, stats } from '../src/lib/progress-sync';
 
 describe('progress sync', () => {
+  test('the same progress in another key order counts as unchanged', () => {
+    const device = normalize({ learn: { stages: { pawn: { scores: [3] }, king: { scores: [2] }, lance: { scores: [1] } } }, tsume: { 3: [1, 2], 1: [4] } });
+    const stored = normalize({ tsume: { 1: [4], 3: [1, 2] }, learn: { stages: { king: { scores: [2] }, pawn: { scores: [3] }, lance: { scores: [1] } } } });
+    expect(JSON.stringify(device)).not.toBe(JSON.stringify(stored));
+    expect(same(merge(device, stored), stored)).toBe(true);
+    expect(same(merge(device, stored), device)).toBe(true);
+    const more = normalize({ learn: { stages: { pawn: { scores: [3, 1] }, king: { scores: [2] }, lance: { scores: [1] } } }, tsume: { 3: [1, 2], 1: [4] } });
+    expect(same(more, stored)).toBe(false);
+  });
+
   test('merge keeps the best score per level and every finished lesson', () => {
     const a = normalize({ learn: { stages: { king: { scores: [3, 1] } } }, rules: ['01'] });
     const b = normalize({ learn: { stages: { king: { scores: [2, 2, 3] }, gold: { scores: [1] } } }, rules: ['02', '01'] });

@@ -60,12 +60,17 @@ describe('length rules', () => {
     expect(sql).toContain(`news_len(cta_label) between 1 and ${CTA_MAX}`);
     expect(sql).toContain("interval '7 days'");
   });
+
+  test('the database refuses a backslash in a link too', () => {
+    const sql = readFileSync(new URL('../supabase/migrations/0014_limits.sql', import.meta.url), 'utf8');
+    expect(sql).toContain('strpos(url, chr(92)) = 0');
+  });
 });
 
 describe('links', () => {
   test('our pages and our own social accounts only', () => {
     for (const u of ['/', '/chess/#pieces', 'https://shogi.co.il/app/', 'https://www.instagram.com/shogi.israel/', 'https://chat.whatsapp.com/abc', 'https://lishogi.org/team/x', null, '']) expect(newsUrlOk(u)).toBe(true);
-    for (const u of ['//evil.example/', 'https://evil.example/', 'https://shogi.co.il.evil.example/', 'http://shogi.co.il/', 'javascript:alert(1)', 'https://shogi.co.il:8443/', '/a b']) expect(newsUrlOk(u)).toBe(false);
+    for (const u of ['//evil.example/', 'https://evil.example/', 'https://shogi.co.il.evil.example/', 'http://shogi.co.il/', 'javascript:alert(1)', 'https://shogi.co.il:8443/', '/a b', '/\\evil.example/', '/play/\\x']) expect(newsUrlOk(u)).toBe(false);
     expect(newsHref({ url: 'https://evil.example/' })).toBe('/');
   });
 });

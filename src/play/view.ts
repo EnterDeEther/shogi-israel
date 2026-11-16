@@ -133,7 +133,6 @@ function endText(ctrl: PlayCtrl, end: GameEnd): { title: string; text: string } 
   return { title, text };
 }
 
-/** Two players: each side's own row, on its own edge of the board (the top one is drawn upside down). */
 function seatRow(ctrl: PlayCtrl, color: Color, go: (fn: () => void) => (e: Event) => void): HTMLElement {
   const running = ctrl.clock?.running === color;
   const t = ctrl.clock ? ctrl.timeLeft(color) : undefined;
@@ -281,7 +280,6 @@ function kifButtons(ctrl: PlayCtrl): HTMLElement {
   );
 }
 
-/** The KIF button in the moves box: the game so far as a KIF file, at any point of the game. */
 let kifOpen = false;
 let kifCtrl: PlayCtrl | undefined;
 let kifListening = false;
@@ -366,7 +364,6 @@ function status(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void): HTM
     );
   }
   const pos = ctrl.line.current;
-  // two players: whose turn it is shows on that side's own row
   const text = ctrl.local
     ? ''
     : ctrl.thinking
@@ -398,7 +395,6 @@ function setupScreen(ctrl: PlayCtrl, draft: PlaySettings, go: (fn: () => void) =
         onclick: (e: Event) => { e.preventDefault(); pick(o.value); rerender(); },
       }, o.label, o.sub ? el('span', { class: 'sub' }, o.sub) : null))),
     );
-  // phones and tablets: pick the computer or two players on this device (Dean, 2 Nov 2026)
   const modeBtn = (mode: PlaySettings['mode'], label: string, sub: string, disabled = false) =>
     el('button', {
       type: 'button', class: 'mode', 'data-fid': `mode-${mode}`, disabled, 'aria-pressed': String(draft.mode === mode),
@@ -524,7 +520,6 @@ export function render(ctrl: PlayCtrl, root: HTMLElement, openSettings: () => vo
   const overlay = q('[data-overlay]');
   const touch = touchDevice();
   ctrl.aiBlocked = support !== 'ok';
-  // engines can't run here: phones and tablets can still play two players on one device
   if (ctrl.aiBlocked && touch && !ctrl.local) ctrl.setupOpen = true;
   if (support !== 'ok' && !touch) {
     overlay.hidden = false;
@@ -565,7 +560,6 @@ export function render(ctrl: PlayCtrl, root: HTMLElement, openSettings: () => vo
 
   const top = ctrl.orientation === 'sente' ? 'gote' : 'sente';
   const bottom = ctrl.orientation;
-  // two players: each side's row sits on its own edge of the board, the top one upside down
   const seats = ctrl.local && !!ctrl.record && overlay.hidden;
   root.classList.toggle('play--local', seats);
   const seatTop = q('[data-seat="top"]');

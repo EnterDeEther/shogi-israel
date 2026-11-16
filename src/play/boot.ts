@@ -137,7 +137,6 @@ export function bootPlay(root: HTMLElement): PlayCtrl {
     });
   }, 100);
 
-  // two players on one device: keep the screen on while the game is played (a long think must not dim it)
   let wake: { release(): Promise<void> } | null = null;
   const keepAwake = () => {
     const want = ctrl.local && ctrl.playing && document.visibilityState === 'visible';

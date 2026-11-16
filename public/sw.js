@@ -1,6 +1,12 @@
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = `shogi-il-${VERSION}`;
 const OFFLINE = '/offline.html';
+const ASSET_MAX = 600;
+
+async function trim(cache) {
+  const keys = (await cache.keys()).filter((r) => new URL(r.url).pathname.startsWith('/_astro/'));
+  for (const r of keys.slice(0, Math.max(0, keys.length - ASSET_MAX))) await cache.delete(r);
+}
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll([OFFLINE, '/app-icon-192.png'])).then(() => self.skipWaiting()));
@@ -25,7 +31,7 @@ self.addEventListener('fetch', (e) => {
       const hit = await cache.match(req);
       if (hit) return hit;
       const res = await fetch(req);
-      if (res.ok) e.waitUntil(cache.put(req, res.clone()));
+      if (res.ok) e.waitUntil(cache.put(req, res.clone()).then(() => trim(cache)));
       return res;
     })());
     return;

@@ -22,7 +22,6 @@ import { SQUARE_RATIO } from '../lib/square-ratio';
 import { accountsEnabled, hasStoredSession } from '../lib/account-config';
 
 export interface PlaySettings {
-  /** 'local' = two players on one device, phones and tablets only. */
   mode: PlayMode;
   level: number;
   color: Color | 'random';
@@ -40,7 +39,6 @@ interface Saved {
   record: GameRecord;
   clock: Clock | null;
   orientation: Color;
-  /** Date.now() of the last save: the header continues the most recent of the two slots. */
   at?: number;
 }
 
@@ -84,11 +82,8 @@ export default class PlayCtrl {
   thinking = false;
   engineError = false;
   setupOpen = true;
-  /** The side asked "resign?" (two players: each side has its own button). */
   resignConfirm: Color | null = null;
-  /** Two players: the side that offered a draw, until the other side answers or a move is made. */
   drawOffer: Color | null = null;
-  /** Engines can't run here: only two-player games are possible (phones and tablets). */
   aiBlocked = false;
   held = false;
   tip: PlayTip | null = null;
@@ -403,7 +398,6 @@ export default class PlayCtrl {
     this.redraw();
   }
 
-  /** Asks first, then resigns. Two players: `color` is the side whose own button was pressed. */
   resign(color: Color = this.playerColor): void {
     if (!this.playing) return;
     if (this.resignConfirm !== color) {
@@ -420,7 +414,6 @@ export default class PlayCtrl {
     this.redraw();
   }
 
-  /** Two players: offer a draw, or accept the other side's offer. A move withdraws an offer. */
   offerDraw(color: Color): void {
     if (!this.playing || !this.local) return;
     if (this.drawOffer === opposite(color)) return this.finish({ reason: 'agreement' }, true);
@@ -460,13 +453,10 @@ export default class PlayCtrl {
   newGame(settings: PlaySettings): void {
     this.stopAi();
     this.stopClock();
-    // a new game replaces the saved game of its own kind only: a game against the computer
-    // and a two-player game each keep their own slot
     if (this.playing && (settings.mode === 'local') === this.local) storage.remove(this.slot);
     this.start(settings);
   }
 
-  /** Go back to the saved game of the other kind (the setup offers it). */
   switchTo(mode: PlayMode): void {
     if ((mode === 'local') === this.local && this.record) return this.closeSetup();
     const saved = this.readSlot(mode);
@@ -608,7 +598,7 @@ export default class PlayCtrl {
     try {
       const saved = JSON.parse(storage.get(slotKey(mode)) || 'null') as Saved | null;
       if (!saved?.record || saved.record.version !== 1) return null;
-      new Line(saved.record.startSfen, saved.record.moves); // throws on a broken record
+      new Line(saved.record.startSfen, saved.record.moves);
       return saved;
     } catch (e) {
       console.warn('could not read the saved game', e);
@@ -635,7 +625,6 @@ export default class PlayCtrl {
     const ai = this.readSlot('ai');
     const local = touch ? this.readSlot('local') : null;
     const vs = params.get('vs');
-    // ?vs=local / ?vs=ai pick a kind; otherwise continue the most recently played game
     const saved = vs === 'local' && touch ? local
       : vs === 'ai' ? ai
       : ai && local ? ((local.at ?? 0) > (ai.at ?? 0) ? local : ai)

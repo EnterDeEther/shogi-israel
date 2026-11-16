@@ -20,7 +20,6 @@ export interface GameRecord {
   clock: ClockSetting | null;
   takebacks: number;
   result?: GameEnd;
-  /** 'local' = two players on one device (no computer). Missing = against the computer. */
   mode?: PlayMode;
 }
 
@@ -29,7 +28,6 @@ export const isLocal = (r: Pick<GameRecord, 'mode'> | undefined | null): boolean
 
 const HISTORY = 'play.history';
 export const CURRENT = 'play.current';
-/** A two-player game on one device has its own slot, so it never replaces a game against the computer. */
 export const CURRENT_LOCAL = 'play.local.current';
 export const slotKey = (mode: PlayMode): string => (mode === 'local' ? CURRENT_LOCAL : CURRENT);
 const MAX_HISTORY = 100;
@@ -39,7 +37,7 @@ export const newGameId = (): string => Math.random().toString(36).slice(2, 10);
 export function loadHistory(): GameRecord[] {
   try {
     const list = JSON.parse(storage.get(HISTORY) || '[]');
-    return Array.isArray(list) ? list : [];
+    return Array.isArray(list) ? list.filter((r) => r && typeof r === 'object' && Array.isArray(r.moves)) : [];
   } catch {
     return [];
   }
@@ -63,7 +61,6 @@ export interface OpenGameInfo {
   at: number;
 }
 
-/** The unfinished game saved in one slot, if any. */
 export function savedGame(mode: PlayMode): OpenGameInfo | null {
   try {
     const saved = JSON.parse(storage.get(slotKey(mode)) || 'null') as { record?: GameRecord; at?: number } | null;
@@ -75,7 +72,6 @@ export function savedGame(mode: PlayMode): OpenGameInfo | null {
   }
 }
 
-/** Phones and tablets: the only devices that offer two players on one board (Dean, 2 Nov 2026). */
 export const touchDevice = (): boolean => {
   try {
     return matchMedia('(hover: none) and (pointer: coarse)').matches;
@@ -84,8 +80,6 @@ export const touchDevice = (): boolean => {
   }
 };
 
-/** The game the header's play button continues: the most recently played of the two slots
- *  (the two-player slot only on phones and tablets). */
 export function gameInProgress(touch = touchDevice()): OpenGameInfo | null {
   const ai = savedGame('ai');
   const local = touch ? savedGame('local') : null;
@@ -93,7 +87,6 @@ export function gameInProgress(touch = touchDevice()): OpenGameInfo | null {
   return ai ?? local;
 }
 
-/** Header, app and menu text for a saved game. */
 export function openGameText(g: OpenGameInfo): string {
   const when = !g.moves ? 'לפני המהלך הראשון' : g.moves === 1 ? 'אחרי מהלך אחד' : `אחרי ${g.moves} מהלכים`;
   return g.mode === 'local' ? `שני שחקנים, ${when}` : `רמה ${g.level}, ${when}`;

@@ -27,7 +27,7 @@ export interface PlayerInput {
 export function adLabel(ad: unknown): string | null {
   if (!ad || typeof ad !== 'object') return null;
   const a = ad as Record<string, unknown>;
-  const parts = [a.source, a.medium, a.campaign].filter((v): v is string => typeof v === 'string' && v.length > 0);
+  const parts = [a.source, a.medium, a.campaign].filter((v): v is string => typeof v === 'string' && /^[A-Za-z0-9_.-]{1,40}$/.test(v));
   return parts.length ? parts.join(' / ') : null;
 }
 
