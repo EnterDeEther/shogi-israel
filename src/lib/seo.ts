@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { FACEBOOK_PAGE_URL, INSTAGRAM_URL } from './nav';
 import { LISHOGI_TEAM } from './live';
-import { FAQ, plainAnswer } from './shogi-faq';
+import { FAQ, CHESS_FAQ, plainAnswer } from './shogi-faq';
 
 const SITE = 'https://shogi.co.il';
 const NAME = 'שוגי ישראל';
@@ -24,7 +24,17 @@ const org = {
   sameAs: [INSTAGRAM_URL, FACEBOOK_PAGE_URL, LISHOGI_TEAM],
 };
 
-const shogi = { '@type': 'Thing', name: 'Shogi', alternateName: ['שוגי', '将棋', 'Japanese chess'], sameAs: 'https://en.wikipedia.org/wiki/Shogi' };
+const shogi = {
+  '@type': 'Thing', name: 'Shogi', alternateName: ['שוגי', 'שחמט יפני', 'השחמט היפני', '将棋', 'Japanese chess'],
+  sameAs: ['https://en.wikipedia.org/wiki/Shogi', 'https://he.wikipedia.org/wiki/%D7%A9%D7%95%D7%92%D7%99'],
+};
+
+const chess = { '@type': 'Thing', name: 'Chess', alternateName: 'שחמט', sameAs: 'https://en.wikipedia.org/wiki/Chess' };
+
+const faqPage = (url: string, items: typeof FAQ, about: object | object[]) => ({
+  '@context': 'https://schema.org', '@type': 'FAQPage', url, inLanguage: 'he', about,
+  mainEntity: items.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: plainAnswer(f.a) } })),
+});
 
 const RESOURCE: Record<string, string> = { learn: 'Interactive exercise', rules: 'Lesson' };
 
@@ -50,11 +60,23 @@ export function structuredData(pathname: string, title: string, description: str
       hasCourseInstance: { '@type': 'CourseInstance', courseMode: 'Online', courseWorkload: 'PT1H30M' },
     }];
   }
-  if (pathname === '/what-is-shogi/') {
+  if (pathname === '/what-is-shogi/') return [faqPage(url, FAQ, shogi)];
+  if (pathname === '/chess/') {
+    const items = CHESS_FAQ.map((id) => FAQ.find((f) => f.id === id)).filter((f) => !!f);
+    return [
+      { '@context': 'https://schema.org', '@type': 'WebPage', name: title, description, url, inLanguage: 'he', about: [shogi, chess], audience: { '@type': 'Audience', audienceType: 'שחקני שחמט' }, publisher: org },
+      faqPage(url, items, [shogi, chess]),
+    ];
+  }
+  if (pathname === '/play/') {
     return [{
-      '@context': 'https://schema.org', '@type': 'FAQPage', url, inLanguage: 'he', about: shogi,
-      mainEntity: FAQ.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: plainAnswer(f.a) } })),
+      '@context': 'https://schema.org', '@type': 'WebApplication', name: title, description, url, inLanguage: 'he',
+      applicationCategory: 'GameApplication', operatingSystem: 'Web', browserRequirements: 'Requires JavaScript',
+      isAccessibleForFree: true, offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' }, about: shogi, publisher: org,
     }];
+  }
+  if (pathname === '/history/') {
+    return [{ '@context': 'https://schema.org', '@type': 'Article', headline: title, description, url, inLanguage: 'he', about: shogi, publisher: org, author: org }];
   }
   const m = pathname.match(/^\/([a-z]+)\/[^/]+\/$/);
   if (m && SECTIONS[m[1]]) {
