@@ -15,8 +15,10 @@ describe('resolve', () => {
 });
 
 describe('genderHtml', () => {
-  test('text becomes both forms in spans', () => {
-    expect(genderHtml('<p>⟦נסה|נסי⟧ שוב</p>')).toBe('<p><span class="gm">נסה</span><span class="gf">נסי</span> שוב</p>');
+  test('text keeps the masculine form as text and the feminine form in an attribute', () => {
+    expect(genderHtml('<p>⟦נסה|נסי⟧ שוב</p>')).toBe('<p><span class="gm">נסה</span><span class="gf" data-t="נסי"></span> שוב</p>');
+    expect(genderHtml('<p>⟦נסה|נסי⟧ "שוב"</p>').replace(/<[^>]+>/g, '')).toBe('נסה "שוב"');
+    expect(genderHtml('<p>⟦אמר "כן"|אמרה "כן"⟧</p>')).toBe('<p><span class="gm">אמר "כן"</span><span class="gf" data-t="אמרה &quot;כן&quot;"></span></p>');
   });
   test('shown attributes take the masculine form and keep both in data-g-*', () => {
     expect(genderHtml('<div aria-label="⟦בחר|בחרי⟧ תשובה" class="x">')).toBe('<div aria-label="בחר תשובה" class="x" data-g-aria-label="⟦בחר|בחרי⟧ תשובה">');
