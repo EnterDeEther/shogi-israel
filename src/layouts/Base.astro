@@ -106,7 +106,16 @@ const ld = noindex ? [] : structuredData(Astro.url.pathname, title, description)
           if (pieces === 'chess' || pieces === 'letters' || pieces === 'kanji') root.setAttribute('data-pieces', pieces);
           var hfont = localStorage.getItem('hebrewFont');
           if (hfont === 'suez' || hfont === 'secular') root.setAttribute('data-hfont', hfont);
-          if (localStorage.getItem('gender') === 'f') root.setAttribute('data-gender', 'f');
+          if (localStorage.getItem('gender') === 'f') {
+            root.setAttribute('data-gender', 'f');
+            var fill = function () {
+              var els = document.querySelectorAll('.gf[data-t]');
+              for (var i = 0; i < els.length; i++) { els[i].textContent = els[i].getAttribute('data-t'); els[i].removeAttribute('data-t'); }
+            };
+            var mo = new MutationObserver(fill);
+            mo.observe(root, { childList: true, subtree: true });
+            document.addEventListener('DOMContentLoaded', function () { fill(); mo.disconnect(); });
+          }
           pref = localStorage.getItem('theme') || '';
         } catch (e) {
           if (askedChess) root.setAttribute('data-pieces', 'chess');

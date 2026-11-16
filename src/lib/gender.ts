@@ -3,6 +3,8 @@ export type Gender = 'm' | 'f';
 export const GENDER_KEY = 'gender';
 export const TOKEN = /⟦([^⟦⟧|]*)\|([^⟦⟧]*)⟧/g;
 
+const escAttr = (s: string): string => s.replace(/"/g, '&quot;');
+
 export const hasToken = (s: string): boolean => s.includes('⟦');
 
 export const resolve = (s: string, g: Gender = 'm'): string =>
@@ -10,7 +12,11 @@ export const resolve = (s: string, g: Gender = 'm'): string =>
 
 export const asGender = (v: unknown): Gender => (v === 'f' ? 'f' : 'm');
 
-export const spans = (m: string, f: string): string => `<span class="gm">${m}</span><span class="gf">${f}</span>`;
+export const spans = (m: string, f: string): string => `<span class="gm">${m}</span><span class="gf" data-t="${escAttr(f)}"></span>`;
+
+export const fillFeminine = (root: ParentNode): void => {
+  root.querySelectorAll<HTMLElement>('.gf[data-t]').forEach((el) => { el.textContent = el.getAttribute('data-t'); el.removeAttribute('data-t'); });
+};
 
 export const GENDER_ATTRS = ['aria-label', 'title', 'placeholder', 'alt', 'aria-description', 'data-tip', 'data-hint', 'data-why'];
 
@@ -31,8 +37,6 @@ function rawText(el: string, tag: string): string {
   const m = /^(<title\b[^>]*)>([\s\S]*)<\/title>$/i.exec(el);
   return m ? `${resolve(m[1])} data-g="${escAttr(m[2])}">${resolve(m[2])}</title>` : resolve(el);
 }
-
-const escAttr = (s: string): string => s.replace(/"/g, '&quot;');
 
 const markup = (s: string): string =>
   s.replace(/<[^>]*>|[^<]+/g, (part) => (part.startsWith('<') ? tag(part) : part.replace(TOKEN, (_, m: string, f: string) => spans(m, f))));

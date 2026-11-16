@@ -1,4 +1,4 @@
-import { TOKEN, GENDER_ATTRS, GENDER_KEY, hasToken, resolve, currentGender, applyGender, savedGender, type Gender } from '../lib/gender';
+import { TOKEN, GENDER_ATTRS, GENDER_KEY, hasToken, resolve, currentGender, applyGender, savedGender, fillFeminine, type Gender } from '../lib/gender';
 
 function fixText(node: Text): void {
   const s = node.data;
@@ -29,6 +29,8 @@ function fixTree(root: Node): void {
   if (root.nodeType === Node.TEXT_NODE) return fixText(root as Text);
   if (root.nodeType !== Node.ELEMENT_NODE && root.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) return;
   if (root.nodeType === Node.ELEMENT_NODE) fixAttrs(root as Element);
+  if (root.nodeType === Node.ELEMENT_NODE && (root as Element).matches('.gf[data-t]')) (root as Element).textContent = (root as Element).getAttribute('data-t');
+  fillFeminine(root as ParentNode);
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
   const texts: Text[] = [];
   for (let n = walker.nextNode(); n; n = walker.nextNode()) {
@@ -54,6 +56,7 @@ new MutationObserver((records) => {
   }
   if (hasToken(document.title)) document.title = resolve(document.title, currentGender());
 }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: GENDER_ATTRS });
+fillFeminine(document);
 fixTree(document.body);
 if (currentGender() === 'f') syncAttrs();
 document.addEventListener('gender-changed', syncAttrs);
