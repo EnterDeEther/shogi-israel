@@ -33,7 +33,11 @@ type Solved = Partial<Record<Length, number[]>>;
 
 const read = (): Solved => {
   try {
-    return JSON.parse(storage.get(KEY) || '{}');
+    const v = JSON.parse(storage.get(KEY) || '{}');
+    if (!v || typeof v !== 'object' || Array.isArray(v)) return {};
+    const out: Solved = {};
+    for (const [n, list] of Object.entries(v)) if (/^\d+$/.test(n) && Array.isArray(list)) out[Number(n) as Length] = list.filter((id) => Number.isInteger(id));
+    return out;
   } catch {
     return {};
   }

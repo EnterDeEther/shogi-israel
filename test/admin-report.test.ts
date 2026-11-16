@@ -57,6 +57,8 @@ describe('admin reports', () => {
   test('the ad that brought a player shows on the alert and per campaign in the weekly report', () => {
     expect(adLabel({ source: 'google', medium: 'display', campaign: 'display_a', landing: '/try/' })).toBe('google / display / display_a');
     expect(adLabel(undefined)).toBeNull();
+    expect(adLabel({ source: 'see https://example.com now', medium: 'paid_social', campaign: '<b>x</b>' })).toBe('paid_social');
+    expect(adLabel({ source: 'a'.repeat(41) })).toBeNull();
     const s = signupEmail([{ nickname: 'yuki', created_at: ago(0), total: 4, email_week: false, ad: 'google / display / display_a' }]);
     expect(s.text).toContain('הגיע ממודעה: google / display / display_a');
     const r = buildReport('weekly', [

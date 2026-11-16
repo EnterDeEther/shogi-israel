@@ -12,6 +12,8 @@ function db() {
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
 const key64 = (v: unknown, max: number): v is string => typeof v === 'string' && v.length > 0 && v.length <= max && /^[A-Za-z0-9_\-=+/]+$/.test(v);
 
+const ROWS_MAX = 20000;
+
 const sameSite = (request: Request) => {
   const origin = request.headers.get('origin');
   return !origin || origin === new URL(request.url).origin;
@@ -47,6 +49,10 @@ export async function POST(request: Request): Promise<Response> {
   const gender = asGender(body.gender);
 
   const { data: before } = await client.from('push_subscriptions').select('endpoint').eq('endpoint', endpoint).maybeSingle();
+  if (!before) {
+    const { count } = await client.from('push_subscriptions').select('endpoint', { count: 'exact', head: true });
+    if ((count ?? 0) >= ROWS_MAX) return json({ error: 'full' }, 503);
+  }
   const row = {
     endpoint, p256dh: sub!.keys!.p256dh as string, auth: sub!.keys!.auth as string, user_id: userId, gender,
     push_week: kinds.week, push_course: kinds.course, push_news: kinds.news, updated_at: new Date().toISOString(),

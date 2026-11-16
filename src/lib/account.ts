@@ -136,12 +136,12 @@ export async function gameSummary(): Promise<{ played: number; wins: number; los
 const HISTORY_KEY = 'shogi-il.play.history';
 const SENT_KEY = 'shogi-il.play.sent';
 
-function readJson<T>(key: string, fallback: T): T {
+function readList<T>(key: string): T[] {
   try {
     const v = JSON.parse(localStorage.getItem(key) || 'null');
-    return v ?? fallback;
+    return Array.isArray(v) ? v : [];
   } catch {
-    return fallback;
+    return [];
   }
 }
 
@@ -156,9 +156,8 @@ function clearLocalGames() {
 export async function syncGames(): Promise<number> {
   const session = await getSession();
   if (!session) return 0;
-  const sent = new Set(readJson<string[]>(SENT_KEY, []));
-  // two-player games on one device stay on the device (no account sync for them yet)
-  const todo = readJson<GameRecord[]>(HISTORY_KEY, []).filter((r) => r?.id && r.result && r.mode !== 'local' && !sent.has(r.id));
+  const sent = new Set(readList<string>(SENT_KEY));
+  const todo = readList<GameRecord>(HISTORY_KEY).filter((r) => r?.id && r.result && Array.isArray(r.moves) && r.mode !== 'local' && !sent.has(r.id));
   if (!todo.length) return 0;
   const { recordKif } = await import('../play/record-kif');
   const rows = todo.map((r) => {

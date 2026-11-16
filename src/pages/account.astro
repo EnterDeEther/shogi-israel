@@ -504,17 +504,16 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       const { data, error } = await acc.signUp(email, password, captchaToken, $<HTMLInputElement>('#acc-weekly').checked, gender ?? undefined);
       authCaptcha.reset();
       busy(authForm, false);
-      if (error) {
+      const taken = error?.code === 'user_already_exists' || error?.code === 'email_exists';
+      if (error && !taken) {
         if (error.code === 'captcha_failed') return fail('signin', 'בדיקת הרובוט נכשלה. ⟦רענן|רענני⟧ את העמוד ⟦ונסה|ונסי⟧ שוב.');
         if (error.code === 'weak_password') return fail('signin', weakMessage(error));
-        if (error.code === 'user_already_exists' || error.code === 'email_exists') return fail('signin', 'כבר יש חשבון עם המייל הזה. ⟦עבור|עברי⟧ ל"כניסה", או ⟦אפס|אפסי⟧ את הסיסמה.');
         if (error.status === 429) return fail('signin', 'נשלחו יותר מדי מיילים. ⟦חכה|חכי⟧ כמה דקות ⟦ונסה|ונסי⟧ שוב.');
         return fail('signin', 'ההרשמה לא הצליחה. ⟦נסה|נסי⟧ שוב בעוד רגע.');
       }
-      if (data.session) return;
-      if (data.user && data.user.identities?.length === 0) return fail('signin', 'כבר יש חשבון עם המייל הזה. ⟦עבור|עברי⟧ ל"כניסה", או ⟦אפס|אפסי⟧ את הסיסמה.');
+      if (data?.session) return;
       codeEmail = email;
-      sent(`שלחנו מייל ל־${email} עם קוד אישור. ⟦הקלד|הקלידי⟧ אותו כאן, ⟦ותגיע|ותגיעי⟧ ישר לבחירת כינוי. אפשר גם ללחוץ על הקישור שבמייל.`, true);
+      sent(`אם עוד אין חשבון עם הכתובת \u2068${email}\u2069, שלחנו אליה עכשיו מייל עם קוד אישור. ⟦הקלד|הקלידי⟧ אותו כאן, ⟦ותגיע|ותגיעי⟧ ישר לבחירת כינוי. אפשר גם ללחוץ על הקישור שבמייל. כבר יש לך חשבון? ⟦עבור|עברי⟧ ל"כניסה" או ⟦אפס|אפסי⟧ את הסיסמה.`, true);
     });
 
     let codeEmail = '';

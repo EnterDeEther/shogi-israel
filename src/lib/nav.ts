@@ -7,7 +7,6 @@ export interface NavLink {
   external?: boolean;
   sub?: boolean;
   icon?: IconName;
-  /** Shown on phones and tablets only (class "touch-only"). */
   touchOnly?: boolean;
 }
 export interface NavSection {

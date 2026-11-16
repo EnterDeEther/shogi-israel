@@ -83,6 +83,7 @@ const OUR_HOSTS = /^(www\.)?(shogi\.co\.il|instagram\.com|facebook\.com|chat\.wh
 export function newsUrlOk(url: string | null | undefined): boolean {
   if (url == null || url === '') return true;
   if (/[\s"<>]/.test(url)) return false;
+  if (url.includes('\\')) return false;
   if (url === '/' || /^\/[^/]/.test(url)) return true;
   try {
     const u = new URL(url);

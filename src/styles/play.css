@@ -168,7 +168,6 @@
 .play .kif-export .link { min-height: 36px; color: inherit; font-size: 14px; }
 .play .kif-export a { color: inherit; }
 
-/* Moves box header: the KIF button (the game so far as a KIF file, at any point) */
 .play .moves-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 6px 4px 12px; border-bottom: 1px solid var(--rule); }
 .play .moves-head strong { font-size: 14px; }
 .play .table-box:has(.kif-pop) { overflow: visible; }
@@ -194,7 +193,6 @@
 }
 .kif-item:hover, .kif-item:focus-visible { background: var(--washi-2); }
 
-/* Setup on phones and tablets: the computer, or two players on this device */
 .mode-pick { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0 0 14px; }
 .mode-pick .mode {
   min-height: 64px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
@@ -218,8 +216,6 @@
   background-size: 33.4% 33.4%; background-position: -1px -1px;
 }
 
-/* Two players on one device: each side's row on its own edge of the board; the top one is upside down
-   so the player sitting there reads it. The board itself never flips (Dean, 31 Oct 2026). */
 .play__seat[hidden] { display: none; }
 .play__seat--top { transform: rotate(180deg); margin-bottom: 4px; }
 .play__seat--bottom { margin-top: 4px; }

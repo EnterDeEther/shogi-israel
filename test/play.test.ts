@@ -93,7 +93,7 @@ describe('the header play button', () => {
     const { gameInProgress, openGameText } = await import('../src/play/record');
     const local = { ...game, id: 'b', moves: ['7g7f'], mode: 'local' };
     m.set('shogi-il.play.local.current', JSON.stringify({ record: local, clock: null, orientation: 'sente', at: 200 }));
-    expect(gameInProgress(false)).toBeNull(); // desktop never continues a two-player game
+    expect(gameInProgress(false)).toBeNull();
     expect(gameInProgress(true)?.mode).toBe('local');
     m.set('shogi-il.play.current', JSON.stringify({ record: game, clock: null, orientation: 'sente', at: 100 }));
     expect(gameInProgress(true)?.mode).toBe('local');

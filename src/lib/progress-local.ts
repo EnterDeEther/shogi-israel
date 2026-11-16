@@ -12,12 +12,16 @@ function readJson<T>(key: string, fallback: T): T {
   }
 }
 
+function readList<T>(key: string): T[] {
+  const v = readJson<unknown>(key, []);
+  return Array.isArray(v) ? (v as T[]) : [];
+}
+
 function fromHistory(): { played: number; won: number } {
   let played = 0;
   let won = 0;
-  for (const r of readJson<GameRecord[]>(HISTORY_KEY, [])) {
-    // the course counts games against the computer by level; two-player games have no level
-    if (!r || typeof r.level !== 'number' || r.mode === 'local') continue;
+  for (const r of readList<GameRecord>(HISTORY_KEY)) {
+    if (!r || typeof r.level !== 'number' || r.mode === 'local' || !Array.isArray(r.moves)) continue;
     const res = gameResult(r);
     if (res === 'abort') continue;
     played = Math.max(played, r.level);

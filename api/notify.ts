@@ -56,38 +56,43 @@ export async function GET(request: Request): Promise<Response> {
   let sent = 0;
   const failed: string[] = [];
   for (const { user, kind } of plan.slice(0, DAILY_MAX)) {
-    const row = (rows as PrefsRow[]).find((r) => r.user_id === user)!;
-    const { data: u } = await db.auth.admin.getUserById(user);
-    const to = u?.user?.email;
-    if (!to || !u.user?.email_confirmed_at) continue;
-    const unsub = await unsubscribeUrl(secret, user, kind);
-    const gender = asGender(u.user.user_metadata?.gender);
-    const email = buildEmail({
-      kind, gender, nickname: nicknames.get(user) ?? (gender === 'f' ? 'שחקנית' : 'שחקן'), progressData: progress.get(user)?.data, weekCount, now,
-      returnIndex: row.return_sent, unsubscribeUrl: unsub,
-    });
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        from: FROM, to: [to], reply_to: REPLY_TO, subject: email.subject, html: email.html, text: email.text,
-        headers: { 'List-Unsubscribe': `<${unsub}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' },
-        tags: [{ name: 'kind', value: kind }],
-      }),
-    });
-    if (!res.ok) {
-      console.error('notify: resend failed', res.status, await res.text());
+    try {
+      const row = (rows as PrefsRow[]).find((r) => r.user_id === user)!;
+      const { data: u } = await db.auth.admin.getUserById(user);
+      const to = u?.user?.email;
+      if (!to || !u.user?.email_confirmed_at) continue;
+      const unsub = await unsubscribeUrl(secret, user, kind);
+      const gender = asGender(u.user.user_metadata?.gender);
+      const email = buildEmail({
+        kind, gender, nickname: nicknames.get(user) ?? (gender === 'f' ? 'שחקנית' : 'שחקן'), progressData: progress.get(user)?.data, weekCount, now,
+        returnIndex: row.return_sent, unsubscribeUrl: unsub,
+      });
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: FROM, to: [to], reply_to: REPLY_TO, subject: email.subject, html: email.html, text: email.text,
+          headers: { 'List-Unsubscribe': `<${unsub}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' },
+          tags: [{ name: 'kind', value: kind }],
+        }),
+      });
+      if (!res.ok) {
+        console.error('notify: resend failed', res.status, await res.text());
+        failed.push(user.slice(0, 8));
+        if (res.status === 429) break;
+        continue;
+      }
+      const { id } = (await res.json()) as { id?: string };
+      sent++;
+      await db.from('email_log').insert({ user_id: user, kind, resend_id: id ?? null });
+      await db.from('notification_prefs').update({
+        last_email_at: now.toISOString(),
+        ...(kind === 'return' ? { return_sent: row.return_sent + 1 } : {}),
+      }).eq('user_id', user);
+    } catch (e) {
+      console.error('notify: user failed', (e as Error).message);
       failed.push(user.slice(0, 8));
-      if (res.status === 429) break;
-      continue;
     }
-    const { id } = (await res.json()) as { id?: string };
-    sent++;
-    await db.from('email_log').insert({ user_id: user, kind, resend_id: id ?? null });
-    await db.from('notification_prefs').update({
-      last_email_at: now.toISOString(),
-      ...(kind === 'return' ? { return_sent: row.return_sent + 1 } : {}),
-    }).eq('user_id', user);
   }
   return Response.json({ due: plan.length, sent, failed, left: Math.max(0, plan.length - DAILY_MAX), push });
 }

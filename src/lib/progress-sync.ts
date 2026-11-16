@@ -131,7 +131,14 @@ export function mergeSignIn(device: SyncedProgress, account: SyncedProgress): Sy
   return out;
 }
 
-export const same = (a: SyncedProgress, b: SyncedProgress) => JSON.stringify(a) === JSON.stringify(b);
+const canon = (v: unknown): unknown =>
+  Array.isArray(v)
+    ? v.map(canon)
+    : v && typeof v === 'object'
+      ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, canon((v as Record<string, unknown>)[k])]))
+      : v;
+
+export const same = (a: SyncedProgress, b: SyncedProgress) => JSON.stringify(canon(a)) === JSON.stringify(canon(b));
 
 export interface Stats {
   stars: number; maxStars: number;

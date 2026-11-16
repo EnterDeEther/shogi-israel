@@ -2,7 +2,7 @@
 // Source: https://github.com/WandererXII/lila/blob/89aea5f6f24c5e941c7cac8434a6e9e1acc15e94/ui/learn/src/progress.ts
 // Copyright (c) 2019 onwards the li[shogi in sca]la authors.
 // Licensed under the GNU Affero General Public License v3.0 or later. See LICENSE.
-// Modified by Shogi Israel (shogi.co.il), 2026-10-24.
+// Modified by Shogi Israel (shogi.co.il), 2026-11-16.
 
 import type { LearnOpts, LearnProgress, Score } from './interfaces';
 import { storage } from './storage';
@@ -12,13 +12,28 @@ const defaultProgress: LearnProgress = {
 };
 const key = 'learn.progress';
 
+function parse(stored: string): LearnProgress {
+  try {
+    const p = JSON.parse(stored);
+    const stages = p && typeof p === 'object' ? p.stages : null;
+    if (!stages || typeof stages !== 'object' || Array.isArray(stages)) return { stages: {} };
+    const out: LearnProgress = { stages: {} };
+    for (const [k, v] of Object.entries(stages as Record<string, { scores?: unknown }>)) {
+      if (v && Array.isArray(v.scores)) out.stages[k] = { scores: v.scores as Score[] };
+    }
+    return out;
+  } catch {
+    return { stages: {} };
+  }
+}
+
 export class ProgressStorage {
   progress: LearnProgress;
 
   constructor(opts: LearnOpts) {
     const storedProgess = storage.get(key);
 
-    this.progress = opts.data || (storedProgess ? JSON.parse(storedProgess) : defaultProgress);
+    this.progress = opts.data || (storedProgess ? parse(storedProgess) : defaultProgress);
   }
 
   has(stageKey: string): boolean {
@@ -51,6 +66,6 @@ export class ProgressStorage {
 
   reload(): void {
     const stored = storage.get(key);
-    if (stored) this.progress = JSON.parse(stored);
+    if (stored) this.progress = parse(stored);
   }
 }
