@@ -23,7 +23,7 @@ if (hasCourse) Astro.csp?.insertScriptHash(`sha256-${createHash('sha256').update
 ---
 <Base
   title="שוגי ישראל"
-  description="השחמט היפני, בעברית ומאפס. חוקים בסיסיים בשיעורים קצרים ואינטראקטיביים, בחינם ובלי הרשמה, וקהילה ישראלית של שחקני שוגי."
+  description="שוגי, השחמט היפני, בעברית ומאפס: שיעורים קצרים ואינטראקטיביים, משחק נגד המחשב ו־3,564 בעיות מט. בחינם ובלי הרשמה, עם קהילה ישראלית."
 >
   {hasCourse && <script is:inline data-auth={accountsOn ? AUTH_STORAGE_KEY : ''} set:html={RETURNING_GUESS}></script>}
 
