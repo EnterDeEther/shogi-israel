@@ -94,7 +94,7 @@ export function buildEmail(input: EmailInput): Email {
   if (kind === 'week') {
     subject = 'בעיית השבוע: מט בשלושה מהלכים';
     blocks = [puzzle, nextLine];
-    why = 'קיבלת את המייל כי ביקשת לקבל מאיתנו את בעיית השבוע במייל.';
+    why = 'קיבלת את המייל הזה כי ביקשת לקבל מאיתנו את בעיית השבוע.';
   } else if ((input.returnIndex ?? 0) === 0) {
     subject = next ? `המסלול שלך מחכה: ${next.step.title.replace(/^תרגול: /, '')}` : 'הלוח מחכה לך';
     blocks = [{ ...nextLine, text: `עבר קצת זמן מאז הביקור האחרון. ${nextLine.text}` }, puzzle];
