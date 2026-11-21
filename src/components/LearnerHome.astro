@@ -69,7 +69,7 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
           <p class="rank-row"><span class="rank-name" data-rank-name>15 קיו</span><span class="rank-head" id="rank-h">דרגת הלימוד שלך · במסלול</span><InfoTip id="rank" /></p>
           <div class="bar" aria-hidden="true"><span data-rank-bar></span></div>
           <p class="small rank-text"><span data-rank-points>0 נקודות</span> · <span data-rank-text>נקודות נצברות פעם אחת על כל שיעור, בעיה או משחק.</span></p>
-          <p class="small rank-guest" data-signed-out-only>{accounts ? 'הנקודות נשמרות רק בדפדפן הזה, עד שיש חשבון.' : 'הנקודות נשמרות בדפדפן הזה.'}</p>
+          <p class="small rank-guest" data-signed-out-only>{accounts ? 'הנקודות נשמרות רק בדפדפן הזה, עד ⟦שתפתח|שתפתחי⟧ חשבון.' : 'הנקודות נשמרות בדפדפן הזה.'}</p>
           <p class="small"><a href="/ranks/#site">דרגה של לימוד באתר, לא דרגה רשמית</a></p>
         </div>
       </aside>
@@ -122,7 +122,7 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
 
   <section class="part" aria-labelledby="part-h">
     <h2 id="part-h">⟦אתה|את⟧ חלק מזה</h2>
-    <p>מצאת שיעור מבלבל, או מונח שאפשר לומר טוב יותר בעברית? <a href="/about/#contact">⟦כתוב|כתבי⟧ לי</a>, ואני אתקן. <span data-part-community>שאלות, עדכונים ומי רוצה לשחק: <a href={WHATSAPP} rel="noopener">הקהילה בוואטסאפ</a>.</span></p>
+    <p>מצאת שיעור מבלבל, או מונח שאפשר לומר טוב יותר בעברית? <a href="/about/#contact">⟦כתוב|כתבי⟧ לי</a>, ואתקן. <span data-part-community>שאלות, עדכונים ומי רוצה לשחק: <a href={WHATSAPP} rel="noopener">הקהילה בוואטסאפ</a>.</span></p>
   </section>
 </section>
 
@@ -253,7 +253,7 @@ const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
     let level = 1;
     if (won > 0) {
       level = Math.min(10, won + 1);
-      text('[data-play-text]', won >= 10 ? 'ניצחת את המחשב ברמה הגבוהה ביותר. ⟦נסה|נסי⟧ לנצח שוב, הפעם עם צבע אחר.' : `ניצחת את המחשב ברמה ${won}. ⟦מוכן|מוכנה⟧ לנסות את רמה ${level}?`);
+      text('[data-play-text]', won >= 10 ? 'ניצחת את המחשב ברמה הגבוהה ביותר. ⟦נסה|נסי⟧ לנצח שוב, הפעם מהצד השני.' : `ניצחת את המחשב ברמה ${won}. ⟦מוכן|מוכנה⟧ לנסות את רמה ${level}?`);
     } else if (played > 0) {
       level = played;
       text('[data-play-text]', `כבר שיחקת ברמה ${played}. הפעם ⟦נסה|נסי⟧ לנצח בה: קודם מבצר, אחר כך התקפה.`);
