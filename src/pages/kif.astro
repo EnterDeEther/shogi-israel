@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import KifViewer from '../components/KifViewer.astro';
 import Piece from '../components/Piece.astro';
+import Notation from '../components/mdx/Notation.astro';
 
 const pieces: [string, string, string, boolean?][] = [
   ['玉', 'K', 'מלך'], ['飛', 'R', 'צריח'], ['角', 'B', 'רץ'], ['金', 'G', 'גנרל זהב'], ['銀', 'S', 'גנרל כסף'],
@@ -62,15 +63,15 @@ const ranks = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
         <li><span lang="ja" class="kj">歩</span> הוא הכלי: חייל <Piece>歩</Piece>.</li>
         <li><bdi dir="ltr" class="nt">(77)</bdi> היא המשבצת שממנה הכלי יצא.</li>
       </ol>
-      <p>כלומר, החייל עבר מ־<bdi dir="ltr" class="nt">77</bdi> ל־<bdi dir="ltr" class="nt">76</bdi>. אצלנו באתר כותבים את אותו מהלך <bdi dir="ltr" class="nt">P-76</bdi>.</p>
+      <p>כלומר, החייל עבר מ־<bdi dir="ltr" class="nt">77</bdi> ל־<bdi dir="ltr" class="nt">76</bdi>. אצלנו באתר כותבים את אותו מהלך <Notation>P-76</Notation>.</p>
 
       <h3>ארבעה סימנים שכדאי להכיר</h3>
       <table class="kif-table">
         <thead><tr><th scope="col">סימן</th><th scope="col">משמעות</th><th scope="col">דוגמה</th></tr></thead>
         <tbody>
-          <tr><td lang="ja" class="kj">成</td><td>הכתרה</td><td><span lang="ja" class="kj">２二角成(88)</span>: הרץ לוכד ב־<bdi dir="ltr" class="nt">22</bdi> ומוכתר, <bdi dir="ltr" class="nt">Bx22+</bdi></td></tr>
+          <tr><td lang="ja" class="kj">成</td><td>הכתרה</td><td><span lang="ja" class="kj">２二角成(88)</span>: הרץ לוכד ב־<bdi dir="ltr" class="nt">22</bdi> ומוכתר, <Notation>Bx22+</Notation></td></tr>
           <tr><td lang="ja" class="kj">不成</td><td>ויתור על הכתרה</td><td><span lang="ja" class="kj">２三銀不成(34)</span>: הכסף נכנס לאזור ההכתרה ולא מוכתר</td></tr>
-          <tr><td lang="ja" class="kj">打</td><td>הצנחה</td><td><span lang="ja" class="kj">４五角打</span>: מצניחים רץ מהיד ל־<bdi dir="ltr" class="nt">45</bdi>, <bdi dir="ltr" class="nt">B*45</bdi>. אין משבצת מוצא, כי הכלי בא מהיד</td></tr>
+          <tr><td lang="ja" class="kj">打</td><td>הצנחה</td><td><span lang="ja" class="kj">４五角打</span>: מצניחים רץ מהיד ל־<bdi dir="ltr" class="nt">45</bdi>, <Notation>B*45</Notation>. אין משבצת מוצא, כי הכלי בא מהיד</td></tr>
           <tr><td lang="ja" class="kj">同</td><td>אותה משבצת</td><td><span lang="ja" class="kj">同　銀(31)</span>: הכסף לוכד בדיוק במשבצת של המהלך הקודם</td></tr>
         </tbody>
       </table>

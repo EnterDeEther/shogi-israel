@@ -2,6 +2,7 @@
 import Page from '../layouts/Page.astro';
 import { CONTACT_EMAIL, INSTAGRAM_URL } from '../lib/nav';
 import Note from '../components/mdx/Note.astro';
+import Notation from '../components/mdx/Notation.astro';
 
 const TEAM = 'https://lishogi.org/team/---shogi-israel';
 const WHATSAPP = 'https://chat.whatsapp.com/Hl05iCdO2OY1rJIETuAien';
@@ -67,7 +68,7 @@ const ranks = [
   <ul>
     <li><strong>שפה:</strong> אפשר לבחור עברית. מה שלא תורגם יופיע באנגלית.</li>
     <li><strong>ערכת כלים:</strong> בשיעורים שלנו הכלים מסומנים כברירת מחדל באותיות בעברית (ולשחקני שחמט בסמלי שחמט), ואפשר לעבור לאותיות באנגלית. בלישוגי אין ערכה בעברית, אבל יש ערכה באותיות באנגלית (<bdi dir="ltr">western</bdi>), ואפשר לעבור לקאנג׳י ⟦כשתרגיש מוכן|כשתרגישי מוכנה⟧.</li>
-    <li><strong>רישום:</strong> אצלנו כותבים משבצת בשתי ספרות, כמו <bdi dir="ltr" class="nt">76</bdi>, ומהלך כמו <bdi dir="ltr" class="nt">P-76</bdi>. בלישוגי ⟦בחר|בחרי⟧ ברישום המערבי (<bdi dir="ltr">Western</bdi>), שהוא הכי קרוב לזה.</li>
+    <li><strong>רישום:</strong> אצלנו כותבים משבצת בשתי ספרות, כמו <bdi dir="ltr" class="nt">76</bdi>, ומהלך כמו <Notation>P-76</Notation>. בלישוגי ⟦בחר|בחרי⟧ ברישום המערבי (<bdi dir="ltr">Western</bdi>), שהוא הכי קרוב לזה.</li>
   </ul>
 
   <h2 id="play">משחק ראשון</h2>
