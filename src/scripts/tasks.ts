@@ -39,7 +39,7 @@ function markDone() {
       const { shareButton } = await import('../lib/share-card');
       const p = document.createElement('span');
       p.className = 'course-done';
-      p.append(' סיימת את כל השיעורים של חוקים בסיסיים! ', shareButton({ title: 'סיימתי את החוקים הבסיסיים של שוגי', sub: 'השחמט היפני, בעברית ומאפס. 8 שיעורים קצרים', kanji: '将棋', path: '/rules/' }, 'shogi-israel-rules.png', 'btn btn-ghost'));
+      p.append(' סיימת את כל שיעורי החוקים הבסיסיים! ', shareButton({ title: 'סיימתי את החוקים הבסיסיים של שוגי', sub: 'השחמט היפני, בעברית ומאפס. 8 שיעורים קצרים', kanji: '将棋', path: '/rules/' }, 'shogi-israel-rules.png', 'btn btn-ghost'));
       box.append(p);
     });
     const slot = document.querySelector<HTMLElement>('[data-next-step]');
