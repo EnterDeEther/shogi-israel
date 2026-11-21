@@ -4,6 +4,7 @@ import { pageExists } from '../lib/live';
 import { CONTACT_EMAIL, INSTAGRAM_URL } from '../lib/nav';
 import { CONTACT_FORM_LIVE } from '../lib/contact';
 import ContactForm from '../components/ContactForm.astro';
+import Notation from '../components/mdx/Notation.astro';
 const hasPlay = pageExists('/play/');
 ---
 <Page title="אודות" eyebrow="שוגי ישראל" description="מי אנחנו, למה בנינו את האתר, ומי עזר לנו בדרך: קרדיטים, מקורות ויצירת קשר.">
@@ -12,9 +13,9 @@ const hasPlay = pageExists('/play/');
 
   <h2 id="principles">איך אנחנו מלמדים</h2>
   <ul>
-    <li>לוח קודם, מילים אחר כך. כל שלב הוא לוח, פסקה קצרה ומשימה אחת.</li>
+    <li>לוח קודם, מילים אחר כך. כל צעד בשיעור הוא לוח, פסקה קצרה ומשימה אחת.</li>
     <li>הכלים מסומנים באותיות בעברית כברירת מחדל, ובלחיצה אפשר לעבור לסמלי שחמט (ברירת המחדל לשחקני שחמט), לאותיות באנגלית (כמו בלישוגי ובאתרי השוגי הבינלאומיים) או לקאנג׳י.</li>
-    <li>משבצות נכתבות בשתי ספרות, טור ואז שורה: <bdi dir="ltr" class="nt">76</bdi>. מהלכים נכתבים כך: <bdi dir="ltr" class="nt">P-76</bdi>.</li>
+    <li>משבצות נכתבות בשתי ספרות, טור ואז שורה: <bdi dir="ltr" class="nt">76</bdi>. מהלכים נכתבים בסימון הכלים שבחרת: <Notation>P-76</Notation>.</li>
     <li>הלוח לא מתהפך לעברית. הוא נראה בדיוק כמו לוח אמיתי.</li>
   </ul>
 
@@ -27,7 +28,7 @@ const hasPlay = pageExists('/play/');
       <p lang="en" dir="ltr" class="small muted en">The interactive lessons are adapted from the code and lesson structure of Lishogi (lishogi.org), free software under AGPL-3.0. Our changes, including the Hebrew text, are published under the same licence at github.com/EnterDeEther/shogi-israel. Thanks to the Lishogi team. Board and rules: shogiground and shogiops (GPL-3.0).</p>
     </li>
     <li><strong>הלוח והחוקים בתרגילים</strong>: shogiground ו־shogiops, ברישיון GPL-3.0.</li>
-    <li><strong>הצלילים</strong>: קול הכלי על הלוח הוקלט על ידי דין, עם כלי שוגי אמיתי. שאר הצלילים (מיתרי קוטו, מקלות היושיגי ופעמון) נוצרים בקוד של האתר. אפשר לכבות אותם ב<a href="/account/">הגדרות</a>.</li>
+    <li><strong>הצלילים</strong>: דין הקליט את קול הכלי על הלוח, עם כלי שוגי אמיתי. שאר הצלילים (מיתרי קוטו, מקלות היושיגי ופעמון) נוצרים בקוד של האתר. אפשר לכבות אותם ב<a href="/account/">הגדרות</a>.</li>
     <li><strong>גופנים</strong>: Frank Ruhl Libre (יאנק יונטף), Heebo (עודד עזר), Shippori Mincho (FONTDASU), Noto Serif Hebrew, Suez One, Secular One ו־Noto Sans Symbols 2 (בסיס כלי השחמט), כולם ברישיון SIL Open Font License.</li>
     <li><strong>הלוחות והכלים באתר</strong>: עיצוב מקורי של שוגי ישראל.</li>
     <li><strong>זכויות</strong>: קוד האתר פתוח ברישיון AGPL-3.0. השיעורים הכתובים, טקסטי העמודים, אוסף החידות, הלוגו, תמונות השיתוף והצליל המוקלט שייכים לשוגי ישראל, וכל הזכויות בהם שמורות. השם "שוגי ישראל" והלוגו אינם כלולים ברישיון הקוד. ציטוט קצר עם קישור לאתר תמיד בברכה. הפירוט המלא ב־<a href="https://github.com/EnterDeEther/shogi-israel/blob/main/COPYING.md" rel="noopener"><bdi dir="ltr">COPYING.md</bdi></a>.</li>

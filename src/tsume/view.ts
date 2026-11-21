@@ -107,12 +107,12 @@ function coach(ctrl: TsumeCtrl, go: Go): HTMLElement {
         ctrl.id < ctrl.count ? btn('לבעיה הבאה', () => location.assign(`#${ctrl.id + 1}`), true, 'next') : null,
         btn('שוב', () => ctrl.load(ctrl.id), false, 'again')));
       if (f.clean) body.push(el('p', { class: 'small', 'data-signed-out-only': '' },
-        el('a', { href: '/account/?mode=signup' }, '⟦פתח|פתחי⟧ חשבון בחינם'), ' והבעיות שפתרת יישמרו בכל מכשיר, ויספרו לנקודות ולדרגה שלך.'));
+        el('a', { href: '/account/?mode=signup' }, '⟦פתח|פתחי⟧ חשבון בחינם'), ', והבעיות שפתרת יישמרו בכל מכשיר וייספרו לנקודות ולדרגה שלך.'));
       if (f.clean && ctrl.n === WEEK_LENGTH && ctrl.id === weekPuzzle(weekIndex(), ctrl.count)) {
         const streak = weekStreak(solvedList(WEEK_LENGTH), ctrl.count);
         const text = `פתרתי את בעיית השבוע בשוגי ישראל${streak > 1 ? `, ${weeksHe(streak)} ברצף` : ''}`;
         body.push(el('p', { class: 'week-done' }, el('strong', {}, 'זו בעיית השבוע ✓'), streak > 1 ? ` רצף של ${weeksHe(streak)}.` : ' בעיה חדשה תעלה ביום ראשון.'));
-        body.push(shareButton({ title: text, sub: 'בעיית מט אחת בכל שבוע. ⟦נסה|נסי⟧ גם ⟦אתה|את⟧', kanji: '詰', path: '/tsume/week/' }, 'shogi-israel-tsume.png'));
+        body.push(shareButton({ title: text, sub: 'בעיית מט אחת בכל שבוע, אותה בעיה לכולם', kanji: '詰', path: '/tsume/week/' }, 'shogi-israel-tsume.png'));
       }
       if (f.clean) { const next = nextInCourse(); if (next) body.push(next); }
       break;
@@ -130,7 +130,7 @@ function coach(ctrl: TsumeCtrl, go: Go): HTMLElement {
   return el('div', { class: `tsume-coach ${cls}`, role: 'status', 'aria-live': 'polite' },
     el('strong', { class: 'title' }, title),
     ...body,
-    hint ? el('p', { class: 'hint small' }, `רמז: ${hint.drop ? '⟦הצב|הציבי⟧ מהיד את ' : '⟦הזז|הזיזי⟧ את '}${ROLE[hint.role] ?? 'הכלי'} המסומן.`) : null,
+    hint ? el('p', { class: 'hint small' }, `רמז: ${hint.drop ? '⟦הצנח|הצניחי⟧ מהיד את ' : '⟦הזז|הזיזי⟧ את '}${ROLE[hint.role] ?? 'הכלי'} המסומן.`) : null,
   );
 }
 

@@ -97,7 +97,7 @@ export function buildInbox(p: SyncedProgress, ctx: InboxContext): InboxNote[] {
   if (half) {
     notes.push({
       id: `stage:${half.key}`, kind: 'stage', kanji: '習',
-      text: `התחלת ולא סיימת: ${half.title}. נשארו ${half.left === 1 ? 'תרגיל אחד' : `${half.left} תרגילים`}.`,
+      text: `התחלת ולא סיימת: ${half.title}. ${half.left === 1 ? 'נשאר תרגיל אחד' : `נשארו ${half.left} תרגילים`}.`,
       href: stageUrl(half.key), cta: '⟦המשך|המשיכי⟧ מאיפה שעצרת',
     });
   }
@@ -105,7 +105,7 @@ export function buildInbox(p: SyncedProgress, ctx: InboxContext): InboxNote[] {
   if (ctx.openGame && ctx.openGame.moves > 0) {
     notes.push({
       id: `game:${ctx.openGame.id}`, kind: 'game', kanji: '対',
-      text: `יש לך משחק פתוח נגד המחשב (רמה ${ctx.openGame.level}, אחרי ${ctx.openGame.moves} מהלכים).`,
+      text: `יש לך משחק פתוח נגד המחשב (רמה ${ctx.openGame.level}, אחרי ${ctx.openGame.moves === 1 ? 'מהלך אחד' : `${ctx.openGame.moves} מהלכים`}).`,
       href: '/play/', cta: 'חזרה למשחק', sub: 'במכשיר הזה',
     });
   }

@@ -134,7 +134,7 @@ export function ogCards(): OgCard[] {
     },
     {
       path: '/course/', eyebrow: 'מאיפה מתחילים?', title: 'מסלול לימוד אישי',
-      sub: '⟦ענה|עני⟧ על שאלה אחת ⟦וקבל|וקבלי⟧ את הצעד הבא: מהחוקים, דרך פתיחה ואמצע המשחק, ועד בעיות מט.',
+      sub: '⟦ענה|עני⟧ על שתי שאלות ⟦וקבל|וקבלי⟧ את הצעד הבא: מהחוקים, דרך פתיחה ואמצע המשחק, ועד בעיות מט.',
       sfen: stageSfen('openings', categories.find((c) => c.key === 'openings')!.stages[1].levels),
     },
     {

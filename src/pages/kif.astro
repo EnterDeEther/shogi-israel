@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import KifViewer from '../components/KifViewer.astro';
 import Piece from '../components/Piece.astro';
+import Notation from '../components/mdx/Notation.astro';
 
 const pieces: [string, string, string, boolean?][] = [
   ['玉', 'K', 'מלך'], ['飛', 'R', 'צריח'], ['角', 'B', 'רץ'], ['金', 'G', 'גנרל זהב'], ['銀', 'S', 'גנרל כסף'],
@@ -16,7 +17,7 @@ const ranks = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
   <div class="wrap page kif-page">
     <p class="eyebrow">כלים</p>
     <h1>רישום משחק: קובצי KIF</h1>
-    <p class="lead measure">כל משחק שוגי אפשר לשמור כקובץ טקסט קטן, ולפתוח אותו שוב בכל אתר ובכל אפליקציה. הפורמט הנפוץ ביותר נקרא KIF. בעמוד הזה: מה יש בקובץ, איך קוראים אותו, ואיפה משתמשים בו.</p>
+    <p class="lead measure">כל משחק שוגי אפשר לשמור כקובץ טקסט קטן, ולפתוח אותו שוב בכל אתר ובכל אפליקציה. הפורמט הנפוץ ביותר נקרא KIF. בעמוד הזה נראה מה יש בקובץ, איך קוראים אותו ואיפה משתמשים בו.</p>
 
     <nav class="toc measure" aria-label="בעמוד הזה">
       <a href="#what">מה זה</a> · <a href="#why">למה זה טוב</a> · <a href="#read">איך קוראים</a> · <a href="#kifv-title">צופה KIF</a> · <a href="#where">איפה משתמשים</a> · <a href="#faq">שאלות</a>
@@ -30,7 +31,7 @@ const ranks = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
       <h2 id="why">למה זה טוב?</h2>
       <ul>
         <li><strong>ללמוד מהמשחקים שלך.</strong> כל משחק ⟦שתשחק|שתשחקי⟧ כאן באתר אפשר להוריד כקובץ KIF. ⟦פתח|פתחי⟧ אותו בלישוגי, ומנוע חזק מראה איפה טעית ומה היה עדיף.</li>
-        <li><strong>לשתף.</strong> ⟦שלח|שלחי⟧ את הקובץ לחבר או למורה, או ⟦הדבק|הדביקי⟧ אותו בקבוצת הווטסאפ, ⟦ושאל|ושאלי⟧: מה היית עושה כאן?</li>
+        <li><strong>לשתף.</strong> ⟦שלח|שלחי⟧ את הקובץ לחבר או למורה, או ⟦הדבק|הדביקי⟧ אותו בקבוצת הוואטסאפ, ⟦ושאל|ושאלי⟧: מה היית עושה כאן?</li>
         <li><strong>לשמור.</strong> המשחקים שלך נשארים אצלך, גם אם ⟦תעבור|תעברי⟧ אתר או אפליקציה.</li>
         <li><strong>לעבור בין תוכנות.</strong> כמעט כל תוכנת שוגי בעולם יודעת לקרוא KIF, אז משחק מאתר אחד נפתח בכל מקום אחר.</li>
       </ul>
@@ -62,15 +63,15 @@ const ranks = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
         <li><span lang="ja" class="kj">歩</span> הוא הכלי: חייל <Piece>歩</Piece>.</li>
         <li><bdi dir="ltr" class="nt">(77)</bdi> היא המשבצת שממנה הכלי יצא.</li>
       </ol>
-      <p>ביחד: החייל עבר מ־<bdi dir="ltr" class="nt">77</bdi> ל־<bdi dir="ltr" class="nt">76</bdi>. אצלנו באתר כותבים את אותו מהלך <bdi dir="ltr" class="nt">P-76</bdi>.</p>
+      <p>כלומר, החייל עבר מ־<bdi dir="ltr" class="nt">77</bdi> ל־<bdi dir="ltr" class="nt">76</bdi>. אצלנו באתר כותבים את אותו מהלך <Notation>P-76</Notation>.</p>
 
       <h3>ארבעה סימנים שכדאי להכיר</h3>
       <table class="kif-table">
         <thead><tr><th scope="col">סימן</th><th scope="col">משמעות</th><th scope="col">דוגמה</th></tr></thead>
         <tbody>
-          <tr><td lang="ja" class="kj">成</td><td>הכתרה</td><td><span lang="ja" class="kj">２二角成(88)</span>: הרץ לוכד ב־<bdi dir="ltr" class="nt">22</bdi> ומוכתר, <bdi dir="ltr" class="nt">Bx22+</bdi></td></tr>
+          <tr><td lang="ja" class="kj">成</td><td>הכתרה</td><td><span lang="ja" class="kj">２二角成(88)</span>: הרץ לוכד ב־<bdi dir="ltr" class="nt">22</bdi> ומוכתר, <Notation>Bx22+</Notation></td></tr>
           <tr><td lang="ja" class="kj">不成</td><td>ויתור על הכתרה</td><td><span lang="ja" class="kj">２三銀不成(34)</span>: הכסף נכנס לאזור ההכתרה ולא מוכתר</td></tr>
-          <tr><td lang="ja" class="kj">打</td><td>הצנחה</td><td><span lang="ja" class="kj">４五角打</span>: מצניחים רץ מהיד ל־<bdi dir="ltr" class="nt">45</bdi>, <bdi dir="ltr" class="nt">B*45</bdi>. אין משבצת מוצא, כי הכלי בא מהיד</td></tr>
+          <tr><td lang="ja" class="kj">打</td><td>הצנחה</td><td><span lang="ja" class="kj">４五角打</span>: מצניחים רץ מהיד ל־<bdi dir="ltr" class="nt">45</bdi>, <Notation>B*45</Notation>. אין משבצת מוצא, כי הכלי בא מהיד</td></tr>
           <tr><td lang="ja" class="kj">同</td><td>אותה משבצת</td><td><span lang="ja" class="kj">同　銀(31)</span>: הכסף לוכד בדיוק במשבצת של המהלך הקודם</td></tr>
         </tbody>
       </table>
@@ -94,7 +95,7 @@ const ranks = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
 
       <h3>איך משחק נגמר</h3>
       <p>השורה האחרונה ברשימה אומרת למה המשחק נגמר. הנפוצה ביותר היא <span lang="ja" class="kj">投了</span>, כניעה: השחקן שהיה בתור נכנע. אחרות: <span lang="ja" class="kj">詰み</span> (מט), <span lang="ja" class="kj">切れ負け</span> (הפסד בזמן), <span lang="ja" class="kj">千日手</span> (חזרה מרובעת), <span lang="ja" class="kj">持将棋</span> (מבוי סתום), <span lang="ja" class="kj">反則負け</span> (מהלך לא חוקי) ו־<span lang="ja" class="kj">中断</span> (המשחק הופסק). אחריה מופיע סיכום כמו <span lang="ja" class="kj">まで19手で先手の勝ち</span>: אחרי 19 מהלכים, הפותח ניצח.</p>
-      <p>מספרים בסוגריים בסוף שורת מהלך, כמו <bdi dir="ltr" class="nt">( 0:05/00:01:20)</bdi>, הם הזמן שלקח המהלך והזמן הכולל עד אליו. שורה שמתחילה ב־<bdi dir="ltr">*</bdi> היא הערה, וחלק שמתחיל ב־<span lang="ja">変化</span> הוא וריאציה: ⟦המשך|המשיכי⟧ אחר שמישהו בדק.</p>
+      <p>מספרים בסוגריים בסוף שורת מהלך, כמו <bdi dir="ltr" class="nt">( 0:05/00:01:20)</bdi>, הם הזמן שלקח המהלך והזמן הכולל עד אליו. שורה שמתחילה ב־<bdi dir="ltr">*</bdi> היא הערה, וחלק שמתחיל ב־<span lang="ja">変化</span> הוא וריאציה: המשך אחר שמישהו בדק.</p>
     </div>
 
     <KifViewer />

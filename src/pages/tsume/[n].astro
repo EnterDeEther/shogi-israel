@@ -15,8 +15,8 @@ const info = LENGTH_INFO[n];
     <nav class="tsume-crumbs small" aria-label="מיקום">
       <a href="/tsume/">בעיות מט</a> ›
       {LENGTHS.map((m) => m === n
-        ? <span aria-current="page" class="cur">{m === 1 ? 'מהלך 1' : `${m} מהלכים`}</span>
-        : <a href={`/tsume/${m}/`}>{m === 1 ? 'מהלך 1' : `${m} מהלכים`}</a>)}
+        ? <span aria-current="page" class="cur">{m === 1 ? 'מהלך אחד' : `${m} מהלכים`}</span>
+        : <a href={`/tsume/${m}/`}>{m === 1 ? 'מהלך אחד' : `${m} מהלכים`}</a>)}
     </nav>
     <div class="tsume-titlerow"><h1 class="tsume-title">{info.title}</h1><InfoTip id="mate" /></div>
     <p class="phase small"><a href="/learn/guide/#endgame">שלב במשחק: סוף המשחק</a></p>

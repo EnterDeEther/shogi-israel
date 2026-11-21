@@ -130,7 +130,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
               <span class="lb" data-f="2"><span class="pl">{labels('K', 0, false).l}</span></span>
               <span class="lb" data-f="3"><span class:list={['pcs', labels('K', 0, false).cs]} dir="rtl">{labels('K', 0, false).c}</span></span>
             </span></span>
-            <span class="sets" dir="rtl"><span>יפנית</span><span>עברית</span><span>אנגלית</span><span>שחמט</span></span>
+            <span class="sets" dir="rtl"><span>קאנג׳י</span><span>עברית</span><span>אנגלית</span><span>שחמט</span></span>
           </div>
         ) : (
           <div class="stage" data-stage data-zone={on(board(key).state.zone)} data-hand={on(board(key).state.hand)} style={stageStyle(key)} data-still>
@@ -175,7 +175,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
   <ol class="phases">
     {PHASES.map((ph, i) => <li class="phase rv"><span class="n">{i + 1}</span><div><h3>{ph.h}</h3><p>{ph.p}</p></div></li>)}
   </ol>
-  <p class="small"><a href="/learn/guide/#phases">הסבר על שלושת השלבים</a></p>
+  <p class="small"><a href="/learn/guide/#phases">הסבר על שלושת שלבי המשחק</a></p>
 </section>
 
 <section data-snap data-flow-end class="scene wrap" data-newcomer aria-labelledby="story-go-h">
@@ -201,7 +201,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
     {hasCourse && (
       <a class="pick rv" href="/course/">
         <h3>רוצה סדר לימוד?</h3>
-        <p>מסלול לימוד אישי: עונים על שאלה אחת ומקבלים סדר ברור, מהחוקים ועד בעיות מט.</p>
+        <p>מסלול לימוד אישי: עונים על שתי שאלות קצרות ומקבלים סדר ברור, מהחוקים ועד בעיות מט.</p>
         <span class="go">למסלול ←</span>
       </a>
     )}
@@ -221,7 +221,7 @@ const crown = '<svg viewBox="0 0 20 12" aria-hidden="true"><path d="M1 3.2 5.6 7
 <section class="scene wrap after" data-newcomer aria-labelledby="story-us-h">
   <div class="comm rv">
     <h2 id="story-us-h">איזה כיף ⟦שאתה|שאת⟧ פה</h2>
-    <p>אני דין, וזה פרויקט התשוקה שלי. גיליתי את השוגי דרך אנימה, והתחלתי ללמוד מסרטונים ביוטיוב. שיחקתי המון מול המחשב והפסדתי הרבה פעמים, עד שהבנתי: המחשב לא מחליף משחק מול אדם אחר. חיפשתי מקום בארץ שבו אוכל לשחק עם אחרים, לא מצאתי, אז החלטתי לבנות אותו.</p>
+    <p>אני דין, והאתר הזה הוא פרויקט שאני עושה מאהבה. גיליתי את השוגי דרך אנימה, והתחלתי ללמוד מסרטונים ביוטיוב. שיחקתי המון מול המחשב והפסדתי הרבה פעמים, עד שהבנתי: המחשב לא מחליף משחק מול אדם אחר. חיפשתי מקום בארץ שבו אוכל לשחק עם אחרים, לא מצאתי, אז החלטתי לבנות אותו.</p>
     <p>הקהילה קטנה, והיא גדלה כל יום. ⟦בוא תצטרף|בואי תצטרפי⟧ אליי, ונבנה ביחד תרבות שוגי בארץ :)</p>
     <ul class="chips">
       <li><a href={WHATSAPP_URL} rel="noopener"><Icon name="whatsapp-logo" />קהילת הוואטסאפ</a></li>

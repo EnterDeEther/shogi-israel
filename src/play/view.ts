@@ -101,13 +101,13 @@ function localEndText(end: GameEnd): { title: string; text: string } {
   const loser = w ? SIDE[w === 'sente' ? 'gote' : 'sente'] : '';
   const title = w ? `הניצחון ל${SIDE[w]}` : 'תיקו';
   const text = {
-    mate: `מט. המלך של ${loser} לא יכול לברוח.`,
+    mate: `מט. המלך של ה${loser} לא יכול לברוח.`,
     stalemate: `ל${loser} לא נשאר אף מהלך חוקי, ובשוגי זה הפסד.`,
-    resign: `${loser} נכנע.`,
-    time: `הזמן של ${loser} נגמר (טיימאאוט).`,
+    resign: `ה${loser} נכנע.`,
+    time: `הזמן של ה${loser} נגמר (טיימאאוט).`,
     repetition: 'אותה עמדה חזרה ארבע פעמים (חזרה מרובעת).',
-    perpetual: `${loser} נתן שח נצחי, ומי שנותן שח נצחי מפסיד.`,
-    impasse: `${w ? SIDE[w] : ''} הכריז על ניצחון בנקודות (מבוי סתום).`,
+    perpetual: `ה${loser} נתן שח נצחי, ומי שנותן שח נצחי מפסיד.`,
+    impasse: `ה${w ? SIDE[w] : ''} הכריז על ניצחון בנקודות (מבוי סתום).`,
     draw: 'לאף צד לא נשארו מספיק כלים.',
     agreement: 'שני השחקנים הסכימו על תיקו.',
   }[end.reason];
@@ -142,8 +142,8 @@ function seatRow(ctrl: PlayCtrl, color: Color, go: (fn: () => void) => (e: Event
   const btn = (label: string, fid: string, fn: () => void, cls = '', pressed?: boolean) =>
     el('button', { type: 'button', class: `seat-btn${cls}`, 'data-fid': `${fid}-${color}`, disabled: !ctrl.playing, 'aria-pressed': pressed === undefined ? undefined : String(pressed), onclick: go(fn) }, label);
   const sub = !ctrl.playing ? (color === 'sente' ? 'משחק ראשון' : 'משחק שני')
-    : offered ? `${SIDE[other]} מציע תיקו`
-    : turn ? (ctrl.line.current.isCheck() ? `שח! התור של ${SIDE[color]}` : `התור של ${SIDE[color]}`)
+    : offered ? `ה${SIDE[other]} מציע תיקו`
+    : turn ? (ctrl.line.current.isCheck() ? `שח! התור של ה${SIDE[color]}` : `התור של ה${SIDE[color]}`)
     : '';
   const actions = ctrl.resignConfirm === color
     ? [el('span', { class: 'q' }, 'להיכנע?'),
@@ -158,7 +158,7 @@ function seatRow(ctrl: PlayCtrl, color: Color, go: (fn: () => void) => (e: Event
       el('span', { class: `small${turn || offered ? ' hot' : ' muted'}` }, sub)),
     el('span', { class: 'seat-actions' }, ...actions),
     ctrl.clock
-      ? el('span', { class: `rclock${t && t.main <= 0 ? ' byo' : ''}`, dir: 'ltr', 'data-clock': color, 'aria-label': `השעון של ${SIDE[color]}` }, clockText(ctrl, color))
+      ? el('span', { class: `rclock${t && t.main <= 0 ? ' byo' : ''}`, dir: 'ltr', 'data-clock': color, 'aria-label': `השעון של ה${SIDE[color]}` }, clockText(ctrl, color))
       : null,
   );
 }
@@ -200,7 +200,7 @@ function moveList(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void): H
       )));
   });
   const box = el('div', { class: 'moves-box', 'data-moves': true });
-  if (!plies.length) box.append(el('p', { class: 'small muted empty' }, ctrl.record ? 'עוד לא שוחקו מהלכים.' : ''));
+  if (!plies.length) box.append(el('p', { class: 'small muted empty' }, ctrl.record ? 'המהלכים יופיעו כאן.' : ''));
   else box.append(list);
   return box;
 }
@@ -314,7 +314,7 @@ function kifMenu(ctrl: PlayCtrl): HTMLElement {
     }, picon('kif'), el('span', { dir: 'ltr' }, 'KIF')),
     open
       ? el('div', { class: 'kif-pop', role: 'menu', 'aria-label': 'רישום המשחק' },
-        el('p', { class: 'small muted' }, ctrl.ended ? `רישום המשחק (${n} מהלכים)` : `רישום המשחק עד עכשיו (${n} מהלכים)`),
+        el('p', { class: 'small muted' }, ctrl.ended ? `רישום המשחק (${n === 1 ? 'מהלך אחד' : `${n} מהלכים`})` : `רישום המשחק עד עכשיו (${n === 1 ? 'מהלך אחד' : `${n} מהלכים`})`),
         item('הורדת קובץ KIF', 'kif-download', () => downloadKif(kifText(ctrl), kifFileName({ date: new Date(ctrl.record!.startedAt) }))),
         item('העתקה', 'kif-copy', async (btn) => flash(btn, (await copyText(kifText(ctrl))) ? 'הועתק ✓' : 'ההעתקה נכשלה')),
         ctrl.ended
