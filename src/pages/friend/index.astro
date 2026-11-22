@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Icon from '../../components/Icon.astro';
+import FriendBug from '../../components/FriendBug.astro';
 import { friendOn } from '../../friend/flag';
 import '../../styles/friend.css';
 const on = friendOn();
@@ -10,12 +11,15 @@ const on = friendOn();
     <header class="friend-top">
       <span class="ico"><Icon name="friend" size={30} /></span>
       <div>
-        <h1>משחק עם חבר</h1>
+        <h1>משחק עם חבר {on && <span class="friend-newtag">חדש</span>}</h1>
         <p class="muted">שולחים קישור, והחבר משחק מהטלפון שלו. בלי שעון, כל אחד בזמן שלו.</p>
       </div>
     </header>
     {on ? (
-      <div class="friend-hub" data-friend-hub><p>טוענים…</p></div>
+      <>
+        <div class="friend-hub" data-friend-hub><p>טוענים…</p></div>
+        <FriendBug />
+      </>
     ) : (
       <p class="lead">המשחק עם חבר עוד בבנייה. בינתיים אפשר <a href="/play/">לשחק נגד המחשב</a>.</p>
     )}

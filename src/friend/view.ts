@@ -4,6 +4,7 @@ import { localMove } from '../lib/move-notation';
 import { copyText, downloadKif, kifFileName, LISHOGI_IMPORT_URL } from '../lib/kif';
 import { scrollWithin } from '../lib/scroll-within';
 import { tipEl } from '../lib/info-tip-dom';
+import { openBug } from './bug';
 import { gameUrl, personalUrl, REST_HINT, REST_LABEL, SIGNAL_TEXT, SPEED_TEXT } from './client';
 import { SIGNALS, type EndReason } from './core';
 import type FriendCtrl from './ctrl';
@@ -206,7 +207,7 @@ function status(ctrl: FriendCtrl, go: Go, onRematch: () => void, signedIn: boole
 function banners(ctrl: FriendCtrl, go: Go): HTMLElement | null {
   const g = ctrl.game!;
   const opp = g.names[ctrl.opp];
-  if (ctrl.alert) return el('div', { class: 'play-tip', role: 'alert' }, el('p', {}, ctrl.alert));
+  if (ctrl.alert) return el('div', { class: 'play-tip', role: 'alert' }, el('p', {}, ctrl.alert, ' ', el('button', { type: 'button', class: 'link', onclick: go(openBug) }, 'זה קורה שוב? דיווח על תקלה')));
   if (g.status === 'active' && g.takebackBy === ctrl.opp) {
     return el('div', { class: 'play-tip', role: 'alert' },
       el('strong', {}, `בקשה מ${opp}: להחזיר מהלך?`),
@@ -311,6 +312,7 @@ function problem(ctrl: FriendCtrl): HTMLElement {
     el('h2', {}, text.title),
     el('p', {}, text.body),
     el('p', {}, el('a', { class: 'btn', href: ctrl.loadError === 'not-player' ? '/account/' : '/friend/' }, ctrl.loadError === 'not-player' ? 'כניסה לחשבון' : 'למשחק עם חבר')),
+    ctrl.loadError === 'paused' ? null : el('p', { class: 'small' }, 'זה לא אמור לקרות? ', el('button', { type: 'button', class: 'link', onclick: openBug }, 'דיווח על תקלה')),
   );
 }
 

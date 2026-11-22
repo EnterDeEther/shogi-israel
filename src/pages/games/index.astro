@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Icon from '../../components/Icon.astro';
 import KifViewer from '../../components/KifViewer.astro';
+import FriendBug from '../../components/FriendBug.astro';
 import { friendOn } from '../../friend/flag';
 import '../../styles/friend.css';
 const on = friendOn();
@@ -22,6 +23,7 @@ const on = friendOn();
           <h2 data-replay-title>צפייה חוזרת</h2>
           <KifViewer />
         </section>
+        <FriendBug />
       </>
     ) : (
       <p class="lead">העמוד הזה עוד בבנייה.</p>

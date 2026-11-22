@@ -1,5 +1,6 @@
 ---
 import Base from '../../../layouts/Base.astro';
+import FriendBug from '../../../components/FriendBug.astro';
 import { friendOn } from '../../../friend/flag';
 import '../../../styles/shogiground.css';
 import '../../../styles/learn.css';
@@ -11,9 +12,12 @@ const on = friendOn();
   <div class="wrap wrap--play">
     <h1 class="sr-only">משחק עם חבר</h1>
     {on ? (
-      <section class="play-island friend-game" data-friend-game aria-label="משחק עם חבר">
-        <noscript><p>המשחק צריך JavaScript.</p></noscript>
-      </section>
+      <>
+        <section class="play-island friend-game" data-friend-game aria-label="משחק עם חבר">
+          <noscript><p>המשחק צריך JavaScript.</p></noscript>
+        </section>
+        <FriendBug />
+      </>
     ) : (
       <p class="lead">המשחק עם חבר עוד בבנייה. בינתיים אפשר <a href="/play/">לשחק נגד המחשב</a>.</p>
     )}

@@ -3,6 +3,7 @@ import { el } from '../learn/view';
 import { accountsEnabled } from '../lib/account-config';
 import { isAndroid, isInApp } from '../lib/install';
 import { copyText } from '../lib/kif';
+import { openBug, setBugContext } from './bug';
 import { api, gameUrl, type InviteInfo, inviteUrl, type ListedGame, readSeats, rememberedInvite, rememberInvite, REST_HINT, REST_LABEL, restPref, setRestPref, SHORT_SPEED, signedIn, SPEED_TEXT } from './client';
 import { CORR_DAYS, LIVE_CLOCKS } from './core';
 
@@ -32,7 +33,12 @@ const ERR: Record<string, string> = {
   network: 'אין חיבור לרשת כרגע. כדאי לנסות שוב בעוד רגע.',
   paused: 'המשחק עם חבר בהפסקה קצרה. המשחקים שמורים, ונחזור בקרוב.',
 };
-const errText = (e?: string) => (e && ERR[e]) || 'משהו השתבש. כדאי לנסות שוב.';
+let lastError = '-';
+const errText = (e?: string) => {
+  lastError = e ?? 'unknown';
+  return (e && ERR[e]) || 'משהו השתבש. כדאי לנסות שוב.';
+};
+const bugLink = () => el('button', { type: 'button', class: 'link', onclick: openBug }, 'דיווח על תקלה');
 
 function shareRow(code: string): HTMLElement {
   const url = inviteUrl(code);
@@ -110,6 +116,7 @@ export async function bootHub(root: HTMLElement): Promise<void> {
   const me = await signedIn();
   const hashCode = codeFromHash();
   const code = hashCode ?? (me ? remembered() : null);
+  setBugContext(() => ({ code: code ?? undefined, context: `hub signedIn=${me} lastError=${lastError}` }));
   if (code) return invitePage(root, code, me);
   remember(null);
   return me ? homeSignedIn(root) : homeGuest(root);
@@ -185,7 +192,7 @@ function homeSignedIn(root: HTMLElement): void {
     const r = await api.create(body);
     createBtn.disabled = false;
     if (!r.ok) {
-      msg.replaceChildren(errText(r.error), ' ', r.error === 'nickname' ? el('a', { href: '/account/' }, 'לעמוד החשבון') : '');
+      msg.replaceChildren(errText(r.error), ' ', r.error === 'nickname' ? el('a', { href: '/account/' }, 'לעמוד החשבון') : bugLink());
       return;
     }
     made.hidden = false;
@@ -264,7 +271,8 @@ async function invitePage(root: HTMLElement, code: string, me: boolean): Promise
     const j = await api.join(code);
     if (j.ok && j.data.id) { remember(null); location.assign(gameUrl(j.data.id)); return; }
     btn.disabled = false;
-    msg.textContent = j.error === 'taken' ? 'מישהו כבר הצטרף למשחק הזה.' : errText(j.error);
+    if (j.error === 'taken') msg.textContent = 'מישהו כבר הצטרף למשחק הזה.';
+    else msg.replaceChildren(errText(j.error), ' ', bugLink());
   };
   const joinBtn = (label: string, ghost = false) => {
     const b = el('button', { type: 'button', class: ghost ? 'btn btn-ghost' : 'btn' }, label) as HTMLButtonElement;

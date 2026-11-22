@@ -3,6 +3,7 @@ import { loadPrefs } from '../learn/prefs';
 import { preloadSounds } from '../learn/sound';
 import { mount } from '../play/view';
 import { accountsEnabled } from '../lib/account-config';
+import { setBugContext } from './bug';
 import { gameUrl, offerSeat, signedIn } from './client';
 import type { Ping } from './core';
 import FriendCtrl from './ctrl';
@@ -58,6 +59,10 @@ export async function bootFriendGame(root: HTMLElement): Promise<void> {
   };
 
   ctrl = new FriendCtrl(id ?? '', prefs, redraw);
+  setBugContext(() => ({
+    id: id ?? undefined,
+    context: `status=${ctrl.game?.status ?? 'none'} speed=${ctrl.game?.speed ?? '-'} ply=${ctrl.game?.ply ?? '-'} you=${ctrl.game?.you ?? '-'} guest=${ctrl.game ? ctrl.game.guest[ctrl.game.you] : '-'} error=${ctrl.loadError ?? '-'} pending=${ctrl.pending} alert=${ctrl.alert ? 1 : 0}`,
+  }));
   ctrl.ground.attach({ board });
   void preloadSounds();
   draw();

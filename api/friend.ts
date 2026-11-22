@@ -12,6 +12,11 @@ import { pushConfigured, sendOne } from '../src/lib/push-send.js';
 const ALLOWED_ORIGIN = /^https:\/\/((www\.)?shogi\.co\.il|shogi-israel-[a-z0-9-]+-enterdeether\.vercel\.app)$/;
 const REPORT_TO = 'contact@shogi.co.il';
 const FROM = 'שוגי ישראל <noreply@shogi.co.il>';
+const BUG_KINDS = ['move', 'sync', 'join', 'link', 'alert', 'other'];
+const BUG_DAY = { all: 200, game: 6, loose: 30, mail: 40 };
+const BUG_KEEP_MS = 90 * 864e5;
+
+type Body = Record<string, unknown>;
 
 const enabled = () => process.env.VERCEL_ENV !== 'production' || process.env.FRIEND_PLAY === '1';
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
@@ -107,6 +112,45 @@ async function sendReport(row: FriendRow, reason: string, names: Names, side: st
   }).catch(() => {});
 }
 
+const clean = (v: unknown, max: number): string => (typeof v === 'string' ? [...v.replace(/[^\P{C}\n]/gu, ' ').trim()].slice(0, max).join('') : '');
+
+async function sendBug(row: FriendRow | null, bug: { kind: string; note: string; context: string; agent: string; side: string | null; signed: boolean }): Promise<void> {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) return;
+  const text = [
+    `תקלה במשחק עם חבר (${bug.kind})`,
+    bug.note ? `מה נכתב: ${bug.note}` : 'בלי תיאור',
+    row ? `משחק: ${row.id}, מצב: ${row.status}, קצב: ${row.speed}, מהלכים: ${row.ply}` : 'בלי משחק',
+    `צד: ${bug.side ?? '-'}, מחובר לחשבון: ${bug.signed ? 'כן' : 'לא'}`,
+    `עמוד: ${bug.context || '-'}`,
+    `דפדפן: ${bug.agent || '-'}`,
+  ].join('\n');
+  await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: FROM, to: [process.env.ADMIN_REPORT_EMAIL || REPORT_TO], subject: 'תקלה במשחק עם חבר', text }),
+  }).catch(() => {});
+}
+
+async function bug(client: SupabaseClient, request: Request, body: Body, seat: Seat, now: number): Promise<Response> {
+  const kind = BUG_KINDS.includes(body.kind as string) ? (body.kind as string) : 'other';
+  const byId = isId(body.id);
+  const found = byId ? await load(client, 'id', body.id as string) : isCode(body.code) ? await load(client, 'code', body.code) : null;
+  const side = found ? sideOf(found, seat) : null;
+  const row = found && (side || !byId) ? found : null;
+  const since = new Date(now - 864e5).toISOString();
+  const recent = () => client.from('friend_bugs').select('id', { count: 'exact', head: true }).gt('created_at', since);
+  const [all, own] = await Promise.all([recent(), row ? recent().eq('game_id', row.id) : recent().is('game_id', null)]);
+  if (all.error || own.error) return fail('save', 500);
+  if ((all.count ?? 0) >= BUG_DAY.all || (own.count ?? 0) >= (row ? BUG_DAY.game : BUG_DAY.loose)) return fail('too-many', 429);
+  const entry = { kind, note: clean(body.note, 500), context: clean(body.context, 300), agent: clean(request.headers.get('user-agent'), 200), side, signed: !!seat.user };
+  const { error } = await client.from('friend_bugs').insert({ game_id: row?.id ?? null, ...entry });
+  if (error) return fail('save', 500);
+  await client.from('friend_bugs').delete().lt('created_at', new Date(now - BUG_KEEP_MS).toISOString());
+  if ((all.count ?? 0) < BUG_DAY.mail) await sendBug(row, entry);
+  return json({ ok: true });
+}
+
 async function pushTurn(client: SupabaseClient, to: string, opp: string, id: string): Promise<void> {
   if (!pushConfigured()) return;
   const { data } = await client.from('push_subscriptions').select('endpoint, p256dh, auth').eq('user_id', to).eq('push_turn', true).limit(5);
@@ -153,8 +197,6 @@ async function alertTurn(client: SupabaseClient, row: FriendRow, names: Names, n
   await Promise.race([work, new Promise((done) => setTimeout(done, 4000))]);
 }
 
-type Body = Record<string, unknown>;
-
 export async function POST(request: Request): Promise<Response> {
   if (!enabled()) return fail('not-found', 404);
   const origin = request.headers.get('origin');
@@ -169,6 +211,8 @@ export async function POST(request: Request): Promise<Response> {
   const guest = isSeatToken(body.seat) ? hash(body.seat) : null;
   const seat: Seat = { user, guest };
   const action = body.action;
+
+  if (action === 'bug') return bug(client, request, body, seat, now);
 
   if (action === 'create') {
     if (!user) return fail('sign-in', 401);

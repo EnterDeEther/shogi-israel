@@ -1,0 +1,10 @@
+---
+---
+<details class="friend-bug" data-friend-bug>
+  <summary><span class="friend-newtag">חדש</span> המשחק עם חבר חדש באתר. משהו לא עבד? ⟦ספר|ספרי⟧ לנו</summary>
+</details>
+
+<script>
+  import { mountBug } from '../friend/bug';
+  document.querySelectorAll<HTMLElement>('[data-friend-bug]').forEach((box) => mountBug(box));
+</script>
