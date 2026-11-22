@@ -34,6 +34,9 @@ export interface FriendRow {
   gote_user: string | null;
   sente_guest: string | null;
   gote_guest: string | null;
+  inviter_rest?: boolean;
+  sente_rest?: boolean;
+  gote_rest?: boolean;
   status: Status;
   start_sfen: string;
   moves: string[];
@@ -70,15 +73,25 @@ const ms = (s: string | null): number => (s ? Date.parse(s) : 0);
 const IL_TIME = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Jerusalem', weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 const REST = { from: 5 * 1440 + 14 * 60, to: 6 * 1440 + 22 * 60, resume: 7 * 1440 + 10 * 60 };
 
-export function afterRest(at: number): number {
+function weekMinute(at: number): number {
   const parts = IL_TIME.formatToParts(new Date(at));
   const get = (t: string) => parts.find((p) => p.type === t)!.value;
-  const minute = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(get('weekday')) * 1440 + Number(get('hour')) * 60 + Number(get('minute'));
+  return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(get('weekday')) * 1440 + Number(get('hour')) * 60 + Number(get('minute'));
+}
+
+export function inRest(at: number): boolean {
+  const minute = weekMinute(at);
+  return minute >= REST.from && minute < REST.to;
+}
+
+export function afterRest(at: number): number {
+  const minute = weekMinute(at);
   if (minute < REST.from || minute >= REST.to) return at;
   return at - (at % 60_000) + (REST.resume - minute) * 60_000;
 }
 
-export const corrDeadline = (now: number, days: number): string => iso(afterRest(now + days * 864e5));
+export const corrDeadline = (now: number, days: number, rest = false): string => iso(rest ? afterRest(now + days * 864e5) : now + days * 864e5);
+export const rests = (row: FriendRow, side: Color): boolean => row[`${side}_rest`] === true;
 
 export function newCode(rand: (n: number) => Uint8Array): string {
   const abc = 'abcdefghijkmnpqrstuvwxyz23456789';
@@ -93,7 +106,7 @@ export function sideOf(row: FriendRow, seat: Seat): Color | null {
   return null;
 }
 
-export function newInvite(input: { code: string; by: string; color: Color | 'random'; speed: Speed; days?: number; clock?: { limit: number; byo: number } }, now: number): Partial<FriendRow> {
+export function newInvite(input: { code: string; by: string; color: Color | 'random'; speed: Speed; days?: number; clock?: { limit: number; byo: number }; rest?: boolean }, now: number): Partial<FriendRow> {
   return {
     code: input.code,
     created_by: input.by,
@@ -107,6 +120,7 @@ export function newInvite(input: { code: string; by: string; color: Color | 'ran
     moves: [],
     ply: 0,
     expires_at: iso(now + INVITE_DAYS * 864e5),
+    ...(input.rest ? { inviter_rest: true } : {}),
   };
 }
 
@@ -137,11 +151,14 @@ export function inviteState(row: FriendRow, seat: Seat, now: number): InviteStat
   return 'open';
 }
 
-export function joinPatch(row: FriendRow, joiner: Seat, now: number, coin: () => boolean): Patch {
+export function joinPatch(row: FriendRow, joiner: Seat, now: number, coin: () => boolean, rest = false): Patch {
   const inviterColor: Color = row.inviter_color === 'random' ? (coin() ? 'sente' : 'gote') : row.inviter_color;
   const joinerColor = other(inviterColor);
   const live = row.speed === 'live';
+  const inviterRest = row.inviter_rest === true;
   return {
+    ...(inviterRest ? { [`${inviterColor}_rest`]: true } : {}),
+    ...(rest ? { [`${joinerColor}_rest`]: true } : {}),
     status: 'active',
     [`${inviterColor}_user`]: row.created_by,
     [`${joinerColor}_user`]: joiner.user ?? null,
@@ -149,7 +166,7 @@ export function joinPatch(row: FriendRow, joiner: Seat, now: number, coin: () =>
     sente_ms: live ? row.clock_limit! * 1000 : null,
     gote_ms: live ? row.clock_limit! * 1000 : null,
     turn_started_at: iso(now),
-    move_deadline: live ? null : corrDeadline(now, row.corr_days!),
+    move_deadline: live ? null : corrDeadline(now, row.corr_days!, inviterColor === 'sente' ? inviterRest : rest),
     started_at: iso(now),
   } as Patch;
 }
@@ -233,7 +250,7 @@ export function movePatch(row: FriendRow, side: Color, usi: string, expectedPly:
     const spent = Math.max(0, now - ms(row.turn_started_at) - GRACE_MS / 2);
     patch[`${side}_ms`] = Math.max(0, row[`${side}_ms`]! - spent);
   }
-  if (row.speed === 'corr') patch.move_deadline = corrDeadline(now, row.corr_days!);
+  if (row.speed === 'corr') patch.move_deadline = corrDeadline(now, row.corr_days!, rests(row, other(side)));
   const end = next.end();
   if (end) Object.assign(patch, finish(row, end, now, names, next.usis));
   return patch;
@@ -272,7 +289,18 @@ export function takebackAnswer(row: FriendRow, side: Color, yes: boolean, now: n
   if (!n) return { takeback_by: null };
   const moves = row.moves.slice(0, row.moves.length - n);
   const patch: Patch = { moves, ply: moves.length, takeback_by: null, turn_started_at: iso(now) };
-  if (row.speed === 'corr') patch.move_deadline = corrDeadline(now, row.corr_days!);
+  if (row.speed === 'corr') patch.move_deadline = corrDeadline(now, row.corr_days!, rests(row, moves.length % 2 === 0 ? 'sente' : 'gote'));
+  return patch;
+}
+
+export function restPatch(row: FriendRow, side: Color, on: boolean): Patch | null {
+  if (row.status !== 'active' || rests(row, side) === on) return null;
+  const patch = { [`${side}_rest`]: on } as Patch;
+  const turn: Color = row.ply % 2 === 0 ? 'sente' : 'gote';
+  if (on && row.speed === 'corr' && turn === side && row.move_deadline) {
+    const moved = afterRest(ms(row.move_deadline));
+    if (moved !== ms(row.move_deadline)) patch.move_deadline = iso(moved);
+  }
   return patch;
 }
 
@@ -303,6 +331,8 @@ export function rematchRow(row: FriendRow, side: Color, code: string, now: numbe
     gote_user: row.sente_user,
     sente_guest: row.gote_guest,
     gote_guest: row.sente_guest,
+    ...(rests(row, 'gote') ? { sente_rest: true } : {}),
+    ...(rests(row, 'sente') ? { gote_rest: true } : {}),
     status: 'active',
     start_sfen: START_SFEN,
     moves: [],
@@ -310,7 +340,7 @@ export function rematchRow(row: FriendRow, side: Color, code: string, now: numbe
     sente_ms: live ? row.clock_limit! * 1000 : null,
     gote_ms: live ? row.clock_limit! * 1000 : null,
     turn_started_at: iso(now),
-    move_deadline: live ? null : corrDeadline(now, row.corr_days!),
+    move_deadline: live ? null : corrDeadline(now, row.corr_days!, rests(row, 'gote')),
     started_at: iso(now),
     expires_at: iso(now),
   };
@@ -343,6 +373,7 @@ export interface GameView {
   you: Color;
   names: Names;
   guest: { sente: boolean; gote: boolean };
+  rest: boolean;
   startSfen: string;
   moves: string[];
   ply: number;
@@ -372,6 +403,7 @@ export function gameView(row: FriendRow, you: Color, names: Names, now: number):
     you,
     names,
     guest: { sente: !row.sente_user && !!row.sente_guest, gote: !row.gote_user && !!row.gote_guest },
+    rest: rests(row, you),
     startSfen: row.start_sfen,
     moves: row.moves,
     ply: row.ply,

@@ -3,13 +3,13 @@ import { el } from '../learn/view';
 import { accountsEnabled } from '../lib/account-config';
 import { isAndroid, isInApp } from '../lib/install';
 import { copyText } from '../lib/kif';
-import { api, gameUrl, type InviteInfo, inviteUrl, type ListedGame, readSeats, rememberedInvite, rememberInvite, SHORT_SPEED, signedIn, SPEED_TEXT } from './client';
+import { api, gameUrl, type InviteInfo, inviteUrl, type ListedGame, readSeats, rememberedInvite, rememberInvite, REST_HINT, REST_LABEL, restPref, setRestPref, SHORT_SPEED, signedIn, SPEED_TEXT } from './client';
 import { CORR_DAYS, LIVE_CLOCKS } from './core';
 
 const COLOR_TEXT: Record<Color | 'random', string> = { random: 'הגרלה', sente: 'פותח (☗)', gote: 'משיב (☖)' };
 
 type Choice = { speed: 'corr'; days: number } | { speed: 'live'; clock: { limit: number; byo: number } };
-const NO_CLOCK = 'בלי שעון: לכל מהלך יש עד 3 ימים, וכל אחד משחק מתי שנוח לו. הזמן למהלך אף פעם לא נגמר בשבת.';
+const NO_CLOCK = 'בלי שעון: לכל מהלך יש עד 3 ימים, וכל אחד משחק מתי שנוח לו.';
 const CHOICES: { key: string; label: string; hint: string; value: Choice }[] = [
   { key: 'corr', label: 'בלי שעון', hint: NO_CLOCK, value: { speed: 'corr', days: CORR_DAYS[0] } },
   ...LIVE_CLOCKS.map((c) => ({ key: `live${c.limit}`, label: `${c.limit / 60} דק׳ + ${c.byo} שנ׳`, hint: 'משחק חי עם שעון: שניכם מול המסך באותו זמן.', value: { speed: 'live' as const, clock: c } })),
@@ -70,6 +70,15 @@ function inAppNote(code: string): HTMLElement {
       ? 'אם הכפתור לא עובד: ⟦לחץ|לחצי⟧ על ⋮ למעלה ⟦ובחר|ובחרי⟧ פתיחה בדפדפן.'
       : '⟦לחץ|לחצי⟧ על ⋯ ⟦ובחר|ובחרי⟧ פתיחה בדפדפן.'),
   );
+}
+
+function restField(): HTMLElement {
+  const box = el('input', { type: 'checkbox', id: 'friend-rest' }) as HTMLInputElement;
+  box.checked = restPref();
+  box.addEventListener('change', () => setRestPref(box.checked));
+  return el('div', { class: 'friend-field friend-rest' },
+    el('label', { for: 'friend-rest' }, box, ' ', REST_LABEL),
+    el('p', { class: 'small muted' }, REST_HINT));
 }
 
 function gameRow(g: ListedGame, onCancel: (code: string) => void): HTMLElement {
@@ -215,7 +224,8 @@ function homeSignedIn(root: HTMLElement): void {
         el('div', { class: 'friend-field' },
           el('p', { class: 'friend-label' }, 'באיזה צד ⟦תשחק|תשחקי⟧?'),
           seg((['random', 'sente', 'gote'] as const).map((c) => ({ key: c, label: COLOR_TEXT[c], value: c })), (v) => { color = v; }, color),
-          el('p', { class: 'small muted' }, 'הפותח (☗) משחק ראשון.'))),
+          el('p', { class: 'small muted' }, 'הפותח (☗) משחק ראשון.')),
+        restField()),
     ),
     made,
     listBox,
@@ -269,6 +279,7 @@ async function invitePage(root: HTMLElement, code: string, me: boolean): Promise
       el('li', {}, yourSide),
       el('li', {}, 'אין צ׳אט: רק הודעות קבועות כמו "בהצלחה!".')),
     !me && isInApp() ? inAppNote(code) : null,
+    inv.speed === 'corr' ? restField() : null,
     me
       ? joinBtn('⟦בוא|בואי⟧ נשחק')
       : el('div', { class: 'friend-actions' },

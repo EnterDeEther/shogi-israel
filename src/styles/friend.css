@@ -64,6 +64,9 @@ a.friend-row__main:hover strong { text-decoration: underline; }
   .play .table-box > .play-tip { order: 0; }
 }
 .friend-more { width: 100%; }
+.friend-rest label { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; min-height: 32px; cursor: pointer; }
+.friend-rest input { width: 20px; height: 20px; accent-color: var(--seal); }
+.friend-rest p { margin: 0; }
 .friend-more summary { cursor: pointer; font-weight: 700; color: var(--seal); min-height: 32px; text-decoration: underline; text-underline-offset: 3px; }
 .friend-more[open] { display: flex; flex-direction: column; gap: 14px; }
 .friend-note { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 100%; padding: 14px; border: 1px solid var(--seal); border-radius: 10px; background: var(--washi-2); }

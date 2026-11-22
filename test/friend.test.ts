@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 import { turnEmail, turnPush } from '../src/friend/alerts';
 import {
-  afterRest, claimPatch, clockAt, type FriendRow, gameView, inviteState, joinPatch, movePatch, newCode, newInvite, pingIsOld, pingMove, rematchAsk, rematchRow, resignPatch,
-  settle, signalPatch, takebackAnswer, takebackAsk, validInvite,
+  afterRest, claimPatch, clockAt, type FriendRow, gameView, inRest, inviteState, joinPatch, movePatch, newCode, newInvite, pingIsOld, pingMove, rematchAsk, rematchRow, resignPatch,
+  restPatch, settle, signalPatch, takebackAnswer, takebackAsk, validInvite,
 } from '../src/friend/core';
 
 const T0 = Date.parse('2026-11-10T10:00:00Z');
@@ -216,10 +216,53 @@ describe('rest days', () => {
     expect(afterRest(z('2026-11-14T19:59:59Z'))).toBe(z('2026-11-15T08:00:00Z'));
     expect(afterRest(z('2026-07-11T09:00:00Z'))).toBe(z('2026-07-12T07:00:00Z'));
   });
-  test('a move on Wednesday afternoon gets until Sunday morning', () => {
-    const wed = z('2026-11-11T14:00:00Z');
+  const wed = z('2026-11-11T14:00:00Z');
+  const seat = { guest: 'h'.repeat(64) };
+  test('nothing moves unless the player asked for it', () => {
     const g = play(join(row({ corr_days: 3 }), undefined, wed), 'sente', '7g7f', wed + 1000);
+    expect(g.move_deadline).toBe('2026-11-14T14:00:01.000Z');
+    expect(gameView(g, 'gote', names, wed).rest).toBe(false);
+    expect(newInvite({ code: 'abcdefghij', by: 'u1', color: 'sente', speed: 'corr' }, T0)).not.toHaveProperty('inviter_rest');
+    expect(joinPatch(row(), seat, T0, () => true)).not.toHaveProperty('gote_rest');
+  });
+  test('a joiner who rests gets until Sunday morning, the inviter does not', () => {
+    const joined = { ...row({ corr_days: 3 }), ...joinPatch(row({ corr_days: 3 }), seat, wed, () => true, true) } as FriendRow;
+    expect(joined.gote_rest).toBe(true);
+    expect(joined.sente_rest).toBeUndefined();
+    expect(joined.move_deadline).toBe('2026-11-14T14:00:00.000Z');
+    const g = play(joined, 'sente', '7g7f', wed + 1000);
     expect(g.move_deadline).toBe('2026-11-15T08:00:00.000Z');
+    const back = play(g, 'gote', '3c3d', wed + 2000);
+    expect(back.move_deadline).toBe('2026-11-14T14:00:02.000Z');
+    expect(gameView(g, 'gote', names, wed).rest).toBe(true);
+    expect(gameView(g, 'sente', names, wed).rest).toBe(false);
+  });
+  test('an inviter who rests carries it into the seat and into a rematch', () => {
+    const open = row({ corr_days: 3, ...newInvite({ code: 'abcdefghij', by: 'u1', color: 'sente', speed: 'corr', rest: true }, T0) });
+    expect(open.inviter_rest).toBe(true);
+    const g = { ...open, ...joinPatch(open, seat, wed, () => true) } as FriendRow;
+    expect(g.sente_rest).toBe(true);
+    expect(g.move_deadline).toBe('2026-11-15T08:00:00.000Z');
+    const done = { ...g, ...resignPatch(play(play(g, 'sente', '7g7f', wed), 'gote', '3c3d', wed), 'sente', wed, names), rematch_by: 'sente' as const } as FriendRow;
+    const again = rematchRow(done, 'gote', 'abcdefghij', wed)!;
+    expect(again.gote_rest).toBe(true);
+    expect(again).not.toHaveProperty('sente_rest');
+    expect(again.move_deadline).toBe('2026-11-14T14:00:00.000Z');
+  });
+  test('switching it on mid-turn moves a deadline that falls inside, switching off never shortens', () => {
+    const g = play(join(row({ corr_days: 3 }), undefined, wed), 'sente', '7g7f', wed);
+    expect(restPatch(g, 'gote', true)).toEqual({ gote_rest: true, move_deadline: '2026-11-15T08:00:00.000Z' });
+    expect(restPatch(g, 'sente', true)).toEqual({ sente_rest: true });
+    const on = { ...g, ...restPatch(g, 'gote', true) } as FriendRow;
+    expect(restPatch(on, 'gote', true)).toBeNull();
+    expect(restPatch(on, 'gote', false)).toEqual({ gote_rest: false });
+    expect(restPatch({ ...g, status: 'finished' }, 'gote', true)).toBeNull();
+  });
+  test('the quiet hours are Friday 14:00 to Saturday 22:00 in Israel', () => {
+    expect(inRest(z('2026-11-13T11:59:00Z'))).toBe(false);
+    expect(inRest(z('2026-11-13T12:00:00Z'))).toBe(true);
+    expect(inRest(z('2026-11-14T19:59:00Z'))).toBe(true);
+    expect(inRest(z('2026-11-14T20:00:00Z'))).toBe(false);
   });
 });
 

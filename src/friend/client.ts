@@ -32,6 +32,18 @@ export function forgetSeat(id: string): void {
   try { localStorage.setItem(SEATS, JSON.stringify(all)); } catch { }
 }
 
+const REST = 'shogi-il.friend.rest';
+export const REST_LABEL = 'לא לשחק בשבת';
+export const REST_HINT = 'הזמן שלך למהלך לא ייגמר בין שישי ב־14:00 לשבת ב־22:00, וגם לא נשלח לך התראות בשעות האלה. הבחירה נשמרת במכשיר הזה למשחקים הבאים.';
+
+export function restPref(): boolean {
+  try { return localStorage.getItem(REST) === '1'; } catch { return false; }
+}
+
+export function setRestPref(on: boolean): void {
+  try { if (on) localStorage.setItem(REST, '1'); else localStorage.removeItem(REST); } catch { }
+}
+
 async function token(): Promise<string | null> {
   if (!accountsEnabled) return null;
   const { getSession } = await import('../lib/account');
@@ -93,10 +105,10 @@ export interface ListedGame {
 
 export const api = {
   create: (body: { speed: string; days?: number; clock?: { limit: number; byo: number }; color: string }) =>
-    call<{ code: string; id: string }>('create', body),
+    call<{ code: string; id: string }>('create', { ...body, ...(restPref() ? { rest: true } : {}) }),
   invite: (code: string) => call<InviteInfo>('invite', { code }),
   join: async (code: string) => {
-    const r = await call<{ id: string; seat?: string }>('join', { code });
+    const r = await call<{ id: string; seat?: string }>('join', { code, ...(restPref() ? { rest: true } : {}) });
     if (r.ok && r.data.seat) saveSeat(r.data.id, r.data.seat);
     return r;
   },
@@ -104,6 +116,7 @@ export const api = {
   mine: () => call<{ games: ListedGame[]; now: number }>('mine'),
   state: (id: string) => call<{ game: GameView }>('state', { id }),
   move: (id: string, usi: string, ply: number) => call<{ game: GameView }>('move', { id, usi, ply }),
+  rest: (id: string, on: boolean) => call<{ game: GameView }>('rest', { id, on }),
   resign: (id: string) => call<{ game: GameView }>('resign', { id }),
   impasse: (id: string) => call<{ game: GameView }>('impasse', { id }),
   takeback: (id: string, answer?: boolean) => call<{ game: GameView }>('takeback', { id, ...(answer === undefined ? {} : { answer }) }),

@@ -1,12 +1,12 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { createHash, randomBytes } from 'node:crypto';
 import {
-  claimPatch, type FriendRow, GUEST_NAME, gameView, impassePatch, inviteState, joinPatch, MAX_OPEN_INVITES, movePatch, type Names, newCode, newInvite,
-  type Patch, rematchAsk, rematchRow, resignPatch, type Seat, settle, sideOf, type Signal, signalPatch, takebackAnswer, takebackAsk, validInvite,
+  claimPatch, type FriendRow, GUEST_NAME, gameView, impassePatch, inRest, inviteState, joinPatch, MAX_OPEN_INVITES, movePatch, type Names, newCode, newInvite,
+  type Patch, rematchAsk, rematchRow, resignPatch, restPatch, rests, type Seat, settle, sideOf, type Signal, signalPatch, takebackAnswer, takebackAsk, validInvite,
 } from '../src/friend/core.js';
 import { TURN_MAIL_GAP_MS, turnEmail, turnPush } from '../src/friend/alerts.js';
 import { asGender } from '../src/lib/gender.js';
-import { FROM as MAIL_FROM, israelDay, REPLY_TO, unsubscribeUrl } from '../src/lib/notify.js';
+import { FROM as MAIL_FROM, REPLY_TO, unsubscribeUrl } from '../src/lib/notify.js';
 import { pushConfigured, sendOne } from '../src/lib/push-send.js';
 
 const ALLOWED_ORIGIN = /^https:\/\/((www\.)?shogi\.co\.il|shogi-israel-[a-z0-9-]+-enterdeether\.vercel\.app)$/;
@@ -116,8 +116,7 @@ async function pushTurn(client: SupabaseClient, to: string, opp: string, id: str
 async function mailTurn(client: SupabaseClient, to: string, nickname: string, opp: string, row: FriendRow, now: number): Promise<void> {
   const key = process.env.RESEND_API_KEY;
   const secret = process.env.CRON_SECRET;
-  const { weekday } = israelDay(new Date(now));
-  if (!key || !secret || weekday === 5 || weekday === 6) return;
+  if (!key || !secret) return;
   const { data: prefs } = await client.from('notification_prefs').select('email_turn, paused_reason').eq('user_id', to).maybeSingle();
   if (!prefs?.email_turn || prefs.paused_reason) return;
   const { data: recent } = await client.from('email_log').select('id').eq('user_id', to).eq('kind', 'turn').eq('game_id', row.id)
@@ -146,7 +145,7 @@ async function alertTurn(client: SupabaseClient, row: FriendRow, names: Names, n
   if (row.status !== 'active' || row.speed !== 'corr') return;
   const turn = row.ply % 2 === 0 ? 'sente' : 'gote';
   const to = row[`${turn}_user`];
-  if (!to) return;
+  if (!to || (rests(row, turn) && inRest(now))) return;
   const opp = names[turn === 'sente' ? 'gote' : 'sente'];
   const work = Promise.allSettled([pushTurn(client, to, opp, row.id), mailTurn(client, to, names[turn], opp, row, now)]);
   await Promise.race([work, new Promise((done) => setTimeout(done, 4000))]);
@@ -178,7 +177,7 @@ export async function POST(request: Request): Promise<Response> {
     const { count } = await client.from('friend_games').select('id', { count: 'exact', head: true })
       .eq('created_by', user).eq('status', 'open').gt('expires_at', new Date(now).toISOString());
     if ((count ?? 0) >= MAX_OPEN_INVITES) return fail('too-many', 429);
-    const made = await insertWithCode(client, newInvite({ code: '', by: user, ...input }, now));
+    const made = await insertWithCode(client, newInvite({ code: '', by: user, ...input, rest: body.rest === true }, now));
     return made ? json({ code: made.code, id: made.id }) : fail('save', 500);
   }
 
@@ -233,7 +232,7 @@ export async function POST(request: Request): Promise<Response> {
       token = randomBytes(32).toString('base64url');
       joiner.guest = hash(token);
     }
-    const joined = await save(client, row, joinPatch(row, joiner, now, () => randomBytes(1)[0] < 128));
+    const joined = await save(client, row, joinPatch(row, joiner, now, () => randomBytes(1)[0] < 128, body.rest === true));
     return joined ? json({ id: joined.id, seat: token }) : fail('taken', 409);
   }
 
@@ -271,6 +270,11 @@ export async function POST(request: Request): Promise<Response> {
       const next = await save(client, row, patch);
       if (!next) return fail('stale', 409);
       return json({ game: gameView(next, side, namesOf(next, await nicknames(client, [next.sente_user, next.gote_user])), Date.now()) });
+    }
+    case 'rest': {
+      if (typeof body.on !== 'boolean') return fail('bad-rest');
+      if (row.status !== 'active' || rests(row, side) === body.on) return reply(row);
+      return apply(restPatch(row, side, body.on));
     }
     case 'resign':
       return apply(resignPatch(row, side, now, names));

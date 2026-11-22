@@ -12,7 +12,7 @@ import { play as playSound, playMove } from '../learn/sound';
 import { Line } from '../play/game';
 import { liveBounds } from '../lib/live-bounds';
 import { SQUARE_RATIO } from '../lib/square-ratio';
-import { api } from './client';
+import { api, setRestPref } from './client';
 import { type GameView, type Ping, pingMove, type Signal } from './core';
 
 export type LoadError = 'not-player' | 'no-game' | 'network' | 'paused' | null;
@@ -31,7 +31,7 @@ export default class FriendCtrl {
   notice: string | null = null;
   alert: string | null = null;
   resignConfirm = false;
-  menu: 'messages' | 'safety' | 'keep' | null = null;
+  menu: 'messages' | 'safety' | 'keep' | 'rest' | null = null;
   reported = false;
   blocked = false;
   orientation: Color = 'sente';
@@ -289,6 +289,10 @@ export default class FriendCtrl {
     if (r.data.id) return r.data.id;
     if (r.data.game) this.apply(r.data.game);
     return null;
+  }
+  setRest(on: boolean): void {
+    setRestPref(on);
+    void this.act(api.rest(this.id, on));
   }
   claim(): void {
     this.menu = null;

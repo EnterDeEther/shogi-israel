@@ -4,7 +4,7 @@ import { localMove } from '../lib/move-notation';
 import { copyText, downloadKif, kifFileName, LISHOGI_IMPORT_URL } from '../lib/kif';
 import { scrollWithin } from '../lib/scroll-within';
 import { tipEl } from '../lib/info-tip-dom';
-import { gameUrl, personalUrl, SIGNAL_TEXT, SPEED_TEXT } from './client';
+import { gameUrl, personalUrl, REST_HINT, REST_LABEL, SIGNAL_TEXT, SPEED_TEXT } from './client';
 import { SIGNALS, type EndReason } from './core';
 import type FriendCtrl from './ctrl';
 
@@ -194,6 +194,7 @@ function status(ctrl: FriendCtrl, go: Go, onRematch: () => void, signedIn: boole
     else if (g.speed === 'corr') parts.push(el('span', { class: 'small muted' }, ` ${mine ? 'נשארו לך' : `ל${opp} נשארו`} `, el('span', { 'data-deadline-left': true }, hoursText(left)), ' למהלך.'));
   }
   if (!mine && g.speed === 'corr') parts.push(' ', nudgeLink(ctrl));
+  if (g.speed === 'corr') parts.push(' ', el('button', { type: 'button', class: 'link', 'data-fid': 'rest', 'aria-expanded': String(ctrl.menu === 'rest'), onclick: go(() => { ctrl.menu = ctrl.menu === 'rest' ? null : 'rest'; ctrl.redraw(); }) }, g.rest ? 'לא לשחק בשבת ✓' : 'הגדרת שבת'));
   if (g.guest[g.you]) parts.push(' ', el('button', { type: 'button', class: 'link', 'data-fid': 'keep', 'aria-expanded': String(ctrl.menu === 'keep'), onclick: go(() => { ctrl.menu = ctrl.menu === 'keep' ? null : 'keep'; ctrl.redraw(); }) }, 'שמירת המשחק שלי'));
   return el('div', { class: 'status-line', 'aria-live': 'polite' },
     ...parts,
@@ -247,6 +248,14 @@ function menuBox(ctrl: FriendCtrl, go: Go, signedIn: boolean): HTMLElement | nul
     return el('div', { class: 'friend-menu', role: 'group', 'aria-label': 'הודעות קבועות' },
       el('p', { class: 'small muted' }, 'אפשר לשלוח רק הודעות קבועות, כדי שהמשחק יישאר נעים ובטוח לכולם.'),
       el('div', { class: 'friend-chips' }, ...SIGNALS.map((m) => el('button', { type: 'button', class: 'choice', 'data-fid': `sig-${m}`, onclick: go(() => ctrl.send(m)) }, SIGNAL_TEXT[m]))));
+  }
+  if (ctrl.menu === 'rest') {
+    const box = el('input', { type: 'checkbox', id: 'friend-rest', 'data-fid': 'rest-box', disabled: ctrl.pending }) as HTMLInputElement;
+    box.checked = !!ctrl.game?.rest;
+    box.addEventListener('change', () => ctrl.setRest(box.checked));
+    return el('div', { class: 'friend-menu friend-rest', role: 'group', 'aria-label': 'שבת' },
+      el('label', { for: 'friend-rest' }, box, ' ', REST_LABEL),
+      el('p', { class: 'small muted' }, REST_HINT));
   }
   if (ctrl.menu === 'keep') {
     const url = personalUrl(ctrl.id);
