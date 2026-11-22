@@ -1,6 +1,6 @@
 // AGPL-3.0-or-later, like the rest of this site.
-import { makeKif, type KifEnd } from '../lib/kif';
-import { type GameEnd, Line, START_SFEN } from '../play/game';
+import { makeKif, type KifEnd } from '../lib/kif.js';
+import { type GameEnd, Line, START_SFEN } from '../play/game.js';
 
 export type Speed = 'corr' | 'live';
 export type Status = 'open' | 'active' | 'finished' | 'aborted' | 'cancelled';
