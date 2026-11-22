@@ -6,7 +6,7 @@ import {
   sfenAfter, WATCH_GAP_MS, watched,
 } from '../src/friend/core';
 import { lastKeys } from '../src/friend/thumb';
-import { blockedName, nameProblem, plainName, pre, tidyName } from '../src/friend/names';
+import { blockedName, LABEL_MAX, nameProblem, plainName, pre, tidyLabel, tidyName } from '../src/friend/names';
 
 const T0 = Date.parse('2026-11-10T10:00:00Z');
 const names = { sente: 'דין', gote: 'אורח' };
@@ -448,6 +448,12 @@ describe('names for players without an account', () => {
     expect(blockedName('Dana ok', words)).toBe(true);
     expect(blockedName('Okay', words)).toBe(false);
     expect(blockedName('Dana', words)).toBe(false);
+  });
+  test('a private game name is tidied and kept short', () => {
+    expect(tidyLabel('  המשחק   עם אבא ')).toBe('המשחק עם אבא');
+    expect([...tidyLabel('א'.repeat(50))]).toHaveLength(LABEL_MAX);
+    expect(tidyLabel('a\u0000b')).toBe('ab');
+    expect(tidyLabel(null)).toBe('');
   });
   test('a name in English gets a hyphen after a Hebrew letter in front of it', () => {
     expect(`בקשה ${pre('מ', 'Dana')}Dana`).toBe('בקשה מ-Dana');

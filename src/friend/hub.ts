@@ -6,7 +6,7 @@ import { copyText } from '../lib/kif';
 import { openBug, setBugContext } from './bug';
 import { api, endUrl, gameUrl, type InviteInfo, inviteUrl, lapsedSeen, type ListedGame, markLapsed, readSeats, rememberedInvite, rememberInvite, REST_HINT, REST_LABEL, restPref, saveName, savedName, setRestPref, SHORT_SPEED, signedIn, SPEED_TEXT, takeDropped } from './client';
 import { CORR_DAYS, MAX_SLOTS } from './core';
-import { NAME_MAX, type NameProblem, nameProblem, pre, tidyName } from './names';
+import { LABEL_MAX, NAME_MAX, type NameProblem, nameProblem, pre, tidyLabel, tidyName } from './names';
 import { thumbBoard } from './thumb';
 import { waiting as waitLine } from './waiting';
 
@@ -104,7 +104,37 @@ const endedText = (iso: string): string => {
 };
 const oppOf = (g: ListedGame): string => (g.you ? g.names[g.you === 'sente' ? 'gote' : 'sente'] : '');
 
-function gameRow(g: ListedGame): HTMLElement {
+interface Naming { editing: string | null; open: (id: string) => void; close: () => void; save: (g: ListedGame, label: string) => Promise<boolean> }
+
+function labelEditor(g: ListedGame, naming: Naming): HTMLElement {
+  const input = el('input', {
+    type: 'text', maxlength: String(LABEL_MAX), value: g.label ?? '', dir: 'auto', enterkeyhint: 'done',
+    'aria-label': 'שם למשחק', placeholder: 'למשל: המשחק הראשון עם אבא',
+  }) as HTMLInputElement;
+  const err = el('p', { class: 'friend-name__err', role: 'alert' });
+  const saveBtn = el('button', { type: 'button', class: 'btn' }, 'שמירה') as HTMLButtonElement;
+  const go = async () => {
+    saveBtn.disabled = true;
+    err.textContent = '';
+    if (!(await naming.save(g, tidyLabel(input.value)))) {
+      err.textContent = 'לא הצלחנו לשמור. כדאי לנסות שוב.';
+      saveBtn.disabled = false;
+    }
+  };
+  saveBtn.addEventListener('click', () => void go());
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); void go(); }
+    if (e.key === 'Escape') naming.close();
+  });
+  window.setTimeout(() => input.focus(), 0);
+  return el('div', { class: 'friend-field friend-name friend-label-edit' },
+    input,
+    err,
+    el('p', { class: 'small muted' }, 'השם נשמר רק אצלך, והחבר לא רואה אותו.'),
+    el('div', { class: 'friend-actions' }, saveBtn, el('button', { type: 'button', class: 'btn btn-ghost', onclick: naming.close }, 'ביטול')));
+}
+
+function gameRow(g: ListedGame, naming?: Naming): HTMLElement {
   const opp = oppOf(g);
   const what = SHORT_SPEED(g.speed, g.days, g.clock);
   const active = g.status === 'active';
@@ -115,11 +145,14 @@ function gameRow(g: ListedGame): HTMLElement {
   const hot = g.yourTurn || !!g.waits;
   return withBoard(`friend-row${hot ? ' turn' : ''}`, g.id, active ? thumbBoard(g.id, g.sfen, g.you, g.last) : null,
     el('a', { href: gameUrl(g.id), class: 'friend-row__main' },
-      el('strong', {}, `נגד ${opp}`),
+      el('strong', {}, !active && g.label ? el('bdi', {}, g.label) : `נגד ${opp}`),
+      !active && g.label ? el('span', { class: 'small muted' }, `נגד ${opp}`) : null,
       el('span', { class: 'small muted' }, active ? what : endedText(g.endedAt ?? g.updatedAt)),
       el('span', { class: 'small muted' }, movesText(g.ply))),
     el('span', { class: `friend-tag${hot ? ' hot' : ''}` }, result),
-    active ? el('a', { class: 'link friend-row__end', href: endUrl(g.id) }, 'סיום המשחק') : null,
+    active ? el('a', { class: 'link friend-row__end', href: endUrl(g.id) }, 'סיום המשחק')
+      : naming && naming.editing === g.id ? labelEditor(g, naming)
+        : naming ? el('button', { type: 'button', class: 'link friend-row__end', onclick: () => naming.open(g.id) }, g.label ? 'שינוי השם של המשחק' : 'הוספת שם למשחק') : null,
   );
 }
 
@@ -296,6 +329,28 @@ function homeSignedIn(root: HTMLElement): void {
       restField()),
   ];
 
+  let editing: string | null = null;
+  const rows = () => games.filter((g) => g.status === 'active' || (g.status !== 'open' && Date.now() - Date.parse(g.updatedAt) < 7 * 864e5))
+    .sort((a, b) => Number(b.status === 'active') - Number(a.status === 'active'));
+  const naming: Naming = {
+    editing: null,
+    open: (id) => { editing = id; drawList(); },
+    close: () => { editing = null; drawList(); },
+    save: async (g, label) => {
+      const r = await api.label(g.id, label);
+      if (!r.ok) return false;
+      g.label = r.data.label;
+      editing = null;
+      drawList();
+      return true;
+    },
+  };
+  const drawList = () => {
+    const shownRows = rows();
+    naming.editing = editing;
+    list.hidden = !shownRows.length;
+    list.replaceChildren(...shownRows.slice(0, 12).map((g) => gameRow(g, naming)));
+  };
   const draw = () => {
     const open = waiting();
     const used = open.length + running().length;
@@ -316,11 +371,8 @@ function homeSignedIn(root: HTMLElement): void {
       }
     }
     shown = { wait: waitKey, make: makeKey };
-    const rows = games.filter((g) => g.status === 'active' || (g.status !== 'open' && Date.now() - Date.parse(g.updatedAt) < 7 * 864e5))
-      .sort((a, b) => Number(b.status === 'active') - Number(a.status === 'active'));
-    listBox.hidden = !rows.length && !used;
-    list.hidden = !rows.length;
-    list.replaceChildren(...rows.slice(0, 12).map(gameRow));
+    listBox.hidden = !rows().length && !used;
+    if (!editing) drawList();
     places.textContent = `מקומות תפוסים: ${used} מתוך ${MAX_SLOTS}. משחק שרץ והזמנה שמחכה לחבר תופסים מקום.`;
     const done = games.filter((g) => g.status === 'finished' && g.you);
     const won = done.filter((g) => g.winner === g.you).length;

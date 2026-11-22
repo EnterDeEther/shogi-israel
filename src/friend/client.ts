@@ -176,6 +176,7 @@ export interface ListedGame {
   expiresAt: string;
   updatedAt: string;
   endedAt?: string | null;
+  label?: string | null;
   yourTurn: boolean;
   inviter: string;
   kif: string | null;
@@ -195,6 +196,7 @@ export const api = {
   },
   cancel: (code: string) => call('cancel', { code }),
   mine: () => call<{ games: ListedGame[]; now: number }>('mine'),
+  label: (id: string, label: string) => call<{ label: string | null }>('label', { id, label }),
   state: async (id: string) => {
     const r = await call<{ game: GameView }>('state', { id });
     if (offered?.id !== id || (!r.ok && r.status !== 403)) return r;

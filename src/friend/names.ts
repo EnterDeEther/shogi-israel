@@ -41,4 +41,8 @@ export function blockedName(name: string, words: BlockedWord[]): boolean {
   });
 }
 
+export const LABEL_MAX = 30;
+
+export const tidyLabel = (v: unknown): string => [...tidyName(v).replace(/\p{C}/gu, '')].slice(0, LABEL_MAX).join('').trim();
+
 export const pre = (letter: string, name: string): string => (/^[A-Za-z0-9]/.test(name) ? `${letter}-` : letter);

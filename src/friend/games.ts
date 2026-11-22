@@ -46,7 +46,7 @@ async function friendGames(): Promise<Row[]> {
     return {
       key: `f${g.id}`,
       at: Date.parse(g.updatedAt),
-      title: `נגד ${opp}`,
+      title: g.label ? `${g.label} · נגד ${opp}` : `נגד ${opp}`,
       detail: `${SHORT_SPEED(g.speed, g.days, g.clock)} · ${g.ply} מהלכים`,
       result, tone, kif: g.kif,
       href: active ? gameUrl(g.id) : undefined,
