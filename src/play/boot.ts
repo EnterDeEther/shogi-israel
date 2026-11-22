@@ -7,7 +7,7 @@ import { soundControls } from '../learn/sound-prefs';
 import { el, hebrewFontSwitch, icon, pieceSetSwitch, themeSwitch } from '../learn/view';
 import PlayCtrl from './ctrl';
 import { engineSupport } from './engine';
-import { clockText, mount, render } from './view';
+import { clockText, mount, PHONE, render } from './view';
 import { currentPieceSet } from '../lib/piece-set';
 import { startAdCounts } from '../lib/ad-count';
 import { playTour } from './tour';
@@ -147,6 +147,7 @@ export function bootPlay(root: HTMLElement): PlayCtrl {
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') wake = null; keepAwake(); });
   window.setInterval(keepAwake, 2000);
 
+  window.matchMedia(PHONE).addEventListener('change', redraw);
   render(ctrl, root, openSettings, support);
   root.querySelector<HTMLElement>('.play__overlay:not([hidden]) [data-autofocus]')?.focus({ preventScroll: true });
   return ctrl;

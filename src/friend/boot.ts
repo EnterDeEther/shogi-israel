@@ -1,7 +1,7 @@
 // AGPL-3.0-or-later, like the rest of this site.
 import { loadPrefs } from '../learn/prefs';
 import { preloadSounds } from '../learn/sound';
-import { mount } from '../play/view';
+import { mount, PHONE } from '../play/view';
 import { accountsEnabled } from '../lib/account-config';
 import { setBugContext } from './bug';
 import { gameUrl, offerSeat, signedIn } from './client';
@@ -184,5 +184,5 @@ export async function bootFriendGame(root: HTMLElement): Promise<void> {
       d.textContent = spent === null ? '' : turnText(spent);
     });
   }, 250);
-  window.matchMedia('(max-width: 859.98px)').addEventListener('change', redraw);
+  window.matchMedia(PHONE).addEventListener('change', redraw);
 }

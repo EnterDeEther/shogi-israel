@@ -37,7 +37,7 @@ const KINDS: [string, string][] = [
 
 export function mountBug(box: HTMLElement): void {
   let kind = '';
-  const chips = el('div', { class: 'friend-chips', role: 'group', 'aria-label': 'מה לא עבד?' });
+  const chips = el('div', { class: 'game-chips', role: 'group', 'aria-label': 'מה לא עבד?' });
   const note = el('textarea', { id: 'friend-bug-note', rows: '3', maxlength: '500' }) as HTMLTextAreaElement;
   const send = el('button', { type: 'button', class: 'btn' }, 'שליחה') as HTMLButtonElement;
   const status = el('p', { class: 'friend-msg', role: 'status' });

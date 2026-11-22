@@ -10,6 +10,7 @@ import { pre } from './names';
 import { waiting } from './waiting';
 import { SIGNALS, type EndReason, type Reply } from './core';
 import type FriendCtrl from './ctrl';
+import { isPhone, reveal } from '../play/view';
 
 const MARK: Record<Color, string> = { sente: '☗', gote: '☖' };
 const SIDE: Record<Color, string> = { sente: 'פותח', gote: 'משיב' };
@@ -351,9 +352,9 @@ function keepLine(ctrl: FriendCtrl, go: Go): HTMLElement | null {
 
 function menuBox(ctrl: FriendCtrl, go: Go, signedIn: boolean, phone: boolean): HTMLElement | null {
   if (ctrl.menu === 'messages') {
-    return el('div', { class: 'friend-menu', role: 'group', 'aria-label': 'הודעות קבועות' },
+    return el('div', { class: 'game-menu', role: 'group', 'aria-label': 'הודעות קבועות' },
       el('p', { class: 'small muted' }, 'אפשר לשלוח רק הודעות קבועות, כדי שהמשחק יישאר נעים ובטוח לכולם.'),
-      el('div', { class: 'friend-chips' }, ...SIGNALS.map((m) => el('button', { type: 'button', class: 'choice', 'data-fid': `sig-${m}`, onclick: go(() => ctrl.send(m)) }, SIGNAL_TEXT[m]))));
+      el('div', { class: 'game-chips' }, ...SIGNALS.map((m) => el('button', { type: 'button', class: 'choice', 'data-fid': `sig-${m}`, onclick: go(() => ctrl.send(m)) }, SIGNAL_TEXT[m]))));
   }
   if (ctrl.menu === 'end' && ctrl.active) {
     const g = ctrl.game!;
@@ -364,11 +365,11 @@ function menuBox(ctrl: FriendCtrl, go: Go, signedIn: boolean, phone: boolean): H
         el('span', {}, ...text));
     const keep = el('button', { type: 'button', class: 'friend-end__keep', 'data-fid': 'end-keep', onclick: go(() => { ctrl.menu = null; ctrl.redraw(); }) }, 'ממשיכים לשחק');
     if (g.ply < 2) {
-      return el('div', { class: 'friend-menu friend-end', role: 'group', 'aria-label': 'סיום המשחק' },
+      return el('div', { class: 'game-menu friend-end', role: 'group', 'aria-label': 'סיום המשחק' },
         option('ביטול המשחק', 'end-abort', () => ctrl.resign(), ['עוד לא שיחקתם שניכם מהלך, אז המשחק פשוט מתבטל, בלי תוצאה.'], true),
         keep);
     }
-    return el('div', { class: 'friend-menu friend-end', role: 'group', 'aria-label': 'סיום המשחק' },
+    return el('div', { class: 'game-menu friend-end', role: 'group', 'aria-label': 'סיום המשחק' },
       g.endBy === ctrl.opp
         ? option('לסיים בלי תוצאה', 'end-accept', () => ctrl.answerEnd(true), ['יש הצעה כזאת ' + pre('מ', g.names[ctrl.opp]), opp(), '. המשחק נגמר עכשיו, בלי מנצח ובלי מפסיד.'])
         : g.endBy === g.you
@@ -379,16 +380,16 @@ function menuBox(ctrl: FriendCtrl, go: Go, signedIn: boolean, phone: boolean): H
       keep);
   }
   if (ctrl.menu === 'pieces') {
-    return el('div', { class: 'friend-menu friend-pieces', role: 'group', 'aria-label': 'סימון הכלים' },
+    return el('div', { class: 'game-menu game-pieces', role: 'group', 'aria-label': 'סימון הכלים' },
       el('div', { class: 'pieces-switch' }, pieceSetSwitch(), tipEl('pieces')));
   }
   if (ctrl.menu === 'more') {
     const g = ctrl.game!;
     const pick = (label: string, fid: string, fn: () => void) => el('button', { type: 'button', class: 'choice', 'data-fid': fid, onclick: go(fn) }, label);
     const oppTurn = ctrl.active && g.speed === 'corr' && ctrl.line.current.turn === ctrl.opp;
-    return el('div', { class: 'friend-menu friend-extra', role: 'group', 'aria-label': 'עוד' },
+    return el('div', { class: 'game-menu game-more', role: 'group', 'aria-label': 'עוד' },
       phone ? replay(ctrl, go) : null,
-      el('div', { class: 'friend-chips' },
+      el('div', { class: 'game-chips' },
         pick('בטיחות', 'tool-shield', () => { ctrl.menu = 'safety'; ctrl.redraw(); }),
         pick('הפיכת הלוח', 'tool-flip', () => { ctrl.menu = null; ctrl.flip(); }),
         ctrl.active && g.speed === 'corr' ? pick(g.rest ? 'לא לשחק בשבת ✓' : 'הגדרת שבת', 'rest', () => { ctrl.menu = 'rest'; ctrl.redraw(); }) : null,
@@ -401,7 +402,7 @@ function menuBox(ctrl: FriendCtrl, go: Go, signedIn: boolean, phone: boolean): H
     const box = el('input', { type: 'checkbox', id: 'friend-rest', 'data-fid': 'rest-box', disabled: ctrl.pending }) as HTMLInputElement;
     box.checked = !!ctrl.game?.rest;
     box.addEventListener('change', () => ctrl.setRest(box.checked));
-    return el('div', { class: 'friend-menu friend-rest', role: 'group', 'aria-label': 'שבת' },
+    return el('div', { class: 'game-menu friend-rest', role: 'group', 'aria-label': 'שבת' },
       el('label', { for: 'friend-rest' }, box, ' ', REST_LABEL),
       el('p', { class: 'small muted' }, REST_HINT));
   }
@@ -412,10 +413,10 @@ function menuBox(ctrl: FriendCtrl, go: Go, signedIn: boolean, phone: boolean): H
       e.preventDefault();
       copyBtn.textContent = url && (await copyText(url)) ? 'הועתק ✓' : 'ההעתקה נכשלה';
     });
-    return el('div', { class: 'friend-menu', role: 'group', 'aria-label': 'שמירת המשחק' },
+    return el('div', { class: 'game-menu', role: 'group', 'aria-label': 'שמירת המשחק' },
       el('p', { class: 'small' }, 'בלי חשבון המשחק שמור רק בדפדפן הזה. עם הקישור האישי אפשר לחזור אליו מכל דפדפן ומכל מכשיר.'),
       url
-        ? el('div', { class: 'friend-chips' },
+        ? el('div', { class: 'game-chips' },
           copyBtn,
           el('a', { class: 'choice', href: `https://wa.me/?text=${encodeURIComponent(`הקישור האישי שלי למשחק השוגי: ${url}`)}`, target: '_blank', rel: 'noopener', 'data-fid': 'keep-wa' }, 'שליחה לעצמי בוואטסאפ'))
         : null,
@@ -427,12 +428,12 @@ function menuBox(ctrl: FriendCtrl, go: Go, signedIn: boolean, phone: boolean): H
   if (ctrl.menu === 'safety') {
     const g = ctrl.game!;
     const oppIsUser = !g.guest[ctrl.opp];
-    return el('div', { class: 'friend-menu', role: 'group', 'aria-label': 'בטיחות' },
+    return el('div', { class: 'game-menu', role: 'group', 'aria-label': 'בטיחות' },
       ctrl.reported
         ? el('p', {}, 'תודה. הדיווח נשלח לצוות האתר.')
         : el('div', {},
           el('p', { class: 'small' }, 'משהו לא בסדר? הדיווח נשלח לצוות האתר יחד עם המשחק.'),
-          el('div', { class: 'friend-chips' },
+          el('div', { class: 'game-chips' },
             ...([['name', 'שם לא ראוי'], ['cheat', 'משחק לא הוגן'], ['stall', 'מעכב את המשחק'], ['other', 'משהו אחר']] as const).map(([k, label]) =>
               el('button', { type: 'button', class: 'choice', 'data-fid': `report-${k}`, onclick: go(() => void ctrl.report(k)) }, label)))),
       signedIn && oppIsUser
@@ -463,16 +464,7 @@ function problem(ctrl: FriendCtrl): HTMLElement {
   );
 }
 
-const PHONE = '(max-width: 859.98px)';
-const isPhone = (): boolean => window.matchMedia(PHONE).matches;
 let shown = '';
-
-function reveal(target: HTMLElement | null): void {
-  if (!target) return;
-  const r = target.getBoundingClientRect();
-  const over = r.bottom - window.innerHeight + 10;
-  if (over > 0) window.scrollTo({ top: window.scrollY + over, behavior: 'smooth' });
-}
 
 export function render(ctrl: FriendCtrl, root: HTMLElement, opts: { signedIn: boolean; onRematch: () => void }): void {
   const go: Go = (fn) => (e) => { e.preventDefault(); e.stopPropagation(); fn(); };
