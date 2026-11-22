@@ -6,7 +6,7 @@ import { copyText } from '../lib/kif';
 import { openBug, setBugContext } from './bug';
 import { api, endUrl, gameUrl, type InviteInfo, inviteUrl, lapsedSeen, type ListedGame, markLapsed, readSeats, rememberedInvite, rememberInvite, REST_HINT, REST_LABEL, restPref, setRestPref, SHORT_SPEED, signedIn, SPEED_TEXT, takeDropped } from './client';
 import { CORR_DAYS, MAX_SLOTS } from './core';
-import { miniBoard } from './mini';
+import { thumbBoard } from './thumb';
 import { waiting as waitLine } from './waiting';
 
 const COLOR_TEXT: Record<Color | 'random', string> = { random: 'הגרלה', sente: 'פותח (☗)', gote: 'משיב (☖)' };
@@ -98,7 +98,7 @@ function gameRow(g: ListedGame): HTMLElement {
       : g.status === 'aborted' ? (g.ply >= 2 ? 'בלי תוצאה' : 'בוטל')
         : !g.winner ? 'תיקו' : g.winner === g.you ? 'ניצחת' : 'הפסד';
   const hot = g.yourTurn || !!g.waits;
-  return withBoard(`friend-row${hot ? ' turn' : ''}`, g.id, miniBoard(g.sfen, g.you, g.last),
+  return withBoard(`friend-row${hot ? ' turn' : ''}`, g.id, thumbBoard(g.id, g.sfen, g.you, g.last),
     el('a', { href: gameUrl(g.id), class: 'friend-row__main' },
       el('strong', {}, `נגד ${opp}`),
       el('span', { class: 'small muted' }, what),
@@ -111,7 +111,7 @@ function gameRow(g: ListedGame): HTMLElement {
 function withBoard(cls: string, id: string, board: HTMLElement | null, ...body: (HTMLElement | null)[]): HTMLElement {
   if (!board) return el('li', { class: cls }, ...body);
   return el('li', { class: `${cls} friend-row--board` },
-    el('a', { href: gameUrl(id), class: 'friend-mini-link', tabindex: '-1', 'aria-hidden': 'true' }, board),
+    el('a', { href: gameUrl(id), class: 'friend-thumb-link', tabindex: '-1', 'aria-hidden': 'true' }, board),
     el('div', { class: 'friend-row__body' }, ...body));
 }
 
@@ -125,7 +125,7 @@ function deviceGames(box: HTMLElement, list: HTMLElement, skip: (id: string) => 
     list.replaceChildren(...games.map((g) => {
       const opp = g.names[g.you === 'sente' ? 'gote' : 'sente'];
       const yourTurn = g.status === 'active' && (g.ply % 2 === 0 ? 'sente' : 'gote') === g.you;
-      return withBoard(`friend-row${yourTurn ? ' turn' : ''}`, g.id, miniBoard(g.sfen, g.you, g.moves.at(-1)),
+      return withBoard(`friend-row${yourTurn ? ' turn' : ''}`, g.id, thumbBoard(g.id, g.sfen, g.you, g.moves.at(-1)),
         el('a', { href: gameUrl(g.id), class: 'friend-row__main' }, el('strong', {}, `נגד ${opp}`), el('span', { class: 'small muted' }, movesText(g.ply))),
         el('span', { class: `friend-tag${yourTurn ? ' hot' : ''}` }, g.status === 'active' ? (yourTurn ? 'תורך' : `התור של ${opp}`) : 'הסתיים'));
     }));

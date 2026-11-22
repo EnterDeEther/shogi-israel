@@ -162,18 +162,14 @@ a.friend-row__main:hover strong { text-decoration: underline; }
 .friend-row--board { flex-wrap: nowrap; align-items: flex-start; gap: 14px; }
 .friend-row__body { flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding-top: 2px; }
 .friend-row__body .friend-row__main { flex: 1 1 150px; }
-.friend-mini-link { flex: none; display: block; line-height: 0; }
-.friend-mini {
-  container-type: inline-size; display: grid; grid-template-columns: repeat(9, 1fr); grid-template-rows: repeat(9, 1fr);
-  width: clamp(118px, 34vw, 156px); aspect-ratio: 1; box-sizing: border-box;
-  background-color: var(--kaya); border: 1.5px solid var(--grid); border-radius: 4px; box-shadow: var(--shadow-board);
-  background-image: linear-gradient(to right, color-mix(in srgb, var(--grid) 55%, transparent) 1px, transparent 1px), linear-gradient(to bottom, color-mix(in srgb, var(--grid) 55%, transparent) 1px, transparent 1px);
-  background-size: calc(100% / 9) calc(100% / 9);
-}
-.mini-sq { display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 0; }
-.mini-sq.last { background: rgba(184, 54, 31, 0.24); }
-.friend-mini .pchip { margin: 0; vertical-align: 0; filter: none; font-size: 8px; font-size: calc(100cqi / 9 / 1.9); }
-.friend-mini .mini-away { transform: rotate(180deg); }
+.friend-thumb-link { flex: none; display: block; line-height: 0; }
+.friend-thumb.play { container-type: inline-size; display: block; margin: 0; width: clamp(118px, 34vw, 156px); }
+.friend-thumb .sg-wrap { border: 1.5px solid var(--grid); border-radius: 2px; box-shadow: var(--shadow-board); }
+.friend-thumb.play sg-pieces piece::after { font-size: 12.5cqi; letter-spacing: 0; }
+html[data-pieces="chess"] .friend-thumb.play sg-pieces piece:is(.king, .rook, .bishop, .gold, .silver, .knight, .lance, .pawn)::after { font-size: 12.4cqi; }
+html[data-pieces="chess"] .friend-thumb.play sg-pieces piece:is(.dragon, .horse, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { font-size: 10cqi; }
+html[data-pieces="hebrew"] .friend-thumb.play sg-pieces piece:is(.bishop, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { font-size: 10cqi; }
+.friend-thumb.play piece { --arrows: none; filter: none; }
 .friend-waiting { display: inline-flex; align-items: baseline; gap: 8px; direction: rtl; font-weight: 600; color: var(--ink); }
 .friend-dots { display: inline-flex; align-items: center; gap: 4px; flex: none; }
 .friend-dots i { display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--seal); animation: friend-dot 1.2s ease-in-out infinite; }

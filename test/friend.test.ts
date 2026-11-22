@@ -5,7 +5,7 @@ import {
   rematchAsk, rematchRow, remindedPatch, remindSide, resignPatch, restPatch, settle, signalPatch, takebackAnswer, takebackAsk, takebackCancel, validInvite,
   sfenAfter, WATCH_GAP_MS, watched,
 } from '../src/friend/core';
-import { lastSquares, sfenCells } from '../src/friend/mini';
+import { lastKeys } from '../src/friend/thumb';
 
 const T0 = Date.parse('2026-11-10T10:00:00Z');
 const names = { sente: 'דין', gote: 'אורח' };
@@ -409,22 +409,12 @@ describe('board picture in the games list', () => {
     const ping = { ply: 1, status: 'active', usi: '7g7f', deadline: Date.parse(moved.move_deadline!), prev: T0, rev: T0 + 5000 };
     expect(pingMove(gameView(start, 'gote', names, T0), ping)!.sfen).toBe(gameView(moved, 'gote', names, T0 + 5000).sfen);
   });
-  test('the board is read square by square, top left first', () => {
-    const cells = sfenCells('lnsgkgsnl/1r5b1/pppppp1pp/6p2/9/2P6/PP1PPPPPP/1B5R1/+LNSGKGSNL b - 3');
-    expect(cells).toHaveLength(81);
-    expect(cells[0]).toEqual({ p: 'L', sente: false });
-    expect(cells[10]).toEqual({ p: 'R', sente: false });
-    expect(cells[72]).toEqual({ p: '+L', sente: true });
-    expect(cells[47]).toEqual({ p: 'P', sente: true });
-    expect(cells[40]).toBeNull();
-    expect(sfenCells('9/9 b - 1')).toEqual([]);
-  });
-  test('the last move marks where it came from and where it went', () => {
-    expect(lastSquares('7g7f')).toEqual([56, 47]);
-    expect(lastSquares('8h2b+')).toEqual([64, 16]);
-    expect(lastSquares('P*5e')).toEqual([40]);
-    expect(lastSquares(null)).toEqual([]);
-    expect(lastSquares('junk')).toEqual([]);
+  test('the last move is marked where it came from and where it went', () => {
+    expect(lastKeys('7g7f')).toEqual(['7g', '7f']);
+    expect(lastKeys('8h2b+')).toEqual(['8h', '2b']);
+    expect(lastKeys('P*5e')).toEqual(['5e']);
+    expect(lastKeys(null)).toEqual([]);
+    expect(lastKeys('junk')).toEqual([]);
   });
 });
 
