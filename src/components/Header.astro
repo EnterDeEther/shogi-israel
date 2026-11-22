@@ -260,6 +260,7 @@ const DESK_SETTINGS: NavLink = { href: '/settings/', label: 'הגדרות' };
   :global(html[data-theme="dark"]) .theme-row .i-sun, :global(html[data-theme="dark"]) .theme-row .t-light { display: inline; }
   .bar:has(.quick) > .theme-btn { display: none; }
   @media (max-width: 374px) { .bar:has(.quick) .brand-name { display: none; } }
+  @media (min-width: 375px) and (max-width: 400px) { :global(html[data-signed-in]) .bar:has(.quick) { gap: 8px; } }
 
   .nav-wide { display: none; }
   .nav-narrow summary {
