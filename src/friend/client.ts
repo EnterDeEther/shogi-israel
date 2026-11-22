@@ -1,6 +1,6 @@
 // AGPL-3.0-or-later, like the rest of this site.
 import type { GameView, Signal } from './core';
-import { accountsEnabled } from '../lib/account-config';
+import { accountsEnabled, AUTH_STORAGE_KEY } from '../lib/account-config';
 
 export { rememberedInvite, rememberInvite } from './pending';
 
@@ -82,8 +82,42 @@ async function token(): Promise<string | null> {
   return (await getSession())?.access_token ?? null;
 }
 
+const DROPPED = 'shogi-il.friend.dropped';
+const RECHECK_MS = 60_000;
+let checking: Promise<boolean> | null = null;
+let checkedAt = 0;
+
+async function sessionDropped(): Promise<boolean> {
+  const { supabase } = await import('../lib/account');
+  const { data, error } = await supabase().auth.getUser();
+  if (data.user || !error) return false;
+  const status = (error as { status?: number }).status;
+  if (error.name !== 'AuthSessionMissingError' && status !== 401 && status !== 403) return false;
+  await supabase().auth.signOut({ scope: 'local' }).catch(() => {});
+  try { localStorage.removeItem(AUTH_STORAGE_KEY); } catch { }
+  try { sessionStorage.setItem(DROPPED, '1'); } catch { }
+  return true;
+}
+
+function checkSession(): Promise<boolean> {
+  if (checking && Date.now() - checkedAt < RECHECK_MS) return checking;
+  checkedAt = Date.now();
+  return (checking = sessionDropped());
+}
+
+export function takeDropped(): boolean {
+  try {
+    const was = sessionStorage.getItem(DROPPED) === '1';
+    sessionStorage.removeItem(DROPPED);
+    return was;
+  } catch {
+    return false;
+  }
+}
+
 export async function signedIn(): Promise<boolean> {
-  return !!(await token());
+  if (!(await token())) return false;
+  return !(await checkSession());
 }
 
 export interface ApiResult<T> { ok: boolean; status: number; error?: string; data: T }
@@ -99,6 +133,7 @@ export async function call<T = Record<string, unknown>>(action: string, body: Re
       body: JSON.stringify({ action, ...body, ...(seat ? { seat } : {}) }),
     });
     const data = await res.json().catch(() => ({}));
+    if (t && (res.status === 401 || res.status === 403) && (await checkSession()) && !(await token())) location.reload();
     return { ok: res.ok, status: res.status, error: data.error, data };
   } catch {
     return { ok: false, status: 0, error: 'network', data: {} as T };

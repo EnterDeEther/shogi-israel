@@ -3,6 +3,7 @@ import { gameEmail, gamePush, turnEmail, turnPush } from '../src/friend/alerts';
 import {
   afterRest, claimPatch, clockAt, endAnswer, endAsk, endCancel, type FriendRow, gameView, inRest, inviteState, joinPatch, movePatch, newCode, newInvite, pingIsOld, pingMove,
   rematchAsk, rematchRow, remindedPatch, remindSide, resignPatch, restPatch, settle, signalPatch, takebackAnswer, takebackAsk, takebackCancel, validInvite,
+  WATCH_GAP_MS, watched,
 } from '../src/friend/core';
 
 const T0 = Date.parse('2026-11-10T10:00:00Z');
@@ -383,6 +384,14 @@ describe('turn alerts', () => {
     expect(m.text).toContain('10:00');
     expect(m.html).toContain('k=turn');
     expect(m.text).not.toContain('⟦');
+  });
+  test('no turn alert while the other player just moved and is watching', () => {
+    const start = join(row({ corr_days: 3 }));
+    expect(watched(start, T0 + 1000)).toBe(false);
+    const first = play(start, 'sente', '7g7f', T0 + 5000);
+    expect(watched(first, T0 + 5000 + WATCH_GAP_MS - 1)).toBe(true);
+    expect(watched(first, T0 + 5000 + WATCH_GAP_MS)).toBe(false);
+    expect(watched({ ...first, turn_started_at: null }, T0 + 6000)).toBe(false);
   });
 });
 

@@ -110,6 +110,9 @@ export function remindSide(row: FriendRow, now: number): Color | null {
 
 export const remindedPatch = (row: FriendRow): Patch => ({ signal: { ...row.signal, rem: remindKey(row) } });
 
+export const WATCH_GAP_MS = 3 * 60 * 1000;
+export const watched = (row: FriendRow, now: number): boolean => row.ply > 0 && now - ms(row.turn_started_at) < WATCH_GAP_MS;
+
 export function newCode(rand: (n: number) => Uint8Array): string {
   const abc = 'abcdefghijkmnpqrstuvwxyz23456789';
   return Array.from(rand(10), (b) => abc[b % abc.length]).join('');
