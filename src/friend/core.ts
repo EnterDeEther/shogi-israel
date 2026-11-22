@@ -37,6 +37,8 @@ export interface FriendRow {
   inviter_rest?: boolean;
   sente_rest?: boolean;
   gote_rest?: boolean;
+  sente_name?: string | null;
+  gote_name?: string | null;
   status: Status;
   start_sfen: string;
   moves: string[];
@@ -151,7 +153,7 @@ export function inviteState(row: FriendRow, seat: Seat, now: number): InviteStat
   return 'open';
 }
 
-export function joinPatch(row: FriendRow, joiner: Seat, now: number, coin: () => boolean, rest = false): Patch {
+export function joinPatch(row: FriendRow, joiner: Seat, now: number, coin: () => boolean, rest = false, nick: { inviter?: string; joiner?: string } = {}): Patch {
   const inviterColor: Color = row.inviter_color === 'random' ? (coin() ? 'sente' : 'gote') : row.inviter_color;
   const joinerColor = other(inviterColor);
   const live = row.speed === 'live';
@@ -159,6 +161,8 @@ export function joinPatch(row: FriendRow, joiner: Seat, now: number, coin: () =>
   return {
     ...(inviterRest ? { [`${inviterColor}_rest`]: true } : {}),
     ...(rest ? { [`${joinerColor}_rest`]: true } : {}),
+    ...(nick.inviter ? { [`${inviterColor}_name`]: nick.inviter } : {}),
+    ...(nick.joiner && joiner.user ? { [`${joinerColor}_name`]: nick.joiner } : {}),
     status: 'active',
     [`${inviterColor}_user`]: row.created_by,
     [`${joinerColor}_user`]: joiner.user ?? null,
@@ -171,11 +175,11 @@ export function joinPatch(row: FriendRow, joiner: Seat, now: number, coin: () =>
   } as Patch;
 }
 
-export function claimPatch(row: FriendRow, user: string, guest: string | null | undefined): Patch | null {
+export function claimPatch(row: FriendRow, user: string, guest: string | null | undefined, nick?: string): Patch | null {
   if (!guest || row.status === 'open' || row.status === 'cancelled') return null;
   const side: Color | null = row.sente_guest === guest && !row.sente_user ? 'sente' : row.gote_guest === guest && !row.gote_user ? 'gote' : null;
   if (!side || row[`${other(side)}_user`] === user) return null;
-  return { [`${side}_user`]: user, [`${side}_guest`]: null } as Patch;
+  return { [`${side}_user`]: user, [`${side}_guest`]: null, ...(nick ? { [`${side}_name`]: nick } : {}) } as Patch;
 }
 
 export const lineOf = (row: Pick<FriendRow, 'start_sfen' | 'moves'>): Line => new Line(row.start_sfen, row.moves);
@@ -331,6 +335,8 @@ export function rematchRow(row: FriendRow, side: Color, code: string, now: numbe
     gote_user: row.sente_user,
     sente_guest: row.gote_guest,
     gote_guest: row.sente_guest,
+    ...(row.gote_name ? { sente_name: row.gote_name } : {}),
+    ...(row.sente_name ? { gote_name: row.sente_name } : {}),
     ...(rests(row, 'gote') ? { sente_rest: true } : {}),
     ...(rests(row, 'sente') ? { gote_rest: true } : {}),
     status: 'active',

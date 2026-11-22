@@ -283,6 +283,18 @@ describe('guest seats', () => {
     const mine = { ...g, ...claimPatch(g, 'u2', seat) } as FriendRow;
     expect(claimPatch(mine, 'u3', seat)).toBeNull();
   });
+  test('names are fixed when the seat is taken and travel into a rematch', () => {
+    const g = { ...row(), ...joinPatch(row(), { user: 'u2' }, T0, () => true, false, { inviter: 'דין', joiner: 'יעל' }) } as FriendRow;
+    expect(g.sente_name).toBe('דין');
+    expect(g.gote_name).toBe('יעל');
+    const guest = joinPatch(row(), { guest: seat }, T0, () => true, false, { inviter: 'דין', joiner: 'יעל' });
+    expect(guest).not.toHaveProperty('gote_name');
+    expect(claimPatch(join(row()), 'u2', seat, 'יעל')).toEqual({ gote_user: 'u2', gote_guest: null, gote_name: 'יעל' });
+    const done = { ...g, status: 'finished' as const, rematch_by: 'sente' as const };
+    const again = rematchRow(done, 'gote', 'abcdefghij', T0)!;
+    expect(again.sente_name).toBe('יעל');
+    expect(again.gote_name).toBe('דין');
+  });
   test('an invite whose owner is gone reads as cancelled', () => {
     expect(inviteState({ ...row(), created_by: null }, { user: 'u2' }, T0)).toBe('cancelled');
   });

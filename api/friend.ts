@@ -52,9 +52,11 @@ async function nicknames(client: SupabaseClient, ids: (string | null)[]): Promis
 }
 
 function namesOf(row: FriendRow, nick: Map<string, string>): Names {
-  const name = (user: string | null) => (user ? nick.get(user) ?? 'שחקן' : GUEST_NAME);
-  return { sente: name(row.sente_user), gote: name(row.gote_user) };
+  const name = (kept: string | null | undefined, user: string | null) => kept || (user ? nick.get(user) ?? 'שחקן' : GUEST_NAME);
+  return { sente: name(row.sente_name, row.sente_user), gote: name(row.gote_name, row.gote_user) };
 }
+
+const unnamed = (row: FriendRow): (string | null)[] => [row.sente_name ? null : row.sente_user, row.gote_name ? null : row.gote_user];
 
 async function load(client: SupabaseClient, by: 'id' | 'code', value: string): Promise<FriendRow | null> {
   const { data } = await client.from('friend_games').select('*').eq(by, value).maybeSingle();
@@ -187,7 +189,7 @@ export async function POST(request: Request): Promise<Response> {
       .or(`sente_user.eq.${user},gote_user.eq.${user},and(created_by.eq.${user},status.eq.open)`)
       .order('updated_at', { ascending: false }).limit(60);
     const rows = (data ?? []) as FriendRow[];
-    const nick = await nicknames(client, rows.flatMap((r) => [r.sente_user, r.gote_user, r.created_by]));
+    const nick = await nicknames(client, rows.flatMap((r) => [...unnamed(r), r.created_by]));
     const list = [];
     for (const r0 of rows) {
       const names = namesOf(r0, nick);
@@ -232,7 +234,9 @@ export async function POST(request: Request): Promise<Response> {
       token = randomBytes(32).toString('base64url');
       joiner.guest = hash(token);
     }
-    const joined = await save(client, row, joinPatch(row, joiner, now, () => randomBytes(1)[0] < 128, body.rest === true));
+    const nick = await nicknames(client, [row.created_by, user]);
+    const joined = await save(client, row, joinPatch(row, joiner, now, () => randomBytes(1)[0] < 128, body.rest === true,
+      { inviter: nick.get(row.created_by ?? ''), joiner: nick.get(user ?? '') }));
     return joined ? json({ id: joined.id, seat: token }) : fail('taken', 409);
   }
 
@@ -241,8 +245,10 @@ export async function POST(request: Request): Promise<Response> {
   if (!row0) return fail('no-game', 404);
   const side = sideOf(row0, seat);
   if (!side) return fail('not-player', 403);
-  const nick = await nicknames(client, [row0.sente_user, row0.gote_user]);
+  const nick = await nicknames(client, unnamed(row0));
   const names = namesOf(row0, nick);
+  const oppUser = side === 'sente' ? row0.gote_user : row0.sente_user;
+  const cut = async () => !!user && !!oppUser && (await blocked(client, oppUser, user));
   const row = row0.status === 'active' ? await settled(client, row0, names, now) : row0;
   const reply = (r: FriendRow) => json({ game: gameView(r, side, names, Date.now()) });
   const apply = async (patch: Patch | null, after?: (next: FriendRow) => Promise<void>) => {
@@ -263,13 +269,12 @@ export async function POST(request: Request): Promise<Response> {
     }
     case 'claim': {
       if (!user) return fail('sign-in', 401);
-      const patch = claimPatch(row, user, guest);
+      const patch = claimPatch(row, user, guest, (await nicknames(client, [user])).get(user));
       if (!patch) return fail('not-now', 409);
-      const opp = side === 'sente' ? row.gote_user : row.sente_user;
-      if (opp && (await blocked(client, opp, user))) return fail('not-now', 409);
+      if (oppUser && (await blocked(client, oppUser, user))) return fail('not-now', 409);
       const next = await save(client, row, patch);
       if (!next) return fail('stale', 409);
-      return json({ game: gameView(next, side, namesOf(next, await nicknames(client, [next.sente_user, next.gote_user])), Date.now()) });
+      return json({ game: gameView(next, side, namesOf(next, await nicknames(client, unnamed(next))), Date.now()) });
     }
     case 'rest': {
       if (typeof body.on !== 'boolean') return fail('bad-rest');
@@ -283,9 +288,11 @@ export async function POST(request: Request): Promise<Response> {
     case 'takeback':
       return apply(body.answer === undefined ? takebackAsk(row, side) : takebackAnswer(row, side, body.answer === true, now));
     case 'signal':
+      if (await cut()) return fail('not-now', 409);
       return apply(signalPatch(row, side, body.m as Signal, now));
     case 'rematch': {
       if (row.rematch_id) return json({ id: row.rematch_id });
+      if (await cut()) return fail('not-now', 409);
       if (!row.rematch_by || row.rematch_by === side) return apply(rematchAsk(row, side));
       const values = rematchRow(row, side, '', now);
       if (!values) return fail('not-now', 409);
@@ -301,16 +308,22 @@ export async function POST(request: Request): Promise<Response> {
     }
     case 'report': {
       const reason = ['name', 'cheat', 'stall', 'other'].includes(body.reason as string) ? (body.reason as string) : 'other';
-      const opp = side === 'sente' ? row.gote_user : row.sente_user;
-      await client.from('friend_reports').insert({ game_id: row.id, reporter_user: user, reporter_guest: !user, reported_user: opp, reason });
+      const mine = client.from('friend_reports').select('id').eq('game_id', row.id);
+      const { data: before } = await (user ? mine.eq('reporter_user', user) : mine.eq('reporter_guest', true)).limit(1);
+      if (before?.length) return json({ ok: true });
+      await client.from('friend_reports').insert({ game_id: row.id, reporter_user: user, reporter_guest: !user, reported_user: oppUser, reason });
       await sendReport(row, reason, names, side);
       return json({ ok: true });
     }
     case 'block': {
       if (!user) return fail('sign-in', 401);
-      const opp = side === 'sente' ? row.gote_user : row.sente_user;
-      if (opp) await client.from('friend_blocks').upsert({ user_id: user, blocked: opp }, { onConflict: 'user_id,blocked', ignoreDuplicates: true });
-      if (row.status === 'active') await save(client, row, resignPatch(row, side, now, names) ?? {});
+      if (oppUser) await client.from('friend_blocks').upsert({ user_id: user, blocked: oppUser }, { onConflict: 'user_id,blocked', ignoreDuplicates: true });
+      const end = row.status === 'active' ? resignPatch(row, side, now, names) : null;
+      if (end && !(await save(client, row, end))) {
+        const fresh = await load(client, 'id', row.id);
+        const again = fresh ? resignPatch(fresh, side, now, names) : null;
+        if (fresh && again) await save(client, fresh, again);
+      }
       return json({ ok: true });
     }
     default:

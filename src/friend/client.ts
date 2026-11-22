@@ -15,6 +15,8 @@ export function readSeats(): Record<string, string> {
   }
 }
 
+let offered: { id: string; token: string } | null = null;
+
 export function seatFor(id: string): string | undefined {
   return readSeats()[id];
 }
@@ -24,6 +26,12 @@ export function saveSeat(id: string, token: string): void {
   all[id] = token;
   const keep = Object.entries(all).slice(-40);
   try { localStorage.setItem(SEATS, JSON.stringify(Object.fromEntries(keep))); } catch { }
+}
+
+export function offerSeat(id: string, token: string): void {
+  const kept = seatFor(id);
+  if (!kept) saveSeat(id, token);
+  else if (kept !== token) offered = { id, token };
 }
 
 export function forgetSeat(id: string): void {
@@ -56,10 +64,10 @@ export async function signedIn(): Promise<boolean> {
 
 export interface ApiResult<T> { ok: boolean; status: number; error?: string; data: T }
 
-export async function call<T = Record<string, unknown>>(action: string, body: Record<string, unknown> = {}): Promise<ApiResult<T>> {
+export async function call<T = Record<string, unknown>>(action: string, body: Record<string, unknown> = {}, as?: string): Promise<ApiResult<T>> {
   const t = await token();
   const id = typeof body.id === 'string' ? body.id : undefined;
-  const seat = id ? seatFor(id) : undefined;
+  const seat = as ?? (id ? seatFor(id) : undefined);
   try {
     const res = await fetch('/api/friend', {
       method: 'POST',
@@ -114,7 +122,16 @@ export const api = {
   },
   cancel: (code: string) => call('cancel', { code }),
   mine: () => call<{ games: ListedGame[]; now: number }>('mine'),
-  state: (id: string) => call<{ game: GameView }>('state', { id }),
+  state: async (id: string) => {
+    const r = await call<{ game: GameView }>('state', { id });
+    if (offered?.id !== id || (!r.ok && r.status !== 403)) return r;
+    const other = offered.token;
+    offered = null;
+    if (r.ok) return r;
+    const again = await call<{ game: GameView }>('state', { id }, other);
+    if (again.ok) saveSeat(id, other);
+    return again.ok ? again : r;
+  },
   move: (id: string, usi: string, ply: number) => call<{ game: GameView }>('move', { id, usi, ply }),
   rest: (id: string, on: boolean) => call<{ game: GameView }>('rest', { id, on }),
   resign: (id: string) => call<{ game: GameView }>('resign', { id }),

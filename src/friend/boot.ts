@@ -3,7 +3,7 @@ import { loadPrefs } from '../learn/prefs';
 import { preloadSounds } from '../learn/sound';
 import { mount } from '../play/view';
 import { accountsEnabled } from '../lib/account-config';
-import { gameUrl, saveSeat, signedIn } from './client';
+import { gameUrl, offerSeat, signedIn } from './client';
 import type { Ping } from './core';
 import FriendCtrl from './ctrl';
 import { clockText, hoursText, render } from './view';
@@ -19,7 +19,7 @@ function gameId(): string | null {
   const m = /^([0-9a-f-]{36})(?:\.([A-Za-z0-9_-]{43}))?$/i.exec(location.hash.replace(/^#/, '').trim());
   if (!m) return null;
   if (m[2]) {
-    saveSeat(m[1], m[2]);
+    offerSeat(m[1], m[2]);
     history.replaceState(null, '', `${location.pathname}#${m[1]}`);
   }
   return m[1];

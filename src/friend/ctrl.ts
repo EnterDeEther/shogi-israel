@@ -12,7 +12,7 @@ import { play as playSound, playMove } from '../learn/sound';
 import { Line } from '../play/game';
 import { liveBounds } from '../lib/live-bounds';
 import { SQUARE_RATIO } from '../lib/square-ratio';
-import { api, setRestPref } from './client';
+import { api, saveSeat, seatFor, setRestPref } from './client';
 import { type GameView, type Ping, pingMove, type Signal } from './core';
 
 export type LoadError = 'not-player' | 'no-game' | 'network' | 'paused' | null;
@@ -26,6 +26,7 @@ export default class FriendCtrl {
   synced = 0;
   movedAt = 0;
   hinted = false;
+  private hintsOff = false;
   pending = false;
   loadError: LoadError = null;
   notice: string | null = null;
@@ -93,7 +94,7 @@ export default class FriendCtrl {
     return this.viewPly === undefined;
   }
   get myTurn(): boolean {
-    return this.active && !this.pending && this.line.current.turn === this.you;
+    return this.active && !this.pending && !this.hinted && this.line.current.turn === this.you;
   }
   get canTakeback(): boolean {
     if (!this.active || this.game?.takebackBy) return false;
@@ -119,7 +120,7 @@ export default class FriendCtrl {
   }
 
   hint(ping: Ping): boolean {
-    const next = this.game && !this.pending && !this.hinted ? pingMove(this.game, ping) : null;
+    const next = this.game && !this.pending && !this.hinted && !this.hintsOff ? pingMove(this.game, ping) : null;
     if (next) this.apply(next, true);
     return !!next;
   }
@@ -128,8 +129,11 @@ export default class FriendCtrl {
     const before = this.game;
     const fresh = !before || before.id !== view.id;
     if (!hint && !fresh && !this.hinted && view.rev < before.rev) return;
+    if (this.hinted && !hint && before && (view.ply < before.ply || view.moves[before.ply - 1] !== before.moves[before.ply - 1])) this.hintsOff = true;
     this.hinted = hint;
     if (!hint) this.synced = Date.now();
+    const seat = seatFor(view.id);
+    if (!hint && seat && view.rematchId && view.guest[view.you] && !seatFor(view.rematchId)) saveSeat(view.rematchId, seat);
     if (fresh || view.ply !== before.ply) this.movedAt = Date.now();
     this.game = view;
     this.receivedAt = performance.now();
