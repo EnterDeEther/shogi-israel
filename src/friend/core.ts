@@ -6,6 +6,9 @@ export type Speed = 'corr' | 'live';
 export type Status = 'open' | 'active' | 'finished' | 'aborted' | 'cancelled';
 export type EndReason = GameEnd['reason'] | 'abort';
 export type Signal = 'gl' | 'gg' | 'ty' | 'again' | 'wait';
+export type Reply = 'tb-yes' | 'tb-no' | 'end-no';
+export interface Said { c: Color; k: Reply; at: string; p: number }
+export interface Notes { c?: Color; m?: Signal; at?: string; end?: Color; re?: Said; ask?: string }
 
 export const SIGNALS: Signal[] = ['gl', 'gg', 'ty', 'again', 'wait'];
 export const CORR_DAYS = [3] as const;
@@ -45,7 +48,7 @@ export interface FriendRow {
   takeback_by: Color | null;
   rematch_by: Color | null;
   rematch_id: string | null;
-  signal: { c: Color; m: Signal; at: string } | null;
+  signal: Notes | null;
   winner: Color | null;
   end_reason: EndReason | null;
   kif: string | null;
@@ -211,9 +214,16 @@ function finish(row: FriendRow, end: { reason: EndReason; winner?: Color | null 
     end_reason: end.reason,
     ended_at: iso(now),
     takeback_by: null,
-    kif: aborted ? null : friendKif({ ...row, moves }, { reason: end.reason, winner: end.winner ?? null }, names),
+    kif: aborted && moves.length < 2 ? null : friendKif({ ...row, moves }, { reason: end.reason, winner: aborted ? null : end.winner ?? null }, names),
   };
 }
+
+const said = (row: FriendRow, c: Color, k: Reply, now: number, p: number): Notes => ({ ...row.signal, re: { c, k, at: iso(now), p } });
+const without = (notes: Notes | null): Notes | null => {
+  if (!notes) return null;
+  const { end: _end, ...rest } = notes;
+  return Object.keys(rest).length ? rest : null;
+};
 
 export interface Names {
   sente: string;
@@ -245,6 +255,7 @@ export function movePatch(row: FriendRow, side: Color, usi: string, expectedPly:
     patch[`${side}_ms`] = Math.max(0, row[`${side}_ms`]! - spent);
   }
   if (row.speed === 'corr') patch.move_deadline = corrDeadline(now, row.corr_days!, rests(row, other(side)));
+  if (row.takeback_by && row.takeback_by !== side) patch.signal = said(row, side, 'tb-no', now, next.plies.length);
   const end = next.end();
   if (end) Object.assign(patch, finish(row, end, now, names, next.usis));
   return patch;
@@ -271,20 +282,42 @@ export function takebackPlies(row: FriendRow, side: Color): number {
   return n;
 }
 
+export const refused = (re: Said | null | undefined, side: Color, k: Reply): boolean => !!re && re.k === k && re.c !== side;
+export const takebackShut = (re: Said | null | undefined, side: Color, ply: number): boolean => refused(re, side, 'tb-no') && re!.p === ply;
+export const endShut = (re: Said | null | undefined, side: Color, ply: number): boolean => refused(re, side, 'end-no') && ply - re!.p < 2;
+
 export function takebackAsk(row: FriendRow, side: Color): Patch | null {
-  if (!takebackPlies(row, side) || row.takeback_by) return null;
+  if (!takebackPlies(row, side) || row.takeback_by || takebackShut(row.signal?.re, side, row.ply)) return null;
   return { takeback_by: side };
+}
+
+export function takebackCancel(row: FriendRow, side: Color): Patch | null {
+  return row.status === 'active' && row.takeback_by === side ? { takeback_by: null } : null;
 }
 
 export function takebackAnswer(row: FriendRow, side: Color, yes: boolean, now: number): Patch | null {
   if (row.status !== 'active' || !row.takeback_by || row.takeback_by === side) return null;
-  if (!yes) return { takeback_by: null };
-  const n = takebackPlies(row, row.takeback_by);
-  if (!n) return { takeback_by: null };
+  const n = yes ? takebackPlies(row, row.takeback_by) : 0;
+  if (!n) return { takeback_by: null, signal: said(row, side, 'tb-no', now, row.ply) };
   const moves = row.moves.slice(0, row.moves.length - n);
-  const patch: Patch = { moves, ply: moves.length, takeback_by: null, turn_started_at: iso(now) };
+  const patch: Patch = { moves, ply: moves.length, takeback_by: null, turn_started_at: iso(now), signal: said(row, side, 'tb-yes', now, moves.length) };
   if (row.speed === 'corr') patch.move_deadline = corrDeadline(now, row.corr_days!, rests(row, moves.length % 2 === 0 ? 'sente' : 'gote'));
   return patch;
+}
+
+export function endAsk(row: FriendRow, side: Color): Patch | null {
+  if (row.status !== 'active' || row.ply < 2 || row.signal?.end || endShut(row.signal?.re, side, row.ply)) return null;
+  return { signal: { ...row.signal, end: side } };
+}
+
+export function endCancel(row: FriendRow, side: Color): Patch | null {
+  return row.status === 'active' && row.signal?.end === side ? { signal: without(row.signal) } : null;
+}
+
+export function endAnswer(row: FriendRow, side: Color, yes: boolean, now: number, names: Names): Patch | null {
+  if (row.status !== 'active' || !row.signal?.end || row.signal.end === side) return null;
+  if (!yes) return { signal: { ...without(row.signal), re: { c: side, k: 'end-no', at: iso(now), p: row.ply } } };
+  return { ...finish(row, { reason: 'abort' }, now, names), signal: without(row.signal) };
 }
 
 export function restPatch(row: FriendRow, side: Color, on: boolean): Patch | null {
@@ -300,8 +333,8 @@ export function restPatch(row: FriendRow, side: Color, on: boolean): Patch | nul
 
 export function signalPatch(row: FriendRow, side: Color, m: Signal, now: number): Patch | null {
   if (!SIGNALS.includes(m)) return null;
-  if (row.signal && row.signal.c === side && now - ms(row.signal.at) < 3000) return null;
-  return { signal: { c: side, m, at: iso(now) } };
+  if (row.signal?.at && row.signal.c === side && now - ms(row.signal.at) < 3000) return null;
+  return { signal: { ...row.signal, c: side, m, at: iso(now) } };
 }
 
 export function rematchAsk(row: FriendRow, side: Color): Patch | null {
@@ -377,9 +410,11 @@ export interface GameView {
   deadline: number | null;
   now: number;
   takebackBy: Color | null;
+  endBy: Color | null;
+  reply: Said | null;
   rematchBy: Color | null;
   rematchId: string | null;
-  signal: FriendRow['signal'];
+  signal: { c: Color; m: Signal; at: string } | null;
   winner: Color | null;
   endReason: EndReason | null;
   startedAt: string | null;
@@ -407,9 +442,11 @@ export function gameView(row: FriendRow, you: Color, names: Names, now: number):
     deadline: deadline(row),
     now,
     takebackBy: row.takeback_by,
+    endBy: (row.status === 'active' && row.signal?.end) || null,
+    reply: row.signal?.re ?? null,
     rematchBy: row.rematch_by,
     rematchId: row.rematch_id,
-    signal: row.signal,
+    signal: row.signal?.c && row.signal.m && row.signal.at ? { c: row.signal.c, m: row.signal.m, at: row.signal.at } : null,
     winner: row.winner,
     endReason: row.end_reason,
     startedAt: row.started_at,

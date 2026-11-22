@@ -40,6 +40,20 @@ export function forgetSeat(id: string): void {
   try { localStorage.setItem(SEATS, JSON.stringify(all)); } catch { }
 }
 
+const SEEN = 'shogi-il.friend.seen';
+
+export function seenReply(id: string): string | undefined {
+  try { return (JSON.parse(localStorage.getItem(SEEN) || '{}') as Record<string, string>)[id]; } catch { return undefined; }
+}
+
+export function markReply(id: string, at: string): void {
+  try {
+    const all = JSON.parse(localStorage.getItem(SEEN) || '{}') as Record<string, string>;
+    all[id] = at;
+    localStorage.setItem(SEEN, JSON.stringify(Object.fromEntries(Object.entries(all).slice(-40))));
+  } catch { }
+}
+
 const REST = 'shogi-il.friend.rest';
 export const REST_LABEL = 'לא לשחק בשבת';
 export const REST_HINT = 'הזמן שלך למהלך לא ייגמר בין שישי ב־14:00 לשבת ב־22:00, וגם לא נשלח לך התראות בשעות האלה. הבחירה נשמרת במכשיר הזה למשחקים הבאים.';
@@ -109,6 +123,7 @@ export interface ListedGame {
   yourTurn: boolean;
   inviter: string;
   kif: string | null;
+  waits?: 'end' | 'takeback' | 'rematch' | null;
 }
 
 export const api = {
@@ -136,7 +151,8 @@ export const api = {
   rest: (id: string, on: boolean) => call<{ game: GameView }>('rest', { id, on }),
   resign: (id: string) => call<{ game: GameView }>('resign', { id }),
   impasse: (id: string) => call<{ game: GameView }>('impasse', { id }),
-  takeback: (id: string, answer?: boolean) => call<{ game: GameView }>('takeback', { id, ...(answer === undefined ? {} : { answer }) }),
+  takeback: (id: string, answer?: boolean | 'cancel') => call<{ game: GameView }>('takeback', { id, ...(answer === 'cancel' ? { cancel: true } : answer === undefined ? {} : { answer }) }),
+  end: (id: string, answer?: boolean | 'cancel') => call<{ game: GameView }>('end', { id, ...(answer === 'cancel' ? { cancel: true } : answer === undefined ? {} : { answer }) }),
   signal: (id: string, m: Signal) => call<{ game: GameView }>('signal', { id, m }),
   rematch: async (id: string) => {
     const r = await call<{ game?: GameView; id?: string }>('rematch', { id });
@@ -155,6 +171,7 @@ export const api = {
 
 export const inviteUrl = (code: string): string => `${location.origin}/friend/#${code}`;
 export const gameUrl = (id: string): string => `/friend/game/#${id}`;
+export const endUrl = (id: string): string => `/friend/game/?end#${id}`;
 export const personalUrl = (id: string): string | null => {
   const seat = seatFor(id);
   return seat ? `${location.origin}/friend/game/#${id}.${seat}` : null;

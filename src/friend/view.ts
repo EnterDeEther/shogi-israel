@@ -6,7 +6,7 @@ import { scrollWithin } from '../lib/scroll-within';
 import { tipEl } from '../lib/info-tip-dom';
 import { openBug } from './bug';
 import { gameUrl, personalUrl, REST_HINT, REST_LABEL, SIGNAL_TEXT, SPEED_TEXT } from './client';
-import { SIGNALS, type EndReason } from './core';
+import { SIGNALS, type EndReason, type Reply } from './core';
 import type FriendCtrl from './ctrl';
 
 const MARK: Record<Color, string> = { sente: '☗', gote: '☖' };
@@ -54,7 +54,8 @@ export function hoursText(ms: number): string {
   return m === 1 ? 'דקה' : `${m} דקות`;
 }
 
-export function endText(reason: EndReason, won: boolean, draw: boolean, opp: string): { title: string; text: string } {
+export function endText(reason: EndReason, won: boolean, draw: boolean, opp: string, ply = 0): { title: string; text: string } {
+  if (reason === 'abort' && ply >= 2) return { title: 'המשחק הסתיים בלי תוצאה', text: 'סיימתם את המשחק בהסכמה. אין מנצח ואין מפסיד, והמהלכים נשמרו.' };
   if (reason === 'abort') return { title: 'המשחק בוטל', text: 'המשחק בוטל לפני ששני הצדדים שיחקו מהלך, ולא נרשמה תוצאה.' };
   const title = draw ? 'תיקו' : won ? 'ניצחת!' : 'הפסד הפעם';
   const text: Record<Exclude<EndReason, 'abort'>, string> = {
@@ -175,7 +176,7 @@ function status(ctrl: FriendCtrl, go: Go, onRematch: () => void, signedIn: boole
   if (ctrl.ended) {
     const draw = g.status === 'finished' && !g.winner;
     const won = g.winner === g.you;
-    const { title, text } = endText(g.endReason ?? 'abort', won, draw, opp);
+    const { title, text } = endText(g.endReason ?? 'abort', won, draw, opp, g.ply);
     const guest = g.guest[g.you];
     return el('div', { class: `result ${g.status === 'aborted' || draw ? 'draw' : won ? 'won' : 'lost'}`, role: 'status' },
       el('strong', {}, title),
@@ -209,6 +210,12 @@ function status(ctrl: FriendCtrl, go: Go, onRematch: () => void, signedIn: boole
   );
 }
 
+function jump(e: Event): void {
+  e.preventDefault();
+  const tip = (e.currentTarget as HTMLElement).closest('.play')?.querySelector<HTMLElement>('.play-tip.ask');
+  if (tip) window.scrollTo({ top: Math.max(0, tip.getBoundingClientRect().bottom + window.scrollY - window.innerHeight + 12), behavior: 'smooth' });
+}
+
 function turnParts(ctrl: FriendCtrl): (HTMLElement | string)[] {
   const g = ctrl.game!;
   const opp = g.names[ctrl.opp];
@@ -217,6 +224,10 @@ function turnParts(ctrl: FriendCtrl): (HTMLElement | string)[] {
   const left = ctrl.deadlineLeft();
   const parts: (HTMLElement | string)[] = [];
   parts.push(ctrl.pending ? 'שולחים…' : mine ? (pos.isCheck() ? 'שח! תורך.' : 'תורך.') : `התור של ${opp}.`);
+  if (ctrl.asked || ctrl.reply) {
+    parts.push(' ', el('button', { type: 'button', class: 'link friend-jump', onclick: jump }, ctrl.asked ? 'בקשה מ' : 'תשובה מ', el('bdi', {}, opp), ' ↓'));
+    return parts;
+  }
   if (left !== null && left > 0) {
     if (g.ply < 2 && g.speed === 'live') parts.push(el('span', { class: 'small muted' }, ' המשחק יבוטל אם לא ישוחק מהלך תוך ', el('span', { 'data-deadline-left': true }, hoursText(left)), '.'));
     else if (g.speed === 'corr') parts.push(el('span', { class: 'small muted' }, ` ${mine ? 'נשארו לך' : `ל${opp} נשארו`} `, el('span', { 'data-deadline-left': true }, hoursText(left)), ' למהלך.'));
@@ -229,29 +240,46 @@ function topLine(ctrl: FriendCtrl): HTMLElement {
   const g = ctrl.game!;
   if (ctrl.ended) {
     const draw = g.status === 'finished' && !g.winner;
-    return el('p', { class: 'friend-turn' }, 'המשחק הסתיים: ', el('strong', {}, endText(g.endReason ?? 'abort', g.winner === g.you, draw, g.names[ctrl.opp]).title));
+    const title = endText(g.endReason ?? 'abort', g.winner === g.you, draw, g.names[ctrl.opp], g.ply).title;
+    return el('p', { class: 'friend-turn' }, title.startsWith('המשחק') ? el('strong', {}, title) : el('span', {}, 'המשחק הסתיים: ', el('strong', {}, title)));
   }
   return el('p', { class: 'friend-turn' }, ...(g.status === 'active' ? turnParts(ctrl) : []));
 }
 
-function banners(ctrl: FriendCtrl, go: Go): HTMLElement | null {
+const REPLY_TEXT: Record<Reply, (opp: string) => string> = {
+  'tb-no': (opp) => `${opp} רוצה להמשיך בלי להחזיר מהלך. המשחק ממשיך מהעמדה הנוכחית.`,
+  'tb-yes': (opp) => `המהלך הוחזר, באישור של ${opp}.`,
+  'end-no': (opp) => `${opp} רוצה להמשיך לשחק. המשחק ממשיך.`,
+};
+
+function banners(ctrl: FriendCtrl, go: Go): HTMLElement[] {
   const g = ctrl.game!;
   const opp = g.names[ctrl.opp];
-  if (ctrl.alert) return el('div', { class: 'play-tip', role: 'alert' }, el('p', {}, ctrl.alert, ' ', ctrl.alertBug ? el('button', { type: 'button', class: 'link', onclick: go(openBug) }, 'זה קורה שוב? דיווח על תקלה') : null));
-  if (g.status === 'active' && g.takebackBy === ctrl.opp) {
-    return el('div', { class: 'play-tip', role: 'alert' },
-      el('strong', {}, `בקשה מ${opp}: להחזיר מהלך?`),
+  const out: HTMLElement[] = [];
+  const ask = (title: string, yes: string, no: string, fid: string, answer: (yes: boolean) => void) =>
+    el('div', { class: 'play-tip ask', role: 'alert' },
+      el('strong', {}, title),
       el('div', { class: 'buttons' },
-        el('button', { type: 'button', class: 'btn primary', 'data-fid': 'tb-yes', onclick: go(() => ctrl.answerTakeback(true)) }, 'כן'),
-        el('button', { type: 'button', class: 'btn', 'data-fid': 'tb-no', onclick: go(() => ctrl.answerTakeback(false)) }, 'לא')));
+        el('button', { type: 'button', class: 'btn primary', 'data-fid': `${fid}-yes`, disabled: ctrl.pending, onclick: go(() => answer(true)) }, yes),
+        el('button', { type: 'button', class: 'btn', 'data-fid': `${fid}-no`, disabled: ctrl.pending, onclick: go(() => answer(false)) }, no)));
+  const wait = (text: string, undo: string, fid: string, fn: () => void) =>
+    el('div', { class: 'play-tip', role: 'status' }, el('p', {}, text, ' ',
+      el('button', { type: 'button', class: 'link', 'data-fid': fid, disabled: ctrl.pending, onclick: go(fn) }, undo)));
+  if (ctrl.alert) out.push(el('div', { class: 'play-tip', role: 'alert' }, el('p', {}, ctrl.alert, ' ', ctrl.alertBug ? el('button', { type: 'button', class: 'link', onclick: go(openBug) }, 'זה קורה שוב? דיווח על תקלה') : null)));
+  if (ctrl.active && g.endBy === ctrl.opp) out.push(ask(`הצעה מ${opp}: לסיים את המשחק בלי תוצאה?`, 'כן, מסיימים', 'לא, ממשיכים', 'end', (yes) => ctrl.answerEnd(yes)));
+  if (ctrl.active && g.takebackBy === ctrl.opp) {
+    const two = ctrl.line.current.turn === ctrl.opp;
+    out.push(ask(two ? `בקשה מ${opp}: להחזיר שני מהלכים, גם את המהלך האחרון שלך?` : `בקשה מ${opp}: להחזיר את המהלך האחרון?`, 'כן', 'לא', 'tb', (yes) => ctrl.answerTakeback(yes)));
   }
-  if (g.status === 'active' && g.takebackBy === g.you) {
-    return el('div', { class: 'play-tip', role: 'status' }, el('p', {}, `ביקשת להחזיר מהלך. מחכים לתשובה של ${opp}.`));
+  if (ctrl.reply) {
+    out.push(el('div', { class: 'play-tip ask reply', role: 'alert' },
+      el('p', {}, REPLY_TEXT[ctrl.reply](opp)),
+      el('button', { type: 'button', class: 'link', 'data-fid': 'reply-ok', onclick: go(() => ctrl.dismissReply()) }, 'הבנתי')));
   }
-  if (ctrl.notice) {
-    return el('div', { class: 'play-tip friend-signal', role: 'status' }, el('strong', {}, `${opp}: `), SIGNAL_TEXT[ctrl.notice as keyof typeof SIGNAL_TEXT]);
-  }
-  return null;
+  if (ctrl.active && g.endBy === g.you) out.push(wait(`הצעת לסיים את המשחק בלי תוצאה. מחכים לתשובה של ${opp}.`, 'ביטול ההצעה', 'end-cancel', () => ctrl.cancelEnd()));
+  if (ctrl.active && g.takebackBy === g.you) out.push(wait(`ביקשת להחזיר מהלך. מחכים לתשובה של ${opp}.`, 'ביטול הבקשה', 'tb-cancel', () => ctrl.cancelTakeback()));
+  if (ctrl.notice) out.push(el('div', { class: 'play-tip friend-signal', role: 'status' }, el('strong', {}, `${opp}: `), SIGNAL_TEXT[ctrl.notice as keyof typeof SIGNAL_TEXT]));
+  return out;
 }
 
 function controls(ctrl: FriendCtrl, go: Go): HTMLElement {
@@ -260,8 +288,8 @@ function controls(ctrl: FriendCtrl, go: Go): HTMLElement {
       picon(name), el('span', { class: 'label' }, label));
   if (ctrl.resignConfirm) {
     return el('div', { class: 'tools confirm', role: 'group', 'aria-label': 'אישור כניעה' },
-      el('span', { class: 'q' }, ctrl.game!.ply < 2 ? 'לבטל את המשחק?' : 'להיכנע?'),
-      tool('flag', ctrl.game!.ply < 2 ? 'כן, מבטלים' : 'כן, נכנעים', () => ctrl.resign(), { cls: 'danger' }),
+      el('span', { class: 'q' }, 'להיכנע?'),
+      tool('flag', 'כן, נכנעים', () => ctrl.resign(), { cls: 'danger' }),
       tool('close', 'לא, ממשיכים', () => ctrl.cancelResign()),
     );
   }
@@ -269,7 +297,7 @@ function controls(ctrl: FriendCtrl, go: Go): HTMLElement {
   return el('div', { class: 'tools', role: 'group', 'aria-label': 'פעולות במשחק' },
     tool('undo', 'החזרת מהלך', () => ctrl.askTakeback(), { disabled: !ctrl.canTakeback }),
     tool('chat', 'הודעה', open('messages'), { disabled: ctrl.ended && !!ctrl.game?.rematchId, pressed: ctrl.menu === 'messages' }),
-    tool('flag', ctrl.game && ctrl.game.ply < 2 ? 'ביטול' : 'כניעה', () => ctrl.resign(), { disabled: !ctrl.active }),
+    tool('flag', 'סיום', open('end'), { disabled: !ctrl.active, pressed: ctrl.menu === 'end' }),
     tool('shield', 'בטיחות', open('safety'), { pressed: ctrl.menu === 'safety' }),
     tool('more', 'עוד', open('more'), { pressed: ctrl.menu === 'more' || ctrl.menu === 'rest' || ctrl.menu === 'keep' }),
   );
@@ -287,6 +315,29 @@ function menuBox(ctrl: FriendCtrl, go: Go, signedIn: boolean): HTMLElement | nul
     return el('div', { class: 'friend-menu', role: 'group', 'aria-label': 'הודעות קבועות' },
       el('p', { class: 'small muted' }, 'אפשר לשלוח רק הודעות קבועות, כדי שהמשחק יישאר נעים ובטוח לכולם.'),
       el('div', { class: 'friend-chips' }, ...SIGNALS.map((m) => el('button', { type: 'button', class: 'choice', 'data-fid': `sig-${m}`, onclick: go(() => ctrl.send(m)) }, SIGNAL_TEXT[m]))));
+  }
+  if (ctrl.menu === 'end' && ctrl.active) {
+    const g = ctrl.game!;
+    const opp = () => el('bdi', {}, g.names[ctrl.opp]);
+    const option = (label: string, fid: string, fn: () => void, text: (HTMLElement | string)[], danger = false, disabled = false) =>
+      el('div', { class: 'friend-end__option' },
+        el('button', { type: 'button', class: `btn${danger ? ' danger' : ''}`, 'data-fid': fid, disabled: disabled || ctrl.pending, onclick: go(fn) }, label),
+        el('p', { class: 'small muted' }, ...text));
+    const keep = el('button', { type: 'button', class: 'link', 'data-fid': 'end-keep', onclick: go(() => { ctrl.menu = null; ctrl.redraw(); }) }, 'ממשיכים לשחק');
+    if (g.ply < 2) {
+      return el('div', { class: 'friend-menu friend-end', role: 'group', 'aria-label': 'סיום המשחק' },
+        option('ביטול המשחק', 'end-abort', () => ctrl.resign(), ['עוד לא שיחקתם שניכם מהלך, אז המשחק פשוט מתבטל, בלי תוצאה.'], true),
+        keep);
+    }
+    return el('div', { class: 'friend-menu friend-end', role: 'group', 'aria-label': 'סיום המשחק' },
+      g.endBy === ctrl.opp
+        ? option('לסיים בלי תוצאה', 'end-accept', () => ctrl.answerEnd(true), ['יש הצעה כזאת מ', opp(), '. המשחק נגמר עכשיו, בלי מנצח ובלי מפסיד.'])
+        : g.endBy === g.you
+          ? option('ביטול ההצעה שלי', 'end-cancel-menu', () => ctrl.cancelEnd(), ['הצעת לסיים בלי תוצאה, ועוד אין תשובה מ', opp(), '.'])
+          : option('הצעה לסיים בלי תוצאה', 'end-offer', () => ctrl.offerEnd(),
+            ctrl.canOfferEnd ? ['המשחק נגמר בלי מנצח ובלי מפסיד, אבל רק באישור של ', opp(), '.'] : ['ההצעה הקודמת לא התקבלה. אפשר להציע שוב אחרי שכל אחד מכם ישחק מהלך.'], false, !ctrl.canOfferEnd),
+      option('כניעה', 'end-resign', () => ctrl.resign(), ['המשחק נגמר עכשיו, והניצחון נרשם ל', opp(), '.'], true),
+      keep);
   }
   if (ctrl.menu === 'more') {
     const g = ctrl.game!;
@@ -390,7 +441,7 @@ export function render(ctrl: FriendCtrl, root: HTMLElement, opts: { signedIn: bo
   const movesScroll = table.querySelector('[data-moves]')?.scrollTop;
   table.replaceChildren(
     el('div', { class: 'table-box' },
-      banners(ctrl, go),
+      ...banners(ctrl, go),
       playerRow(ctrl, top),
       el('div', { class: `replay${ctrl.movesOpen ? ' open' : ''}` },
         el('div', { class: 'moves-head' },

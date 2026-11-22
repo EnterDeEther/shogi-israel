@@ -12,8 +12,8 @@ import { play as playSound, playMove } from '../learn/sound';
 import { Line } from '../play/game';
 import { liveBounds } from '../lib/live-bounds';
 import { SQUARE_RATIO } from '../lib/square-ratio';
-import { api, saveSeat, seatFor, setRestPref } from './client';
-import { type GameView, type Ping, pingMove, type Signal } from './core';
+import { api, markReply, saveSeat, seatFor, seenReply, setRestPref } from './client';
+import { endShut, type GameView, type Ping, pingMove, type Reply, type Signal, takebackShut } from './core';
 
 export type LoadError = 'not-player' | 'no-game' | 'network' | 'paused' | null;
 
@@ -30,10 +30,11 @@ export default class FriendCtrl {
   pending = false;
   loadError: LoadError = null;
   notice: string | null = null;
+  reply: Reply | null = null;
   alert: string | null = null;
   alertBug = true;
   resignConfirm = false;
-  menu: 'messages' | 'safety' | 'keep' | 'rest' | 'more' | null = null;
+  menu: 'messages' | 'safety' | 'keep' | 'rest' | 'more' | 'end' | null = null;
   movesOpen = false;
   reported = false;
   blocked = false;
@@ -99,10 +100,18 @@ export default class FriendCtrl {
     return this.active && !this.pending && !this.hinted && this.line.current.turn === this.you;
   }
   get canTakeback(): boolean {
-    if (!this.active || this.game?.takebackBy) return false;
+    if (!this.active || !this.game || this.game.takebackBy || takebackShut(this.game.reply, this.you, this.game.ply)) return false;
     const plies = this.line.plies;
     const n = this.line.current.turn === this.you ? 2 : 1;
     return plies.length >= n && plies[plies.length - n].color === this.you;
+  }
+  get canOfferEnd(): boolean {
+    const g = this.game;
+    return !!g && this.active && g.ply >= 2 && !g.endBy && !endShut(g.reply, this.you, g.ply);
+  }
+  get asked(): boolean {
+    const g = this.game;
+    return !!g && ((this.active && (g.takebackBy === this.opp || g.endBy === this.opp)) || (this.ended && !g.rematchId && g.rematchBy === this.opp));
   }
   get canImpasse(): boolean {
     return this.myTurn && this.live && this.line.canDeclareImpasse();
@@ -155,6 +164,16 @@ export default class FriendCtrl {
     } else if (fresh && view.status === 'active' && view.ply === 0) playSound('gameStart');
     if (fresh && view.signal && view.signal.c !== view.you && view.now - Date.parse(view.signal.at) < 30_000) this.flash(view.signal.m);
     this.lastSignalAt = view.signal?.at;
+    const re = hint ? null : view.reply;
+    if (re && re.c !== view.you && re.at !== seenReply(view.id)) {
+      markReply(view.id, re.at);
+      if (view.status === 'active' && (!fresh || view.ply - re.p <= 1)) this.reply = re.k;
+    }
+    if (view.status !== 'active') {
+      this.reply = null;
+      if (this.menu === 'end' || this.menu === 'rest') this.menu = null;
+      this.resignConfirm = false;
+    }
     this.syncGround();
     this.scheduleFlag();
     this.redraw();
@@ -192,6 +211,7 @@ export default class FriendCtrl {
     const ply = this.game.ply;
     this.line = this.line.play(usi);
     this.alert = null;
+    this.reply = null;
     this.pending = true;
     this.movedAt = Date.now();
     this.resignConfirm = false;
@@ -266,13 +286,33 @@ export default class FriendCtrl {
 
   resign(): void {
     if (!this.active) return;
-    if (!this.resignConfirm) {
+    this.menu = null;
+    if (!this.resignConfirm && this.game!.ply >= 2) {
       this.resignConfirm = true;
       this.redraw();
       return;
     }
     this.resignConfirm = false;
     void this.act(api.resign(this.id));
+  }
+  offerEnd(): void {
+    this.menu = null;
+    if (this.canOfferEnd) void this.act(api.end(this.id));
+  }
+  answerEnd(yes: boolean): void {
+    this.menu = null;
+    void this.act(api.end(this.id, yes));
+  }
+  cancelEnd(): void {
+    this.menu = null;
+    void this.act(api.end(this.id, 'cancel'));
+  }
+  cancelTakeback(): void {
+    void this.act(api.takeback(this.id, 'cancel'));
+  }
+  dismissReply(): void {
+    this.reply = null;
+    this.redraw();
   }
   cancelResign(): void {
     this.resignConfirm = false;

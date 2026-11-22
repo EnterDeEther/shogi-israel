@@ -125,3 +125,18 @@ a.friend-row__main:hover strong { text-decoration: underline; }
   .friend-game .friend-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; }
   .friend-game .friend-foot .btn { min-height: 44px; white-space: nowrap; flex-shrink: 0; }
 }
+.play .play-tip .buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.play .play-tip .buttons .btn { min-height: 44px; flex: 1 1 120px; }
+.play .play-tip.ask { border-inline-start: 4px solid var(--seal); }
+.play .play-tip.ask strong { font-size: 16px; line-height: 1.4; }
+.play .play-tip.reply { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.play .play-tip.reply p { margin: 0; flex: 1 1 220px; }
+.play .play-tip p:last-child { margin-bottom: 0; }
+.play .friend-end { gap: 14px; }
+.play .friend-end__option { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.play .friend-end__option .btn { min-height: 44px; }
+.play .btn.danger { border-color: var(--seal); color: var(--seal); background: none; }
+.play .friend-jump { font-weight: 700; min-height: 0; display: inline; font-size: inherit; }
+.friend-row__end { font-size: 14px; flex-basis: 100%; }
+.games-list .friend-row__side { flex-wrap: wrap; }
+.play .friend-end .btn:disabled { opacity: 0.4; cursor: default; }

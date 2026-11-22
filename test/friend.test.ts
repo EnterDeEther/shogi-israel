@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test';
-import { turnEmail, turnPush } from '../src/friend/alerts';
+import { gameEmail, gamePush, turnEmail, turnPush } from '../src/friend/alerts';
 import {
-  afterRest, claimPatch, clockAt, type FriendRow, gameView, inRest, inviteState, joinPatch, movePatch, newCode, newInvite, pingIsOld, pingMove, rematchAsk, rematchRow, resignPatch,
-  restPatch, settle, signalPatch, takebackAnswer, takebackAsk, validInvite,
+  afterRest, claimPatch, clockAt, endAnswer, endAsk, endCancel, type FriendRow, gameView, inRest, inviteState, joinPatch, movePatch, newCode, newInvite, pingIsOld, pingMove,
+  rematchAsk, rematchRow, resignPatch, restPatch, settle, signalPatch, takebackAnswer, takebackAsk, takebackCancel, validInvite,
 } from '../src/friend/core';
 
 const T0 = Date.parse('2026-11-10T10:00:00Z');
@@ -137,7 +137,68 @@ describe('etiquette', () => {
     expect(takebackAnswer(g, 'sente', true, T0)).toBeNull();
     const back = takebackAnswer(g, 'gote', true, T0)!;
     expect(back.moves).toEqual([]);
-    expect(takebackAnswer(g, 'gote', false, T0)).toEqual({ takeback_by: null });
+    const no = takebackAnswer(g, 'gote', false, T0)!;
+    expect(no.takeback_by).toBeNull();
+    expect(no.signal!.re).toEqual({ c: 'gote', k: 'tb-no', at: new Date(T0).toISOString(), p: 1 });
+  });
+  test('the asker is told the answer, and cannot ask again for the same move', () => {
+    const g = play(join(row()), 'sente', '7g7f', T0);
+    const asked = { ...g, ...takebackAsk(g, 'sente') } as FriendRow;
+    const refused = { ...asked, ...takebackAnswer(asked, 'gote', false, T0) } as FriendRow;
+    expect(gameView(refused, 'sente', names, T0).reply!.k).toBe('tb-no');
+    expect(takebackAsk(refused, 'sente')).toBeNull();
+    const agreed = { ...asked, ...takebackAnswer(asked, 'gote', true, T0) } as FriendRow;
+    expect(gameView(agreed, 'sente', names, T0).reply).toMatchObject({ c: 'gote', k: 'tb-yes', p: 0 });
+    const moved = play(asked, 'gote', '3c3d', T0);
+    expect(moved.takeback_by).toBeNull();
+    expect(moved.signal!.re).toMatchObject({ c: 'gote', k: 'tb-no', p: 2 });
+    const later = play(play(refused, 'gote', '3c3d', T0), 'sente', '2g2f', T0);
+    expect(takebackAsk(later, 'sente')).not.toBeNull();
+  });
+  test('a take-back request can be withdrawn by the one who asked', () => {
+    const g = play(join(row()), 'sente', '7g7f', T0);
+    const asked = { ...g, ...takebackAsk(g, 'sente') } as FriendRow;
+    expect(takebackCancel(asked, 'gote')).toBeNull();
+    expect(takebackCancel(asked, 'sente')).toEqual({ takeback_by: null });
+  });
+  test('ending with no result needs both players', () => {
+    const start = join(row());
+    expect(endAsk(start, 'sente')).toBeNull();
+    const g = play(play(start, 'sente', '7g7f', T0), 'gote', '3c3d', T0);
+    const asked = { ...g, ...endAsk(g, 'sente') } as FriendRow;
+    expect(gameView(asked, 'gote', names, T0).endBy).toBe('sente');
+    expect(endAsk(asked, 'gote')).toBeNull();
+    expect(endAnswer(asked, 'sente', true, T0, names)).toBeNull();
+    expect(endCancel(asked, 'gote')).toBeNull();
+    expect(endCancel(asked, 'sente')!.signal).toBeNull();
+    const done = endAnswer(asked, 'gote', true, T0, names)!;
+    expect(done.status).toBe('aborted');
+    expect(done.winner).toBeNull();
+    expect(done.kif).toContain('中断');
+    expect(done.signal).toBeNull();
+  });
+  test('a refused offer to end is shown, and waits two moves before the next one', () => {
+    const g = play(play(join(row()), 'sente', '7g7f', T0), 'gote', '3c3d', T0);
+    const asked = { ...g, ...endAsk(g, 'sente') } as FriendRow;
+    const refused = { ...asked, ...endAnswer(asked, 'gote', false, T0, names) } as FriendRow;
+    expect(refused.status).toBe('active');
+    const v = gameView(refused, 'sente', names, T0);
+    expect(v.endBy).toBeNull();
+    expect(v.reply).toMatchObject({ c: 'gote', k: 'end-no', p: 2 });
+    expect(endAsk(refused, 'sente')).toBeNull();
+    expect(endAsk(refused, 'gote')).not.toBeNull();
+    const later = play(play(refused, 'sente', '2g2f', T0), 'gote', '8c8d', T0);
+    expect(endAsk(later, 'sente')).not.toBeNull();
+  });
+  test('an offer to end and a fixed message do not erase each other', () => {
+    const g = play(play(join(row()), 'sente', '7g7f', T0), 'gote', '3c3d', T0);
+    const asked = { ...g, ...endAsk(g, 'sente') } as FriendRow;
+    const said = { ...asked, ...signalPatch(asked, 'gote', 'wait', T0) } as FriendRow;
+    const v = gameView(said, 'sente', names, T0);
+    expect(v.endBy).toBe('sente');
+    expect(v.signal).toMatchObject({ c: 'gote', m: 'wait' });
+    expect(gameView(asked, 'gote', names, T0).signal).toBeNull();
+    expect(JSON.stringify(said.signal).length).toBeLessThan(300);
   });
   test('fixed messages only, and not too often', () => {
     const g = join(row());
@@ -306,6 +367,14 @@ describe('turn alerts', () => {
     expect(p.title).toContain('יעל');
     expect(p.url).toBe('/friend/game/#abc');
     expect(p.tag).toBe('friend-abc');
+  });
+  test('the end of a game and a request have their own words', () => {
+    expect(gamePush('end', 'יעל', 'abc').title).toBe('המשחק נגד יעל הסתיים');
+    expect(gamePush('ask', 'יעל', 'abc').title).toBe('בקשה מיעל במשחק שלכם');
+    const m = gameEmail('end', { nickname: 'דין', opp: 'יעל', id: 'abc', deadline: null, gender: 'f', unsubscribeUrl: 'https://shogi.co.il/api/unsubscribe?u=1&k=turn&t=x' });
+    expect(m.subject).toBe('המשחק נגד יעל הסתיים');
+    expect(m.text).toContain('utm_campaign=game-end#abc');
+    expect(m.text).not.toContain('⟦');
   });
   test('the email has the game link, the deadline and a way out', () => {
     const m = turnEmail({ nickname: 'דין', opp: 'יעל', id: 'abc', deadline: Date.parse('2026-11-15T08:00:00Z'), gender: 'm', unsubscribeUrl: 'https://shogi.co.il/api/unsubscribe?u=1&k=turn&t=x' });

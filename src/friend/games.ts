@@ -2,7 +2,7 @@
 import { el } from '../learn/view';
 import { accountsEnabled } from '../lib/account-config';
 import { downloadKif, kifFileName } from '../lib/kif';
-import { api, gameUrl, SHORT_SPEED } from './client';
+import { api, endUrl, gameUrl, SHORT_SPEED } from './client';
 
 interface Row {
   key: string;
@@ -13,6 +13,7 @@ interface Row {
   tone: 'won' | 'lost' | 'even' | 'open';
   kif: string | null;
   href?: string;
+  end?: string;
 }
 
 const RESULT = { win: ['ניצחון', 'won'], loss: ['הפסד', 'lost'], draw: ['תיקו', 'even'], abort: ['בוטל', 'even'] } as const;
@@ -40,7 +41,7 @@ async function friendGames(): Promise<Row[]> {
     const opp = g.names[g.you === 'sente' ? 'gote' : 'sente'];
     const active = g.status === 'active';
     const [result, tone] = active ? [g.yourTurn ? 'תורך' : 'בהמשך', 'open' as const]
-      : g.status === 'aborted' ? ['בוטל', 'even' as const]
+      : g.status === 'aborted' ? [g.ply >= 2 ? 'בלי תוצאה' : 'בוטל', 'even' as const]
         : !g.winner ? ['תיקו', 'even' as const] : g.winner === g.you ? ['ניצחון', 'won' as const] : ['הפסד', 'lost' as const];
     return {
       key: `f${g.id}`,
@@ -49,6 +50,7 @@ async function friendGames(): Promise<Row[]> {
       detail: `${SHORT_SPEED(g.speed, g.days, g.clock)} · ${g.ply} מהלכים`,
       result, tone, kif: g.kif,
       href: active ? gameUrl(g.id) : undefined,
+      end: active ? endUrl(g.id) : undefined,
     };
   });
 }
@@ -88,6 +90,7 @@ export async function bootGames(list: HTMLElement, viewer: HTMLElement): Promise
     el('span', { class: `friend-tag ${row.tone}` }, row.result),
     el('div', { class: 'friend-row__side' },
       row.href ? el('a', { class: 'link', href: row.href }, 'להמשך המשחק') : null,
+      row.end ? el('a', { class: 'link', href: row.end }, 'סיום המשחק') : null,
       row.kif ? el('button', { type: 'button', class: 'link', onclick: () => open(row) }, 'צפייה') : null,
       row.kif ? el('button', { type: 'button', class: 'link', onclick: () => downloadKif(row.kif!, kifFileName({ date: new Date(row.at) })) }, 'KIF') : null,
     ),

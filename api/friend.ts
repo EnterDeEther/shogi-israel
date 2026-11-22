@@ -1,10 +1,11 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { createHash, randomBytes } from 'node:crypto';
 import {
-  claimPatch, type FriendRow, GUEST_NAME, gameView, impassePatch, inRest, inviteState, joinPatch, MAX_SLOTS, movePatch, type Names, newCode, newInvite,
-  type Patch, rematchAsk, rematchRow, resignPatch, restPatch, rests, type Seat, settle, sideOf, type Signal, signalPatch, takebackAnswer, takebackAsk, validInvite,
+  claimPatch, endAnswer, endAsk, endCancel, type FriendRow, GUEST_NAME, gameView, impassePatch, inRest, inviteState, joinPatch, MAX_SLOTS, movePatch, type Names, newCode,
+  newInvite, other, type Patch, rematchAsk, rematchRow, resignPatch, restPatch, rests, type Seat, settle, sideOf, type Signal, signalPatch, takebackAnswer, takebackAsk,
+  takebackCancel, validInvite,
 } from '../src/friend/core.js';
-import { TURN_MAIL_GAP_MS, turnEmail, turnPush } from '../src/friend/alerts.js';
+import { type AlertKind, ASK_ALERT_GAP_MS, gameEmail, gamePush, TURN_MAIL_GAP_MS } from '../src/friend/alerts.js';
 import { asGender } from '../src/lib/gender.js';
 import { FROM as MAIL_FROM, REPLY_TO, unsubscribeUrl } from '../src/lib/notify.js';
 import { pushConfigured, sendOne } from '../src/lib/push-send.js';
@@ -163,15 +164,15 @@ async function bug(client: SupabaseClient, request: Request, body: Body, seat: S
   return json({ ok: true });
 }
 
-async function pushTurn(client: SupabaseClient, to: string, opp: string, id: string): Promise<void> {
+async function pushTo(client: SupabaseClient, to: string, kind: AlertKind, opp: string, id: string): Promise<void> {
   if (!pushConfigured()) return;
   const { data } = await client.from('push_subscriptions').select('endpoint, p256dh, auth').eq('user_id', to).eq('push_turn', true).limit(5);
   for (const sub of (data ?? []) as { endpoint: string; p256dh: string; auth: string }[]) {
-    if ((await sendOne(sub, turnPush(opp, id))) === 'gone') await client.from('push_subscriptions').delete().eq('endpoint', sub.endpoint);
+    if ((await sendOne(sub, gamePush(kind, opp, id))) === 'gone') await client.from('push_subscriptions').delete().eq('endpoint', sub.endpoint);
   }
 }
 
-async function mailTurn(client: SupabaseClient, to: string, nickname: string, opp: string, row: FriendRow, now: number): Promise<void> {
+async function mailTo(client: SupabaseClient, to: string, kind: AlertKind, nickname: string, opp: string, row: FriendRow, now: number): Promise<void> {
   const key = process.env.RESEND_API_KEY;
   const secret = process.env.CRON_SECRET;
   if (!key || !secret) return;
@@ -184,29 +185,31 @@ async function mailTurn(client: SupabaseClient, to: string, nickname: string, op
   const address = u?.user?.email;
   if (!address || !u.user?.email_confirmed_at) return;
   const unsub = await unsubscribeUrl(secret, to, 'turn');
-  const mail = turnEmail({ nickname, opp, id: row.id, deadline: row.move_deadline ? Date.parse(row.move_deadline) : null, gender: asGender(u.user.user_metadata?.gender), unsubscribeUrl: unsub });
+  const mail = gameEmail(kind, { nickname, opp, id: row.id, deadline: row.move_deadline ? Date.parse(row.move_deadline) : null, gender: asGender(u.user.user_metadata?.gender), unsubscribeUrl: unsub });
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       from: MAIL_FROM, to: [address], reply_to: REPLY_TO, subject: mail.subject, html: mail.html, text: mail.text,
       headers: { 'List-Unsubscribe': `<${unsub}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' },
-      tags: [{ name: 'kind', value: 'turn' }],
+      tags: [{ name: 'kind', value: kind }],
     }),
   });
-  if (!res.ok) { console.error('friend: turn mail failed', res.status); return; }
+  if (!res.ok) { console.error('friend: mail failed', kind, res.status); return; }
   const { id } = (await res.json()) as { id?: string };
   await client.from('email_log').insert({ user_id: to, kind: 'turn', game_id: row.id, resend_id: id ?? null });
 }
 
-async function alertTurn(client: SupabaseClient, row: FriendRow, names: Names, now: number): Promise<void> {
-  if (row.status !== 'active' || row.speed !== 'corr') return;
-  const turn = row.ply % 2 === 0 ? 'sente' : 'gote';
-  const to = row[`${turn}_user`];
-  if (!to || (rests(row, turn) && inRest(now))) return;
-  const opp = names[turn === 'sente' ? 'gote' : 'sente'];
-  const work = Promise.allSettled([pushTurn(client, to, opp, row.id), mailTurn(client, to, names[turn], opp, row, now)]);
+async function alertSide(client: SupabaseClient, row: FriendRow, side: 'sente' | 'gote', kind: AlertKind, names: Names, now: number): Promise<void> {
+  const to = row[`${side}_user`];
+  if (row.speed !== 'corr' || !to || (rests(row, side) && inRest(now))) return;
+  const opp = names[other(side)];
+  const work = Promise.allSettled([pushTo(client, to, kind, opp, row.id), mailTo(client, to, kind, names[side], opp, row, now)]);
   await Promise.race([work, new Promise((done) => setTimeout(done, 4000))]);
+}
+
+async function alertTurn(client: SupabaseClient, row: FriendRow, names: Names, now: number): Promise<void> {
+  if (row.status === 'active') await alertSide(client, row, row.ply % 2 === 0 ? 'sente' : 'gote', 'turn', names, now);
 }
 
 export async function POST(request: Request): Promise<Response> {
@@ -254,6 +257,9 @@ export async function POST(request: Request): Promise<Response> {
         you, names, ply: r.ply, winner: r.winner, endReason: r.end_reason, expiresAt: r.expires_at, updatedAt: r.updated_at,
         yourTurn: r.status === 'active' && !!you && (r.ply % 2 === 0 ? 'sente' : 'gote') === you,
         inviter: nick.get(r.created_by ?? '') ?? '', kif: r.kif,
+        waits: !you ? null : r.status === 'active'
+          ? (r.signal?.end === other(you) ? 'end' : r.takeback_by === other(you) ? 'takeback' : null)
+          : (r.status === 'finished' || r.status === 'aborted') && !r.rematch_id && r.rematch_by === other(you) ? 'rematch' : null,
       });
     }
     return json({ games: list, now });
@@ -308,6 +314,10 @@ export async function POST(request: Request): Promise<Response> {
   const cut = async () => !!user && !!oppUser && (await blocked(client, oppUser, user));
   const row = row0.status === 'active' ? await settled(client, row0, names, now) : row0;
   const reply = (r: FriendRow) => json({ game: gameView(r, side, names, Date.now()) });
+  const tell = (kind: AlertKind) => (next: FriendRow) => alertSide(client, next, other(side), kind, names, now);
+  const ended = (next: FriendRow) => (next.status === 'active' ? Promise.resolve() : tell('end')(next));
+  const quiet = !!row.signal?.ask && now - Date.parse(row.signal.ask) < ASK_ALERT_GAP_MS;
+  const asking = (patch: Patch | null) => apply(patch && !quiet ? { ...patch, signal: { ...(patch.signal ?? row.signal), ask: new Date(now).toISOString() } } : patch, quiet ? undefined : tell('ask'));
   const apply = async (patch: Patch | null, after?: (next: FriendRow) => Promise<void>) => {
     if (!patch) return fail('not-now', 409);
     const next = await save(client, row, patch);
@@ -322,7 +332,7 @@ export async function POST(request: Request): Promise<Response> {
       if (typeof body.usi !== 'string' || body.usi.length > 8 || !Number.isInteger(body.ply)) return fail('bad-move');
       const patch = movePatch(row, side, body.usi, body.ply as number, now, names);
       if (typeof patch === 'string') return json({ error: patch, game: gameView(row, side, names, now) }, 409);
-      return apply(patch, (next) => alertTurn(client, next, names, now));
+      return apply(patch, (next) => (next.status === 'active' ? alertTurn(client, next, names, now) : tell('end')(next)));
     }
     case 'claim': {
       if (!user) return fail('sign-in', 401);
@@ -339,11 +349,17 @@ export async function POST(request: Request): Promise<Response> {
       return apply(restPatch(row, side, body.on));
     }
     case 'resign':
-      return apply(resignPatch(row, side, now, names));
+      return apply(resignPatch(row, side, now, names), ended);
     case 'impasse':
-      return apply(impassePatch(row, side, now, names));
+      return apply(impassePatch(row, side, now, names), ended);
     case 'takeback':
-      return apply(body.answer === undefined ? takebackAsk(row, side) : takebackAnswer(row, side, body.answer === true, now));
+      if (body.cancel === true) return apply(takebackCancel(row, side));
+      if (body.answer === undefined) return asking(takebackAsk(row, side));
+      return apply(takebackAnswer(row, side, body.answer === true, now), (next) => (next.ply % 2 === 0 ? 'sente' : 'gote') === side ? Promise.resolve() : alertTurn(client, next, names, now));
+    case 'end':
+      if (body.cancel === true) return apply(endCancel(row, side));
+      if (body.answer === undefined) return asking(endAsk(row, side));
+      return apply(endAnswer(row, side, body.answer === true, now, names), ended);
     case 'signal':
       if (await cut()) return fail('not-now', 409);
       return apply(signalPatch(row, side, body.m as Signal, now));
@@ -353,7 +369,7 @@ export async function POST(request: Request): Promise<Response> {
       for (const who of [user, row.rematch_by && row.rematch_by !== side ? oppUser : null]) {
         if (who && (await slotsUsed(client, who, now)) >= MAX_SLOTS) return fail('full', 409);
       }
-      if (!row.rematch_by || row.rematch_by === side) return apply(rematchAsk(row, side));
+      if (!row.rematch_by || row.rematch_by === side) return asking(rematchAsk(row, side));
       const values = rematchRow(row, side, '', now);
       if (!values) return fail('not-now', 409);
       const made = await insertWithCode(client, values);
@@ -364,6 +380,7 @@ export async function POST(request: Request): Promise<Response> {
         const fresh = await load(client, 'id', row.id);
         return fresh?.rematch_id ? json({ id: fresh.rematch_id }) : fail('stale', 409);
       }
+      await alertTurn(client, made, namesOf(made, nick), now);
       return json({ id: made.id });
     }
     case 'report': {
@@ -379,11 +396,13 @@ export async function POST(request: Request): Promise<Response> {
       if (!user) return fail('sign-in', 401);
       if (oppUser) await client.from('friend_blocks').upsert({ user_id: user, blocked: oppUser }, { onConflict: 'user_id,blocked', ignoreDuplicates: true });
       const end = row.status === 'active' ? resignPatch(row, side, now, names) : null;
-      if (end && !(await save(client, row, end))) {
+      let over = end ? await save(client, row, end) : null;
+      if (end && !over) {
         const fresh = await load(client, 'id', row.id);
         const again = fresh ? resignPatch(fresh, side, now, names) : null;
-        if (fresh && again) await save(client, fresh, again);
+        if (fresh && again) over = await save(client, fresh, again);
       }
+      if (over) await ended(over);
       return json({ ok: true });
     }
     default:

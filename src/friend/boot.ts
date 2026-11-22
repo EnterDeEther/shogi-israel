@@ -73,6 +73,10 @@ export async function bootFriendGame(root: HTMLElement): Promise<void> {
   }
   me = await signedIn();
   await ctrl.load();
+  if (new URLSearchParams(location.search).has('end')) {
+    history.replaceState(null, '', `${location.pathname}${location.hash}`);
+    if (ctrl.active) { ctrl.menu = 'end'; draw(); }
+  }
 
   let busy = false;
   let up = false;

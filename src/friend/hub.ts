@@ -4,7 +4,7 @@ import { accountsEnabled } from '../lib/account-config';
 import { isAndroid, isInApp } from '../lib/install';
 import { copyText } from '../lib/kif';
 import { openBug, setBugContext } from './bug';
-import { api, gameUrl, type InviteInfo, inviteUrl, type ListedGame, readSeats, rememberedInvite, rememberInvite, REST_HINT, REST_LABEL, restPref, setRestPref, SHORT_SPEED, signedIn, SPEED_TEXT } from './client';
+import { api, endUrl, gameUrl, type InviteInfo, inviteUrl, type ListedGame, readSeats, rememberedInvite, rememberInvite, REST_HINT, REST_LABEL, restPref, setRestPref, SHORT_SPEED, signedIn, SPEED_TEXT } from './client';
 import { CORR_DAYS, MAX_SLOTS } from './core';
 
 const COLOR_TEXT: Record<Color | 'random', string> = { random: 'הגרלה', sente: 'פותח (☗)', gote: 'משיב (☖)' };
@@ -88,16 +88,36 @@ const oppOf = (g: ListedGame): string => (g.you ? g.names[g.you === 'sente' ? 'g
 function gameRow(g: ListedGame): HTMLElement {
   const opp = oppOf(g);
   const what = SHORT_SPEED(g.speed, g.days, g.clock);
-  const result = g.status === 'active'
-    ? (g.yourTurn ? 'תורך' : `התור של ${opp}`)
-    : g.endReason === 'abort' || g.status === 'aborted' ? 'בוטל'
-      : !g.winner ? 'תיקו' : g.winner === g.you ? 'ניצחת' : 'הפסד';
-  return el('li', { class: `friend-row${g.yourTurn ? ' turn' : ''}` },
+  const active = g.status === 'active';
+  const result = g.waits ? (g.waits === 'rematch' ? `${opp} רוצה עוד משחק` : `בקשה מ${opp}`)
+    : active ? (g.yourTurn ? 'תורך' : `התור של ${opp}`)
+      : g.status === 'aborted' ? (g.ply >= 2 ? 'בלי תוצאה' : 'בוטל')
+        : !g.winner ? 'תיקו' : g.winner === g.you ? 'ניצחת' : 'הפסד';
+  const hot = g.yourTurn || !!g.waits;
+  return el('li', { class: `friend-row${hot ? ' turn' : ''}` },
     el('a', { href: gameUrl(g.id), class: 'friend-row__main' },
       el('strong', {}, `נגד ${opp}`),
       el('span', { class: 'small muted' }, `${what} · ${g.ply} מהלכים`)),
-    el('span', { class: `friend-tag${g.yourTurn ? ' hot' : ''}` }, result),
+    el('span', { class: `friend-tag${hot ? ' hot' : ''}` }, result),
+    active ? el('a', { class: 'link friend-row__end', href: endUrl(g.id) }, 'סיום המשחק') : null,
   );
+}
+
+function deviceGames(box: HTMLElement, list: HTMLElement, skip: (id: string) => boolean = () => false): void {
+  const seats = Object.keys(readSeats()).filter((id) => !skip(id)).slice(-5).reverse();
+  if (!seats.length) return;
+  void Promise.all(seats.map((id) => api.state(id))).then((rs) => {
+    const games = rs.flatMap((r) => (r.ok && r.data.game.guest[r.data.game.you] ? [r.data.game] : []));
+    if (!games.length) return;
+    box.hidden = false;
+    list.replaceChildren(...games.map((g) => {
+      const opp = g.names[g.you === 'sente' ? 'gote' : 'sente'];
+      const yourTurn = g.status === 'active' && (g.ply % 2 === 0 ? 'sente' : 'gote') === g.you;
+      return el('li', { class: `friend-row${yourTurn ? ' turn' : ''}` },
+        el('a', { href: gameUrl(g.id), class: 'friend-row__main' }, el('strong', {}, `נגד ${opp}`), el('span', { class: 'small muted' }, `${g.ply} מהלכים`)),
+        el('span', { class: `friend-tag${yourTurn ? ' hot' : ''}` }, g.status === 'active' ? (yourTurn ? 'תורך' : `התור של ${opp}`) : 'הסתיים'));
+    }));
+  });
 }
 
 export async function bootHub(root: HTMLElement): Promise<void> {
@@ -111,7 +131,6 @@ export async function bootHub(root: HTMLElement): Promise<void> {
 }
 
 function homeGuest(root: HTMLElement): void {
-  const seats = Object.keys(readSeats()).slice(-5).reverse();
   const list = el('ul', { class: 'friend-list' });
   const box = el('section', { class: 'friend-card', hidden: true }, el('h2', {}, 'המשחקים שלך במכשיר הזה'), list);
   root.replaceChildren(
@@ -128,19 +147,7 @@ function homeGuest(root: HTMLElement): void {
     ),
     box,
   );
-  if (!seats.length) return;
-  void Promise.all(seats.map((id) => api.state(id))).then((rs) => {
-    const games = rs.flatMap((r) => (r.ok ? [r.data.game] : []));
-    if (!games.length) return;
-    box.hidden = false;
-    list.append(...games.map((g) => {
-      const opp = g.names[g.you === 'sente' ? 'gote' : 'sente'];
-      const yourTurn = g.status === 'active' && (g.ply % 2 === 0 ? 'sente' : 'gote') === g.you;
-      return el('li', { class: `friend-row${yourTurn ? ' turn' : ''}` },
-        el('a', { href: gameUrl(g.id), class: 'friend-row__main' }, el('strong', {}, `נגד ${opp}`), el('span', { class: 'small muted' }, `${g.ply} מהלכים`)),
-        el('span', { class: `friend-tag${yourTurn ? ' hot' : ''}` }, g.status === 'active' ? (yourTurn ? 'תורך' : `התור של ${opp}`) : 'הסתיים'));
-    }));
-  });
+  deviceGames(box, list);
 }
 
 function homeSignedIn(root: HTMLElement): void {
@@ -289,8 +296,13 @@ function homeSignedIn(root: HTMLElement): void {
     void watch();
   };
 
-  root.replaceChildren(notes, waitBox, makeBox, listBox);
-  void load();
+  const guestList = el('ul', { class: 'friend-list' });
+  const guestBox = el('section', { class: 'friend-card', hidden: true },
+    el('h2', {}, 'משחקים ששיחקת כאן בלי חשבון'),
+    el('p', { class: 'small muted' }, 'הם שמורים רק בדפדפן הזה. כדי לצרף משחק לחשבון: פותחים את המשחק, לוחצים על "עוד" ואז על "שמירת המשחק שלי".'),
+    guestList);
+  root.replaceChildren(notes, waitBox, makeBox, listBox, guestBox);
+  void load().then(() => deviceGames(guestBox, guestList, (id) => games.some((g) => g.id === id && !!g.you)));
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') void load(); });
   window.setInterval(() => { if (document.visibilityState === 'visible' && waiting().length) void load(); }, POLL_MS);
 }

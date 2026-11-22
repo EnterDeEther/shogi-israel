@@ -4,28 +4,45 @@ import { layout, SITE, type Email } from '../lib/notify.js';
 import type { PushMessage } from '../lib/push.js';
 
 export const TURN_MAIL_GAP_MS = 24 * 3600 * 1000;
+export const ASK_ALERT_GAP_MS = 30 * 60 * 1000;
+export type AlertKind = 'turn' | 'end' | 'ask';
 
-export const turnPush = (opp: string, id: string): PushMessage => ({
-  title: `תורך במשחק נגד ${opp}`,
-  body: 'הלוח מחכה למהלך שלך.',
-  url: `/friend/game/#${id}`,
-  tag: `friend-${id}`,
-});
+const PUSH_TEXT: Record<AlertKind, (opp: string) => [string, string]> = {
+  turn: (opp) => [`תורך במשחק נגד ${opp}`, 'הלוח מחכה למהלך שלך.'],
+  end: (opp) => [`המשחק נגד ${opp} הסתיים`, 'אפשר לראות איך הוא נגמר ולהציע עוד משחק.'],
+  ask: (opp) => [`בקשה מ${opp} במשחק שלכם`, 'הבקשה מחכה לתשובה שלך.'],
+};
+
+export const gamePush = (kind: AlertKind, opp: string, id: string): PushMessage => {
+  const [title, body] = PUSH_TEXT[kind](opp);
+  return { title, body, url: `/friend/game/#${id}`, tag: `friend-${id}` };
+};
+
+export const turnPush = (opp: string, id: string): PushMessage => gamePush('turn', opp, id);
 
 const WHEN = new Intl.DateTimeFormat('he-IL', { timeZone: 'Asia/Jerusalem', weekday: 'long', day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 
-export function turnEmail(input: { nickname: string; opp: string; id: string; deadline: number | null; gender: Gender; unsubscribeUrl: string }): Email {
+interface MailInput { nickname: string; opp: string; id: string; deadline: number | null; gender: Gender; unsubscribeUrl: string }
+
+export function gameEmail(kind: AlertKind, input: MailInput): Email {
   const until = input.deadline ? ` יש לך זמן עד ${WHEN.format(new Date(input.deadline))}.` : '';
+  const text: Record<AlertKind, string> = {
+    turn: `יש מהלך חדש מ${input.opp} במשחק שלכם, ועכשיו תורך.${until}`,
+    end: `המשחק שלך נגד ${input.opp} הסתיים. בעמוד המשחק אפשר לראות איך הוא נגמר, לעבור על המהלכים ולהציע עוד משחק.`,
+    ask: `יש בקשה מ${input.opp} במשחק שלכם, והיא מחכה לתשובה שלך.`,
+  };
   return layout({
-    subject: `תורך במשחק נגד ${input.opp}`,
+    subject: PUSH_TEXT[kind](input.opp)[0],
     nickname: input.nickname,
     gender: input.gender,
     unsubscribeUrl: input.unsubscribeUrl,
     blocks: [{
-      text: `יש מהלך חדש מ${input.opp} במשחק שלכם, ועכשיו תורך.${until}`,
-      href: `${SITE}/friend/game/?utm_source=email&utm_medium=email&utm_campaign=turn#${input.id}`,
+      text: text[kind],
+      href: `${SITE}/friend/game/?utm_source=email&utm_medium=email&utm_campaign=${kind === 'turn' ? 'turn' : `game-${kind}`}#${input.id}`,
       cta: 'למשחק',
     }],
-    why: 'קיבלת את המייל הזה כי ביקשת לדעת כשמגיע תורך במשחק עם חבר. על כל משחק נשלח לכל היותר מייל אחד ביום.',
+    why: 'קיבלת את המייל הזה כי ביקשת מיילים על המשחקים שלך עם חברים. על כל משחק נשלח לכל היותר מייל אחד ביום.',
   });
 }
+
+export const turnEmail = (input: MailInput): Email => gameEmail('turn', input);
