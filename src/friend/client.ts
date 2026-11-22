@@ -169,6 +169,8 @@ export interface ListedGame {
   inviter: string;
   kif: string | null;
   waits?: 'end' | 'takeback' | 'rematch' | null;
+  sfen?: string | null;
+  last?: string | null;
 }
 
 export const api = {

@@ -3,7 +3,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import {
   claimPatch, endAnswer, endAsk, endCancel, type FriendRow, gameView, impassePatch, inviteState, joinPatch, MAX_SLOTS, movePatch, type Names, newCode,
   newInvite, other, type Patch, rematchAsk, rematchRow, resignPatch, restPatch, rests, type Seat, settle, sideOf, type Signal, signalPatch, takebackAnswer, takebackAsk,
-  takebackCancel, validInvite, watched,
+  sfenAfter, takebackCancel, validInvite, watched,
 } from '../src/friend/core.js';
 import { type AlertKind, ASK_ALERT_GAP_MS } from '../src/friend/alerts.js';
 import { alertSide, namesOf, nicknames, unnamed } from '../src/friend/send.js';
@@ -195,6 +195,7 @@ export async function POST(request: Request): Promise<Response> {
       list.push({
         id: r.id, code: r.code, status: r.status, speed: r.speed, days: r.corr_days, clock: r.clock_limit ? { limit: r.clock_limit, byo: r.clock_byo } : null,
         you, names, ply: r.ply, winner: r.winner, endReason: r.end_reason, expiresAt: r.expires_at, updatedAt: r.updated_at,
+        sfen: r.status === 'open' || r.status === 'cancelled' ? null : sfenAfter(r.start_sfen, r.moves), last: r.moves.at(-1) ?? null,
         yourTurn: r.status === 'active' && !!you && (r.ply % 2 === 0 ? 'sente' : 'gote') === you,
         inviter: nick.get(r.created_by ?? '') ?? '', kif: r.kif,
         waits: !you ? null : r.status === 'active'
