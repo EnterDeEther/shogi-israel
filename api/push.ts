@@ -45,7 +45,7 @@ export async function POST(request: Request): Promise<Response> {
     const { data } = await client.auth.getUser(body.token);
     userId = data.user?.id ?? null;
   }
-  if (!userId) kinds.course = false;
+  if (!userId) { kinds.course = false; kinds.turn = false; }
   const gender = asGender(body.gender);
 
   const { data: before } = await client.from('push_subscriptions').select('endpoint').eq('endpoint', endpoint).maybeSingle();
@@ -55,7 +55,7 @@ export async function POST(request: Request): Promise<Response> {
   }
   const row = {
     endpoint, p256dh: sub!.keys!.p256dh as string, auth: sub!.keys!.auth as string, user_id: userId, gender,
-    push_week: kinds.week, push_course: kinds.course, push_news: kinds.news, updated_at: new Date().toISOString(),
+    push_week: kinds.week, push_course: kinds.course, push_news: kinds.news, push_turn: kinds.turn, updated_at: new Date().toISOString(),
   };
   const { error } = await client.from('push_subscriptions').upsert(row, { onConflict: 'endpoint' });
   if (error) { console.error('push: save failed', error.message); return json({ error: 'save' }, 500); }

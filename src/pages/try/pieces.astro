@@ -104,6 +104,8 @@ const hasPlay = pageExists('/play/');
 </Base>
 
 <script>
+  import { friendReturnBar } from '../../friend/return-bar';
+  friendReturnBar();
   import { bootTryPieces } from '../../scripts/try-pieces';
   document.querySelectorAll<HTMLElement>('[data-try]').forEach((el) => bootTryPieces(el));
   import { readLocal } from '../../lib/progress-local';

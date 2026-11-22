@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { checkUnsubscribe, unsubscribeToken, type UnsubKind } from '../src/lib/notify.js';
 import { asGender, resolve, type Gender } from '../src/lib/gender.js';
 
-const NAME: Record<UnsubKind, string> = { week: 'בעיית השבוע במייל', return: 'תזכורות לחזור לאתר', all: 'כל המיילים מהאתר (חוץ ממיילי החשבון)' };
+const NAME: Record<UnsubKind, string> = { week: 'בעיית השבוע במייל', return: 'תזכורות לחזור לאתר', turn: 'מייל כשמגיע תורך במשחק עם חבר', all: 'כל המיילים מהאתר (חוץ ממיילי החשבון)' };
 
 function page(title: string, body: string, status = 200, g: Gender = 'm'): Response {
   const note = g === 'm' ? '<p style="font-size:13px;opacity:.75">הטקסטים מנוסחים בלשון זכר מטעמי נוחות אך פונים לשני המינים.</p>' : '';
@@ -57,7 +57,7 @@ export async function POST(request: Request): Promise<Response> {
   const client = db();
   if (!client) return page('משהו השתבש', '<p>⟦נסה|נסי⟧ שוב בעוד כמה דקות, או ⟦כתוב|כתבי⟧ לנו ל־contact@shogi.co.il.</p>', 503);
   const g = await genderOf(client, u);
-  const off = k === 'week' ? { email_week: false } : k === 'return' ? { email_return: false } : { email_week: false, email_return: false };
+  const off = k === 'week' ? { email_week: false } : k === 'return' ? { email_return: false } : k === 'turn' ? { email_turn: false } : { email_week: false, email_return: false, email_turn: false };
   const { error } = await client.from('notification_prefs').update({ ...off, updated_at: new Date().toISOString() }).eq('user_id', u);
   if (error) {
     console.error('unsubscribe failed', error.message);

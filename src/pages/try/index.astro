@@ -87,6 +87,8 @@ const arrow = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" strok
 </Base>
 
 <script>
+  import { friendReturnBar } from '../../friend/return-bar';
+  friendReturnBar();
   import { bootWatchGame } from '../../scripts/watch-game';
   document.querySelectorAll<HTMLElement>('[data-watch]').forEach((el) => bootWatchGame(el));
 </script>

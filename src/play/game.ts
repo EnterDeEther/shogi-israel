@@ -3,7 +3,7 @@ import { makeWesternMoveOrDrop } from 'shogiops/notation/western';
 import { initialSfen, makeSfen, parseSfen } from 'shogiops/sfen';
 import { parseUsi } from 'shogiops/util';
 import type { Position } from 'shogiops/variant/position';
-import { impasse } from '../learn/impasse';
+import { impasse } from '../learn/impasse.js';
 
 export const START_SFEN = initialSfen('standard');
 

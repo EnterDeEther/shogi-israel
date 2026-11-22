@@ -58,7 +58,7 @@ const touch = () => matchMedia('(pointer: coarse)').matches;
 const offerable = (way: InstallWay) => way !== 'installed' && way !== 'none';
 
 export function offerOnPage(path: string): boolean {
-  if (/^\/(try|play|kif|clock)(\/|$)/.test(path)) return false;
+  if (/^\/(try|play|kif|clock|friend|games)(\/|$)/.test(path)) return false;
   return !/^\/(learn|rules|tsume)\/.+/.test(path);
 }
 

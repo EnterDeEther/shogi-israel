@@ -1,4 +1,5 @@
 import type { IconName } from './icons';
+import { friendOn } from '../friend/flag';
 
 export interface NavLink {
   href: string;
@@ -8,6 +9,7 @@ export interface NavLink {
   sub?: boolean;
   icon?: IconName;
   touchOnly?: boolean;
+  when?: () => boolean;
 }
 export interface NavSection {
   label: string;
@@ -63,6 +65,7 @@ export const NAV: NavItem[] = [
     links: [
       { href: '/play/', label: '⟦שחק|שחקי⟧ עכשיו', hint: 'משחק מלא נגד המחשב, ישר בדפדפן', icon: 'cpu' },
       { href: '/play/?vs=local', label: 'שני שחקנים, מכשיר אחד', hint: 'חבר לידך? כל אחד מקבל צד של הלוח', icon: 'two-players', touchOnly: true },
+      { href: '/friend/', label: '⟦שחק|שחקי⟧ עם חבר', hint: 'שולחים קישור, והחבר משחק מהטלפון שלו', icon: 'friend', when: friendOn },
       { href: '/lishogi/', label: '⟦שחק|שחקי⟧ אונליין בלישוגי', hint: 'מדריך: משחקים מול כל העולם', icon: 'online' },
     ],
   },
@@ -101,7 +104,7 @@ const routes = new Set(
     .map((r) => (r.endsWith('/') ? r : `${r}/`)),
 );
 
-export const isLive = (l: NavLink): boolean => l.external || l.href.includes('#') || routes.has(l.href.split('?')[0]);
+export const isLive = (l: NavLink): boolean => (!l.when || l.when()) && (l.external || l.href.includes('#') || routes.has(l.href.split('?')[0]));
 
 export const liveNav = (): NavItem[] =>
   NAV.flatMap((i): NavItem[] => {
