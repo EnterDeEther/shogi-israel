@@ -95,51 +95,63 @@ a.friend-row__main:hover strong { text-decoration: underline; }
 .friend-started .btn { min-height: 44px; }
 .friend-lapsed p { margin: 0; }
 
-.play .friend-turn { display: none; margin: 0; font: 700 16px/1.4 var(--f-body); }
-.play .friend-turn .small { font-weight: 400; }
 .play .friend-report { flex: none; display: inline-flex; align-items: center; gap: 6px; margin-inline-start: auto; min-height: 44px; padding: 0 14px; border: 1px solid var(--rule); border-radius: 999px; background: none; color: var(--ink-2); font: 600 15px var(--f-body); cursor: pointer; }
 .play .friend-report .icon { display: inline-flex; }
 .play .friend-report svg { width: 18px; height: 18px; }
 @media (hover: hover) { .play .friend-report:hover { border-color: var(--ink); color: var(--ink); } }
-.play .friend-foot { display: none; }
 .play .moves-toggle { appearance: none; border: 0; background: none; color: inherit; font: inherit; padding: 0; display: flex; align-items: center; gap: 8px; width: 100%; text-align: start; pointer-events: none; }
 .play .moves-toggle .last, .play .moves-toggle .icon { display: none; }
 .play .friend-keepline { margin: 0; padding: 8px 14px; border-top: 1px solid var(--rule); color: var(--ink-2); }
 .play .friend-keepline .link { min-height: 32px; }
+.play .turn-time { flex: none; min-width: 58px; padding: 5px 8px; border-radius: 4px; background: var(--ink); color: var(--washi); font: 700 15px/1 var(--f-body); font-variant-numeric: tabular-nums; text-align: center; }
+.play .friend-pieces .pieces-switch { margin: 0; align-items: center; gap: 8px; }
+.play .friend-pace { margin: 0; }
 .friend-game .play__seat { display: none; }
+.friend-game .sg-hand-wrap::before {
+  content: ''; position: absolute; left: 0; right: 0; z-index: -1; pointer-events: none; border-radius: 8px;
+  opacity: 0; transition: opacity .35s ease;
+}
+.friend-game .sg-hand-wrap.hand-bottom::before { top: -6px; bottom: -10px; background: linear-gradient(to top, color-mix(in srgb, var(--seal) 42%, transparent), color-mix(in srgb, var(--seal) 14%, transparent) 55%, transparent); }
+.friend-game .sg-hand-wrap.hand-top::before { top: -10px; bottom: -6px; background: linear-gradient(to bottom, color-mix(in srgb, var(--seal) 42%, transparent), color-mix(in srgb, var(--seal) 14%, transparent) 55%, transparent); }
+.friend-game.turn-bottom .sg-hand-wrap.hand-bottom::before, .friend-game.turn-top .sg-hand-wrap.hand-top::before { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .friend-game .sg-hand-wrap::before { transition: none; } }
 @media (max-width: 859.98px) {
-  .friend-game.play { gap: 10px; margin-top: 10px; }
-  .friend-game .play__bar { margin-bottom: 0; min-height: 28px; }
-  .friend-game .play__bar .play__what, .friend-game .play__bar .play__new { display: none; }
-  .play .friend-turn { display: block; }
-  .play .friend-report { min-height: 32px; padding: 0 10px; gap: 4px; font-size: 13px; align-self: flex-start; }
-  .play .friend-report svg { width: 15px; height: 15px; }
-  .play .friend-report__more { display: none; }
+  .friend-game { --fg-over: 308px; --fg-fit: calc(100vh - var(--fg-over)); }
+  @supports (height: 100svh) { .friend-game { --fg-fit: calc(100svh - var(--fg-over)); } }
+  .friend-game.is-guest { --fg-over: 352px; }
+  .friend-game.play { gap: 8px; margin-top: 4px; }
+  .friend-game .play__bar { display: none; }
   .friend-game .play__seat { display: block; transform: none; margin: 0; }
   .friend-game .play__seat[hidden] { display: none; }
-  .friend-game .ruser.seat { min-height: 40px; padding: 4px 10px; border-width: 1px; }
+  .friend-game .ruser.seat, .friend-game .ruser.seat.turn { min-height: 34px; padding: 0 4px; gap: 8px; border: 0; border-radius: 0; background: none; box-shadow: none; }
   .friend-game .ruser.seat .mark { font-size: 18px; }
   .friend-game .ruser.seat .who { flex-direction: row; align-items: baseline; gap: 8px; }
   .friend-game .ruser.seat .who strong { font-size: 16px; }
   .friend-game .ruser.seat .rclock { font-size: 20px; min-width: 72px; padding: 4px 8px; }
-  .friend-game .play__board { padding-top: 64px; padding-bottom: 50px; }
-  .friend-game .table-box > .ruser, .friend-game .table-box > .status-line { display: none; }
+  .friend-game .play__board { padding-top: 60px; padding-bottom: 46px; max-width: min(600px, max(360px, calc(var(--fg-fit) + 26px))); margin-inline: auto; }
+  .friend-game .table-box > .ruser { display: none; }
+  .friend-game .table-box > .status-line:not(.has-action), .friend-game .status-line .status-text { display: none; }
   .friend-game .table-box > .tools { order: 2; border-bottom: 0; }
-  .friend-game .table-box > .friend-keepline { order: 3; }
+  .friend-game .table-box > .friend-keepline { order: 3; display: flex; align-items: center; gap: 6px; padding: 4px 12px; font-size: 13px; white-space: nowrap; }
+  .friend-game .friend-keepline .keep-why { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .friend-game .friend-keepline .keep-acct { display: none; }
+  .friend-game .friend-keepline .link { flex: none; min-height: 28px; font-size: 13px; }
   .friend-game .table-box > .friend-menu { order: 3; }
-  .friend-game .table-box > .replay { order: 6; border-bottom: 0; }
   .friend-game .tool { min-height: 50px; }
+  .friend-game .tool .label { white-space: nowrap; font-size: clamp(11px, 3.1vw, 12px); }
+  .friend-game .friend-extra .replay { border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; background: var(--surface); }
   .friend-game .moves-head { padding: 0; border-bottom: 0; }
   .friend-game .replay.open .moves-head { border-bottom: 1px solid var(--rule); }
-  .friend-game .moves-toggle { pointer-events: auto; cursor: pointer; min-height: 44px; padding: 0 14px; }
+  .friend-game .moves-toggle { pointer-events: auto; cursor: pointer; min-height: 44px; padding: 0 12px; }
   .friend-game .moves-toggle .last { display: inline; flex: 1; }
   .friend-game .moves-toggle .icon { display: inline-flex; transition: transform .15s ease; }
   .friend-game .replay.open .moves-toggle .icon { transform: rotate(180deg); }
   .friend-game .replay:not(.open) .moves-box, .friend-game .replay:not(.open) .replay-nav { display: none; }
-  .friend-game .friend-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; }
-  .friend-game .friend-foot .btn { min-height: 44px; white-space: nowrap; flex-shrink: 0; }
-  .friend-game .friend-foot__what { margin: 0; display: flex; flex-direction: column; gap: 2px; line-height: 1.3; }
-  .friend-game .friend-foot__what span { font-size: 14px; color: var(--muted); }
+}
+@media (max-width: 600px) {
+  .friend-game { --fg-bw: clamp(297px, calc(var(--fg-fit) + 17px), 100vw); }
+  .friend-game .play__board { width: var(--fg-bw); max-width: none; margin-inline: calc((100% - var(--fg-bw)) / 2); }
+  .friend-game .sg-hand-wrap::before { left: -2px; right: -15px; border-radius: 0; }
 }
 .play .play-tip .buttons { display: flex; flex-wrap: wrap; gap: 8px; }
 .play .play-tip .buttons .btn { min-height: 44px; flex: 1 1 120px; }

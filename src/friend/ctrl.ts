@@ -34,7 +34,7 @@ export default class FriendCtrl {
   alert: string | null = null;
   alertBug = true;
   resignConfirm = false;
-  menu: 'messages' | 'safety' | 'keep' | 'rest' | 'more' | 'end' | null = null;
+  menu: 'messages' | 'safety' | 'keep' | 'rest' | 'more' | 'end' | 'pieces' | null = null;
   movesOpen = false;
   reported = false;
   blocked = false;
@@ -243,6 +243,14 @@ export default class FriendCtrl {
     const elapsed = c.running === color ? performance.now() - this.receivedAt : 0;
     const left = c[color] - elapsed;
     return left > 0 ? { main: left, byo: c.byo } : { main: 0, byo: Math.max(0, c.byo + left) };
+  }
+
+  turnTime(): number | null {
+    const g = this.game;
+    if (!g || !this.active) return null;
+    if (this.line.plies.length !== g.ply) return Date.now() - this.movedAt;
+    if (g.turnAt === null || g.turnAt === undefined) return null;
+    return Math.max(0, g.now - g.turnAt + (performance.now() - this.receivedAt));
   }
 
   deadlineLeft(): number | null {

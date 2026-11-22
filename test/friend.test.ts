@@ -253,6 +253,12 @@ describe('live pings', () => {
     expect(hinted.deadline).toBe(real.deadline);
     expect(hinted.rev).toBe(gote.rev);
   });
+  test('a view and a ping both say when the current turn began', () => {
+    expect(gote.turnAt).toBe(T0);
+    expect(gameView(moved, 'gote', names, T0 + 5000).turnAt).toBe(T0 + 5000);
+    expect(pingMove(gote, ping)!.turnAt).toBe(T0 + 5000);
+    expect(gameView({ ...moved, status: 'finished' } as FriendRow, 'gote', names, T0 + 5000).turnAt).toBeNull();
+  });
   test('a ping is not applied when anything about it is off', () => {
     const sente = gameView(start, 'sente', names, T0);
     expect(pingMove(sente, ping)).toBeNull();
