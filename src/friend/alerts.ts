@@ -22,10 +22,10 @@ export function turnEmail(input: { nickname: string; opp: string; id: string; de
     gender: input.gender,
     unsubscribeUrl: input.unsubscribeUrl,
     blocks: [{
-      text: `${input.opp} שיחק מהלך במשחק שלכם, ועכשיו תורך.${until}`,
+      text: `יש מהלך חדש מ${input.opp} במשחק שלכם, ועכשיו תורך.${until}`,
       href: `${SITE}/friend/game/?utm_source=email&utm_medium=email&utm_campaign=turn#${input.id}`,
       cta: 'למשחק',
     }],
-    why: 'קיבלת את המייל כי ביקשת מייל כשמגיע תורך במשחק עם חבר. על כל משחק נשלח מייל אחד ביום לכל היותר.',
+    why: 'קיבלת את המייל הזה כי ביקשת לדעת כשמגיע תורך במשחק עם חבר. על כל משחק נשלח לכל היותר מייל אחד ביום.',
   });
 }

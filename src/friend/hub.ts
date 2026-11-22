@@ -9,7 +9,7 @@ import { CORR_DAYS, LIVE_CLOCKS } from './core';
 const COLOR_TEXT: Record<Color | 'random', string> = { random: 'הגרלה', sente: 'פותח (☗)', gote: 'משיב (☖)' };
 
 type Choice = { speed: 'corr'; days: number } | { speed: 'live'; clock: { limit: number; byo: number } };
-const NO_CLOCK = 'בלי שעון: לכל מהלך יש עד 3 ימים, וכל אחד משחק מתי שנוח לו. סוף הזמן אף פעם לא נופל בשבת.';
+const NO_CLOCK = 'בלי שעון: לכל מהלך יש עד 3 ימים, וכל אחד משחק מתי שנוח לו. הזמן למהלך אף פעם לא נגמר בשבת.';
 const CHOICES: { key: string; label: string; hint: string; value: Choice }[] = [
   { key: 'corr', label: 'בלי שעון', hint: NO_CLOCK, value: { speed: 'corr', days: CORR_DAYS[0] } },
   ...LIVE_CLOCKS.map((c) => ({ key: `live${c.limit}`, label: `${c.limit / 60} דק׳ + ${c.byo} שנ׳`, hint: 'משחק חי עם שעון: שניכם מול המסך באותו זמן.', value: { speed: 'live' as const, clock: c } })),
@@ -277,7 +277,7 @@ async function invitePage(root: HTMLElement, code: string, me: boolean): Promise
     !me ? el('p', { class: 'small muted' }, 'בלי הרשמה המשחק נשמר רק במכשיר הזה. עם חשבון הוא נשמר בכל מכשיר. אחרי הכניסה לחשבון ⟦לחץ|לחצי⟧ שוב על הקישור שקיבלת.') : null,
     el('div', { class: 'friend-new' },
       el('strong', {}, 'אף פעם לא שיחקת שוגי?'),
-      el('p', {}, 'משחק אחד קצר, מהלך אחרי מהלך, ⟦ואתה|ואת⟧ כבר ⟦יודע|יודעת⟧ מה קורה על הלוח. ההזמנה מחכה לך.'),
+      el('p', {}, 'משחק אחד קצר, מהלך אחרי מהלך, ⟦ואתה|ואת⟧ כבר ⟦יודע|יודעת⟧ מה קורה על הלוח. ההזמנה תחכה לך.'),
       el('a', { class: 'btn btn-ghost', href: '/try/', onclick: () => remember(code) }, 'קודם ללמוד, ואז לשחק')),
     msg,
   );

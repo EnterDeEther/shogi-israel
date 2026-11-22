@@ -292,7 +292,7 @@ function menuBox(ctrl: FriendCtrl, go: Go, signedIn: boolean): HTMLElement | nul
 
 function problem(ctrl: FriendCtrl): HTMLElement {
   const text = ctrl.loadError === 'not-player'
-    ? { title: 'המשחק הזה שמור למכשיר אחר', body: 'אפשר לשחק במשחק עם חבר רק מהמכשיר ומהחשבון שבהם נכנסת אליו. אם נכנסת עם חשבון, ⟦התחבר|התחברי⟧ אליו כאן.' }
+    ? { title: 'לא זיהינו אותך במשחק הזה', body: 'למשחק נכנסים מהחשבון ששיחקת בו, או עם הקישור האישי ששמרת. אם שיחקת עם חשבון, ⟦התחבר|התחברי⟧ אליו כאן.' }
     : ctrl.loadError === 'no-game'
       ? { title: 'לא מצאנו את המשחק', body: 'ייתכן שהקישור לא שלם. ⟦בקש|בקשי⟧ קישור חדש ממי שהזמין אותך.' }
       : ctrl.loadError === 'paused'
