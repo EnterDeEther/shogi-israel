@@ -387,6 +387,9 @@ const DESK_SETTINGS: NavLink = { href: '/settings/', label: 'הגדרות' };
   @media (min-width: 1040px) and (max-width: 1099px) {
     :global(html[data-signed-in]) .nav-wide .account { padding: 0; width: 40px; height: 40px; justify-content: center; }
     :global(html[data-signed-in]) .nav-wide .account [data-signed-in-only] { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    :global(html[data-signed-in]) .brand { margin-inline-end: 26px; }
+    :global(html[data-signed-in]) .bar .nav-wide { flex: 1; margin-inline-start: 0; gap: 12px; }
+    :global(html[data-signed-in]) .nav-wide .account { margin-inline-start: auto; }
   }
   .nav-wide .account :global(svg) { flex-shrink: 0; }
   .nav-wide .top, .nav-group summary {
