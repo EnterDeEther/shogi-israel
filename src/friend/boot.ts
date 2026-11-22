@@ -3,7 +3,7 @@ import { loadPrefs } from '../learn/prefs';
 import { preloadSounds } from '../learn/sound';
 import { mount } from '../play/view';
 import { accountsEnabled } from '../lib/account-config';
-import { gameUrl, signedIn } from './client';
+import { gameUrl, saveSeat, signedIn } from './client';
 import type { Ping } from './core';
 import FriendCtrl from './ctrl';
 import { clockText, hoursText, render } from './view';
@@ -16,8 +16,13 @@ const AWAKE_MS = 180_000;
 type WakeLock = { release(): Promise<void> };
 
 function gameId(): string | null {
-  const id = location.hash.replace(/^#/, '').trim();
-  return /^[0-9a-f-]{36}$/i.test(id) ? id : null;
+  const m = /^([0-9a-f-]{36})(?:\.([A-Za-z0-9_-]{43}))?$/i.exec(location.hash.replace(/^#/, '').trim());
+  if (!m) return null;
+  if (m[2]) {
+    saveSeat(m[1], m[2]);
+    history.replaceState(null, '', `${location.pathname}#${m[1]}`);
+  }
+  return m[1];
 }
 
 async function listen(id: string, onPing: (ping: Ping) => void, onLine: (up: boolean) => void): Promise<() => void> {
@@ -90,8 +95,17 @@ export async function bootFriendGame(root: HTMLElement): Promise<void> {
     const g = ctrl.game;
     if (g && typeof ping.rev === 'number' && ping.rev <= g.rev) return;
     want = typeof ping.rev === 'number' ? Math.max(want, ping.rev) : Infinity;
+    pingAt = Date.now();
     ctrl.hint(ping);
     kick();
+  };
+  let pingAt = 0;
+  const clearAlerts = () => {
+    if (document.visibilityState !== 'visible' || !('serviceWorker' in navigator)) return;
+    void navigator.serviceWorker.getRegistration()
+      .then((reg) => reg?.getNotifications({ tag: `friend-${id}` }))
+      .then((list) => list?.forEach((n) => n.close()))
+      .catch(() => {});
   };
   const keepAwake = () => {
     const on = ctrl.active && document.visibilityState === 'visible' && (!!ctrl.game?.clock || Date.now() - ctrl.movedAt < AWAKE_MS);
@@ -106,6 +120,7 @@ export async function bootFriendGame(root: HTMLElement): Promise<void> {
   window.setInterval(() => {
     keepAwake();
     if (document.visibilityState !== 'visible') return;
+    if (Date.now() - pingAt < 15_000) clearAlerts();
     kick();
     const waiting = !ctrl.ended || (!!ctrl.game?.rematchBy && !ctrl.game.rematchId);
     const clock = !!ctrl.game?.clock && ctrl.active;
@@ -116,8 +131,10 @@ export async function bootFriendGame(root: HTMLElement): Promise<void> {
     if (document.visibilityState !== 'visible') return;
     wake = null;
     keepAwake();
+    clearAlerts();
     soft();
   });
+  clearAlerts();
   window.addEventListener('online', soft);
   window.addEventListener('hashchange', () => {
     stop();

@@ -106,26 +106,36 @@ export function buildEmail(input: EmailInput): Email {
   }
 
   const g = input.gender ?? 'm';
-  subject = resolve(subject, g);
-  blocks = blocks.map((b) => ({ ...b, text: resolve(b.text, g), cta: resolve(b.cta, g) }));
-  const hello = `שלום ${nickname},`;
+  return layout({
+    subject, nickname, why, gender: g, unsubscribeUrl: input.unsubscribeUrl,
+    blocks: blocks.map((b) => ({ ...b, href: utm(b.href, kind) })),
+  });
+}
+
+export interface EmailBlock { text: string; href: string; cta: string }
+
+export function layout(input: { subject: string; nickname: string; blocks: EmailBlock[]; why: string; gender: Gender; unsubscribeUrl: string }): Email {
+  const g = input.gender;
+  const subject = resolve(input.subject, g);
+  const blocks = input.blocks.map((b) => ({ ...b, text: resolve(b.text, g), cta: resolve(b.cta, g) }));
+  const hello = `שלום ${input.nickname},`;
   const signoff = ['נתראה על הלוח,', 'דין, שוגי ישראל', 'אפשר פשוט להשיב למייל הזה.'];
   const settings = `${SITE}/account/#notifications`;
   const disclaimer = g === 'f' ? '' : ' הטקסטים מנוסחים בלשון זכר מטעמי נוחות אך פונים לשני המינים.';
-  const footer = `${resolve(why, g)}${disclaimer} שוגי ישראל, shogi.co.il, ${REPLY_TO}`;
+  const footer = `${resolve(input.why, g)}${disclaimer} שוגי ישראל, shogi.co.il, ${REPLY_TO}`;
   const html = `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${esc(subject)}</title></head>
 <body style="margin:0;padding:0;background:#F6F0E4;">
 <div style="direction:rtl;text-align:right;max-width:560px;margin:0 auto;padding:24px 20px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.6;color:#1E1A14;">
 <p style="margin:0 0 16px;font-weight:bold;color:#B8361F;">将棋 שוגי ישראל</p>
 <p style="margin:0 0 16px;">${esc(hello)}</p>
 ${blocks.map((b) => `<p style="margin:0 0 10px;">${esc(b.text)}</p>
-<p style="margin:0 0 22px;"><a href="${esc(utm(b.href, kind))}" style="display:inline-block;background:#B8361F;color:#FFFFFF;text-decoration:none;font-weight:bold;padding:10px 18px;border-radius:6px;">${esc(b.cta)}</a></p>`).join('\n')}
+<p style="margin:0 0 22px;"><a href="${esc(b.href)}" style="display:inline-block;background:#B8361F;color:#FFFFFF;text-decoration:none;font-weight:bold;padding:10px 18px;border-radius:6px;">${esc(b.cta)}</a></p>`).join('\n')}
 <p style="margin:0 0 4px;">${signoff.slice(0, 2).map(esc).join('<br>')}</p>
 <p style="margin:0;font-size:15px;color:#6B6256;">${esc(signoff[2])}</p>
 <hr style="border:0;border-top:1px solid #D9CDB5;margin:24px 0 12px;">
 <p style="margin:0;font-size:13px;color:#6B6256;">${esc(footer)}<br><a href="${esc(input.unsubscribeUrl)}" style="color:#6B6256;">הפסקת המיילים האלה</a> · <a href="${esc(settings)}" style="color:#6B6256;">הגדרות התראות</a></p>
 </div></body></html>`;
-  const text = [hello, '', ...blocks.flatMap((b) => [b.text, `${b.cta}: ${utm(b.href, kind)}`, '']), ...signoff, '', '--', footer, `הפסקת המיילים האלה: ${input.unsubscribeUrl}`, `הגדרות התראות: ${settings}`].join('\n');
+  const text = [hello, '', ...blocks.flatMap((b) => [b.text, `${b.cta}: ${b.href}`, '']), ...signoff, '', '--', footer, `הפסקת המיילים האלה: ${input.unsubscribeUrl}`, `הגדרות התראות: ${settings}`].join('\n');
   return { subject, html, text };
 }
 
@@ -136,15 +146,15 @@ async function hmac(secret: string, msg: string): Promise<string> {
   return b64url(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(msg))).slice(0, 32);
 }
 
-export type UnsubKind = EmailKind | 'all';
+export type UnsubKind = EmailKind | 'turn' | 'all';
 export async function unsubscribeToken(secret: string, userId: string, kind: UnsubKind): Promise<string> {
   return hmac(secret, `${userId}:${kind}`);
 }
-export async function unsubscribeUrl(secret: string, userId: string, kind: EmailKind): Promise<string> {
+export async function unsubscribeUrl(secret: string, userId: string, kind: EmailKind | 'turn'): Promise<string> {
   return `${SITE}/api/unsubscribe?u=${encodeURIComponent(userId)}&k=${kind}&t=${await unsubscribeToken(secret, userId, kind)}`;
 }
 export async function checkUnsubscribe(secret: string, userId: string, kind: string, token: string): Promise<boolean> {
-  if (!/^[0-9a-f-]{36}$/.test(userId) || !['week', 'return', 'all'].includes(kind) || token.length !== 32) return false;
+  if (!/^[0-9a-f-]{36}$/.test(userId) || !['week', 'return', 'turn', 'all'].includes(kind) || token.length !== 32) return false;
   const want = await unsubscribeToken(secret, userId, kind as UnsubKind);
   let diff = 0;
   for (let i = 0; i < want.length; i++) diff |= want.charCodeAt(i) ^ token.charCodeAt(i);

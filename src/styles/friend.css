@@ -63,3 +63,8 @@ a.friend-row__main:hover strong { text-decoration: underline; }
   .play .table-box > .friend-menu { order: 2; }
   .play .table-box > .play-tip { order: 0; }
 }
+.friend-more { width: 100%; }
+.friend-more summary { cursor: pointer; font-weight: 700; color: var(--seal); min-height: 32px; text-decoration: underline; text-underline-offset: 3px; }
+.friend-more[open] { display: flex; flex-direction: column; gap: 14px; }
+.friend-note { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 100%; padding: 14px; border: 1px solid var(--seal); border-radius: 10px; background: var(--washi-2); }
+.friend-new { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 100%; padding-top: 14px; border-top: 1px solid var(--rule); }

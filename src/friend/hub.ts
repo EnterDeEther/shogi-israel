@@ -1,34 +1,29 @@
 // AGPL-3.0-or-later, like the rest of this site.
 import { el } from '../learn/view';
 import { accountsEnabled } from '../lib/account-config';
+import { isAndroid, isInApp } from '../lib/install';
 import { copyText } from '../lib/kif';
-import { api, gameUrl, type InviteInfo, inviteUrl, type ListedGame, readSeats, SHORT_SPEED, signedIn, SPEED_TEXT } from './client';
+import { api, gameUrl, type InviteInfo, inviteUrl, type ListedGame, readSeats, rememberedInvite, rememberInvite, SHORT_SPEED, signedIn, SPEED_TEXT } from './client';
 import { CORR_DAYS, LIVE_CLOCKS } from './core';
 
-const PENDING = 'shogi-il.friend.pending';
 const COLOR_TEXT: Record<Color | 'random', string> = { random: 'הגרלה', sente: 'פותח (☗)', gote: 'משיב (☖)' };
 
 type Choice = { speed: 'corr'; days: number } | { speed: 'live'; clock: { limit: number; byo: number } };
+const NO_CLOCK = 'בלי שעון: לכל מהלך יש עד 3 ימים, וכל אחד משחק מתי שנוח לו. סוף הזמן אף פעם לא נופל בשבת.';
 const CHOICES: { key: string; label: string; hint: string; value: Choice }[] = [
-  ...CORR_DAYS.map((d) => ({ key: `corr${d}`, label: d === 1 ? 'יום למהלך' : '3 ימים למהלך', hint: 'משחק איטי: כל אחד משחק מתי שנוח לו.', value: { speed: 'corr' as const, days: d } })),
-  ...LIVE_CLOCKS.map((c) => ({ key: `live${c.limit}`, label: `${c.limit / 60} דק׳ + ${c.byo} שנ׳`, hint: 'משחק חי: שניכם מול המסך באותו זמן.', value: { speed: 'live' as const, clock: c } })),
+  { key: 'corr', label: 'בלי שעון', hint: NO_CLOCK, value: { speed: 'corr', days: CORR_DAYS[0] } },
+  ...LIVE_CLOCKS.map((c) => ({ key: `live${c.limit}`, label: `${c.limit / 60} דק׳ + ${c.byo} שנ׳`, hint: 'משחק חי עם שעון: שניכם מול המסך באותו זמן.', value: { speed: 'live' as const, clock: c } })),
 ];
 
 const codeFromHash = (): string | null => {
-  const c = location.hash.replace(/^#/, '').trim().toLowerCase();
-  return /^[a-z0-9]{10}$/.test(c) ? c : null;
+  const asked = new URLSearchParams(location.search).get('i');
+  const c = (asked ?? location.hash.replace(/^#/, '')).trim().toLowerCase();
+  if (!/^[a-z0-9]{10}$/.test(c)) return null;
+  if (asked) history.replaceState(null, '', `${location.pathname}#${c}`);
+  return c;
 };
-const remember = (code: string | null) => {
-  try { if (code) localStorage.setItem(PENDING, JSON.stringify({ code, at: Date.now() })); else localStorage.removeItem(PENDING); } catch { }
-};
-const remembered = (): string | null => {
-  try {
-    const v = JSON.parse(localStorage.getItem(PENDING) || 'null');
-    return v && typeof v.code === 'string' && Date.now() - v.at < 864e5 ? v.code : null;
-  } catch {
-    return null;
-  }
-};
+const remember = rememberInvite;
+const remembered = (): string | null => rememberedInvite();
 
 const ERR: Record<string, string> = {
   nickname: 'כדי להזמין חבר צריך כינוי בחשבון. אפשר לבחור אחד בעמוד החשבון.',
@@ -56,6 +51,24 @@ function shareRow(code: string): HTMLElement {
       copyBtn,
       nav.share ? el('button', { type: 'button', class: 'btn btn-ghost', onclick: () => void nav.share!({ title: 'שוגי ישראל', text: msg }).catch(() => {}) }, 'שיתוף') : null,
     ),
+  );
+}
+
+function inAppNote(code: string): HTMLElement {
+  const android = isAndroid();
+  const copyBtn = el('button', { type: 'button', class: 'btn btn-ghost' }, 'העתקת הקישור');
+  copyBtn.addEventListener('click', async () => {
+    copyBtn.textContent = (await copyText(inviteUrl(code))) ? 'הועתק. ⟦הדבק|הדביקי⟧ אותו בדפדפן' : 'ההעתקה נכשלה';
+  });
+  return el('div', { class: 'friend-note', role: 'note' },
+    el('strong', {}, android ? 'כדאי לפתוח ב־Chrome' : 'כדאי לפתוח בדפדפן הרגיל'),
+    el('p', {}, 'הדף נפתח בתוך אפליקציה, והמשחק עלול להיעלם כשהיא נסגרת. בדפדפן הרגיל הוא נשמר.'),
+    el('div', { class: 'friend-actions' },
+      android ? el('a', { class: 'btn', href: `intent://${location.host}/friend/?i=${code}#Intent;scheme=https;package=com.android.chrome;end` }, 'פתיחה ב־Chrome') : null,
+      copyBtn),
+    el('p', { class: 'small muted' }, android
+      ? 'אם הכפתור לא עובד: ⟦לחץ|לחצי⟧ על ⋮ למעלה ⟦ובחר|ובחרי⟧ פתיחה בדפדפן.'
+      : '⟦לחץ|לחצי⟧ על ⋯ ⟦ובחר|ובחרי⟧ פתיחה בדפדפן.'),
   );
 }
 
@@ -102,7 +115,7 @@ function homeGuest(root: HTMLElement): void {
       el('h2', {}, 'איך זה עובד'),
       el('ol', { class: 'friend-steps' },
         el('li', {}, 'מי שמזמין צריך חשבון (בחינם) עם כינוי.'),
-        el('li', {}, 'בוחרים סוג משחק ושולחים לחבר קישור בוואטסאפ.'),
+        el('li', {}, 'שולחים לחבר קישור בוואטסאפ.'),
         el('li', {}, 'החבר לוחץ על הקישור ומשחק, גם בלי הרשמה.')),
       el('p', {}, 'אין צ׳אט פתוח: אפשר לשלוח רק הודעות קבועות, כמו "בהצלחה!" או "משחק טוב!".'),
       accountsEnabled
@@ -190,16 +203,19 @@ function homeSignedIn(root: HTMLElement): void {
   root.replaceChildren(
     el('section', { class: 'friend-card' },
       el('h2', {}, 'הזמנת חבר למשחק'),
-      el('div', { class: 'friend-field' },
-        el('p', { class: 'friend-label' }, 'כמה זמן למהלך?'),
-        seg(CHOICES, (v) => { pick = CHOICES.find((c) => c.value === v)!; hint.textContent = pick.hint; }, pick.key),
-        hint),
-      el('div', { class: 'friend-field' },
-        el('p', { class: 'friend-label' }, 'באיזה צד ⟦תשחק|תשחקי⟧?'),
-        seg((['random', 'sente', 'gote'] as const).map((c) => ({ key: c, label: COLOR_TEXT[c], value: c })), (v) => { color = v; }, color),
-        el('p', { class: 'small muted' }, 'הפותח (☗) משחק ראשון.')),
+      el('p', {}, 'משחק אחד, בלי שעון. לכל מהלך יש עד 3 ימים, וכל אחד משחק מתי שנוח לו.'),
       createBtn,
       msg,
+      el('details', { class: 'friend-more' },
+        el('summary', {}, 'אפשרויות נוספות'),
+        el('div', { class: 'friend-field' },
+          el('p', { class: 'friend-label' }, 'עם שעון או בלי?'),
+          seg(CHOICES, (v) => { pick = CHOICES.find((c) => c.value === v)!; hint.textContent = pick.hint; }, pick.key),
+          hint),
+        el('div', { class: 'friend-field' },
+          el('p', { class: 'friend-label' }, 'באיזה צד ⟦תשחק|תשחקי⟧?'),
+          seg((['random', 'sente', 'gote'] as const).map((c) => ({ key: c, label: COLOR_TEXT[c], value: c })), (v) => { color = v; }, color),
+          el('p', { class: 'small muted' }, 'הפותח (☗) משחק ראשון.'))),
     ),
     made,
     listBox,
@@ -252,13 +268,17 @@ async function invitePage(root: HTMLElement, code: string, me: boolean): Promise
       el('li', {}, what),
       el('li', {}, yourSide),
       el('li', {}, 'אין צ׳אט: רק הודעות קבועות כמו "בהצלחה!".')),
+    !me && isInApp() ? inAppNote(code) : null,
     me
       ? joinBtn('⟦בוא|בואי⟧ נשחק')
       : el('div', { class: 'friend-actions' },
         joinBtn('לשחק עכשיו, בלי הרשמה'),
         accountsEnabled ? el('a', { class: 'btn btn-ghost', href: '/account/', onclick: () => remember(code) }, 'כניסה לחשבון ומשחק') : null),
     !me ? el('p', { class: 'small muted' }, 'בלי הרשמה המשחק נשמר רק במכשיר הזה. עם חשבון הוא נשמר בכל מכשיר. אחרי הכניסה לחשבון ⟦לחץ|לחצי⟧ שוב על הקישור שקיבלת.') : null,
-    el('p', { class: 'small muted' }, 'עוד לא יודעים לשחק? ', el('a', { href: '/try/' }, 'מתחילים כאן'), ', משחק אחד, מהלך אחרי מהלך.'),
+    el('div', { class: 'friend-new' },
+      el('strong', {}, 'אף פעם לא שיחקת שוגי?'),
+      el('p', {}, 'משחק אחד קצר, מהלך אחרי מהלך, ⟦ואתה|ואת⟧ כבר ⟦יודע|יודעת⟧ מה קורה על הלוח. ההזמנה מחכה לך.'),
+      el('a', { class: 'btn btn-ghost', href: '/try/', onclick: () => remember(code) }, 'קודם ללמוד, ואז לשחק')),
     msg,
   );
 }

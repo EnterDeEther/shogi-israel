@@ -2,6 +2,8 @@
 import type { GameView, Signal } from './core';
 import { accountsEnabled } from '../lib/account-config';
 
+export { rememberedInvite, rememberInvite } from './pending';
+
 const SEATS = 'shogi-il.friend.seats';
 
 export function readSeats(): Record<string, string> {
@@ -22,6 +24,12 @@ export function saveSeat(id: string, token: string): void {
   all[id] = token;
   const keep = Object.entries(all).slice(-40);
   try { localStorage.setItem(SEATS, JSON.stringify(Object.fromEntries(keep))); } catch { }
+}
+
+export function forgetSeat(id: string): void {
+  const all = readSeats();
+  delete all[id];
+  try { localStorage.setItem(SEATS, JSON.stringify(all)); } catch { }
 }
 
 async function token(): Promise<string | null> {
@@ -106,21 +114,30 @@ export const api = {
     if (r.ok && r.data.id && seat) saveSeat(r.data.id, seat);
     return r;
   },
+  claim: async (id: string) => {
+    const r = await call<{ game: GameView }>('claim', { id });
+    if (r.ok) forgetSeat(id);
+    return r;
+  },
   report: (id: string, reason: string) => call('report', { id, reason }),
   block: (id: string) => call('block', { id }),
 };
 
 export const inviteUrl = (code: string): string => `${location.origin}/friend/#${code}`;
 export const gameUrl = (id: string): string => `/friend/game/#${id}`;
+export const personalUrl = (id: string): string | null => {
+  const seat = seatFor(id);
+  return seat ? `${location.origin}/friend/game/#${id}.${seat}` : null;
+};
 
 export const SPEED_TEXT = (speed: 'corr' | 'live', days: number | null, clock: { limit: number; byo: number } | null): string =>
   speed === 'corr'
-    ? days === 3 ? 'משחק איטי: עד 3 ימים לכל מהלך' : 'משחק איטי: עד יום לכל מהלך'
+    ? days === 1 ? 'משחק בלי שעון: עד יום לכל מהלך' : 'משחק בלי שעון: עד 3 ימים לכל מהלך'
     : `משחק חי: ${Math.round((clock?.limit ?? 600) / 60)} דק׳ + ${clock?.byo ?? 30} שנ׳ למהלך`;
 
 export const SHORT_SPEED = (speed: 'corr' | 'live', days: number | null, clock: { limit: number; byo: number } | null): string =>
   speed === 'corr'
-    ? `איטי, ${days === 3 ? '3 ימים' : 'יום'} למהלך`
+    ? `בלי שעון, ${days === 1 ? 'יום' : '3 ימים'} למהלך`
     : `חי, ${Math.round((clock?.limit ?? 600) / 60)}+${clock?.byo ?? 30}`;
 
 export const SIGNAL_TEXT: Record<Signal, string> = {

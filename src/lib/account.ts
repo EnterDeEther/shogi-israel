@@ -98,13 +98,17 @@ export async function saveNickname(userId: string, nickname: string, isNew: bool
   return error.code === '23514' ? 'reserved' : 'error';
 }
 
-export interface EmailPrefs { email_week: boolean; email_return: boolean; paused_reason: string | null }
+export interface EmailPrefs { email_week: boolean; email_return: boolean; email_turn: boolean; paused_reason: string | null }
 export async function getEmailPrefs(): Promise<EmailPrefs | null> {
   const session = await getSession();
   if (!session) return null;
-  const { data, error } = await supabase().from('notification_prefs').select('email_week, email_return, paused_reason').eq('user_id', session.user.id).maybeSingle();
+  const { data, error } = await supabase().from('notification_prefs').select('*').eq('user_id', session.user.id).maybeSingle();
   if (error) return null;
-  return data ?? { email_week: false, email_return: false, paused_reason: null };
+  return { email_week: data?.email_week === true, email_return: data?.email_return === true, email_turn: data?.email_turn === true, paused_reason: data?.paused_reason ?? null };
+}
+export async function setEmailTurn(on: boolean): Promise<boolean> {
+  const { error } = await supabase().rpc('set_email_turn', { turn_on: on });
+  return !error;
 }
 export async function setEmailPrefs(week: boolean, ret: boolean, source: 'signup' | 'settings'): Promise<boolean> {
   const { error } = await supabase().rpc('set_email_prefs', { week, ret, source, version: CONSENT_VERSION });

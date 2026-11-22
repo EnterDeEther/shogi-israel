@@ -13,6 +13,7 @@ import { stages } from '../learn/categories';
 import { GROUP_LABEL } from '../lib/inbox';
 import { INBOX_GROUPS } from '../lib/progress-sync';
 import { CONSENT_TEXT } from '../lib/consent';
+import { friendOn } from '../friend/flag';
 import { ACCOUNT_TOUR_URL } from '../lib/tour';
 
 const PASS_RULES = [
@@ -221,10 +222,16 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
               <span><strong>תזכורת לחזור</strong><span class="small muted">{CONSENT_TEXT.return}</span></span>
               <input type="checkbox" class="switch" id="email-return" data-email-kind="return" />
             </label>
+            {friendOn() && (
+              <label class="switch-row" for="email-turn">
+                <span><strong>תורך במשחק עם חבר</strong><span class="small muted">{CONSENT_TEXT.turn}</span></span>
+                <input type="checkbox" class="switch" id="email-turn" data-email-kind="turn" />
+              </label>
+            )}
             </div>
           </fieldset>
           <p class="small err" data-email-paused hidden>המיילים הושהו כי המייל האחרון לא הגיע אליך (או סומן כספאם). אפשר להדליק אותם שוב כאן.</p>
-          <p class="small muted" data-email-note>לכל היותר מייל אחד בשבוע, אף פעם לא בשישי ובשבת, ובכל מייל יש קישור להפסקה בלחיצה אחת. מיילי החשבון (אישור כתובת, איפוס סיסמה) נשלחים רק ⟦כשאתה|כשאת⟧ ⟦מבקש|מבקשת⟧. פרטים ב<a href="/privacy/#emails">מדיניות הפרטיות</a>.</p>
+          <p class="small muted" data-email-note>{friendOn() ? 'בעיית השבוע והתזכורת: לכל היותר מייל אחד בשבוע. מייל התור: אחד ביום לכל משחק, לכל היותר. אף פעם לא בשישי ובשבת, ובכל מייל יש קישור להפסקה בלחיצה אחת.' : 'לכל היותר מייל אחד בשבוע, אף פעם לא בשישי ובשבת, ובכל מייל יש קישור להפסקה בלחיצה אחת.'} מיילי החשבון (אישור כתובת, איפוס סיסמה) נשלחים רק ⟦כשאתה|כשאת⟧ ⟦מבקש|מבקשת⟧. פרטים ב<a href="/privacy/#emails">מדיניות הפרטיות</a>.</p>
           <div class="push-wrap"><PushSetting id="acct-push" browserNote /></div>
 
           <h2>הגדרות</h2>
@@ -387,20 +394,25 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
 
     const emailBoxes = [...root.querySelectorAll<HTMLInputElement>('[data-email-kind]')];
     const emailBox = (k: string) => emailBoxes.find((b) => b.dataset.emailKind === k)!;
+    const turnBox = emailBoxes.find((b) => b.dataset.emailKind === 'turn');
+    const anyEmail = () => emailBoxes.some((b) => b.checked);
     async function showEmail() {
       const prefs = await acc.getEmailPrefs();
       $('[data-email-prefs]').hidden = !prefs;
       if (!prefs) return;
       emailBox('week').checked = prefs.email_week;
       emailBox('return').checked = prefs.email_return;
-      $('[data-email-paused]').hidden = !prefs.paused_reason || !(prefs.email_week || prefs.email_return);
+      if (turnBox) turnBox.checked = prefs.email_turn;
+      $('[data-email-paused]').hidden = !prefs.paused_reason || !anyEmail();
     }
     emailBoxes.forEach((b) => b.addEventListener('change', async () => {
       emailBoxes.forEach((x) => { x.disabled = true; });
-      const ok = await acc.setEmailPrefs(emailBox('week').checked, emailBox('return').checked, 'settings');
+      const ok = b === turnBox
+        ? await acc.setEmailTurn(b.checked)
+        : await acc.setEmailPrefs(emailBox('week').checked, emailBox('return').checked, 'settings');
       emailBoxes.forEach((x) => { x.disabled = false; });
       $('[data-email-note]').textContent = ok
-        ? (emailBox('week').checked || emailBox('return').checked ? 'נשמר. אפשר להפסיק בכל רגע, כאן או מהקישור שבתחתית כל מייל.' : 'נשמר. לא נשלח לך מיילים כאלה.')
+        ? (anyEmail() ? 'נשמר. אפשר להפסיק בכל רגע, כאן או מהקישור שבתחתית כל מייל.' : 'נשמר. לא נשלח לך מיילים כאלה.')
         : 'השמירה לא הצליחה. ⟦נסה|נסי⟧ שוב בעוד רגע.';
       if (!ok) b.checked = !b.checked;
       else $('[data-email-paused]').hidden = true;
@@ -668,14 +680,14 @@ const levelCounts = Object.fromEntries(stages.map((s) => [s.key, s.levels.length
       const nickname = $<HTMLInputElement>('#acc-nick').value.trim();
       const { NICKNAME_RE, RESERVED_RE } = await import('../lib/progress-sync');
       if (!NICKNAME_RE.test(nickname)) return fail('nickname', 'הכינוי צריך 3 עד 16 תווים: אותיות, ספרות, _ או -, בלי רווחים.');
-      if (RESERVED_RE.test(nickname)) return fail('nickname', 'הכינוי הזה שמור (נראה כמו שם של צוות האתר). ⟦בחר|בחרי⟧ כינוי אחר.');
+      if (RESERVED_RE.test(nickname)) return fail('nickname', 'אי אפשר להשתמש בכינוי הזה. ⟦בחר|בחרי⟧ כינוי אחר.');
       const session = await acc.getSession();
       if (!session) return show('signin');
       busy(nickForm, true);
       const res = await acc.saveNickname(session.user.id, nickname, !profile);
       busy(nickForm, false);
       if (res === 'taken') return fail('nickname', 'הכינוי הזה כבר תפוס. ⟦נסה|נסי⟧ אחר.');
-      if (res === 'reserved') return fail('nickname', 'הכינוי הזה שמור (נראה כמו שם של צוות האתר). ⟦בחר|בחרי⟧ כינוי אחר.');
+      if (res === 'reserved') return fail('nickname', 'אי אפשר להשתמש בכינוי הזה. ⟦בחר|בחרי⟧ כינוי אחר.');
       if (res === 'error') return fail('nickname', 'השמירה לא הצליחה. ⟦נסה|נסי⟧ שוב בעוד רגע.');
       if (!profile) $('[data-welcome]').hidden = false;
       else homeNote('הכינוי נשמר.');

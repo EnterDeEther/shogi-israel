@@ -6,14 +6,15 @@ import { israelDay, israelWeek } from './notify.js';
 import { weekPuzzle, weekStreak, weeksHe, WEEK_LENGTH } from '../tsume/week.js';
 import { newsHref, plainNews } from './news.js';
 
-export type PushKind = 'week' | 'course' | 'news';
-export const PUSH_KINDS: PushKind[] = ['week', 'course', 'news'];
+export type PushKind = 'week' | 'course' | 'news' | 'turn';
+export const PUSH_KINDS: PushKind[] = ['week', 'course', 'news', 'turn'];
 export type PushKinds = Record<PushKind, boolean>;
 
 export const PUSH_LABEL: Record<PushKind, { title: string; sub: string }> = {
   week: { title: 'בעיית השבוע', sub: 'ביום ראשון בערב, כשעולה בעיה חדשה. פעם בשבוע.' },
   course: { title: 'תזכורת למסלול', sub: 'אחרי כמה ימים בלי לבקר: מה הצעד הבא שלך. שלוש פעמים לכל היותר, עד הביקור הבא.' },
   news: { title: 'חדשות שוגי ישראל', sub: 'דברים חדשים באתר ובקהילה. רק כשיש משהו באמת.' },
+  turn: { title: 'תורך במשחק עם חבר', sub: 'כשחבר שיחק מהלך ועכשיו תורך. מגיעה מיד, בכל יום בשבוע.' },
 };
 
 const DAY = 864e5;

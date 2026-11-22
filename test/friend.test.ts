@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
+import { turnEmail, turnPush } from '../src/friend/alerts';
 import {
-  clockAt, type FriendRow, gameView, inviteState, joinPatch, movePatch, newCode, newInvite, pingIsOld, pingMove, rematchAsk, rematchRow, resignPatch,
+  afterRest, claimPatch, clockAt, type FriendRow, gameView, inviteState, joinPatch, movePatch, newCode, newInvite, pingIsOld, pingMove, rematchAsk, rematchRow, resignPatch,
   settle, signalPatch, takebackAnswer, takebackAsk, validInvite,
 } from '../src/friend/core';
 
@@ -200,5 +201,63 @@ describe('live pings', () => {
     expect(pingMove(gote, { ply: 1, status: 'active' })).toBeNull();
     const live = at(join(row({ speed: 'live', corr_days: null, clock_limit: 600, clock_byo: 30 })), T0);
     expect(pingMove(gameView(live, 'gote', names, T0), ping)).toBeNull();
+  });
+});
+
+describe('rest days', () => {
+  const z = (iso: string) => Date.parse(iso);
+  test('a deadline outside Friday afternoon to Saturday night stays put', () => {
+    expect(afterRest(z('2026-11-13T11:59:30Z'))).toBe(z('2026-11-13T11:59:30Z'));
+    expect(afterRest(z('2026-11-14T20:00:00Z'))).toBe(z('2026-11-14T20:00:00Z'));
+    expect(afterRest(T0)).toBe(T0);
+  });
+  test('a deadline inside it moves to Sunday morning in Israel', () => {
+    expect(afterRest(z('2026-11-13T12:00:00Z'))).toBe(z('2026-11-15T08:00:00Z'));
+    expect(afterRest(z('2026-11-14T19:59:59Z'))).toBe(z('2026-11-15T08:00:00Z'));
+    expect(afterRest(z('2026-07-11T09:00:00Z'))).toBe(z('2026-07-12T07:00:00Z'));
+  });
+  test('a move on Wednesday afternoon gets until Sunday morning', () => {
+    const wed = z('2026-11-11T14:00:00Z');
+    const g = play(join(row({ corr_days: 3 }), undefined, wed), 'sente', '7g7f', wed + 1000);
+    expect(g.move_deadline).toBe('2026-11-15T08:00:00.000Z');
+  });
+});
+
+describe('guest seats', () => {
+  const seat = 'h'.repeat(64);
+  test('a guest can move the seat into an account', () => {
+    const g = join(row());
+    expect(claimPatch(g, 'u2', seat)).toEqual({ gote_user: 'u2', gote_guest: null });
+    const mine = { ...g, ...claimPatch(g, 'u2', seat) } as FriendRow;
+    expect(gameView(mine, 'gote', names, T0).guest.gote).toBe(false);
+  });
+  test('not with a wrong seat, not twice, and not into the other player', () => {
+    const g = join(row());
+    expect(claimPatch(g, 'u2', 'x'.repeat(64))).toBeNull();
+    expect(claimPatch(g, 'u2', null)).toBeNull();
+    expect(claimPatch(g, 'u1', seat)).toBeNull();
+    expect(claimPatch(row(), 'u2', seat)).toBeNull();
+    const mine = { ...g, ...claimPatch(g, 'u2', seat) } as FriendRow;
+    expect(claimPatch(mine, 'u3', seat)).toBeNull();
+  });
+  test('an invite whose owner is gone reads as cancelled', () => {
+    expect(inviteState({ ...row(), created_by: null }, { user: 'u2' }, T0)).toBe('cancelled');
+  });
+});
+
+describe('turn alerts', () => {
+  test('the phone alert names the other player and opens the game', () => {
+    const p = turnPush('יעל', 'abc');
+    expect(p.title).toContain('יעל');
+    expect(p.url).toBe('/friend/game/#abc');
+    expect(p.tag).toBe('friend-abc');
+  });
+  test('the email has the game link, the deadline and a way out', () => {
+    const m = turnEmail({ nickname: 'דין', opp: 'יעל', id: 'abc', deadline: Date.parse('2026-11-15T08:00:00Z'), gender: 'm', unsubscribeUrl: 'https://shogi.co.il/api/unsubscribe?u=1&k=turn&t=x' });
+    expect(m.subject).toBe('תורך במשחק נגד יעל');
+    expect(m.text).toContain('https://shogi.co.il/friend/game/?utm_source=email&utm_medium=email&utm_campaign=turn#abc');
+    expect(m.text).toContain('10:00');
+    expect(m.html).toContain('k=turn');
+    expect(m.text).not.toContain('⟦');
   });
 });

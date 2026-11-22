@@ -4,7 +4,7 @@ import { localMove } from '../lib/move-notation';
 import { copyText, downloadKif, kifFileName, LISHOGI_IMPORT_URL } from '../lib/kif';
 import { scrollWithin } from '../lib/scroll-within';
 import { tipEl } from '../lib/info-tip-dom';
-import { gameUrl, SIGNAL_TEXT, SPEED_TEXT } from './client';
+import { gameUrl, personalUrl, SIGNAL_TEXT, SPEED_TEXT } from './client';
 import { SIGNALS, type EndReason } from './core';
 import type FriendCtrl from './ctrl';
 
@@ -150,7 +150,7 @@ function nudgeLink(ctrl: FriendCtrl): HTMLElement {
   return el('a', { class: 'link', href: `https://wa.me/?text=${encodeURIComponent(text)}`, target: '_blank', rel: 'noopener', 'data-fid': 'nudge' }, 'תזכורת בוואטסאפ');
 }
 
-function status(ctrl: FriendCtrl, go: Go, onRematch: () => void): HTMLElement | null {
+function status(ctrl: FriendCtrl, go: Go, onRematch: () => void, signedIn: boolean): HTMLElement | null {
   const g = ctrl.game!;
   const opp = g.names[ctrl.opp];
   if (ctrl.ended) {
@@ -175,7 +175,9 @@ function status(ctrl: FriendCtrl, go: Go, onRematch: () => void): HTMLElement | 
       guest
         ? el('div', { class: 'signup' },
           el('p', {}, 'בחשבון חינמי המשחקים שלך נשמרים, ואפשר להזמין חברים בעצמך.'),
-          el('a', { class: 'btn', href: '/account/?mode=signup', 'data-fid': 'signup' }, 'פתיחת חשבון בחינם'))
+          signedIn
+            ? el('button', { type: 'button', class: 'btn', 'data-fid': 'claim', onclick: go(() => ctrl.claim()) }, 'שמירת המשחק בחשבון שלי')
+            : el('a', { class: 'btn', href: '/account/?mode=signup', 'data-fid': 'signup' }, 'פתיחת חשבון בחינם'))
         : null,
       el('p', { class: 'small next-in-course' }, 'רוצה להשתפר? ', el('a', { href: '/try/' }, 'מתחילים כאן'), ' או ', el('a', { href: '/play/' }, 'משחקים נגד המחשב'), '.'),
     );
@@ -192,6 +194,7 @@ function status(ctrl: FriendCtrl, go: Go, onRematch: () => void): HTMLElement | 
     else if (g.speed === 'corr') parts.push(el('span', { class: 'small muted' }, ` ${mine ? 'נשארו לך' : `ל${opp} נשארו`} `, el('span', { 'data-deadline-left': true }, hoursText(left)), ' למהלך.'));
   }
   if (!mine && g.speed === 'corr') parts.push(' ', nudgeLink(ctrl));
+  if (g.guest[g.you]) parts.push(' ', el('button', { type: 'button', class: 'link', 'data-fid': 'keep', 'aria-expanded': String(ctrl.menu === 'keep'), onclick: go(() => { ctrl.menu = ctrl.menu === 'keep' ? null : 'keep'; ctrl.redraw(); }) }, 'שמירת המשחק שלי'));
   return el('div', { class: 'status-line', 'aria-live': 'polite' },
     ...parts,
     ctrl.canImpasse ? el('button', { type: 'button', class: 'btn', onclick: go(() => ctrl.declareImpasse()) }, picon('crown'), ' הכרזת ניצחון בנקודות') : null,
@@ -202,6 +205,7 @@ function status(ctrl: FriendCtrl, go: Go, onRematch: () => void): HTMLElement | 
 function banners(ctrl: FriendCtrl, go: Go): HTMLElement | null {
   const g = ctrl.game!;
   const opp = g.names[ctrl.opp];
+  if (ctrl.alert) return el('div', { class: 'play-tip', role: 'alert' }, el('p', {}, ctrl.alert));
   if (g.status === 'active' && g.takebackBy === ctrl.opp) {
     return el('div', { class: 'play-tip', role: 'alert' },
       el('strong', {}, `בקשה מ${opp}: להחזיר מהלך?`),
@@ -243,6 +247,25 @@ function menuBox(ctrl: FriendCtrl, go: Go, signedIn: boolean): HTMLElement | nul
     return el('div', { class: 'friend-menu', role: 'group', 'aria-label': 'הודעות קבועות' },
       el('p', { class: 'small muted' }, 'אפשר לשלוח רק הודעות קבועות, כדי שהמשחק יישאר נעים ובטוח לכולם.'),
       el('div', { class: 'friend-chips' }, ...SIGNALS.map((m) => el('button', { type: 'button', class: 'choice', 'data-fid': `sig-${m}`, onclick: go(() => ctrl.send(m)) }, SIGNAL_TEXT[m]))));
+  }
+  if (ctrl.menu === 'keep') {
+    const url = personalUrl(ctrl.id);
+    const copyBtn = el('button', { type: 'button', class: 'choice', 'data-fid': 'keep-copy' }, 'העתקת הקישור האישי');
+    copyBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      copyBtn.textContent = url && (await copyText(url)) ? 'הועתק ✓' : 'ההעתקה נכשלה';
+    });
+    return el('div', { class: 'friend-menu', role: 'group', 'aria-label': 'שמירת המשחק' },
+      el('p', { class: 'small' }, 'בלי חשבון המשחק שמור רק בדפדפן הזה. עם הקישור האישי אפשר לחזור אליו מכל דפדפן ומכל מכשיר.'),
+      url
+        ? el('div', { class: 'friend-chips' },
+          copyBtn,
+          el('a', { class: 'choice', href: `https://wa.me/?text=${encodeURIComponent(`הקישור האישי שלי למשחק השוגי: ${url}`)}`, target: '_blank', rel: 'noopener', 'data-fid': 'keep-wa' }, 'שליחה לעצמי בוואטסאפ'))
+        : null,
+      url ? el('p', { class: 'small muted' }, 'הקישור הזה רק שלך. מי שמחזיק בו יכול לשחק במקומך.') : null,
+      signedIn
+        ? el('p', {}, el('button', { type: 'button', class: 'btn', 'data-fid': 'claim', onclick: go(() => ctrl.claim()) }, 'שמירת המשחק בחשבון שלי'))
+        : el('p', { class: 'small' }, 'עם חשבון חינמי המשחק נשמר בכל מכשיר: ', el('a', { href: '/account/?mode=signup' }, 'פתיחת חשבון'), '. אחרי הכניסה ⟦חזור|חזרי⟧ לעמוד הזה ⟦ולחץ|ולחצי⟧ שוב על "שמירת המשחק שלי".'));
   }
   if (ctrl.menu === 'safety') {
     const g = ctrl.game!;
@@ -296,7 +319,7 @@ export function render(ctrl: FriendCtrl, root: HTMLElement, opts: { signedIn: bo
   overlay.replaceChildren();
   const bar = q('[data-bar]');
   bar.replaceChildren(
-    el('p', { class: 'play__what' }, el('strong', {}, 'משחק עם חבר'), ` · ${SPEED_TEXT(g.speed, g.days, g.clockSet).replace(/^משחק (איטי|חי): /, '')}`),
+    el('p', { class: 'play__what' }, el('strong', {}, 'משחק עם חבר'), ` · ${SPEED_TEXT(g.speed, g.days, g.clockSet).replace(/^משחק (בלי שעון|חי): /, '')}`),
     el('a', { class: 'btn play__new', href: '/friend/' }, 'הזמנה חדשה'),
   );
   const top = ctrl.orientation === 'sente' ? 'gote' : 'sente';
@@ -309,7 +332,7 @@ export function render(ctrl: FriendCtrl, root: HTMLElement, opts: { signedIn: bo
       el('div', { class: 'replay' },
         el('div', { class: 'moves-head' }, el('strong', {}, 'מהלכים')),
         moveList(ctrl, go), navButtons(ctrl, go)),
-      status(ctrl, go, opts.onRematch),
+      status(ctrl, go, opts.onRematch, opts.signedIn),
       controls(ctrl, go),
       menuBox(ctrl, go, opts.signedIn),
       playerRow(ctrl, ctrl.orientation),

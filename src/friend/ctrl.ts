@@ -29,8 +29,9 @@ export default class FriendCtrl {
   pending = false;
   loadError: LoadError = null;
   notice: string | null = null;
+  alert: string | null = null;
   resignConfirm = false;
-  menu: 'messages' | 'safety' | null = null;
+  menu: 'messages' | 'safety' | 'keep' | null = null;
   reported = false;
   blocked = false;
   orientation: Color = 'sente';
@@ -184,16 +185,29 @@ export default class FriendCtrl {
     }
     const ply = this.game.ply;
     this.line = this.line.play(usi);
+    this.alert = null;
     this.pending = true;
     this.movedAt = Date.now();
     this.resignConfirm = false;
     if (this.line.current.isCheck()) playSound('check');
     this.syncGround();
     this.redraw();
-    const r = await api.move(this.id, usi, ply);
+    let r = await api.move(this.id, usi, ply);
+    for (const wait of [1200, 3000]) {
+      if (r.data.game || (r.status >= 400 && r.status < 500 && r.status !== 429)) break;
+      await new Promise((done) => window.setTimeout(done, wait));
+      r = await api.move(this.id, usi, ply);
+    }
     this.pending = false;
-    if (r.data.game) this.apply(r.data.game);
-    else await this.load();
+    if (r.data.game) {
+      this.apply(r.data.game);
+      return;
+    }
+    this.line = new Line(this.game.startSfen, this.game.moves);
+    this.alert = 'המהלך לא נשלח, והכלי חזר למקום. ⟦בדוק|בדקי⟧ את החיבור ⟦ונסה|ונסי⟧ שוב.';
+    this.syncGround();
+    this.redraw();
+    await this.load();
   }
 
   timeLeft(color: Color): { main: number; byo: number } {
@@ -275,6 +289,10 @@ export default class FriendCtrl {
     if (r.data.id) return r.data.id;
     if (r.data.game) this.apply(r.data.game);
     return null;
+  }
+  claim(): void {
+    this.menu = null;
+    void this.act(api.claim(this.id));
   }
   async report(reason: string): Promise<void> {
     await api.report(this.id, reason);
