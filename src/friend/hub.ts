@@ -97,6 +97,11 @@ function restField(): HTMLElement {
 }
 
 const movesText = (n: number): string => (n === 1 ? 'מהלך אחד' : `${n} מהלכים`);
+const endedText = (iso: string): string => {
+  const d = new Date(iso);
+  const day = d.toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric', ...(d.getFullYear() === new Date().getFullYear() ? {} : { year: 'numeric' }) });
+  return `נגמר ב-${day}, ${d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}`;
+};
 const oppOf = (g: ListedGame): string => (g.you ? g.names[g.you === 'sente' ? 'gote' : 'sente'] : '');
 
 function gameRow(g: ListedGame): HTMLElement {
@@ -111,7 +116,7 @@ function gameRow(g: ListedGame): HTMLElement {
   return withBoard(`friend-row${hot ? ' turn' : ''}`, g.id, active ? thumbBoard(g.id, g.sfen, g.you, g.last) : null,
     el('a', { href: gameUrl(g.id), class: 'friend-row__main' },
       el('strong', {}, `נגד ${opp}`),
-      el('span', { class: 'small muted' }, what),
+      el('span', { class: 'small muted' }, active ? what : endedText(g.endedAt ?? g.updatedAt)),
       el('span', { class: 'small muted' }, movesText(g.ply))),
     el('span', { class: `friend-tag${hot ? ' hot' : ''}` }, result),
     active ? el('a', { class: 'link friend-row__end', href: endUrl(g.id) }, 'סיום המשחק') : null,
@@ -132,11 +137,13 @@ function deviceGames(box: HTMLElement, list: HTMLElement, skip: (id: string) => 
     const games = rs.flatMap((r) => (r.ok && r.data.game.guest[r.data.game.you] ? [r.data.game] : []));
     if (!games.length) return;
     box.hidden = false;
-    list.replaceChildren(...games.map((g) => {
+    list.replaceChildren(...games.sort((a, b) => Number(b.status === 'active') - Number(a.status === 'active')).map((g) => {
       const opp = g.names[g.you === 'sente' ? 'gote' : 'sente'];
       const yourTurn = g.status === 'active' && (g.ply % 2 === 0 ? 'sente' : 'gote') === g.you;
       return withBoard(`friend-row${yourTurn ? ' turn' : ''}`, g.id, g.status === 'active' ? thumbBoard(g.id, g.sfen, g.you, g.moves.at(-1)) : null,
-        el('a', { href: gameUrl(g.id), class: 'friend-row__main' }, el('strong', {}, `נגד ${opp}`), el('span', { class: 'small muted' }, movesText(g.ply))),
+        el('a', { href: gameUrl(g.id), class: 'friend-row__main' }, el('strong', {}, `נגד ${opp}`),
+          g.status !== 'active' && g.endedAt ? el('span', { class: 'small muted' }, endedText(g.endedAt)) : null,
+          el('span', { class: 'small muted' }, movesText(g.ply))),
         el('span', { class: `friend-tag${yourTurn ? ' hot' : ''}` }, g.status === 'active' ? (yourTurn ? 'תורך' : `התור של ${opp}`) : 'הסתיים'));
     }));
   });
@@ -309,7 +316,8 @@ function homeSignedIn(root: HTMLElement): void {
       }
     }
     shown = { wait: waitKey, make: makeKey };
-    const rows = games.filter((g) => g.status === 'active' || (g.status !== 'open' && Date.now() - Date.parse(g.updatedAt) < 7 * 864e5));
+    const rows = games.filter((g) => g.status === 'active' || (g.status !== 'open' && Date.now() - Date.parse(g.updatedAt) < 7 * 864e5))
+      .sort((a, b) => Number(b.status === 'active') - Number(a.status === 'active'));
     listBox.hidden = !rows.length && !used;
     list.hidden = !rows.length;
     list.replaceChildren(...rows.slice(0, 12).map(gameRow));

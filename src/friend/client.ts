@@ -175,6 +175,7 @@ export interface ListedGame {
   endReason: GameView['endReason'];
   expiresAt: string;
   updatedAt: string;
+  endedAt?: string | null;
   yourTurn: boolean;
   inviter: string;
   kif: string | null;
