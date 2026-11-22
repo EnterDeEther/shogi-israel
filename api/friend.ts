@@ -206,7 +206,7 @@ export async function POST(request: Request): Promise<Response> {
       list.push({
         id: r.id, code: r.code, status: r.status, speed: r.speed, days: r.corr_days, clock: r.clock_limit ? { limit: r.clock_limit, byo: r.clock_byo } : null,
         you, names, ply: r.ply, winner: r.winner, endReason: r.end_reason, expiresAt: r.expires_at, updatedAt: r.updated_at,
-        sfen: r.status === 'open' || r.status === 'cancelled' ? null : sfenAfter(r.start_sfen, r.moves), last: r.moves.at(-1) ?? null,
+        sfen: r.status === 'active' ? sfenAfter(r.start_sfen, r.moves) : null, last: r.status === 'active' ? r.moves.at(-1) ?? null : null,
         yourTurn: r.status === 'active' && !!you && (r.ply % 2 === 0 ? 'sente' : 'gote') === you,
         inviter: nick.get(r.created_by ?? '') ?? '', kif: r.kif,
         waits: !you ? null : r.status === 'active'

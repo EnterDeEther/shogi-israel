@@ -108,7 +108,7 @@ function gameRow(g: ListedGame): HTMLElement {
       : g.status === 'aborted' ? (g.ply >= 2 ? 'בלי תוצאה' : 'בוטל')
         : !g.winner ? 'תיקו' : g.winner === g.you ? 'ניצחת' : 'הפסד';
   const hot = g.yourTurn || !!g.waits;
-  return withBoard(`friend-row${hot ? ' turn' : ''}`, g.id, thumbBoard(g.id, g.sfen, g.you, g.last),
+  return withBoard(`friend-row${hot ? ' turn' : ''}`, g.id, active ? thumbBoard(g.id, g.sfen, g.you, g.last) : null,
     el('a', { href: gameUrl(g.id), class: 'friend-row__main' },
       el('strong', {}, `נגד ${opp}`),
       el('span', { class: 'small muted' }, what),
@@ -135,7 +135,7 @@ function deviceGames(box: HTMLElement, list: HTMLElement, skip: (id: string) => 
     list.replaceChildren(...games.map((g) => {
       const opp = g.names[g.you === 'sente' ? 'gote' : 'sente'];
       const yourTurn = g.status === 'active' && (g.ply % 2 === 0 ? 'sente' : 'gote') === g.you;
-      return withBoard(`friend-row${yourTurn ? ' turn' : ''}`, g.id, thumbBoard(g.id, g.sfen, g.you, g.moves.at(-1)),
+      return withBoard(`friend-row${yourTurn ? ' turn' : ''}`, g.id, g.status === 'active' ? thumbBoard(g.id, g.sfen, g.you, g.moves.at(-1)) : null,
         el('a', { href: gameUrl(g.id), class: 'friend-row__main' }, el('strong', {}, `נגד ${opp}`), el('span', { class: 'small muted' }, movesText(g.ply))),
         el('span', { class: `friend-tag${yourTurn ? ' hot' : ''}` }, g.status === 'active' ? (yourTurn ? 'תורך' : `התור של ${opp}`) : 'הסתיים'));
     }));
