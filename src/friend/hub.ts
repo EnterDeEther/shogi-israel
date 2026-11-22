@@ -7,6 +7,7 @@ import { openBug, setBugContext } from './bug';
 import { api, endUrl, gameUrl, type InviteInfo, inviteUrl, lapsedSeen, type ListedGame, markLapsed, readSeats, rememberedInvite, rememberInvite, REST_HINT, REST_LABEL, restPref, setRestPref, SHORT_SPEED, signedIn, SPEED_TEXT, takeDropped } from './client';
 import { CORR_DAYS, MAX_SLOTS } from './core';
 import { miniBoard } from './mini';
+import { waiting as waitLine } from './waiting';
 
 const COLOR_TEXT: Record<Color | 'random', string> = { random: 'הגרלה', sente: 'פותח (☗)', gote: 'משיב (☖)' };
 
@@ -233,6 +234,7 @@ function homeSignedIn(root: HTMLElement): void {
       el('h2', {}, g.code === fresh ? 'הקישור מוכן' : 'הזמנה שמחכה לחבר'),
       el('p', {}, `${SPEED_TEXT(g.speed, g.days, g.clock)}.`),
       shareRow(g.code),
+      el('p', { class: 'friend-wait-line' }, waitLine('מחכים שהחבר יצטרף')),
       el('p', { class: 'small muted' }, 'כשהחבר יצטרף, המשחק יופיע כאן, ואפשר יהיה להיכנס אליו. הקישור טוב לשבוע ולמשחק אחד.'),
       cancel);
   };

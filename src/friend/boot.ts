@@ -13,6 +13,8 @@ const GAP = { up: 60_000, down: 15_000, clockUp: 10_000, clockDown: 4_000 };
 const PING_GAP_MS = 1500;
 const SOFT_GAP_MS = 3000;
 const AWAKE_MS = 180_000;
+const ASK_GAP_MS = 2000;
+const ASK_FAST_MS = 180_000;
 
 type WakeLock = { release(): Promise<void> };
 
@@ -109,6 +111,7 @@ export async function bootFriendGame(root: HTMLElement): Promise<void> {
     kick();
   };
   let pingAt = 0;
+  let askedAt = 0;
   const clearAlerts = () => {
     if (document.visibilityState !== 'visible' || !('serviceWorker' in navigator)) return;
     void navigator.serviceWorker.getRegistration()
@@ -131,9 +134,12 @@ export async function bootFriendGame(root: HTMLElement): Promise<void> {
     if (document.visibilityState !== 'visible') return;
     if (Date.now() - pingAt < 15_000) clearAlerts();
     kick();
-    const waiting = !ctrl.ended || (!!ctrl.game?.rematchBy && !ctrl.game.rematchId);
-    const clock = !!ctrl.game?.clock && ctrl.active;
-    const gap = clock ? (up ? GAP.clockUp : GAP.clockDown) : up ? GAP.up : GAP.down;
+    const g = ctrl.game;
+    const waiting = !ctrl.ended || (!!g?.rematchBy && !g.rematchId);
+    const asking = !!g && (ctrl.active ? g.takebackBy === g.you || g.endBy === g.you : ctrl.ended && g.rematchBy === g.you && !g.rematchId);
+    askedAt = asking ? askedAt || Date.now() : 0;
+    const clock = !!g?.clock && ctrl.active;
+    const gap = asking && Date.now() - askedAt < ASK_FAST_MS ? ASK_GAP_MS : clock ? (up ? GAP.clockUp : GAP.clockDown) : up ? GAP.up : GAP.down;
     if ((waiting && since() >= gap) || (ctrl.hinted && since() >= SOFT_GAP_MS)) void pull();
   }, 2000);
   document.addEventListener('visibilitychange', () => {

@@ -174,3 +174,12 @@ a.friend-row__main:hover strong { text-decoration: underline; }
 .mini-sq.last { background: rgba(184, 54, 31, 0.24); }
 .friend-mini .pchip { margin: 0; vertical-align: 0; filter: none; font-size: 8px; font-size: calc(100cqi / 9 / 1.9); }
 .friend-mini .mini-away { transform: rotate(180deg); }
+.friend-waiting { display: inline-flex; align-items: baseline; gap: 8px; direction: rtl; font-weight: 600; color: var(--ink); }
+.friend-dots { display: inline-flex; align-items: center; gap: 4px; flex: none; }
+.friend-dots i { display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--seal); animation: friend-dot 1.2s ease-in-out infinite; }
+.friend-dots i:nth-child(2) { animation-delay: 0.2s; }
+.friend-dots i:nth-child(3) { animation-delay: 0.4s; }
+@keyframes friend-dot { 0%, 80%, 100% { opacity: 0.25; transform: scale(0.75); } 40% { opacity: 1; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .friend-dots i { animation: none; opacity: 0.8; } }
+.friend-ready { margin: 0 0 10px; }
+.friend-wait-line { margin: 0; }
