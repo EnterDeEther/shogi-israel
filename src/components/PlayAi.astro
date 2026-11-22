@@ -2,8 +2,9 @@
 import '../styles/shogiground.css';
 import '../styles/learn.css';
 import '../styles/play.css';
+import { friendOn } from '../friend/flag';
 ---
-<section class="play-island" data-play aria-label="משחק נגד המחשב">
+<section class="play-island" data-play data-friend={friendOn() ? '' : undefined} aria-label="משחק נגד המחשב">
   <noscript><p>המשחק נגד המחשב צריך JavaScript.</p></noscript>
 </section>
 <p class="small muted play-credit">

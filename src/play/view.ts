@@ -414,6 +414,9 @@ function setupScreen(ctrl: PlayCtrl, draft: PlaySettings, go: (fn: () => void) =
         modeBtn('ai', 'נגד המחשב', '10 רמות', ctrl.aiBlocked),
         modeBtn('local', 'שני שחקנים', 'מכשיר אחד'))
       : null,
+    document.querySelector('[data-play][data-friend]')
+      ? el('p', { class: 'small to-friend' }, el('a', { href: '/friend/', 'data-fid': 'to-friend' }, 'משחק עם חבר מרחוק'), ': שולחים קישור, והחבר משחק מהטלפון שלו.')
+      : null,
     ctrl.aiBlocked ? el('p', { class: 'small muted' }, 'הדפדפן הזה לא מריץ את המחשב, אבל אפשר לשחק בו שני שחקנים על מכשיר אחד.') : null,
     local
       ? el('div', { class: 'local-how' },
