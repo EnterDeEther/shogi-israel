@@ -371,12 +371,22 @@ const DESK_SETTINGS: NavLink = { href: '/settings/', label: 'הגדרות' };
     }
   }
   @media (min-width: 1040px) { .bar:has(.quick) { gap: 10px; } .bar:has(.quick) .nav-wide { gap: 18px; } }
-  @media (min-width: 1280px) { .bar:has(.settings-btn) { gap: 8px; } .bar:has(.settings-btn) .nav-wide { gap: 16px; } }
+  @media (min-width: 1040px) { .brand { margin-inline-end: 24px; } }
+  @media (min-width: 1280px) { .bar:has(.settings-btn) { gap: 8px; } .bar:has(.settings-btn) .nav-wide { gap: 12px; } }
   @media (min-width: 1040px) and (max-width: 1279px) {
     .bar:has(.quick) .nav-wide { gap: 11px; }
     .bar:has(.quick) > .theme-btn, .bar:has(.quick) .inbox summary, .settings-btn { width: 40px; }
     .bar:has(.settings-btn) { gap: 6px; }
     .bar:has(.settings-btn) .nav-wide { gap: 9px; }
+  }
+  @media (min-width: 1040px) and (max-width: 1139px) {
+    .brand { margin-inline-end: 16px; }
+    .bar:has(.settings-btn) .nav-wide { gap: 8px; }
+    .bar .nav-wide .account { padding-inline: 10px; }
+  }
+  @media (min-width: 1040px) and (max-width: 1099px) {
+    :global(html[data-signed-in]) .nav-wide .account { padding: 0; width: 40px; height: 40px; justify-content: center; }
+    :global(html[data-signed-in]) .nav-wide .account [data-signed-in-only] { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   }
   .nav-wide .account :global(svg) { flex-shrink: 0; }
   .nav-wide .top, .nav-group summary {
