@@ -3,7 +3,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import {
   claimPatch, endAnswer, endAsk, endCancel, type FriendRow, gameView, impassePatch, inviteState, joinPatch, MAX_SLOTS, movePatch, type Names, newCode,
   newInvite, other, type Patch, rematchAsk, rematchRow, resignPatch, restPatch, rests, type Seat, settle, sideOf, type Signal, signalPatch, takebackAnswer, takebackAsk,
-  takebackCancel, validInvite,
+  takebackCancel, validInvite, watched,
 } from '../src/friend/core.js';
 import { type AlertKind, ASK_ALERT_GAP_MS } from '../src/friend/alerts.js';
 import { alertSide, namesOf, nicknames, unnamed } from '../src/friend/send.js';
@@ -272,7 +272,8 @@ export async function POST(request: Request): Promise<Response> {
       if (typeof body.usi !== 'string' || body.usi.length > 8 || !Number.isInteger(body.ply)) return fail('bad-move');
       const patch = movePatch(row, side, body.usi, body.ply as number, now, names);
       if (typeof patch === 'string') return json({ error: patch, game: gameView(row, side, names, now) }, 409);
-      return apply(patch, (next) => (next.status === 'active' ? alertTurn(client, next, names, now) : tell('end')(next)));
+      const live = watched(row, now);
+      return apply(patch, (next) => (next.status !== 'active' ? tell('end')(next) : live ? Promise.resolve() : alertTurn(client, next, names, now)));
     }
     case 'claim': {
       if (!user) return fail('sign-in', 401);
