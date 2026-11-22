@@ -3,8 +3,10 @@ import { gameEmail, gamePush, turnEmail, turnPush } from '../src/friend/alerts';
 import {
   afterRest, claimPatch, clockAt, endAnswer, endAsk, endCancel, type FriendRow, gameView, inRest, inviteState, joinPatch, movePatch, newCode, newInvite, pingIsOld, pingMove,
   rematchAsk, rematchRow, remindedPatch, remindSide, resignPatch, restPatch, settle, signalPatch, takebackAnswer, takebackAsk, takebackCancel, validInvite,
-  WATCH_GAP_MS, watched,
+  sfenAfter, WATCH_GAP_MS, watched,
 } from '../src/friend/core';
+import { lastKeys } from '../src/friend/thumb';
+import { blockedName, LABEL_MAX, nameProblem, plainName, pre, tidyLabel, tidyName } from '../src/friend/names';
 
 const T0 = Date.parse('2026-11-10T10:00:00Z');
 const names = { sente: 'דין', gote: 'אורח' };
@@ -349,8 +351,9 @@ describe('guest seats', () => {
     const g = { ...row(), ...joinPatch(row(), { user: 'u2' }, T0, () => true, false, { inviter: 'דין', joiner: 'יעל' }) } as FriendRow;
     expect(g.sente_name).toBe('דין');
     expect(g.gote_name).toBe('יעל');
-    const guest = joinPatch(row(), { guest: seat }, T0, () => true, false, { inviter: 'דין', joiner: 'יעל' });
-    expect(guest).not.toHaveProperty('gote_name');
+    const guest = joinPatch(row(), { guest: seat }, T0, () => true, false, { inviter: 'דין', joiner: 'Dana' });
+    expect(guest.gote_name).toBe('Dana');
+    expect(joinPatch(row(), { guest: seat }, T0, () => true, false, { inviter: 'דין' })).not.toHaveProperty('gote_name');
     expect(claimPatch(join(row()), 'u2', seat, 'יעל')).toEqual({ gote_user: 'u2', gote_guest: null, gote_name: 'יעל' });
     const done = { ...g, status: 'finished' as const, rematch_by: 'sente' as const };
     const again = rematchRow(done, 'gote', 'abcdefghij', T0)!;
@@ -392,6 +395,70 @@ describe('turn alerts', () => {
     expect(watched(first, T0 + 5000 + WATCH_GAP_MS - 1)).toBe(true);
     expect(watched(first, T0 + 5000 + WATCH_GAP_MS)).toBe(false);
     expect(watched({ ...first, turn_started_at: null }, T0 + 6000)).toBe(false);
+  });
+});
+
+describe('board picture in the games list', () => {
+  test('the position after the moves is sent with the game', () => {
+    const start = join(row({ corr_days: 3 }));
+    const moved = play(play(start, 'sente', '7g7f', T0 + 1000), 'gote', '3c3d', T0 + 2000);
+    expect(sfenAfter(moved.start_sfen, moved.moves)).toBe('lnsgkgsnl/1r5b1/pppppp1pp/6p2/9/2P6/PP1PPPPPP/1B5R1/LNSGKGSNL b - 3');
+    expect(gameView(moved, 'gote', names, T0 + 2000).sfen).toBe(sfenAfter(moved.start_sfen, moved.moves));
+  });
+  test('a live ping carries the new position too', () => {
+    const start = { ...join(row({ corr_days: 3 })), updated_at: new Date(T0).toISOString() } as FriendRow;
+    const moved = { ...play(start, 'sente', '7g7f', T0 + 5000), updated_at: new Date(T0 + 5000).toISOString() } as FriendRow;
+    const ping = { ply: 1, status: 'active', usi: '7g7f', deadline: Date.parse(moved.move_deadline!), prev: T0, rev: T0 + 5000 };
+    expect(pingMove(gameView(start, 'gote', names, T0), ping)!.sfen).toBe(gameView(moved, 'gote', names, T0 + 5000).sfen);
+  });
+  test('the last move is marked where it came from and where it went', () => {
+    expect(lastKeys('7g7f')).toEqual(['7g', '7f']);
+    expect(lastKeys('8h2b+')).toEqual(['8h', '2b']);
+    expect(lastKeys('P*5e')).toEqual(['5e']);
+    expect(lastKeys(null)).toEqual([]);
+    expect(lastKeys('junk')).toEqual([]);
+  });
+});
+
+describe('names for players without an account', () => {
+  test('a name can be Hebrew or English, with digits and a space', () => {
+    for (const ok of ['נועה', 'Dana', 'דני 7', 'Li', "ג'ורג'", 'Yoni_K', 'בן-דוד']) expect(nameProblem(ok)).toBeNull();
+  });
+  test('names that are too short, too long or in other alphabets are refused', () => {
+    expect(nameProblem('')).toBe('empty');
+    expect(nameProblem('א')).toBe('short');
+    expect(nameProblem('אבגדהוזחטיכלמנסעפ')).toBe('long');
+    expect(nameProblem('Алиса')).toBe('chars');
+    expect(nameProblem('دانا')).toBe('chars');
+    expect(nameProblem('Dana!')).toBe('chars');
+    expect(nameProblem('1234')).toBe('letter');
+    expect(nameProblem('Dana 0541234567')).toBe('phone');
+    expect(nameProblem('Admin')).toBe('blocked');
+    expect(nameProblem('שוגי ישראל')).toBe('blocked');
+  });
+  test('spaces are tidied before the check', () => {
+    expect(tidyName('  Dana   K ')).toBe('Dana K');
+    expect(tidyName(42)).toBe('');
+  });
+  test('the word filter sees through spaces, digits and repeats', () => {
+    const words = [{ word: 'zzbad', whole: false }, { word: 'ok', whole: true }];
+    expect(plainName('ZZ B4AAD')).toBe('zbad');
+    expect(blockedName('Zz_bad', words)).toBe(true);
+    expect(blockedName('my z z b a d', words)).toBe(true);
+    expect(blockedName('Dana ok', words)).toBe(true);
+    expect(blockedName('Okay', words)).toBe(false);
+    expect(blockedName('Dana', words)).toBe(false);
+  });
+  test('a private game name is tidied and kept short', () => {
+    expect(tidyLabel('  המשחק   עם אבא ')).toBe('המשחק עם אבא');
+    expect([...tidyLabel('א'.repeat(50))]).toHaveLength(LABEL_MAX);
+    expect(tidyLabel('a\u0000b')).toBe('ab');
+    expect(tidyLabel(null)).toBe('');
+  });
+  test('a name in English gets a hyphen after a Hebrew letter in front of it', () => {
+    expect(`בקשה ${pre('מ', 'Dana')}Dana`).toBe('בקשה מ-Dana');
+    expect(`בקשה ${pre('מ', 'נועה')}נועה`).toBe('בקשה מנועה');
+    expect(gamePush('ask', 'Dana', 'abc').title).toBe('בקשה מ-Dana במשחק שלכם');
   });
 });
 

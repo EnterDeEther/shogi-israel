@@ -2,6 +2,7 @@
 import type { Gender } from '../lib/gender.js';
 import { layout, SITE, type Email } from '../lib/notify.js';
 import type { PushMessage } from '../lib/push.js';
+import { pre } from './names.js';
 
 export const TURN_MAIL_GAP_MS = 24 * 3600 * 1000;
 export const ASK_ALERT_GAP_MS = 30 * 60 * 1000;
@@ -13,7 +14,7 @@ const until = (deadline?: number | null): string => (deadline ? `יש לך זמ�
 const PUSH_TEXT: Record<AlertKind, (opp: string, deadline?: number | null) => [string, string]> = {
   turn: (opp) => [`תורך במשחק נגד ${opp}`, 'הלוח מחכה למהלך שלך.'],
   end: (opp) => [`המשחק נגד ${opp} הסתיים`, 'אפשר לראות איך הוא נגמר ולהציע עוד משחק.'],
-  ask: (opp) => [`בקשה מ${opp} במשחק שלכם`, 'הבקשה מחכה לתשובה שלך.'],
+  ask: (opp) => [`בקשה ${pre('מ', opp)}${opp} במשחק שלכם`, 'הבקשה מחכה לתשובה שלך.'],
   soon: (opp, deadline) => [`הזמן למהלך שלך נגד ${opp} עומד להיגמר`, until(deadline) || 'הלוח מחכה למהלך שלך.'],
 };
 
@@ -29,9 +30,9 @@ interface MailInput { nickname: string; opp: string; id: string; deadline: numbe
 export function gameEmail(kind: AlertKind, input: MailInput): Email {
   const left = input.deadline ? ` ${until(input.deadline)}` : '';
   const text: Record<AlertKind, string> = {
-    turn: `יש מהלך חדש מ${input.opp} במשחק שלכם, ועכשיו תורך.${left}`,
+    turn: `יש מהלך חדש ${pre('מ', input.opp)}${input.opp} במשחק שלכם, ועכשיו תורך.${left}`,
     end: `המשחק שלך נגד ${input.opp} הסתיים. בעמוד המשחק אפשר לראות איך הוא נגמר, לעבור על המהלכים ולהציע עוד משחק.`,
-    ask: `יש בקשה מ${input.opp} במשחק שלכם, והיא מחכה לתשובה שלך.`,
+    ask: `יש בקשה ${pre('מ', input.opp)}${input.opp} במשחק שלכם, והיא מחכה לתשובה שלך.`,
     soon: `עדיין תורך במשחק נגד ${input.opp}, והזמן למהלך עומד להיגמר.${left} בלי מהלך עד אז, המשחק יסתיים.`,
   };
   return layout({

@@ -1,6 +1,8 @@
 // AGPL-3.0-or-later, like the rest of this site.
+import { makeSfen } from 'shogiops/sfen';
+import { parseUsi } from 'shogiops/util';
 import { makeKif, type KifEnd } from '../lib/kif.js';
-import { type GameEnd, Line, START_SFEN } from '../play/game.js';
+import { type GameEnd, Line, parsePos, START_SFEN } from '../play/game.js';
 
 export type Speed = 'corr' | 'live';
 export type Status = 'open' | 'active' | 'finished' | 'aborted' | 'cancelled';
@@ -110,6 +112,15 @@ export function remindSide(row: FriendRow, now: number): Color | null {
 
 export const remindedPatch = (row: FriendRow): Patch => ({ signal: { ...row.signal, rem: remindKey(row) } });
 
+export function sfenAfter(start: string, moves: string[]): string {
+  const pos = parsePos(start);
+  for (const usi of moves) {
+    const md = parseUsi(usi);
+    if (md) pos.play(md);
+  }
+  return makeSfen(pos);
+}
+
 export const WATCH_GAP_MS = 3 * 60 * 1000;
 export const watched = (row: FriendRow, now: number): boolean => row.ply > 0 && now - ms(row.turn_started_at) < WATCH_GAP_MS;
 
@@ -175,7 +186,7 @@ export function joinPatch(row: FriendRow, joiner: Seat, now: number, coin: () =>
     ...(inviterRest ? { [`${inviterColor}_rest`]: true } : {}),
     ...(rest ? { [`${joinerColor}_rest`]: true } : {}),
     ...(nick.inviter ? { [`${inviterColor}_name`]: nick.inviter } : {}),
-    ...(nick.joiner && joiner.user ? { [`${joinerColor}_name`]: nick.joiner } : {}),
+    ...(nick.joiner ? { [`${joinerColor}_name`]: nick.joiner } : {}),
     status: 'active',
     [`${inviterColor}_user`]: row.created_by,
     [`${joinerColor}_user`]: joiner.user ?? null,
@@ -425,6 +436,7 @@ export interface GameView {
   rest: boolean;
   startSfen: string;
   moves: string[];
+  sfen: string;
   ply: number;
   clock: ClockView | null;
   deadline: number | null;
@@ -457,6 +469,7 @@ export function gameView(row: FriendRow, you: Color, names: Names, now: number):
     rest: rests(row, you),
     startSfen: row.start_sfen,
     moves: row.moves,
+    sfen: sfenAfter(row.start_sfen, row.moves),
     ply: row.ply,
     clock: clockAt(row, now),
     deadline: deadline(row),
@@ -485,6 +498,8 @@ export function pingMove(game: GameView, ping: Ping): GameView | null {
   if (typeof ping.rev !== 'number' || ping.prev !== game.rev || ping.ply !== game.ply + 1) return null;
   if (typeof ping.usi !== 'string' || ping.usi.length > 8 || typeof ping.deadline !== 'number') return null;
   const line = new Line(game.startSfen, game.moves);
-  if (line.current.turn === game.you || !line.isLegal(ping.usi) || line.play(ping.usi).end()) return null;
-  return { ...game, moves: [...game.moves, ping.usi], ply: game.ply + 1, takebackBy: null, deadline: ping.deadline, now: ping.rev };
+  if (line.current.turn === game.you || !line.isLegal(ping.usi)) return null;
+  const next = line.play(ping.usi);
+  if (next.end()) return null;
+  return { ...game, moves: [...game.moves, ping.usi], sfen: makeSfen(next.current), ply: game.ply + 1, takebackBy: null, deadline: ping.deadline, now: ping.rev };
 }

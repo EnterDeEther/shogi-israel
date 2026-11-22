@@ -3,9 +3,10 @@ import { createHash, randomBytes } from 'node:crypto';
 import {
   claimPatch, endAnswer, endAsk, endCancel, type FriendRow, gameView, impassePatch, inviteState, joinPatch, MAX_SLOTS, movePatch, type Names, newCode,
   newInvite, other, type Patch, rematchAsk, rematchRow, resignPatch, restPatch, rests, type Seat, settle, sideOf, type Signal, signalPatch, takebackAnswer, takebackAsk,
-  takebackCancel, validInvite, watched,
+  sfenAfter, takebackCancel, validInvite, watched,
 } from '../src/friend/core.js';
 import { type AlertKind, ASK_ALERT_GAP_MS } from '../src/friend/alerts.js';
+import { type BlockedWord, blockedName, nameProblem, tidyLabel, tidyName } from '../src/friend/names.js';
 import { alertSide, namesOf, nicknames, unnamed } from '../src/friend/send.js';
 
 const ALLOWED_ORIGIN = /^https:\/\/((www\.)?shogi\.co\.il|shogi-israel-[a-z0-9-]+-enterdeether\.vercel\.app)$/;
@@ -20,6 +21,23 @@ type Body = Record<string, unknown>;
 const enabled = () => process.env.VERCEL_ENV !== 'production' || process.env.FRIEND_PLAY === '1';
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
 const fail = (error: string, status = 400) => json({ error }, status);
+
+const WORDS_MS = 10 * 60 * 1000;
+let words: { at: number; list: BlockedWord[] } | null = null;
+async function labelsOf(client: SupabaseClient, user: string, ids: string[]): Promise<Map<string, string>> {
+  if (!ids.length) return new Map();
+  const { data, error } = await client.from('friend_labels').select('game_id, label').eq('user_id', user).in('game_id', ids);
+  if (error || !data) return new Map();
+  return new Map((data as { game_id: string; label: string }[]).map((l) => [l.game_id, l.label]));
+}
+
+async function blockedWords(client: SupabaseClient): Promise<BlockedWord[] | null> {
+  if (words && Date.now() - words.at < WORDS_MS) return words.list;
+  const { data, error } = await client.from('blocked_words').select('word, whole');
+  if (error || !data) return null;
+  words = { at: Date.now(), list: data as BlockedWord[] };
+  return words.list;
+}
 
 function db(): SupabaseClient | null {
   const url = process.env.SUPABASE_URL || process.env.PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -187,6 +205,7 @@ export async function POST(request: Request): Promise<Response> {
       .order('updated_at', { ascending: false }).limit(60);
     const rows = (data ?? []) as FriendRow[];
     const nick = await nicknames(client, rows.flatMap((r) => [...unnamed(r), r.created_by]));
+    const labels = await labelsOf(client, user, rows.map((r) => r.id));
     const list = [];
     for (const r0 of rows) {
       const names = namesOf(r0, nick);
@@ -194,7 +213,8 @@ export async function POST(request: Request): Promise<Response> {
       const you = sideOf(r, seat);
       list.push({
         id: r.id, code: r.code, status: r.status, speed: r.speed, days: r.corr_days, clock: r.clock_limit ? { limit: r.clock_limit, byo: r.clock_byo } : null,
-        you, names, ply: r.ply, winner: r.winner, endReason: r.end_reason, expiresAt: r.expires_at, updatedAt: r.updated_at,
+        you, names, ply: r.ply, winner: r.winner, endReason: r.end_reason, expiresAt: r.expires_at, updatedAt: r.updated_at, endedAt: r.ended_at, label: labels.get(r.id) ?? null,
+        sfen: r.status === 'active' ? sfenAfter(r.start_sfen, r.moves) : null, last: r.status === 'active' ? r.moves.at(-1) ?? null : null,
         yourTurn: r.status === 'active' && !!you && (r.ply % 2 === 0 ? 'sente' : 'gote') === you,
         inviter: nick.get(r.created_by ?? '') ?? '', kif: r.kif,
         waits: !you ? null : r.status === 'active'
@@ -226,21 +246,43 @@ export async function POST(request: Request): Promise<Response> {
     if (state === 'player') return json({ id: row.id });
     if (state !== 'open') return fail(state, 409);
     let token: string | undefined;
+    let guestName: string | undefined;
     const joiner: Seat = {};
     if (user) {
       if (row.created_by && (await blocked(client, row.created_by, user))) return fail('taken', 409);
       if ((await slotsUsed(client, user, now)) >= MAX_SLOTS) return fail('full', 409);
       joiner.user = user;
     } else {
+      const name = tidyName(body.name);
+      if (name) {
+        const problem = nameProblem(name);
+        if (problem) return fail(`name-${problem}`, 422);
+        const list = await blockedWords(client);
+        if (list && blockedName(name, list)) return fail('name-blocked', 422);
+        if (list) guestName = name;
+      }
       token = randomBytes(32).toString('base64url');
       joiner.guest = hash(token);
     }
     const nick = await nicknames(client, [row.created_by, user]);
     const joined = await save(client, row, joinPatch(row, joiner, now, () => randomBytes(1)[0] < 128, body.rest === true,
-      { inviter: nick.get(row.created_by ?? ''), joiner: nick.get(user ?? '') }));
+      { inviter: nick.get(row.created_by ?? ''), joiner: user ? nick.get(user) : guestName }));
     if (!joined) return fail('taken', 409);
     if (joined.sente_user && joined.sente_user === joined.created_by) await alertTurn(client, joined, namesOf(joined, nick), now);
     return json({ id: joined.id, seat: token });
+  }
+
+  if (action === 'label') {
+    if (!user) return fail('sign-in', 401);
+    if (!isId(body.id)) return fail('bad-id');
+    const row = await load(client, 'id', body.id);
+    if (!row || (row.sente_user !== user && row.gote_user !== user)) return fail('no-game', 404);
+    const label = tidyLabel(body.label);
+    const { error } = label
+      ? await client.from('friend_labels').upsert({ user_id: user, game_id: row.id, label, updated_at: new Date(now).toISOString() })
+      : await client.from('friend_labels').delete().eq('user_id', user).eq('game_id', row.id);
+    if (error) console.error('friend: label failed', error.message);
+    return error ? fail('save', 500) : json({ label: label || null });
   }
 
   if (!isId(body.id)) return fail('bad-id');

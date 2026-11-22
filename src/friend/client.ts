@@ -68,6 +68,16 @@ const REST = 'shogi-il.friend.rest';
 export const REST_LABEL = 'לא לשחק בשבת';
 export const REST_HINT = 'הזמן שלך למהלך לא ייגמר בין שישי ב־14:00 לשבת ב־22:00, וגם לא נשלח לך התראות בשעות האלה. הבחירה נשמרת במכשיר הזה למשחקים הבאים.';
 
+const GUEST_NAME_KEY = 'shogi-il.friend.name';
+
+export function savedName(): string {
+  try { return localStorage.getItem(GUEST_NAME_KEY) ?? ''; } catch { return ''; }
+}
+
+export function saveName(name: string): void {
+  try { localStorage.setItem(GUEST_NAME_KEY, name); } catch { }
+}
+
 export function restPref(): boolean {
   try { return localStorage.getItem(REST) === '1'; } catch { return false; }
 }
@@ -165,23 +175,28 @@ export interface ListedGame {
   endReason: GameView['endReason'];
   expiresAt: string;
   updatedAt: string;
+  endedAt?: string | null;
+  label?: string | null;
   yourTurn: boolean;
   inviter: string;
   kif: string | null;
   waits?: 'end' | 'takeback' | 'rematch' | null;
+  sfen?: string | null;
+  last?: string | null;
 }
 
 export const api = {
   create: (body: { speed: string; days?: number; clock?: { limit: number; byo: number }; color: string }) =>
     call<{ code: string; id: string }>('create', { ...body, ...(restPref() ? { rest: true } : {}) }),
   invite: (code: string) => call<InviteInfo>('invite', { code }),
-  join: async (code: string) => {
-    const r = await call<{ id: string; seat?: string }>('join', { code, ...(restPref() ? { rest: true } : {}) });
+  join: async (code: string, name?: string) => {
+    const r = await call<{ id: string; seat?: string }>('join', { code, ...(name ? { name } : {}), ...(restPref() ? { rest: true } : {}) });
     if (r.ok && r.data.seat) saveSeat(r.data.id, r.data.seat);
     return r;
   },
   cancel: (code: string) => call('cancel', { code }),
   mine: () => call<{ games: ListedGame[]; now: number }>('mine'),
+  label: (id: string, label: string) => call<{ label: string | null }>('label', { id, label }),
   state: async (id: string) => {
     const r = await call<{ game: GameView }>('state', { id });
     if (offered?.id !== id || (!r.ok && r.status !== 403)) return r;

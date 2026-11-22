@@ -18,6 +18,12 @@
 .friend-card p { margin: 0; }
 .friend-field { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 100%; }
 .friend-label { font-weight: 700; }
+.friend-name input { width: 100%; max-width: 360px; box-sizing: border-box; min-height: 52px; padding: 0 14px; font: 18px/1.2 var(--f-body); color: var(--ink); background: var(--washi); border: 1.5px solid var(--ink); border-radius: 6px; }
+.friend-name input:focus-visible { outline-offset: 0; }
+.friend-name input[aria-invalid="true"] { border-color: var(--seal); }
+.friend-name p { margin: 0; }
+.friend-name__err { color: var(--seal); font-weight: 700; }
+.friend-name__err:empty { display: none; }
 .friend-seg { flex-wrap: wrap; border-radius: 16px; max-width: 100%; }
 .friend-seg button { flex: 1 1 auto; min-height: 44px; }
 .friend-msg:empty { display: none; }
@@ -116,7 +122,7 @@ a.friend-row__main:hover strong { text-decoration: underline; }
   .friend-game .ruser.seat .who { flex-direction: row; align-items: baseline; gap: 8px; }
   .friend-game .ruser.seat .who strong { font-size: 16px; }
   .friend-game .ruser.seat .rclock { font-size: 20px; min-width: 72px; padding: 4px 8px; }
-  .friend-game .play__board { padding-top: 54px; padding-bottom: 42px; }
+  .friend-game .play__board { padding-top: 64px; padding-bottom: 50px; }
   .friend-game .table-box > .ruser, .friend-game .table-box > .status-line { display: none; }
   .friend-game .table-box > .tools { order: 2; border-bottom: 0; }
   .friend-game .table-box > .friend-keepline { order: 3; }
@@ -157,5 +163,25 @@ a.friend-row__main:hover strong { text-decoration: underline; }
 .play .friend-end__option:disabled strong { opacity: 0.45; }
 .play .btn.danger { border-color: var(--seal); color: var(--seal); background: none; }
 .play .friend-jump { font-weight: 700; min-height: 0; display: inline; font-size: inherit; }
-.friend-row__end { font-size: 14px; flex-basis: 100%; }
+.friend-row__end { font-size: 14px; flex-basis: 100%; justify-content: flex-start; text-align: start; }
 .games-list .friend-row__side { flex-wrap: wrap; }
+.friend-row--board { flex-wrap: nowrap; align-items: flex-start; gap: 14px; }
+.friend-row__body { flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding-top: 2px; }
+.friend-row__body .friend-row__main { flex: 1 1 150px; }
+.friend-thumb-link { flex: none; display: block; line-height: 0; }
+.friend-thumb.play { container-type: inline-size; display: block; margin: 0; width: clamp(118px, 34vw, 156px); }
+.friend-thumb .sg-wrap { border: 1.5px solid var(--grid); border-radius: 2px; box-shadow: var(--shadow-board); }
+.friend-thumb.play sg-pieces piece::after { font-size: 12.5cqi; letter-spacing: 0; }
+html[data-pieces="chess"] .friend-thumb.play sg-pieces piece:is(.king, .rook, .bishop, .gold, .silver, .knight, .lance, .pawn)::after { font-size: 12.4cqi; }
+html[data-pieces="chess"] .friend-thumb.play sg-pieces piece:is(.dragon, .horse, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { font-size: 10cqi; }
+html[data-pieces="hebrew"] .friend-thumb.play sg-pieces piece:is(.bishop, .promotedsilver, .promotedknight, .promotedlance, .tokin)::after { font-size: 10cqi; }
+.friend-thumb.play piece { --arrows: none; filter: none; }
+.friend-waiting { display: inline-flex; align-items: baseline; gap: 8px; direction: rtl; font-weight: 600; color: var(--ink); }
+.friend-dots { display: inline-flex; align-items: center; gap: 4px; flex: none; }
+.friend-dots i { display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--seal); animation: friend-dot 1.2s ease-in-out infinite; }
+.friend-dots i:nth-child(2) { animation-delay: 0.2s; }
+.friend-dots i:nth-child(3) { animation-delay: 0.4s; }
+@keyframes friend-dot { 0%, 80%, 100% { opacity: 0.25; transform: scale(0.75); } 40% { opacity: 1; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .friend-dots i { animation: none; opacity: 0.8; } }
+.friend-ready { margin: 0 0 10px; }
+.friend-wait-line { margin: 0; }
