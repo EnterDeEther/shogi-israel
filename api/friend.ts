@@ -19,6 +19,14 @@ function db(): SupabaseClient | null {
   return url && key ? createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } }) : null;
 }
 
+let gate = { at: 0, off: false };
+async function paused(client: SupabaseClient): Promise<boolean> {
+  if (Date.now() - gate.at < 30_000) return gate.off;
+  const { data } = await client.from('site_switches').select('off').eq('name', 'friend_play').maybeSingle();
+  gate = { at: Date.now(), off: (data as { off?: boolean } | null)?.off === true };
+  return gate.off;
+}
+
 const hash = (token: string) => createHash('sha256').update(token).digest('hex');
 const isCode = (v: unknown): v is string => typeof v === 'string' && /^[a-z0-9]{10}$/.test(v);
 const isId = (v: unknown): v is string => typeof v === 'string' && /^[0-9a-f-]{36}$/.test(v);
@@ -103,8 +111,9 @@ export async function POST(request: Request): Promise<Response> {
   if (!client) return fail('not-configured', 503);
   let body: Body;
   try { body = await request.json(); } catch { return fail('bad-json'); }
+  const [user, off] = await Promise.all([userOf(client, request), paused(client)]);
+  if (off) return fail('paused', 503);
   const now = Date.now();
-  const user = await userOf(client, request);
   const guest = isSeatToken(body.seat) ? hash(body.seat) : null;
   const seat: Seat = { user, guest };
   const action = body.action;

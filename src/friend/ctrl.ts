@@ -13,9 +13,9 @@ import { Line } from '../play/game';
 import { liveBounds } from '../lib/live-bounds';
 import { SQUARE_RATIO } from '../lib/square-ratio';
 import { api } from './client';
-import type { GameView, Signal } from './core';
+import { type GameView, type Ping, pingMove, type Signal } from './core';
 
-export type LoadError = 'not-player' | 'no-game' | 'network' | null;
+export type LoadError = 'not-player' | 'no-game' | 'network' | 'paused' | null;
 
 export default class FriendCtrl {
   ground: Api;
@@ -23,6 +23,9 @@ export default class FriendCtrl {
   line: Line = new Line();
   viewPly?: number;
   receivedAt = 0;
+  synced = 0;
+  movedAt = 0;
+  hinted = false;
   pending = false;
   loadError: LoadError = null;
   notice: string | null = null;
@@ -103,8 +106,10 @@ export default class FriendCtrl {
 
   async load(): Promise<void> {
     const r = await api.state(this.id);
+    if (this.pending) return;
     if (!r.ok) {
-      this.loadError = r.status === 403 ? 'not-player' : r.status === 404 ? 'no-game' : 'network';
+      this.loadError = r.error === 'paused' ? 'paused' : r.status === 403 ? 'not-player' : r.status === 404 ? 'no-game' : 'network';
+      if (this.loadError === 'paused') this.game = undefined;
       this.redraw();
       return;
     }
@@ -112,9 +117,19 @@ export default class FriendCtrl {
     this.apply(r.data.game);
   }
 
-  apply(view: GameView): void {
+  hint(ping: Ping): boolean {
+    const next = this.game && !this.pending && !this.hinted ? pingMove(this.game, ping) : null;
+    if (next) this.apply(next, true);
+    return !!next;
+  }
+
+  apply(view: GameView, hint = false): void {
     const before = this.game;
     const fresh = !before || before.id !== view.id;
+    if (!hint && !fresh && !this.hinted && view.rev < before.rev) return;
+    this.hinted = hint;
+    if (!hint) this.synced = Date.now();
+    if (fresh || view.ply !== before.ply) this.movedAt = Date.now();
     this.game = view;
     this.receivedAt = performance.now();
     this.line = new Line(view.startSfen, view.moves);
@@ -170,6 +185,7 @@ export default class FriendCtrl {
     const ply = this.game.ply;
     this.line = this.line.play(usi);
     this.pending = true;
+    this.movedAt = Date.now();
     this.resignConfirm = false;
     if (this.line.current.isCheck()) playSound('check');
     this.syncGround();

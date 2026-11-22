@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import {
-  clockAt, type FriendRow, gameView, inviteState, joinPatch, movePatch, newCode, newInvite, rematchAsk, rematchRow, resignPatch,
+  clockAt, type FriendRow, gameView, inviteState, joinPatch, movePatch, newCode, newInvite, pingIsOld, pingMove, rematchAsk, rematchRow, resignPatch,
   settle, signalPatch, takebackAnswer, takebackAsk, validInvite,
 } from '../src/friend/core';
 
@@ -160,5 +160,45 @@ describe('etiquette', () => {
     const v = gameView(g, 'gote', names, T0);
     expect(JSON.stringify(v)).not.toContain('h'.repeat(64));
     expect(v.guest.gote).toBe(true);
+  });
+});
+
+describe('live pings', () => {
+  const at = (r: FriendRow, t: number) => ({ ...r, updated_at: new Date(t).toISOString() }) as FriendRow;
+  const start = at(join(row({ corr_days: 3 })), T0);
+  const gote = gameView(start, 'gote', names, T0);
+  const moved = at(play(start, 'sente', '7g7f', T0 + 5000), T0 + 5000);
+  const ping = { ply: 1, status: 'active', usi: '7g7f', deadline: Date.parse(moved.move_deadline!), prev: T0, rev: T0 + 5000 };
+
+  test('a view carries the time of its last change', () => {
+    expect(gote.rev).toBe(T0);
+    expect(gameView(moved, 'gote', names, T0 + 5000).rev).toBe(T0 + 5000);
+  });
+  test('a ping no newer than the view is old', () => {
+    expect(pingIsOld(gote, { rev: T0 })).toBe(true);
+    expect(pingIsOld(gote, { rev: T0 - 1 })).toBe(true);
+    expect(pingIsOld(gote, { rev: T0 + 1 })).toBe(false);
+    expect(pingIsOld(gote, { ply: 1, status: 'active' })).toBe(false);
+  });
+  test('the other side\'s move in a ping gives the same board as the server', () => {
+    const hinted = pingMove(gote, ping)!;
+    const real = gameView(moved, 'gote', names, T0 + 5000);
+    expect(hinted.moves).toEqual(real.moves);
+    expect(hinted.ply).toBe(real.ply);
+    expect(hinted.deadline).toBe(real.deadline);
+    expect(hinted.rev).toBe(gote.rev);
+  });
+  test('a ping is not applied when anything about it is off', () => {
+    const sente = gameView(start, 'sente', names, T0);
+    expect(pingMove(sente, ping)).toBeNull();
+    expect(pingMove(gote, { ...ping, prev: T0 - 1 })).toBeNull();
+    expect(pingMove(gote, { ...ping, ply: 2 })).toBeNull();
+    expect(pingMove(gote, { ...ping, usi: '7g7e' })).toBeNull();
+    expect(pingMove(gote, { ...ping, usi: null })).toBeNull();
+    expect(pingMove(gote, { ...ping, status: 'finished' })).toBeNull();
+    expect(pingMove(gote, { ...ping, deadline: null })).toBeNull();
+    expect(pingMove(gote, { ply: 1, status: 'active' })).toBeNull();
+    const live = at(join(row({ speed: 'live', corr_days: null, clock_limit: 600, clock_byo: 30 })), T0);
+    expect(pingMove(gameView(live, 'gote', names, T0), ping)).toBeNull();
   });
 });

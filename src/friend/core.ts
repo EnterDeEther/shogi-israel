@@ -337,6 +337,7 @@ export interface GameView {
   startedAt: string | null;
   endedAt: string | null;
   kif: string | null;
+  rev: number;
 }
 
 export function gameView(row: FriendRow, you: Color, names: Names, now: number): GameView {
@@ -365,5 +366,19 @@ export function gameView(row: FriendRow, you: Color, names: Names, now: number):
     startedAt: row.started_at,
     endedAt: row.ended_at,
     kif: row.kif,
+    rev: ms(row.updated_at),
   };
+}
+
+export type Ping = Partial<Record<'ply' | 'status' | 'usi' | 'deadline' | 'rev' | 'prev', unknown>>;
+
+export const pingIsOld = (game: GameView, ping: Ping): boolean => typeof ping.rev === 'number' && ping.rev <= game.rev;
+
+export function pingMove(game: GameView, ping: Ping): GameView | null {
+  if (game.status !== 'active' || ping.status !== 'active' || game.speed !== 'corr') return null;
+  if (typeof ping.rev !== 'number' || ping.prev !== game.rev || ping.ply !== game.ply + 1) return null;
+  if (typeof ping.usi !== 'string' || ping.usi.length > 8 || typeof ping.deadline !== 'number') return null;
+  const line = new Line(game.startSfen, game.moves);
+  if (line.current.turn === game.you || !line.isLegal(ping.usi) || line.play(ping.usi).end()) return null;
+  return { ...game, moves: [...game.moves, ping.usi], ply: game.ply + 1, takebackBy: null, deadline: ping.deadline, now: ping.rev };
 }

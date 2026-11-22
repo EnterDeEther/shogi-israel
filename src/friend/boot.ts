@@ -4,23 +4,29 @@ import { preloadSounds } from '../learn/sound';
 import { mount } from '../play/view';
 import { accountsEnabled } from '../lib/account-config';
 import { gameUrl, signedIn } from './client';
+import type { Ping } from './core';
 import FriendCtrl from './ctrl';
 import { clockText, hoursText, render } from './view';
 
-const POLL_MS = 20_000;
+const GAP = { up: 60_000, down: 15_000, clockUp: 10_000, clockDown: 4_000 };
+const PING_GAP_MS = 1500;
+const SOFT_GAP_MS = 3000;
+const AWAKE_MS = 180_000;
+
+type WakeLock = { release(): Promise<void> };
 
 function gameId(): string | null {
   const id = location.hash.replace(/^#/, '').trim();
   return /^[0-9a-f-]{36}$/i.test(id) ? id : null;
 }
 
-async function listen(id: string, onChange: () => void): Promise<() => void> {
+async function listen(id: string, onPing: (ping: Ping) => void, onLine: (up: boolean) => void): Promise<() => void> {
   if (!accountsEnabled) return () => {};
   try {
     const { supabase } = await import('../lib/account');
     const ch = supabase().channel(`fg:${id}`, { config: { broadcast: { self: false } } })
-      .on('broadcast', { event: 'changed' }, onChange)
-      .subscribe();
+      .on('broadcast', { event: 'changed' }, (m: { payload?: unknown }) => onPing(m.payload && typeof m.payload === 'object' ? (m.payload as Ping) : {}))
+      .subscribe((status) => onLine(status === 'SUBSCRIBED'));
     return () => { void supabase().removeChannel(ch); };
   } catch {
     return () => {};
@@ -59,17 +65,60 @@ export async function bootFriendGame(root: HTMLElement): Promise<void> {
   await ctrl.load();
 
   let busy = false;
-  const refresh = async () => {
+  let up = false;
+  let want = 0;
+  let pulledAt = Date.now();
+  let timer: number | undefined;
+  let wake: WakeLock | null = null;
+  const since = () => Date.now() - Math.max(pulledAt, ctrl.synced);
+  const pull = async () => {
     if (busy || ctrl.pending) return;
     busy = true;
+    want = 0;
+    pulledAt = Date.now();
     try { await ctrl.load(); } finally { busy = false; }
+    kick();
   };
-  const stop = await listen(id, () => void refresh());
+  const kick = () => {
+    if (busy || ctrl.pending || timer !== undefined || want <= (ctrl.game?.rev ?? 0)) return;
+    const wait = pulledAt + PING_GAP_MS - Date.now();
+    if (wait <= 0) return void pull();
+    timer = window.setTimeout(() => { timer = undefined; kick(); }, wait);
+  };
+  const soft = () => { if (since() > SOFT_GAP_MS) void pull(); };
+  const onPing = (ping: Ping) => {
+    const g = ctrl.game;
+    if (g && typeof ping.rev === 'number' && ping.rev <= g.rev) return;
+    want = typeof ping.rev === 'number' ? Math.max(want, ping.rev) : Infinity;
+    ctrl.hint(ping);
+    kick();
+  };
+  const keepAwake = () => {
+    const on = ctrl.active && document.visibilityState === 'visible' && (!!ctrl.game?.clock || Date.now() - ctrl.movedAt < AWAKE_MS);
+    const nav = navigator as Navigator & { wakeLock?: { request(type: 'screen'): Promise<WakeLock> } };
+    if (on && !wake && nav.wakeLock) nav.wakeLock.request('screen').then((w) => { wake = w; }, () => {});
+    else if (!on && wake) { void wake.release().catch(() => {}); wake = null; }
+  };
+  const stop = await listen(id, onPing, (line) => {
+    up = line;
+    if (line) soft();
+  });
   window.setInterval(() => {
-    if (document.visibilityState === 'visible' && (!ctrl.ended || (ctrl.game?.rematchBy && !ctrl.game.rematchId))) void refresh();
-  }, POLL_MS);
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') void refresh(); });
-  window.addEventListener('online', () => void refresh());
+    keepAwake();
+    if (document.visibilityState !== 'visible') return;
+    kick();
+    const waiting = !ctrl.ended || (!!ctrl.game?.rematchBy && !ctrl.game.rematchId);
+    const clock = !!ctrl.game?.clock && ctrl.active;
+    const gap = clock ? (up ? GAP.clockUp : GAP.clockDown) : up ? GAP.up : GAP.down;
+    if ((waiting && since() >= gap) || (ctrl.hinted && since() >= SOFT_GAP_MS)) void pull();
+  }, 2000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') return;
+    wake = null;
+    keepAwake();
+    soft();
+  });
+  window.addEventListener('online', soft);
   window.addEventListener('hashchange', () => {
     stop();
     location.reload();
