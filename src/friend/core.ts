@@ -9,15 +9,10 @@ export type Signal = 'gl' | 'gg' | 'ty' | 'again' | 'wait';
 
 export const SIGNALS: Signal[] = ['gl', 'gg', 'ty', 'again', 'wait'];
 export const CORR_DAYS = [3] as const;
-export const LIVE_CLOCKS = [
-  { limit: 600, byo: 30 },
-  { limit: 300, byo: 10 },
-  { limit: 1800, byo: 60 },
-] as const;
 export const GRACE_MS = 1000;
 export const LIVE_START_MS = 3 * 60 * 1000;
 export const INVITE_DAYS = 7;
-export const MAX_OPEN_INVITES = 5;
+export const MAX_SLOTS = 2;
 export const GUEST_NAME = 'אורח';
 
 export interface FriendRow {
@@ -126,17 +121,12 @@ export function newInvite(input: { code: string; by: string; color: Color | 'ran
   };
 }
 
-export function validInvite(body: { speed?: unknown; days?: unknown; clock?: unknown; color?: unknown }): { speed: Speed; days?: number; clock?: { limit: number; byo: number }; color: Color | 'random' } | null {
+export function validInvite(body: { speed?: unknown; days?: unknown; color?: unknown }): { speed: Speed; days?: number; color: Color | 'random' } | null {
   const color = body.color === 'sente' || body.color === 'gote' ? body.color : body.color === 'random' || body.color === undefined ? 'random' : null;
   if (!color) return null;
   if (body.speed === 'corr') {
     const days = Number(body.days ?? 3);
     return (CORR_DAYS as readonly number[]).includes(days) ? { speed: 'corr', days, color } : null;
-  }
-  if (body.speed === 'live') {
-    const c = body.clock as { limit?: unknown; byo?: unknown } | undefined;
-    const found = LIVE_CLOCKS.find((k) => k.limit === Number(c?.limit ?? 600) && k.byo === Number(c?.byo ?? 30));
-    return found ? { speed: 'live', clock: { limit: found.limit, byo: found.byo }, color } : null;
   }
   return null;
 }

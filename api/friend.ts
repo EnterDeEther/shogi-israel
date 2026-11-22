@@ -1,7 +1,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { createHash, randomBytes } from 'node:crypto';
 import {
-  claimPatch, type FriendRow, GUEST_NAME, gameView, impassePatch, inRest, inviteState, joinPatch, MAX_OPEN_INVITES, movePatch, type Names, newCode, newInvite,
+  claimPatch, type FriendRow, GUEST_NAME, gameView, impassePatch, inRest, inviteState, joinPatch, MAX_SLOTS, movePatch, type Names, newCode, newInvite,
   type Patch, rematchAsk, rematchRow, resignPatch, restPatch, rests, type Seat, settle, sideOf, type Signal, signalPatch, takebackAnswer, takebackAsk, validInvite,
 } from '../src/friend/core.js';
 import { TURN_MAIL_GAP_MS, turnEmail, turnPush } from '../src/friend/alerts.js';
@@ -93,6 +93,18 @@ async function insertWithCode(client: SupabaseClient, values: Partial<FriendRow>
 async function blocked(client: SupabaseClient, a: string, b: string): Promise<boolean> {
   const { data } = await client.from('friend_blocks').select('user_id').or(`and(user_id.eq.${a},blocked.eq.${b}),and(user_id.eq.${b},blocked.eq.${a})`).limit(1);
   return !!data?.length;
+}
+
+async function slotsUsed(client: SupabaseClient, user: string, now: number): Promise<number> {
+  const [running, waiting] = await Promise.all([
+    client.from('friend_games').select('*').eq('status', 'active').or(`sente_user.eq.${user},gote_user.eq.${user}`).limit(12),
+    client.from('friend_games').select('id', { count: 'exact', head: true }).eq('created_by', user).eq('status', 'open').gt('expires_at', new Date(now).toISOString()),
+  ]);
+  const rows = (running.data ?? []) as FriendRow[];
+  const nick = await nicknames(client, rows.flatMap(unnamed));
+  let used = waiting.count ?? 0;
+  for (const r of rows) if ((await settled(client, r, namesOf(r, nick), now)).status === 'active') used++;
+  return used;
 }
 
 async function sendReport(row: FriendRow, reason: string, names: Names, side: string): Promise<void> {
@@ -220,9 +232,7 @@ export async function POST(request: Request): Promise<Response> {
     if (!input) return fail('bad-invite');
     const nick = await nicknames(client, [user]);
     if (!nick.get(user)) return fail('nickname', 409);
-    const { count } = await client.from('friend_games').select('id', { count: 'exact', head: true })
-      .eq('created_by', user).eq('status', 'open').gt('expires_at', new Date(now).toISOString());
-    if ((count ?? 0) >= MAX_OPEN_INVITES) return fail('too-many', 429);
+    if ((await slotsUsed(client, user, now)) >= MAX_SLOTS) return fail('full', 429);
     const made = await insertWithCode(client, newInvite({ code: '', by: user, ...input, rest: body.rest === true }, now));
     return made ? json({ code: made.code, id: made.id }) : fail('save', 500);
   }
@@ -273,6 +283,7 @@ export async function POST(request: Request): Promise<Response> {
     const joiner: Seat = {};
     if (user) {
       if (row.created_by && (await blocked(client, row.created_by, user))) return fail('taken', 409);
+      if ((await slotsUsed(client, user, now)) >= MAX_SLOTS) return fail('full', 409);
       joiner.user = user;
     } else {
       token = randomBytes(32).toString('base64url');
@@ -281,7 +292,9 @@ export async function POST(request: Request): Promise<Response> {
     const nick = await nicknames(client, [row.created_by, user]);
     const joined = await save(client, row, joinPatch(row, joiner, now, () => randomBytes(1)[0] < 128, body.rest === true,
       { inviter: nick.get(row.created_by ?? ''), joiner: nick.get(user ?? '') }));
-    return joined ? json({ id: joined.id, seat: token }) : fail('taken', 409);
+    if (!joined) return fail('taken', 409);
+    if (joined.sente_user && joined.sente_user === joined.created_by) await alertTurn(client, joined, namesOf(joined, nick), now);
+    return json({ id: joined.id, seat: token });
   }
 
   if (!isId(body.id)) return fail('bad-id');
@@ -337,6 +350,9 @@ export async function POST(request: Request): Promise<Response> {
     case 'rematch': {
       if (row.rematch_id) return json({ id: row.rematch_id });
       if (await cut()) return fail('not-now', 409);
+      for (const who of [user, row.rematch_by && row.rematch_by !== side ? oppUser : null]) {
+        if (who && (await slotsUsed(client, who, now)) >= MAX_SLOTS) return fail('full', 409);
+      }
       if (!row.rematch_by || row.rematch_by === side) return apply(rematchAsk(row, side));
       const values = rematchRow(row, side, '', now);
       if (!values) return fail('not-now', 409);

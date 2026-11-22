@@ -31,8 +31,10 @@ export default class FriendCtrl {
   loadError: LoadError = null;
   notice: string | null = null;
   alert: string | null = null;
+  alertBug = true;
   resignConfirm = false;
-  menu: 'messages' | 'safety' | 'keep' | 'rest' | null = null;
+  menu: 'messages' | 'safety' | 'keep' | 'rest' | 'more' | null = null;
+  movesOpen = false;
   reported = false;
   blocked = false;
   orientation: Color = 'sente';
@@ -208,6 +210,7 @@ export default class FriendCtrl {
       return;
     }
     this.line = new Line(this.game.startSfen, this.game.moves);
+    this.alertBug = true;
     this.alert = 'המהלך לא נשלח, והכלי חזר למקום. ⟦בדוק|בדקי⟧ את החיבור ⟦ונסה|ונסי⟧ שוב.';
     this.syncGround();
     this.redraw();
@@ -291,6 +294,12 @@ export default class FriendCtrl {
   async rematch(): Promise<string | null> {
     const r = await api.rematch(this.id);
     if (r.data.id) return r.data.id;
+    if (r.error === 'full') {
+      this.alertBug = false;
+      this.alert = 'אי אפשר להתחיל עוד משחק כרגע: לאחד מכם יש כבר 2 משחקים או הזמנות פתוחות.';
+      this.redraw();
+      return null;
+    }
     if (r.data.game) this.apply(r.data.game);
     return null;
   }

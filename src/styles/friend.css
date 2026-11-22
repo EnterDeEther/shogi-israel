@@ -80,3 +80,48 @@ a.friend-row__main:hover strong { text-decoration: underline; }
 .friend-more[open] { display: flex; flex-direction: column; gap: 14px; }
 .friend-note { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 100%; padding: 14px; border: 1px solid var(--seal); border-radius: 10px; background: var(--washi-2); }
 .friend-new { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 100%; padding-top: 14px; border-top: 1px solid var(--rule); }
+.friend-stats[hidden], .friend-list[hidden] { display: none; }
+.friend-notes { display: flex; flex-direction: column; gap: 12px; }
+.friend-notes:empty, .friend-wait:empty { display: none; }
+.friend-wait { display: flex; flex-direction: column; gap: 16px; }
+.friend-started { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-bottom: 4px; }
+.friend-started p { margin: 0; flex: 1 1 120px; }
+.friend-started .btn { min-height: 44px; }
+
+.play .friend-turn { display: none; margin: 0; font: 700 16px/1.4 var(--f-body); }
+.play .friend-turn .small { font-weight: 400; }
+.play .friend-foot { display: none; }
+.play .moves-toggle { appearance: none; border: 0; background: none; color: inherit; font: inherit; padding: 0; display: flex; align-items: center; gap: 8px; width: 100%; text-align: start; pointer-events: none; }
+.play .moves-toggle .last, .play .moves-toggle .icon { display: none; }
+.play .friend-keepline { margin: 0; padding: 8px 14px; border-top: 1px solid var(--rule); color: var(--ink-2); }
+.play .friend-keepline .link { min-height: 32px; }
+.friend-game .play__seat { display: none; }
+@media (max-width: 859.98px) {
+  .friend-game.play { gap: 10px; margin-top: 10px; }
+  .friend-game .play__bar { margin-bottom: 0; min-height: 28px; }
+  .friend-game .play__bar .play__what, .friend-game .play__bar .play__new { display: none; }
+  .play .friend-turn { display: block; }
+  .friend-game .play__seat { display: block; transform: none; margin: 0; }
+  .friend-game .play__seat[hidden] { display: none; }
+  .friend-game .ruser.seat { min-height: 40px; padding: 4px 10px; border-width: 1px; }
+  .friend-game .ruser.seat .mark { font-size: 18px; }
+  .friend-game .ruser.seat .who { flex-direction: row; align-items: baseline; gap: 8px; }
+  .friend-game .ruser.seat .who strong { font-size: 16px; }
+  .friend-game .ruser.seat .rclock { font-size: 20px; min-width: 72px; padding: 4px 8px; }
+  .friend-game .play__board { padding-top: 54px; padding-bottom: 42px; }
+  .friend-game .table-box > .ruser, .friend-game .table-box > .status-line { display: none; }
+  .friend-game .table-box > .tools { order: 2; border-bottom: 0; }
+  .friend-game .table-box > .friend-keepline { order: 3; }
+  .friend-game .table-box > .friend-menu { order: 3; }
+  .friend-game .table-box > .replay { order: 6; border-bottom: 0; }
+  .friend-game .tool { min-height: 50px; }
+  .friend-game .moves-head { padding: 0; border-bottom: 0; }
+  .friend-game .replay.open .moves-head { border-bottom: 1px solid var(--rule); }
+  .friend-game .moves-toggle { pointer-events: auto; cursor: pointer; min-height: 44px; padding: 0 14px; }
+  .friend-game .moves-toggle .last { display: inline; flex: 1; }
+  .friend-game .moves-toggle .icon { display: inline-flex; transition: transform .15s ease; }
+  .friend-game .replay.open .moves-toggle .icon { transform: rotate(180deg); }
+  .friend-game .replay:not(.open) .moves-box, .friend-game .replay:not(.open) .replay-nav { display: none; }
+  .friend-game .friend-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; }
+  .friend-game .friend-foot .btn { min-height: 44px; white-space: nowrap; flex-shrink: 0; }
+}

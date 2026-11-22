@@ -30,11 +30,11 @@ describe('invites', () => {
     const code = newCode((n) => Uint8Array.from({ length: n }, (_, i) => i * 37));
     expect(code).toMatch(/^[a-z0-9]{10}$/);
   });
-  test('only the offered speeds and clocks are accepted', () => {
+  test('only the game without a clock is offered', () => {
     expect(validInvite({ speed: 'corr', days: 3 })).toEqual({ speed: 'corr', days: 3, color: 'random' });
     expect(validInvite({ speed: 'corr', days: 2 })).toBeNull();
-    expect(validInvite({ speed: 'live', clock: { limit: 600, byo: 30 }, color: 'gote' })).toEqual({ speed: 'live', clock: { limit: 600, byo: 30 }, color: 'gote' });
-    expect(validInvite({ speed: 'live', clock: { limit: 5, byo: 0 } })).toBeNull();
+    expect(validInvite({ speed: 'corr', color: 'gote' })).toEqual({ speed: 'corr', days: 3, color: 'gote' });
+    expect(validInvite({ speed: 'live', clock: { limit: 600, byo: 30 } })).toBeNull();
     expect(validInvite({ speed: 'blitz' })).toBeNull();
   });
   test('the invite says who may join', () => {

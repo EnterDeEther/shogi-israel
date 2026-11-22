@@ -5,16 +5,12 @@ import { isAndroid, isInApp } from '../lib/install';
 import { copyText } from '../lib/kif';
 import { openBug, setBugContext } from './bug';
 import { api, gameUrl, type InviteInfo, inviteUrl, type ListedGame, readSeats, rememberedInvite, rememberInvite, REST_HINT, REST_LABEL, restPref, setRestPref, SHORT_SPEED, signedIn, SPEED_TEXT } from './client';
-import { CORR_DAYS, LIVE_CLOCKS } from './core';
+import { CORR_DAYS, MAX_SLOTS } from './core';
 
 const COLOR_TEXT: Record<Color | 'random', string> = { random: 'הגרלה', sente: 'פותח (☗)', gote: 'משיב (☖)' };
 
-type Choice = { speed: 'corr'; days: number } | { speed: 'live'; clock: { limit: number; byo: number } };
-const NO_CLOCK = 'בלי שעון: לכל מהלך יש עד 3 ימים, וכל אחד משחק מתי שנוח לו.';
-const CHOICES: { key: string; label: string; hint: string; value: Choice }[] = [
-  { key: 'corr', label: 'בלי שעון', hint: NO_CLOCK, value: { speed: 'corr', days: CORR_DAYS[0] } },
-  ...LIVE_CLOCKS.map((c) => ({ key: `live${c.limit}`, label: `${c.limit / 60} דק׳ + ${c.byo} שנ׳`, hint: 'משחק חי עם שעון: שניכם מול המסך באותו זמן.', value: { speed: 'live' as const, clock: c } })),
-];
+const NO_CLOCK = 'משחק אחד, בלי שעון. לכל מהלך יש עד 3 ימים, וכל אחד משחק מתי שנוח לו.';
+const POLL_MS = 30_000;
 
 const codeFromHash = (): string | null => {
   const asked = new URLSearchParams(location.search).get('i');
@@ -28,7 +24,7 @@ const remembered = (): string | null => rememberedInvite();
 
 const ERR: Record<string, string> = {
   nickname: 'כדי להזמין חבר צריך כינוי בחשבון. אפשר לבחור אחד בעמוד החשבון.',
-  'too-many': 'יש לך כבר 5 הזמנות פתוחות. אפשר לבטל אחת מהן ולנסות שוב.',
+  full: 'יש לך כבר 2 משחקים או הזמנות פתוחות. אפשר להתחיל משחק נוסף כשאחד מהם נגמר.',
   'sign-in': 'צריך להיכנס לחשבון כדי להזמין.',
   network: 'אין חיבור לרשת כרגע. כדאי לנסות שוב בעוד רגע.',
   paused: 'המשחק עם חבר בהפסקה קצרה. המשחקים שמורים, ונחזור בקרוב.',
@@ -87,19 +83,11 @@ function restField(): HTMLElement {
     el('p', { class: 'small muted' }, REST_HINT));
 }
 
-function gameRow(g: ListedGame, onCancel: (code: string) => void): HTMLElement {
-  const opp = g.you ? g.names[g.you === 'sente' ? 'gote' : 'sente'] : '';
+const oppOf = (g: ListedGame): string => (g.you ? g.names[g.you === 'sente' ? 'gote' : 'sente'] : '');
+
+function gameRow(g: ListedGame): HTMLElement {
+  const opp = oppOf(g);
   const what = SHORT_SPEED(g.speed, g.days, g.clock);
-  if (g.status === 'open') {
-    return el('li', { class: 'friend-row' },
-      el('div', { class: 'friend-row__main' },
-        el('strong', {}, 'מחכה לחבר'),
-        el('span', { class: 'small muted' }, what)),
-      el('div', { class: 'friend-row__side' },
-        el('button', { type: 'button', class: 'link', onclick: () => void copyText(inviteUrl(g.code)) }, 'העתקת קישור'),
-        el('button', { type: 'button', class: 'link', onclick: () => onCancel(g.code) }, 'ביטול')),
-    );
-  }
   const result = g.status === 'active'
     ? (g.yourTurn ? 'תורך' : `התור של ${opp}`)
     : g.endReason === 'abort' || g.status === 'aborted' ? 'בוטל'
@@ -156,89 +144,155 @@ function homeGuest(root: HTMLElement): void {
 }
 
 function homeSignedIn(root: HTMLElement): void {
-  let pick = CHOICES[0];
   let color: Color | 'random' = 'random';
+  let games: ListedGame[] = [];
+  let loaded = false;
+  let adding = false;
+  let fresh = '';
+  let shown = { wait: '', make: '' };
+  const watching = new Map<string, () => void>();
   const msg = el('p', { class: 'friend-msg', role: 'status' });
-  const made = el('section', { class: 'friend-card friend-made', hidden: true });
+  const notes = el('div', { class: 'friend-notes', role: 'status' });
+  const waitBox = el('div', { class: 'friend-wait' });
+  const makeBox = el('section', { class: 'friend-card' }, el('p', { class: 'muted' }, 'טוענים…'));
   const list = el('ul', { class: 'friend-list' });
-  const listBox = el('section', { class: 'friend-card', hidden: true }, el('h2', {}, 'המשחקים שלך'), list,
+  const places = el('p', { class: 'small muted' });
+  const stats = el('p', { class: 'friend-stats' });
+  const listBox = el('section', { class: 'friend-card', hidden: true }, el('h2', {}, 'המשחקים שלך עם חברים'), places, list, stats,
     el('p', { class: 'small' }, el('a', { href: '/games/' }, 'כל המשחקים שלי, עם צפייה חוזרת וקובץ KIF')));
-  const hint = el('p', { class: 'small muted' }, pick.hint);
-  const seg = <T>(items: { key: string; label: string; value: T }[], on: (v: T) => void, current: string) => {
-    const s = el('div', { class: 'seg friend-seg', role: 'group' });
-    for (const it of items) {
-      s.append(el('button', {
-        type: 'button', 'aria-pressed': String(it.key === current),
-        onclick: (e: Event) => {
-          s.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b === e.currentTarget)));
-          on(it.value);
-        },
-      }, it.label));
-    }
-    return s;
-  };
-  const createBtn = el('button', { type: 'button', class: 'btn' }, 'יצירת קישור הזמנה');
-  let stopWatch = () => {};
-  const watch = async (id: string) => {
-    stopWatch();
+  const waiting = () => games.filter((g) => g.status === 'open' && Date.parse(g.expiresAt) > Date.now());
+  const running = () => games.filter((g) => g.status === 'active' && g.you);
+
+  const watch = async () => {
+    const want = new Set(waiting().map((g) => g.id));
+    for (const [id, stop] of watching) if (!want.has(id)) { stop(); watching.delete(id); }
+    const missing = [...want].filter((id) => !watching.has(id));
+    if (!missing.length) return;
     const { supabase } = await import('../lib/account');
-    const ch = supabase().channel(`fg:${id}`).on('broadcast', { event: 'changed' }, () => location.assign(gameUrl(id))).subscribe();
-    stopWatch = () => { void supabase().removeChannel(ch); };
+    for (const id of missing) {
+      if (watching.has(id)) continue;
+      const ch = supabase().channel(`fg:${id}`).on('broadcast', { event: 'changed' }, () => void load()).subscribe();
+      watching.set(id, () => { void supabase().removeChannel(ch); });
+    }
   };
+
+  const started = (g: ListedGame): HTMLElement => {
+    const opp = oppOf(g);
+    return el('div', { class: 'friend-note friend-started' },
+      el('strong', {}, 'המשחק נגד ', el('bdi', {}, opp), ' התחיל'),
+      el('p', {}, g.yourTurn ? 'תורך.' : el('span', {}, 'התור של ', el('bdi', {}, opp), '.')),
+      el('a', { class: 'btn', href: gameUrl(g.id) }, 'למשחק'));
+  };
+
+  const inviteCard = (g: ListedGame): HTMLElement => {
+    const cancel = el('button', { type: 'button', class: 'link' }, 'ביטול ההזמנה') as HTMLButtonElement;
+    cancel.addEventListener('click', async () => {
+      cancel.disabled = true;
+      await api.cancel(g.code);
+      void load();
+    });
+    return el('section', { class: 'friend-card friend-made' },
+      el('h2', {}, g.code === fresh ? 'הקישור מוכן' : 'הזמנה שמחכה לחבר'),
+      el('p', {}, `${SPEED_TEXT(g.speed, g.days, g.clock)}.`),
+      shareRow(g.code),
+      el('p', { class: 'small muted' }, 'כשהחבר יצטרף, המשחק יופיע כאן, ואפשר יהיה להיכנס אליו. הקישור טוב לשבוע ולמשחק אחד.'),
+      cancel);
+  };
+
+  const createBtn = el('button', { type: 'button', class: 'btn' }, 'יצירת קישור הזמנה') as HTMLButtonElement;
   createBtn.addEventListener('click', async () => {
     createBtn.disabled = true;
     msg.textContent = '';
-    const body = pick.value.speed === 'corr' ? { speed: 'corr', days: pick.value.days, color } : { speed: 'live', clock: pick.value.clock, color };
-    const r = await api.create(body);
-    createBtn.disabled = false;
+    const r = await api.create({ speed: 'corr', days: CORR_DAYS[0], color });
     if (!r.ok) {
-      msg.replaceChildren(errText(r.error), ' ', r.error === 'nickname' ? el('a', { href: '/account/' }, 'לעמוד החשבון') : bugLink());
+      createBtn.disabled = false;
+      msg.replaceChildren(errText(r.error), ' ', r.error === 'nickname' ? el('a', { href: '/account/' }, 'לעמוד החשבון') : r.error === 'full' ? '' : bugLink());
+      if (r.error === 'full') void load();
       return;
     }
-    made.hidden = false;
-    made.replaceChildren(
-      el('h2', {}, 'הקישור מוכן'),
-      el('p', {}, `${SPEED_TEXT(pick.value.speed, pick.value.speed === 'corr' ? pick.value.days : null, pick.value.speed === 'live' ? pick.value.clock : null)}. הצד שלך: ${COLOR_TEXT[color]}.`),
-      shareRow(r.data.code),
-      el('p', { class: 'small muted' }, 'כשהחבר יצטרף, המשחק ייפתח כאן מעצמו. הקישור טוב לשבוע ולמשחק אחד.'),
-    );
-    made.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    void watch(r.data.id);
-    void loadList();
+    fresh = r.data.code;
+    adding = false;
+    await load();
+    createBtn.disabled = false;
   });
-  const loadList = async () => {
-    const r = await api.mine();
-    if (!r.ok) return;
-    const games = r.data.games.filter((g) => g.status === 'open' || g.status === 'active' || Date.now() - Date.parse(g.updatedAt) < 7 * 864e5);
-    listBox.hidden = !games.length;
-    list.replaceChildren(...games.slice(0, 12).map((g) => gameRow(g, async (c) => {
-      await api.cancel(c);
-      void loadList();
-    })));
+  const sides = el('div', { class: 'seg friend-seg', role: 'group' });
+  for (const c of ['random', 'sente', 'gote'] as const) {
+    sides.append(el('button', {
+      type: 'button', 'aria-pressed': String(c === color),
+      onclick: (e: Event) => {
+        color = c;
+        sides.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b === e.currentTarget)));
+      },
+    }, COLOR_TEXT[c]));
+  }
+  const form = [
+    el('h2', {}, 'הזמנת חבר למשחק'),
+    el('p', {}, NO_CLOCK),
+    createBtn,
+    msg,
+    el('details', { class: 'friend-more' },
+      el('summary', {}, 'אפשרויות נוספות'),
+      el('div', { class: 'friend-field' },
+        el('p', { class: 'friend-label' }, 'באיזה צד ⟦תשחק|תשחקי⟧?'),
+        sides,
+        el('p', { class: 'small muted' }, 'הפותח (☗) משחק ראשון.')),
+      restField()),
+  ];
+
+  const draw = () => {
+    const open = waiting();
+    const used = open.length + running().length;
+    const waitKey = open.map((g) => g.code).join(' ') + fresh;
+    if (waitKey !== shown.wait) waitBox.replaceChildren(...open.map(inviteCard));
+    const makeKey = !loaded ? 'load' : used >= MAX_SLOTS ? 'full' : open.length && !adding ? 'more' : 'form';
+    if (makeKey !== shown.make) {
+      if (makeKey === 'full') {
+        makeBox.replaceChildren(
+          el('h2', {}, 'שני המקומות שלך תפוסים'),
+          el('p', {}, 'אפשר לשחק עד 2 משחקים עם חברים בו זמנית. גם הזמנה שמחכה לחבר תופסת מקום. המקום מתפנה כשמשחק נגמר, או כשמבטלים הזמנה.'));
+      } else if (makeKey === 'more') {
+        makeBox.replaceChildren(
+          el('p', {}, 'נשאר לך מקום למשחק נוסף.'),
+          el('button', { type: 'button', class: 'link', onclick: () => { adding = true; draw(); } }, 'הזמנה נוספת'));
+      } else if (makeKey === 'form') {
+        makeBox.replaceChildren(...form);
+      }
+    }
+    shown = { wait: waitKey, make: makeKey };
+    const rows = games.filter((g) => g.status === 'active' || (g.status !== 'open' && Date.now() - Date.parse(g.updatedAt) < 7 * 864e5));
+    listBox.hidden = !rows.length && !used;
+    list.hidden = !rows.length;
+    list.replaceChildren(...rows.slice(0, 12).map(gameRow));
+    places.textContent = `מקומות תפוסים: ${used} מתוך ${MAX_SLOTS}. משחק שרץ והזמנה שמחכה לחבר תופסים מקום.`;
+    const done = games.filter((g) => g.status === 'finished' && g.you);
+    const won = done.filter((g) => g.winner === g.you).length;
+    const even = done.filter((g) => !g.winner).length;
+    stats.hidden = !done.length;
+    stats.replaceChildren(el('strong', {}, 'התוצאות שלך: '), `ניצחונות ${won} · הפסדים ${done.length - won - even} · תיקו ${even}`);
   };
-  root.replaceChildren(
-    el('section', { class: 'friend-card' },
-      el('h2', {}, 'הזמנת חבר למשחק'),
-      el('p', {}, 'משחק אחד, בלי שעון. לכל מהלך יש עד 3 ימים, וכל אחד משחק מתי שנוח לו.'),
-      createBtn,
-      msg,
-      el('details', { class: 'friend-more' },
-        el('summary', {}, 'אפשרויות נוספות'),
-        el('div', { class: 'friend-field' },
-          el('p', { class: 'friend-label' }, 'עם שעון או בלי?'),
-          seg(CHOICES, (v) => { pick = CHOICES.find((c) => c.value === v)!; hint.textContent = pick.hint; }, pick.key),
-          hint),
-        el('div', { class: 'friend-field' },
-          el('p', { class: 'friend-label' }, 'באיזה צד ⟦תשחק|תשחקי⟧?'),
-          seg((['random', 'sente', 'gote'] as const).map((c) => ({ key: c, label: COLOR_TEXT[c], value: c })), (v) => { color = v; }, color),
-          el('p', { class: 'small muted' }, 'הפותח (☗) משחק ראשון.')),
-        restField()),
-    ),
-    made,
-    listBox,
-  );
-  void loadList();
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') void loadList(); });
+
+  let loading = false;
+  const load = async () => {
+    if (loading) return;
+    loading = true;
+    const r = await api.mine();
+    loading = false;
+    if (!r.ok) {
+      if (!loaded) makeBox.replaceChildren(el('p', {}, errText(r.error), ' ', bugLink()));
+      return;
+    }
+    const before = new Set(waiting().map((g) => g.id));
+    games = r.data.games;
+    loaded = true;
+    for (const g of games) if (before.has(g.id) && g.status === 'active') notes.prepend(started(g));
+    draw();
+    void watch();
+  };
+
+  root.replaceChildren(notes, waitBox, makeBox, listBox);
+  void load();
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') void load(); });
+  window.setInterval(() => { if (document.visibilityState === 'visible' && waiting().length) void load(); }, POLL_MS);
 }
 
 async function invitePage(root: HTMLElement, code: string, me: boolean): Promise<void> {
@@ -272,7 +326,7 @@ async function invitePage(root: HTMLElement, code: string, me: boolean): Promise
     if (j.ok && j.data.id) { remember(null); location.assign(gameUrl(j.data.id)); return; }
     btn.disabled = false;
     if (j.error === 'taken') msg.textContent = 'מישהו כבר הצטרף למשחק הזה.';
-    else msg.replaceChildren(errText(j.error), ' ', bugLink());
+    else msg.replaceChildren(errText(j.error), ' ', j.error === 'full' ? el('a', { href: '/friend/', onclick: () => remember(null) }, 'למשחקים שלי') : bugLink());
   };
   const joinBtn = (label: string, ghost = false) => {
     const b = el('button', { type: 'button', class: ghost ? 'btn btn-ghost' : 'btn' }, label) as HTMLButtonElement;

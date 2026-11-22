@@ -24,6 +24,8 @@ const extraIcons: Record<string, string> = {
   'chev-right': '<path d="M9 6l6 6-6 6"/>',
   'end-right': '<path d="M6 6l6 6-6 6M16 6v12"/>',
   crown: '<path d="M4 18h16M5 16l-1-9 5 4 3-6 3 6 5-4-1 9z"/>',
+  more: '<circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>',
+  'chev-down': '<path d="M6 9l6 6 6-6"/>',
 };
 function picon(name: string): HTMLElement {
   if (!extraIcons[name]) return icon(name);
@@ -83,6 +85,22 @@ function playerRow(ctrl: FriendCtrl, color: Color): HTMLElement {
     ),
     g.clock
       ? el('span', { class: `rclock${t && t.main <= 0 ? ' byo' : ''}`, dir: 'ltr', 'data-clock': color, 'aria-label': me ? 'השעון שלך' : `השעון של ${g.names[color]}` }, clockText(ctrl, color))
+      : null,
+  );
+}
+
+function seatRow(ctrl: FriendCtrl, color: Color): HTMLElement {
+  const g = ctrl.game!;
+  const me = color === g.you;
+  const t = g.clock ? ctrl.timeLeft(color) : undefined;
+  const turn = ctrl.active && ctrl.line.current.turn === color;
+  return el('div', { class: `ruser seat${turn ? ' turn' : ''}${g.clock?.running === color && ctrl.active ? ' running' : ''}` },
+    el('span', { class: 'mark', 'aria-hidden': 'true' }, MARK[color]),
+    el('span', { class: 'who' },
+      el('strong', {}, me ? '⟦אתה|את⟧' : el('bdi', {}, g.names[color])),
+      el('span', { class: 'small muted' }, `${SIDE[color]}${g.guest[color] ? (me ? ' · אורח' : ' · משחק כאורח') : ''}`)),
+    g.clock
+      ? el('span', { class: `rclock${t && t.main <= 0 ? ' byo' : ''}`, dir: 'ltr', 'data-clock': color }, clockText(ctrl, color))
       : null,
   );
 }
@@ -184,30 +202,42 @@ function status(ctrl: FriendCtrl, go: Go, onRematch: () => void, signedIn: boole
     );
   }
   if (g.status !== 'active') return null;
-  const pos = ctrl.line.current;
-  const mine = pos.turn === g.you;
-  const left = ctrl.deadlineLeft();
-  const firstMoves = g.ply < 2;
-  const parts: (HTMLElement | string | null)[] = [];
-  parts.push(ctrl.pending ? 'שולחים…' : mine ? (pos.isCheck() ? 'שח! תורך.' : 'תורך.') : `התור של ${opp}.`);
-  if (left !== null && left > 0) {
-    if (firstMoves && g.speed === 'live') parts.push(el('span', { class: 'small muted' }, ' המשחק יבוטל אם לא ישוחק מהלך תוך ', el('span', { 'data-deadline-left': true }, hoursText(left)), '.'));
-    else if (g.speed === 'corr') parts.push(el('span', { class: 'small muted' }, ` ${mine ? 'נשארו לך' : `ל${opp} נשארו`} `, el('span', { 'data-deadline-left': true }, hoursText(left)), ' למהלך.'));
-  }
-  if (!mine && g.speed === 'corr') parts.push(' ', nudgeLink(ctrl));
-  if (g.speed === 'corr') parts.push(' ', el('button', { type: 'button', class: 'link', 'data-fid': 'rest', 'aria-expanded': String(ctrl.menu === 'rest'), onclick: go(() => { ctrl.menu = ctrl.menu === 'rest' ? null : 'rest'; ctrl.redraw(); }) }, g.rest ? 'לא לשחק בשבת ✓' : 'הגדרת שבת'));
-  if (g.guest[g.you]) parts.push(' ', el('button', { type: 'button', class: 'link', 'data-fid': 'keep', 'aria-expanded': String(ctrl.menu === 'keep'), onclick: go(() => { ctrl.menu = ctrl.menu === 'keep' ? null : 'keep'; ctrl.redraw(); }) }, 'שמירת המשחק שלי'));
   return el('div', { class: 'status-line', 'aria-live': 'polite' },
-    ...parts,
+    ...turnParts(ctrl),
     ctrl.canImpasse ? el('button', { type: 'button', class: 'btn', onclick: go(() => ctrl.declareImpasse()) }, picon('crown'), ' הכרזת ניצחון בנקודות') : null,
     !ctrl.live ? el('button', { type: 'button', class: 'link', onclick: go(() => ctrl.view(undefined)) }, 'חזרה לעמדה הנוכחית') : null,
   );
 }
 
+function turnParts(ctrl: FriendCtrl): (HTMLElement | string)[] {
+  const g = ctrl.game!;
+  const opp = g.names[ctrl.opp];
+  const pos = ctrl.line.current;
+  const mine = pos.turn === g.you;
+  const left = ctrl.deadlineLeft();
+  const parts: (HTMLElement | string)[] = [];
+  parts.push(ctrl.pending ? 'שולחים…' : mine ? (pos.isCheck() ? 'שח! תורך.' : 'תורך.') : `התור של ${opp}.`);
+  if (left !== null && left > 0) {
+    if (g.ply < 2 && g.speed === 'live') parts.push(el('span', { class: 'small muted' }, ' המשחק יבוטל אם לא ישוחק מהלך תוך ', el('span', { 'data-deadline-left': true }, hoursText(left)), '.'));
+    else if (g.speed === 'corr') parts.push(el('span', { class: 'small muted' }, ` ${mine ? 'נשארו לך' : `ל${opp} נשארו`} `, el('span', { 'data-deadline-left': true }, hoursText(left)), ' למהלך.'));
+  }
+  if (!mine && g.speed === 'corr') parts.push(' ', nudgeLink(ctrl));
+  return parts;
+}
+
+function topLine(ctrl: FriendCtrl): HTMLElement {
+  const g = ctrl.game!;
+  if (ctrl.ended) {
+    const draw = g.status === 'finished' && !g.winner;
+    return el('p', { class: 'friend-turn' }, 'המשחק הסתיים: ', el('strong', {}, endText(g.endReason ?? 'abort', g.winner === g.you, draw, g.names[ctrl.opp]).title));
+  }
+  return el('p', { class: 'friend-turn' }, ...(g.status === 'active' ? turnParts(ctrl) : []));
+}
+
 function banners(ctrl: FriendCtrl, go: Go): HTMLElement | null {
   const g = ctrl.game!;
   const opp = g.names[ctrl.opp];
-  if (ctrl.alert) return el('div', { class: 'play-tip', role: 'alert' }, el('p', {}, ctrl.alert, ' ', el('button', { type: 'button', class: 'link', onclick: go(openBug) }, 'זה קורה שוב? דיווח על תקלה')));
+  if (ctrl.alert) return el('div', { class: 'play-tip', role: 'alert' }, el('p', {}, ctrl.alert, ' ', ctrl.alertBug ? el('button', { type: 'button', class: 'link', onclick: go(openBug) }, 'זה קורה שוב? דיווח על תקלה') : null));
   if (g.status === 'active' && g.takebackBy === ctrl.opp) {
     return el('div', { class: 'play-tip', role: 'alert' },
       el('strong', {}, `בקשה מ${opp}: להחזיר מהלך?`),
@@ -235,13 +265,21 @@ function controls(ctrl: FriendCtrl, go: Go): HTMLElement {
       tool('close', 'לא, ממשיכים', () => ctrl.cancelResign()),
     );
   }
+  const open = (m: NonNullable<FriendCtrl['menu']>) => () => { ctrl.menu = ctrl.menu === m ? null : m; ctrl.redraw(); };
   return el('div', { class: 'tools', role: 'group', 'aria-label': 'פעולות במשחק' },
-    tool('undo', 'בקשה להחזיר מהלך', () => ctrl.askTakeback(), { disabled: !ctrl.canTakeback }),
-    tool('chat', 'הודעה', () => { ctrl.menu = ctrl.menu === 'messages' ? null : 'messages'; ctrl.redraw(); }, { disabled: ctrl.ended && !!ctrl.game?.rematchId, pressed: ctrl.menu === 'messages' }),
-    tool('flip', 'הפיכת הלוח', () => ctrl.flip()),
+    tool('undo', 'החזרת מהלך', () => ctrl.askTakeback(), { disabled: !ctrl.canTakeback }),
+    tool('chat', 'הודעה', open('messages'), { disabled: ctrl.ended && !!ctrl.game?.rematchId, pressed: ctrl.menu === 'messages' }),
     tool('flag', ctrl.game && ctrl.game.ply < 2 ? 'ביטול' : 'כניעה', () => ctrl.resign(), { disabled: !ctrl.active }),
-    tool('shield', 'בטיחות', () => { ctrl.menu = ctrl.menu === 'safety' ? null : 'safety'; ctrl.redraw(); }, { pressed: ctrl.menu === 'safety' }),
+    tool('shield', 'בטיחות', open('safety'), { pressed: ctrl.menu === 'safety' }),
+    tool('more', 'עוד', open('more'), { pressed: ctrl.menu === 'more' || ctrl.menu === 'rest' || ctrl.menu === 'keep' }),
   );
+}
+
+function keepLine(ctrl: FriendCtrl, go: Go): HTMLElement | null {
+  const g = ctrl.game!;
+  if (!g.guest[g.you] || !ctrl.active || ctrl.menu === 'keep') return null;
+  return el('p', { class: 'friend-keepline small' }, 'בלי חשבון המשחק שמור רק בדפדפן הזה. ',
+    el('button', { type: 'button', class: 'link', 'data-fid': 'keep', onclick: go(() => { ctrl.menu = 'keep'; ctrl.redraw(); }) }, 'שמירת המשחק שלי'));
 }
 
 function menuBox(ctrl: FriendCtrl, go: Go, signedIn: boolean): HTMLElement | null {
@@ -249,6 +287,16 @@ function menuBox(ctrl: FriendCtrl, go: Go, signedIn: boolean): HTMLElement | nul
     return el('div', { class: 'friend-menu', role: 'group', 'aria-label': 'הודעות קבועות' },
       el('p', { class: 'small muted' }, 'אפשר לשלוח רק הודעות קבועות, כדי שהמשחק יישאר נעים ובטוח לכולם.'),
       el('div', { class: 'friend-chips' }, ...SIGNALS.map((m) => el('button', { type: 'button', class: 'choice', 'data-fid': `sig-${m}`, onclick: go(() => ctrl.send(m)) }, SIGNAL_TEXT[m]))));
+  }
+  if (ctrl.menu === 'more') {
+    const g = ctrl.game!;
+    const pick = (label: string, fid: string, fn: () => void) => el('button', { type: 'button', class: 'choice', 'data-fid': fid, onclick: go(fn) }, label);
+    return el('div', { class: 'friend-menu', role: 'group', 'aria-label': 'עוד' },
+      el('div', { class: 'friend-chips' },
+        pick('הפיכת הלוח', 'tool-flip', () => { ctrl.menu = null; ctrl.flip(); }),
+        ctrl.active && g.speed === 'corr' ? pick(g.rest ? 'לא לשחק בשבת ✓' : 'הגדרת שבת', 'rest', () => { ctrl.menu = 'rest'; ctrl.redraw(); }) : null,
+        g.guest[g.you] ? pick('שמירת המשחק שלי', 'keep-more', () => { ctrl.menu = 'keep'; ctrl.redraw(); }) : null,
+        pick('דיווח על תקלה', 'bug', () => { ctrl.menu = null; ctrl.redraw(); openBug(); })));
   }
   if (ctrl.menu === 'rest') {
     const box = el('input', { type: 'checkbox', id: 'friend-rest', 'data-fid': 'rest-box', disabled: ctrl.pending }) as HTMLInputElement;
@@ -329,27 +377,42 @@ export function render(ctrl: FriendCtrl, root: HTMLElement, opts: { signedIn: bo
   overlay.hidden = true;
   overlay.replaceChildren();
   const bar = q('[data-bar]');
+  const what = () => el('p', { class: 'play__what' }, el('strong', {}, 'משחק עם חבר'), ` · ${SPEED_TEXT(g.speed, g.days, g.clockSet).replace(/^משחק (בלי שעון|חי): /, '')}`);
   bar.replaceChildren(
-    el('p', { class: 'play__what' }, el('strong', {}, 'משחק עם חבר'), ` · ${SPEED_TEXT(g.speed, g.days, g.clockSet).replace(/^משחק (בלי שעון|חי): /, '')}`),
+    topLine(ctrl),
+    what(),
     el('a', { class: 'btn play__new', href: '/friend/' }, 'הזמנה חדשה'),
   );
   const top = ctrl.orientation === 'sente' ? 'gote' : 'sente';
+  const plies = ctrl.line.plies;
+  const last = plies[plies.length - 1];
   const table = q('[data-table]');
   const movesScroll = table.querySelector('[data-moves]')?.scrollTop;
   table.replaceChildren(
     el('div', { class: 'table-box' },
       banners(ctrl, go),
       playerRow(ctrl, top),
-      el('div', { class: 'replay' },
-        el('div', { class: 'moves-head' }, el('strong', {}, 'מהלכים')),
+      el('div', { class: `replay${ctrl.movesOpen ? ' open' : ''}` },
+        el('div', { class: 'moves-head' },
+          el('button', { type: 'button', class: 'moves-toggle', 'aria-expanded': String(ctrl.movesOpen), onclick: go(() => { ctrl.movesOpen = !ctrl.movesOpen; ctrl.redraw(); }) },
+            el('strong', {}, plies.length ? `מהלכים (${plies.length})` : 'מהלכים'),
+            last ? el('span', { class: 'small muted last' }, 'האחרון: ', el('bdi', { dir: 'ltr' }, localMove(last.western))) : null,
+            picon('chev-down'))),
         moveList(ctrl, go), navButtons(ctrl, go)),
       status(ctrl, go, opts.onRematch, opts.signedIn),
       controls(ctrl, go),
+      keepLine(ctrl, go),
       menuBox(ctrl, go, opts.signedIn),
       playerRow(ctrl, ctrl.orientation),
     ),
+    el('div', { class: 'friend-foot' }, what(), el('a', { class: 'btn btn-ghost', href: '/friend/' }, 'הזמנה חדשה')),
     el('div', { class: 'pieces-switch' }, pieceSetSwitch(), tipEl('pieces')),
   );
+  for (const [where, color] of [['top', top], ['bottom', ctrl.orientation]] as const) {
+    const seat = q(`[data-seat="${where}"]`);
+    seat.hidden = false;
+    seat.replaceChildren(seatRow(ctrl, color));
+  }
   const box = table.querySelector<HTMLElement>('[data-moves]');
   if (box) {
     const active = box.querySelector<HTMLElement>('.mv.active');
