@@ -2,6 +2,7 @@
 import { PUSH_KINDS, PUSH_LABEL } from '../lib/push';
 import { friendOn } from '../friend/flag';
 const kinds = PUSH_KINDS.filter((k) => k !== 'turn' || friendOn());
+const idle = 'לכל היותר התראה אחת ביום, אף פעם לא בשישי ובשבת.' + (friendOn() ? ' התראת התור במשחק עם חבר מגיעה בנפרד.' : '');
 interface Props { id: string; browserNote?: boolean }
 const { id, browserNote = false } = Astro.props;
 ---
@@ -19,7 +20,7 @@ const { id, browserNote = false } = Astro.props;
         </label>
       ))}
     </fieldset>
-    <p class="small muted" data-push-status>לכל היותר התראה אחת ביום, אף פעם לא בשישי ובשבת. התראת התור במשחק עם חבר מגיעה בנפרד.</p>
+    <p class="small muted" data-push-status data-idle={idle}>{idle}</p>
   </div>
   <p class="small muted" data-push-denied hidden>ההתראות חסומות בהגדרות הטלפון. כדי להדליק אותן, ⟦פתח|פתחי⟧ את <strong>הגדרות</strong> הטלפון ⟦ומצא|ומצאי⟧ את שוגי ישראל (באייפון: הגדרות ← עדכונים ← שוגי ישראל; באנדרואיד: לחיצה ארוכה על הסמל ← פרטי האפליקציה ← התראות).</p>
   <p class="small muted" data-push-old hidden>הטלפון הזה לא יודע לקבל התראות מהאפליקציה. באייפון צריך iOS 16.4 ומעלה.</p>
@@ -35,7 +36,6 @@ const { id, browserNote = false } = Astro.props;
 
   const boxes = [...document.querySelectorAll<HTMLElement>('[data-push-setting]')];
   const signedIn = () => accountsEnabled && hasStoredSession();
-  const IDLE = 'לכל היותר התראה אחת ביום, אף פעם לא בשישי ובשבת. התראת התור במשחק עם חבר מגיעה בנפרד.';
 
   async function draw() {
     const key = await serverKey();
@@ -71,7 +71,7 @@ const { id, browserNote = false } = Astro.props;
         : res === 'denied' ? g('הטלפון לא אישר התראות. ⟦נסה|נסי⟧ שוב, ⟦ובחלון שנפתח בחר|ובחלון שנפתח בחרי⟧ ״אישור״.')
         : g('השמירה לא הצליחה. ⟦בדוק|בדקי⟧ שיש חיבור ⟦ונסה|ונסי⟧ שוב.');
       await draw();
-      if (res !== 'ok') setTimeout(() => { status.textContent = IDLE; }, 8000);
+      if (res !== 'ok') setTimeout(() => { status.textContent = status.dataset.idle ?? ''; }, 8000);
       document.dispatchEvent(new CustomEvent('push-changed'));
     }));
   }
