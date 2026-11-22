@@ -6,6 +6,7 @@ import {
   sfenAfter, takebackCancel, validInvite, watched,
 } from '../src/friend/core.js';
 import { type AlertKind, ASK_ALERT_GAP_MS } from '../src/friend/alerts.js';
+import { type BlockedWord, blockedName, nameProblem, tidyName } from '../src/friend/names.js';
 import { alertSide, namesOf, nicknames, unnamed } from '../src/friend/send.js';
 
 const ALLOWED_ORIGIN = /^https:\/\/((www\.)?shogi\.co\.il|shogi-israel-[a-z0-9-]+-enterdeether\.vercel\.app)$/;
@@ -20,6 +21,16 @@ type Body = Record<string, unknown>;
 const enabled = () => process.env.VERCEL_ENV !== 'production' || process.env.FRIEND_PLAY === '1';
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
 const fail = (error: string, status = 400) => json({ error }, status);
+
+const WORDS_MS = 10 * 60 * 1000;
+let words: { at: number; list: BlockedWord[] } | null = null;
+async function blockedWords(client: SupabaseClient): Promise<BlockedWord[] | null> {
+  if (words && Date.now() - words.at < WORDS_MS) return words.list;
+  const { data, error } = await client.from('blocked_words').select('word, whole');
+  if (error || !data) return null;
+  words = { at: Date.now(), list: data as BlockedWord[] };
+  return words.list;
+}
 
 function db(): SupabaseClient | null {
   const url = process.env.SUPABASE_URL || process.env.PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -227,18 +238,27 @@ export async function POST(request: Request): Promise<Response> {
     if (state === 'player') return json({ id: row.id });
     if (state !== 'open') return fail(state, 409);
     let token: string | undefined;
+    let guestName: string | undefined;
     const joiner: Seat = {};
     if (user) {
       if (row.created_by && (await blocked(client, row.created_by, user))) return fail('taken', 409);
       if ((await slotsUsed(client, user, now)) >= MAX_SLOTS) return fail('full', 409);
       joiner.user = user;
     } else {
+      const name = tidyName(body.name);
+      if (name) {
+        const problem = nameProblem(name);
+        if (problem) return fail(`name-${problem}`, 422);
+        const list = await blockedWords(client);
+        if (list && blockedName(name, list)) return fail('name-blocked', 422);
+        if (list) guestName = name;
+      }
       token = randomBytes(32).toString('base64url');
       joiner.guest = hash(token);
     }
     const nick = await nicknames(client, [row.created_by, user]);
     const joined = await save(client, row, joinPatch(row, joiner, now, () => randomBytes(1)[0] < 128, body.rest === true,
-      { inviter: nick.get(row.created_by ?? ''), joiner: nick.get(user ?? '') }));
+      { inviter: nick.get(row.created_by ?? ''), joiner: user ? nick.get(user) : guestName }));
     if (!joined) return fail('taken', 409);
     if (joined.sente_user && joined.sente_user === joined.created_by) await alertTurn(client, joined, namesOf(joined, nick), now);
     return json({ id: joined.id, seat: token });

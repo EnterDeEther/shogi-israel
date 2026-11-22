@@ -18,6 +18,12 @@
 .friend-card p { margin: 0; }
 .friend-field { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 100%; }
 .friend-label { font-weight: 700; }
+.friend-name input { width: 100%; max-width: 360px; box-sizing: border-box; min-height: 52px; padding: 0 14px; font: 18px/1.2 var(--f-body); color: var(--ink); background: var(--washi); border: 1.5px solid var(--ink); border-radius: 6px; }
+.friend-name input:focus-visible { outline-offset: 0; }
+.friend-name input[aria-invalid="true"] { border-color: var(--seal); }
+.friend-name p { margin: 0; }
+.friend-name__err { color: var(--seal); font-weight: 700; }
+.friend-name__err:empty { display: none; }
 .friend-seg { flex-wrap: wrap; border-radius: 16px; max-width: 100%; }
 .friend-seg button { flex: 1 1 auto; min-height: 44px; }
 .friend-msg:empty { display: none; }

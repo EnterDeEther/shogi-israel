@@ -6,6 +6,7 @@ import {
   sfenAfter, WATCH_GAP_MS, watched,
 } from '../src/friend/core';
 import { lastKeys } from '../src/friend/thumb';
+import { blockedName, nameProblem, plainName, pre, tidyName } from '../src/friend/names';
 
 const T0 = Date.parse('2026-11-10T10:00:00Z');
 const names = { sente: 'דין', gote: 'אורח' };
@@ -350,8 +351,9 @@ describe('guest seats', () => {
     const g = { ...row(), ...joinPatch(row(), { user: 'u2' }, T0, () => true, false, { inviter: 'דין', joiner: 'יעל' }) } as FriendRow;
     expect(g.sente_name).toBe('דין');
     expect(g.gote_name).toBe('יעל');
-    const guest = joinPatch(row(), { guest: seat }, T0, () => true, false, { inviter: 'דין', joiner: 'יעל' });
-    expect(guest).not.toHaveProperty('gote_name');
+    const guest = joinPatch(row(), { guest: seat }, T0, () => true, false, { inviter: 'דין', joiner: 'Dana' });
+    expect(guest.gote_name).toBe('Dana');
+    expect(joinPatch(row(), { guest: seat }, T0, () => true, false, { inviter: 'דין' })).not.toHaveProperty('gote_name');
     expect(claimPatch(join(row()), 'u2', seat, 'יעל')).toEqual({ gote_user: 'u2', gote_guest: null, gote_name: 'יעל' });
     const done = { ...g, status: 'finished' as const, rematch_by: 'sente' as const };
     const again = rematchRow(done, 'gote', 'abcdefghij', T0)!;
@@ -415,6 +417,42 @@ describe('board picture in the games list', () => {
     expect(lastKeys('P*5e')).toEqual(['5e']);
     expect(lastKeys(null)).toEqual([]);
     expect(lastKeys('junk')).toEqual([]);
+  });
+});
+
+describe('names for players without an account', () => {
+  test('a name can be Hebrew or English, with digits and a space', () => {
+    for (const ok of ['נועה', 'Dana', 'דני 7', 'Li', "ג'ורג'", 'Yoni_K', 'בן-דוד']) expect(nameProblem(ok)).toBeNull();
+  });
+  test('names that are too short, too long or in other alphabets are refused', () => {
+    expect(nameProblem('')).toBe('empty');
+    expect(nameProblem('א')).toBe('short');
+    expect(nameProblem('אבגדהוזחטיכלמנסעפ')).toBe('long');
+    expect(nameProblem('Алиса')).toBe('chars');
+    expect(nameProblem('دانا')).toBe('chars');
+    expect(nameProblem('Dana!')).toBe('chars');
+    expect(nameProblem('1234')).toBe('letter');
+    expect(nameProblem('Dana 0541234567')).toBe('phone');
+    expect(nameProblem('Admin')).toBe('blocked');
+    expect(nameProblem('שוגי ישראל')).toBe('blocked');
+  });
+  test('spaces are tidied before the check', () => {
+    expect(tidyName('  Dana   K ')).toBe('Dana K');
+    expect(tidyName(42)).toBe('');
+  });
+  test('the word filter sees through spaces, digits and repeats', () => {
+    const words = [{ word: 'zzbad', whole: false }, { word: 'ok', whole: true }];
+    expect(plainName('ZZ B4AAD')).toBe('zbad');
+    expect(blockedName('Zz_bad', words)).toBe(true);
+    expect(blockedName('my z z b a d', words)).toBe(true);
+    expect(blockedName('Dana ok', words)).toBe(true);
+    expect(blockedName('Okay', words)).toBe(false);
+    expect(blockedName('Dana', words)).toBe(false);
+  });
+  test('a name in English gets a hyphen after a Hebrew letter in front of it', () => {
+    expect(`בקשה ${pre('מ', 'Dana')}Dana`).toBe('בקשה מ-Dana');
+    expect(`בקשה ${pre('מ', 'נועה')}נועה`).toBe('בקשה מנועה');
+    expect(gamePush('ask', 'Dana', 'abc').title).toBe('בקשה מ-Dana במשחק שלכם');
   });
 });
 

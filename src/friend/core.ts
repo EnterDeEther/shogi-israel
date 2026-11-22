@@ -186,7 +186,7 @@ export function joinPatch(row: FriendRow, joiner: Seat, now: number, coin: () =>
     ...(inviterRest ? { [`${inviterColor}_rest`]: true } : {}),
     ...(rest ? { [`${joinerColor}_rest`]: true } : {}),
     ...(nick.inviter ? { [`${inviterColor}_name`]: nick.inviter } : {}),
-    ...(nick.joiner && joiner.user ? { [`${joinerColor}_name`]: nick.joiner } : {}),
+    ...(nick.joiner ? { [`${joinerColor}_name`]: nick.joiner } : {}),
     status: 'active',
     [`${inviterColor}_user`]: row.created_by,
     [`${joinerColor}_user`]: joiner.user ?? null,
