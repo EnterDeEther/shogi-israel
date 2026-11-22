@@ -91,6 +91,10 @@ a.friend-row__main:hover strong { text-decoration: underline; }
 
 .play .friend-turn { display: none; margin: 0; font: 700 16px/1.4 var(--f-body); }
 .play .friend-turn .small { font-weight: 400; }
+.play .friend-report { flex: none; display: inline-flex; align-items: center; gap: 6px; margin-inline-start: auto; min-height: 44px; padding: 0 14px; border: 1px solid var(--rule); border-radius: 999px; background: none; color: var(--ink-2); font: 600 15px var(--f-body); cursor: pointer; }
+.play .friend-report .icon { display: inline-flex; }
+.play .friend-report svg { width: 18px; height: 18px; }
+@media (hover: hover) { .play .friend-report:hover { border-color: var(--ink); color: var(--ink); } }
 .play .friend-foot { display: none; }
 .play .moves-toggle { appearance: none; border: 0; background: none; color: inherit; font: inherit; padding: 0; display: flex; align-items: center; gap: 8px; width: 100%; text-align: start; pointer-events: none; }
 .play .moves-toggle .last, .play .moves-toggle .icon { display: none; }
@@ -102,6 +106,9 @@ a.friend-row__main:hover strong { text-decoration: underline; }
   .friend-game .play__bar { margin-bottom: 0; min-height: 28px; }
   .friend-game .play__bar .play__what, .friend-game .play__bar .play__new { display: none; }
   .play .friend-turn { display: block; }
+  .play .friend-report { min-height: 32px; padding: 0 10px; gap: 4px; font-size: 13px; align-self: flex-start; }
+  .play .friend-report svg { width: 15px; height: 15px; }
+  .play .friend-report__more { display: none; }
   .friend-game .play__seat { display: block; transform: none; margin: 0; }
   .friend-game .play__seat[hidden] { display: none; }
   .friend-game .ruser.seat { min-height: 40px; padding: 4px 10px; border-width: 1px; }

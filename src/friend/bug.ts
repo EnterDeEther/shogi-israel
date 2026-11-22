@@ -19,7 +19,11 @@ export function openBug(): void {
   const box = document.querySelector<HTMLDetailsElement>('[data-friend-bug]');
   if (!box) return;
   box.open = true;
-  box.querySelector<HTMLElement>('button')?.focus();
+  box.querySelector<HTMLElement>('button')?.focus({ preventScroll: true });
+  const r = box.getBoundingClientRect();
+  const fits = r.height + 24 <= window.innerHeight;
+  const top = fits ? r.bottom + window.scrollY - window.innerHeight + 12 : r.top + window.scrollY - 12;
+  if (!fits || r.top < 0 || r.bottom > window.innerHeight) window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
 }
 
 const KINDS: [string, string][] = [

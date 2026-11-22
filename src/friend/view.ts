@@ -26,6 +26,7 @@ const extraIcons: Record<string, string> = {
   crown: '<path d="M4 18h16M5 16l-1-9 5 4 3-6 3 6 5-4-1 9z"/>',
   more: '<circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>',
   'chev-down': '<path d="M6 9l6 6 6-6"/>',
+  report: '<path d="M12 4.5l8.5 15h-17z"/><path d="M12 10.5v4"/><path d="M12 17.2v.1"/>',
 };
 function picon(name: string): HTMLElement {
   if (!extraIcons[name]) return icon(name);
@@ -433,6 +434,7 @@ export function render(ctrl: FriendCtrl, root: HTMLElement, opts: { signedIn: bo
   bar.replaceChildren(
     topLine(ctrl),
     what(),
+    el('button', { type: 'button', class: 'friend-report', 'data-fid': 'bug-top', 'aria-label': 'דיווח על תקלה', onclick: openBug }, picon('report'), el('span', {}, 'דיווח', el('span', { class: 'friend-report__more' }, ' על תקלה'))),
     el('a', { class: 'btn play__new', href: '/friend/' }, 'הזמנה חדשה'),
   );
   const top = ctrl.orientation === 'sente' ? 'gote' : 'sente';
