@@ -14,7 +14,7 @@ const PING_GAP_MS = 1500;
 const SOFT_GAP_MS = 3000;
 const AWAKE_MS = 180_000;
 const ASK_GAP_MS = 2000;
-const ASK_FAST_MS = 180_000;
+const ASK_FAST_MS = 300_000;
 
 type WakeLock = { release(): Promise<void> };
 
