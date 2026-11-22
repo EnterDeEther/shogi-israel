@@ -4,7 +4,7 @@ import { accountsEnabled } from '../lib/account-config';
 import { isAndroid, isInApp } from '../lib/install';
 import { copyText } from '../lib/kif';
 import { openBug, setBugContext } from './bug';
-import { api, endUrl, gameUrl, type InviteInfo, inviteUrl, lapsedSeen, type ListedGame, markLapsed, readSeats, rememberedInvite, rememberInvite, REST_HINT, REST_LABEL, restPref, setRestPref, SHORT_SPEED, signedIn, SPEED_TEXT } from './client';
+import { api, endUrl, gameUrl, type InviteInfo, inviteUrl, lapsedSeen, type ListedGame, markLapsed, readSeats, rememberedInvite, rememberInvite, REST_HINT, REST_LABEL, restPref, setRestPref, SHORT_SPEED, signedIn, SPEED_TEXT, takeDropped } from './client';
 import { CORR_DAYS, MAX_SLOTS } from './core';
 
 const COLOR_TEXT: Record<Color | 'random', string> = { random: 'הגרלה', sente: 'פותח (☗)', gote: 'משיב (☖)' };
@@ -135,6 +135,11 @@ function homeGuest(root: HTMLElement): void {
   const list = el('ul', { class: 'friend-list' });
   const box = el('section', { class: 'friend-card', hidden: true }, el('h2', {}, 'המשחקים שלך במכשיר הזה'), list);
   root.replaceChildren(
+    takeDropped()
+      ? el('div', { class: 'friend-note', role: 'status' },
+        el('strong', {}, 'החשבון התנתק במכשיר הזה'),
+        el('p', {}, 'כדי להזמין חבר ולראות את המשחקים שלך, צריך להיכנס שוב.'))
+      : '',
     el('section', { class: 'friend-card' },
       el('h2', {}, 'איך זה עובד'),
       el('ol', { class: 'friend-steps' },

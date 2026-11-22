@@ -55,7 +55,7 @@ export async function changeEmail(email: string) {
   return timed(supabase().auth.updateUser({ email }, { emailRedirectTo: redirectTo() }));
 }
 export async function signOut() {
-  await supabase().auth.signOut();
+  await supabase().auth.signOut({ scope: 'local' });
   writeLocal(emptyProgress());
   setLinked(null);
   applyGender(null);
