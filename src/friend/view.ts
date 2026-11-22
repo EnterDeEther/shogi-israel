@@ -10,6 +10,7 @@ import { pre } from './names';
 import { waiting } from './waiting';
 import { SIGNALS, type EndReason, type Reply } from './core';
 import type FriendCtrl from './ctrl';
+import { isPhone, reveal } from '../play/view';
 
 const MARK: Record<Color, string> = { sente: '☗', gote: '☖' };
 const SIDE: Record<Color, string> = { sente: 'פותח', gote: 'משיב' };
@@ -29,6 +30,7 @@ const extraIcons: Record<string, string> = {
   more: '<circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>',
   'chev-down': '<path d="M6 9l6 6 6-6"/>',
   report: '<path d="M12 4.5l8.5 15h-17z"/><path d="M12 10.5v4"/><path d="M12 17.2v.1"/>',
+  pieces: '<path d="M12 2.5L17.85 6.2L19.5 21H4.5L6.15 6.2Z"/><path d="M9.2 17.4l2.8-7.2 2.8 7.2M10.2 14.9h3.6"/>',
 };
 function picon(name: string): HTMLElement {
   if (!extraIcons[name]) return icon(name);
@@ -47,6 +49,20 @@ export function clockText(ctrl: FriendCtrl, color: Color): string {
   if (!ctrl.game?.clock) return '';
   const t = ctrl.timeLeft(color);
   return t.main > 0 ? fmt(t.main) : fmt(t.byo);
+}
+
+export function turnText(ms: number): string {
+  const s = Math.floor(Math.max(0, ms) / 1000);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const ss = String(s % 60).padStart(2, '0');
+  return h ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`;
+}
+
+function turnClock(ctrl: FriendCtrl, color: Color): HTMLElement | null {
+  const t = ctrl.turnTime();
+  if (ctrl.game?.clock || t === null || ctrl.line.current.turn !== color) return null;
+  return el('span', { class: 'turn-time', dir: 'ltr', 'data-turn-time': true, title: 'כמה זמן עבר מתחילת התור', 'aria-label': 'כמה זמן עבר מתחילת התור' }, turnText(t));
 }
 
 export function hoursText(ms: number): string {
@@ -89,7 +105,7 @@ function playerRow(ctrl: FriendCtrl, color: Color): HTMLElement {
     ),
     g.clock
       ? el('span', { class: `rclock${t && t.main <= 0 ? ' byo' : ''}`, dir: 'ltr', 'data-clock': color, 'aria-label': me ? 'השעון שלך' : `השעון של ${g.names[color]}` }, clockText(ctrl, color))
-      : null,
+      : turnClock(ctrl, color),
   );
 }
 
@@ -105,7 +121,7 @@ function seatRow(ctrl: FriendCtrl, color: Color): HTMLElement {
       el('span', { class: 'small muted' }, `${SIDE[color]}${g.guest[color] ? (me ? ' · אורח' : ' · משחק כאורח') : ''}`)),
     g.clock
       ? el('span', { class: `rclock${t && t.main <= 0 ? ' byo' : ''}`, dir: 'ltr', 'data-clock': color }, clockText(ctrl, color))
-      : null,
+      : turnClock(ctrl, color),
   );
 }
 
@@ -167,10 +183,33 @@ function kifRow(ctrl: FriendCtrl): HTMLElement | null {
   );
 }
 
-function nudgeLink(ctrl: FriendCtrl): HTMLElement {
+function nudgeLink(ctrl: FriendCtrl, cls = 'link'): HTMLElement {
   const url = `${location.origin}${gameUrl(ctrl.id)}`;
   const text = `התור שלך במשחק השוגי שלנו: ${url}`;
-  return el('a', { class: 'link', href: `https://wa.me/?text=${encodeURIComponent(text)}`, target: '_blank', rel: 'noopener', 'data-fid': 'nudge' }, 'תזכורת בוואטסאפ');
+  return el('a', { class: cls, href: `https://wa.me/?text=${encodeURIComponent(text)}`, target: '_blank', rel: 'noopener', 'data-fid': 'nudge' }, 'תזכורת בוואטסאפ');
+}
+
+function paceLine(ctrl: FriendCtrl): HTMLElement {
+  const g = ctrl.game!;
+  const opp = g.names[ctrl.opp];
+  const left = ctrl.active && g.speed === 'corr' ? ctrl.deadlineLeft() : null;
+  const mine = ctrl.line.current.turn === g.you;
+  return el('p', { class: 'small muted friend-pace' }, `${SPEED_TEXT(g.speed, g.days, g.clockSet)}.`,
+    left !== null && left > 0
+      ? el('span', {}, ` ${mine ? 'נשארו לך' : `${pre('ל', opp)}${opp} נשארו`} `, el('span', { 'data-deadline-left': true }, hoursText(left)), ' למהלך.')
+      : null);
+}
+
+function replay(ctrl: FriendCtrl, go: Go): HTMLElement {
+  const plies = ctrl.line.plies;
+  const last = plies[plies.length - 1];
+  return el('div', { class: `replay${ctrl.movesOpen ? ' open' : ''}` },
+    el('div', { class: 'moves-head' },
+      el('button', { type: 'button', class: 'moves-toggle', 'aria-expanded': String(ctrl.movesOpen), onclick: go(() => { ctrl.movesOpen = !ctrl.movesOpen; ctrl.redraw(); }) },
+        el('strong', {}, plies.length ? `מהלכים (${plies.length})` : 'מהלכים'),
+        last ? el('span', { class: 'small muted last' }, 'האחרון: ', el('bdi', { dir: 'ltr' }, localMove(last.western))) : null,
+        picon('chev-down'))),
+    moveList(ctrl, go), navButtons(ctrl, go));
 }
 
 function status(ctrl: FriendCtrl, go: Go, onRematch: () => void, signedIn: boolean): HTMLElement | null {
@@ -207,10 +246,13 @@ function status(ctrl: FriendCtrl, go: Go, onRematch: () => void, signedIn: boole
     );
   }
   if (g.status !== 'active') return null;
-  return el('div', { class: 'status-line', 'aria-live': 'polite' },
-    ...turnParts(ctrl),
+  const acts = [
     ctrl.canImpasse ? el('button', { type: 'button', class: 'btn', onclick: go(() => ctrl.declareImpasse()) }, picon('crown'), ' הכרזת ניצחון בנקודות') : null,
     !ctrl.live ? el('button', { type: 'button', class: 'link', onclick: go(() => ctrl.view(undefined)) }, 'חזרה לעמדה הנוכחית') : null,
+  ].filter((a) => !!a) as HTMLElement[];
+  return el('div', { class: `status-line${acts.length ? ' has-action' : ''}`, 'aria-live': 'polite' },
+    el('span', { class: 'status-text' }, ...turnParts(ctrl)),
+    ...acts,
   );
 }
 
@@ -242,20 +284,6 @@ function turnParts(ctrl: FriendCtrl): (HTMLElement | string)[] {
   }
   if (!mine && g.speed === 'corr') parts.push(' ', nudgeLink(ctrl));
   return parts;
-}
-
-function topLine(ctrl: FriendCtrl): HTMLElement {
-  const g = ctrl.game!;
-  if (ctrl.ended) {
-    const draw = g.status === 'finished' && !g.winner;
-    const title = endText(g.endReason ?? 'abort', g.winner === g.you, draw, g.names[ctrl.opp], g.ply).title;
-    const head = title.startsWith('המשחק') ? el('strong', {}, title) : el('span', {}, 'המשחק הסתיים: ', el('strong', {}, title));
-    const opp = g.names[ctrl.opp];
-    if (g.rematchId) return el('p', { class: 'friend-turn' }, head, ' ', el('a', { class: 'link friend-jump', href: gameUrl(g.rematchId), 'data-fid': 'rematch-go-top' }, 'המשחק הנוסף מוכן ←'));
-    if (g.rematchBy === g.you) return el('p', { class: 'friend-turn' }, head, ' ', waiting('מחכים לתשובה של ', el('bdi', {}, opp)));
-    return el('p', { class: 'friend-turn' }, head);
-  }
-  return el('p', { class: 'friend-turn' }, ...(g.status === 'active' ? turnParts(ctrl) : []));
 }
 
 const REPLY_TEXT: Record<Reply, (opp: string) => string> = {
@@ -310,23 +338,23 @@ function controls(ctrl: FriendCtrl, go: Go): HTMLElement {
     tool('undo', 'החזרת מהלך', () => ctrl.askTakeback(), { disabled: !ctrl.canTakeback }),
     tool('chat', 'הודעה', open('messages'), { disabled: ctrl.ended && !!ctrl.game?.rematchId, pressed: ctrl.menu === 'messages' }),
     tool('flag', 'סיום', open('end'), { disabled: !ctrl.active, pressed: ctrl.menu === 'end' }),
-    tool('shield', 'בטיחות', open('safety'), { pressed: ctrl.menu === 'safety' }),
-    tool('more', 'עוד', open('more'), { pressed: ctrl.menu === 'more' || ctrl.menu === 'rest' || ctrl.menu === 'keep' }),
+    tool('pieces', 'סימון הכלים', open('pieces'), { pressed: ctrl.menu === 'pieces' }),
+    tool('more', 'עוד', open('more'), { pressed: ctrl.menu === 'more' || ctrl.menu === 'rest' || ctrl.menu === 'keep' || ctrl.menu === 'safety' }),
   );
 }
 
 function keepLine(ctrl: FriendCtrl, go: Go): HTMLElement | null {
   const g = ctrl.game!;
   if (!g.guest[g.you] || !ctrl.active || ctrl.menu === 'keep') return null;
-  return el('p', { class: 'friend-keepline small' }, 'בלי חשבון המשחק שמור רק בדפדפן הזה. ',
+  return el('p', { class: 'friend-keepline small' }, el('span', { class: 'keep-why' }, el('span', { class: 'keep-acct' }, 'בלי חשבון '), 'המשחק שמור רק בדפדפן הזה.'), ' ',
     el('button', { type: 'button', class: 'link', 'data-fid': 'keep', onclick: go(() => { ctrl.menu = 'keep'; ctrl.redraw(); }) }, 'שמירת המשחק שלי'));
 }
 
-function menuBox(ctrl: FriendCtrl, go: Go, signedIn: boolean): HTMLElement | null {
+function menuBox(ctrl: FriendCtrl, go: Go, signedIn: boolean, phone: boolean): HTMLElement | null {
   if (ctrl.menu === 'messages') {
-    return el('div', { class: 'friend-menu', role: 'group', 'aria-label': 'הודעות קבועות' },
+    return el('div', { class: 'game-menu', role: 'group', 'aria-label': 'הודעות קבועות' },
       el('p', { class: 'small muted' }, 'אפשר לשלוח רק הודעות קבועות, כדי שהמשחק יישאר נעים ובטוח לכולם.'),
-      el('div', { class: 'friend-chips' }, ...SIGNALS.map((m) => el('button', { type: 'button', class: 'choice', 'data-fid': `sig-${m}`, onclick: go(() => ctrl.send(m)) }, SIGNAL_TEXT[m]))));
+      el('div', { class: 'game-chips' }, ...SIGNALS.map((m) => el('button', { type: 'button', class: 'choice', 'data-fid': `sig-${m}`, onclick: go(() => ctrl.send(m)) }, SIGNAL_TEXT[m]))));
   }
   if (ctrl.menu === 'end' && ctrl.active) {
     const g = ctrl.game!;
@@ -337,11 +365,11 @@ function menuBox(ctrl: FriendCtrl, go: Go, signedIn: boolean): HTMLElement | nul
         el('span', {}, ...text));
     const keep = el('button', { type: 'button', class: 'friend-end__keep', 'data-fid': 'end-keep', onclick: go(() => { ctrl.menu = null; ctrl.redraw(); }) }, 'ממשיכים לשחק');
     if (g.ply < 2) {
-      return el('div', { class: 'friend-menu friend-end', role: 'group', 'aria-label': 'סיום המשחק' },
+      return el('div', { class: 'game-menu friend-end', role: 'group', 'aria-label': 'סיום המשחק' },
         option('ביטול המשחק', 'end-abort', () => ctrl.resign(), ['עוד לא שיחקתם שניכם מהלך, אז המשחק פשוט מתבטל, בלי תוצאה.'], true),
         keep);
     }
-    return el('div', { class: 'friend-menu friend-end', role: 'group', 'aria-label': 'סיום המשחק' },
+    return el('div', { class: 'game-menu friend-end', role: 'group', 'aria-label': 'סיום המשחק' },
       g.endBy === ctrl.opp
         ? option('לסיים בלי תוצאה', 'end-accept', () => ctrl.answerEnd(true), ['יש הצעה כזאת ' + pre('מ', g.names[ctrl.opp]), opp(), '. המשחק נגמר עכשיו, בלי מנצח ובלי מפסיד.'])
         : g.endBy === g.you
@@ -351,21 +379,30 @@ function menuBox(ctrl: FriendCtrl, go: Go, signedIn: boolean): HTMLElement | nul
       option('כניעה', 'end-resign', () => ctrl.resign(), ['המשחק נגמר עכשיו, והניצחון נרשם ל', opp(), '.'], true),
       keep);
   }
+  if (ctrl.menu === 'pieces') {
+    return el('div', { class: 'game-menu game-pieces', role: 'group', 'aria-label': 'סימון הכלים' },
+      el('div', { class: 'pieces-switch' }, pieceSetSwitch(), tipEl('pieces')));
+  }
   if (ctrl.menu === 'more') {
     const g = ctrl.game!;
     const pick = (label: string, fid: string, fn: () => void) => el('button', { type: 'button', class: 'choice', 'data-fid': fid, onclick: go(fn) }, label);
-    return el('div', { class: 'friend-menu', role: 'group', 'aria-label': 'עוד' },
-      el('div', { class: 'friend-chips' },
+    const oppTurn = ctrl.active && g.speed === 'corr' && ctrl.line.current.turn === ctrl.opp;
+    return el('div', { class: 'game-menu game-more', role: 'group', 'aria-label': 'עוד' },
+      phone ? replay(ctrl, go) : null,
+      el('div', { class: 'game-chips' },
+        pick('בטיחות', 'tool-shield', () => { ctrl.menu = 'safety'; ctrl.redraw(); }),
         pick('הפיכת הלוח', 'tool-flip', () => { ctrl.menu = null; ctrl.flip(); }),
         ctrl.active && g.speed === 'corr' ? pick(g.rest ? 'לא לשחק בשבת ✓' : 'הגדרת שבת', 'rest', () => { ctrl.menu = 'rest'; ctrl.redraw(); }) : null,
         g.guest[g.you] ? pick('שמירת המשחק שלי', 'keep-more', () => { ctrl.menu = 'keep'; ctrl.redraw(); }) : null,
-        pick('דיווח על תקלה', 'bug', () => { ctrl.menu = null; ctrl.redraw(); openBug(); })));
+        phone && oppTurn ? nudgeLink(ctrl, 'choice') : null,
+        pick('דיווח על תקלה', 'bug', () => { ctrl.menu = null; ctrl.redraw(); openBug(); })),
+      phone ? paceLine(ctrl) : null);
   }
   if (ctrl.menu === 'rest') {
     const box = el('input', { type: 'checkbox', id: 'friend-rest', 'data-fid': 'rest-box', disabled: ctrl.pending }) as HTMLInputElement;
     box.checked = !!ctrl.game?.rest;
     box.addEventListener('change', () => ctrl.setRest(box.checked));
-    return el('div', { class: 'friend-menu friend-rest', role: 'group', 'aria-label': 'שבת' },
+    return el('div', { class: 'game-menu friend-rest', role: 'group', 'aria-label': 'שבת' },
       el('label', { for: 'friend-rest' }, box, ' ', REST_LABEL),
       el('p', { class: 'small muted' }, REST_HINT));
   }
@@ -376,10 +413,10 @@ function menuBox(ctrl: FriendCtrl, go: Go, signedIn: boolean): HTMLElement | nul
       e.preventDefault();
       copyBtn.textContent = url && (await copyText(url)) ? 'הועתק ✓' : 'ההעתקה נכשלה';
     });
-    return el('div', { class: 'friend-menu', role: 'group', 'aria-label': 'שמירת המשחק' },
+    return el('div', { class: 'game-menu', role: 'group', 'aria-label': 'שמירת המשחק' },
       el('p', { class: 'small' }, 'בלי חשבון המשחק שמור רק בדפדפן הזה. עם הקישור האישי אפשר לחזור אליו מכל דפדפן ומכל מכשיר.'),
       url
-        ? el('div', { class: 'friend-chips' },
+        ? el('div', { class: 'game-chips' },
           copyBtn,
           el('a', { class: 'choice', href: `https://wa.me/?text=${encodeURIComponent(`הקישור האישי שלי למשחק השוגי: ${url}`)}`, target: '_blank', rel: 'noopener', 'data-fid': 'keep-wa' }, 'שליחה לעצמי בוואטסאפ'))
         : null,
@@ -391,12 +428,12 @@ function menuBox(ctrl: FriendCtrl, go: Go, signedIn: boolean): HTMLElement | nul
   if (ctrl.menu === 'safety') {
     const g = ctrl.game!;
     const oppIsUser = !g.guest[ctrl.opp];
-    return el('div', { class: 'friend-menu', role: 'group', 'aria-label': 'בטיחות' },
+    return el('div', { class: 'game-menu', role: 'group', 'aria-label': 'בטיחות' },
       ctrl.reported
         ? el('p', {}, 'תודה. הדיווח נשלח לצוות האתר.')
         : el('div', {},
           el('p', { class: 'small' }, 'משהו לא בסדר? הדיווח נשלח לצוות האתר יחד עם המשחק.'),
-          el('div', { class: 'friend-chips' },
+          el('div', { class: 'game-chips' },
             ...([['name', 'שם לא ראוי'], ['cheat', 'משחק לא הוגן'], ['stall', 'מעכב את המשחק'], ['other', 'משהו אחר']] as const).map(([k, label]) =>
               el('button', { type: 'button', class: 'choice', 'data-fid': `report-${k}`, onclick: go(() => void ctrl.report(k)) }, label)))),
       signedIn && oppIsUser
@@ -427,6 +464,8 @@ function problem(ctrl: FriendCtrl): HTMLElement {
   );
 }
 
+let shown = '';
+
 export function render(ctrl: FriendCtrl, root: HTMLElement, opts: { signedIn: boolean; onRematch: () => void }): void {
   const go: Go = (fn) => (e) => { e.preventDefault(); e.stopPropagation(); fn(); };
   const q = <T extends HTMLElement = HTMLElement>(s: string) => root.querySelector<T>(s)!;
@@ -439,39 +478,35 @@ export function render(ctrl: FriendCtrl, root: HTMLElement, opts: { signedIn: bo
   }
   overlay.hidden = true;
   overlay.replaceChildren();
+  const phone = isPhone();
   const bar = q('[data-bar]');
   const pace = SPEED_TEXT(g.speed, g.days, g.clockSet).replace(/^משחק (בלי שעון|חי): /, '');
-  const what = () => el('p', { class: 'play__what' }, el('strong', {}, 'משחק עם חבר'), ` · ${pace}`);
   bar.replaceChildren(
-    topLine(ctrl),
-    what(),
-    el('button', { type: 'button', class: 'friend-report', 'data-fid': 'bug-top', 'aria-label': 'דיווח על תקלה', onclick: openBug }, picon('report'), el('span', {}, 'דיווח', el('span', { class: 'friend-report__more' }, ' על תקלה'))),
+    el('p', { class: 'play__what' }, el('strong', {}, 'משחק עם חבר'), ` · ${pace}`),
+    el('button', { type: 'button', class: 'friend-report', 'data-fid': 'bug-top', 'aria-label': 'דיווח על תקלה', onclick: openBug }, picon('report'), el('span', {}, 'דיווח על תקלה')),
     el('a', { class: 'btn play__new', href: '/friend/' }, 'הזמנה חדשה'),
   );
   const top = ctrl.orientation === 'sente' ? 'gote' : 'sente';
-  const plies = ctrl.line.plies;
-  const last = plies[plies.length - 1];
+  const turn = ctrl.active ? ctrl.line.current.turn : null;
+  root.classList.toggle('turn-bottom', turn === ctrl.orientation);
+  root.classList.toggle('turn-top', turn === top);
+  root.classList.toggle('is-guest', g.guest[g.you] && ctrl.active);
   const table = q('[data-table]');
   const movesScroll = table.querySelector('[data-moves]')?.scrollTop;
+  const tips = banners(ctrl, go);
+  const menu = menuBox(ctrl, go, opts.signedIn, phone);
+  const tools = controls(ctrl, go);
   table.replaceChildren(
     el('div', { class: 'table-box' },
-      ...banners(ctrl, go),
+      ...tips,
       playerRow(ctrl, top),
-      el('div', { class: `replay${ctrl.movesOpen ? ' open' : ''}` },
-        el('div', { class: 'moves-head' },
-          el('button', { type: 'button', class: 'moves-toggle', 'aria-expanded': String(ctrl.movesOpen), onclick: go(() => { ctrl.movesOpen = !ctrl.movesOpen; ctrl.redraw(); }) },
-            el('strong', {}, plies.length ? `מהלכים (${plies.length})` : 'מהלכים'),
-            last ? el('span', { class: 'small muted last' }, 'האחרון: ', el('bdi', { dir: 'ltr' }, localMove(last.western))) : null,
-            picon('chev-down'))),
-        moveList(ctrl, go), navButtons(ctrl, go)),
+      phone ? null : replay(ctrl, go),
       status(ctrl, go, opts.onRematch, opts.signedIn),
-      controls(ctrl, go),
+      tools,
       keepLine(ctrl, go),
-      menuBox(ctrl, go, opts.signedIn),
+      menu,
       playerRow(ctrl, ctrl.orientation),
     ),
-    el('div', { class: 'friend-foot' }, el('p', { class: 'friend-foot__what' }, el('strong', {}, 'משחק עם חבר'), el('span', {}, pace)), el('a', { class: 'btn btn-ghost', href: '/friend/' }, 'הזמנה חדשה')),
-    el('div', { class: 'pieces-switch' }, pieceSetSwitch(), tipEl('pieces')),
   );
   for (const [where, color] of [['top', top], ['bottom', ctrl.orientation]] as const) {
     const seat = q(`[data-seat="${where}"]`);
@@ -485,4 +520,9 @@ export function render(ctrl: FriendCtrl, root: HTMLElement, opts: { signedIn: bo
     else if (movesScroll !== undefined) box.scrollTop = movesScroll;
     if (active) scrollWithin(box, active);
   }
+  const asks = tips.filter((t) => !t.classList.contains('friend-signal'));
+  const done = ctrl.ended ? table.querySelector<HTMLElement>('.result .buttons') : null;
+  const key = `${ctrl.menu ?? ''}|${ctrl.movesOpen && ctrl.menu === 'more'}|${g.status}|${asks.map((t) => t.className + t.textContent).join('|')}`;
+  if (phone && key !== shown && (menu || asks.length || done)) requestAnimationFrame(() => reveal(menu ?? done ?? tools));
+  shown = key;
 }

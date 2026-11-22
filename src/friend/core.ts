@@ -440,6 +440,7 @@ export interface GameView {
   ply: number;
   clock: ClockView | null;
   deadline: number | null;
+  turnAt: number | null;
   now: number;
   takebackBy: Color | null;
   endBy: Color | null;
@@ -473,6 +474,7 @@ export function gameView(row: FriendRow, you: Color, names: Names, now: number):
     ply: row.ply,
     clock: clockAt(row, now),
     deadline: deadline(row),
+    turnAt: row.status === 'active' && row.turn_started_at ? ms(row.turn_started_at) : null,
     now,
     takebackBy: row.takeback_by,
     endBy: (row.status === 'active' && row.signal?.end) || null,
@@ -501,5 +503,5 @@ export function pingMove(game: GameView, ping: Ping): GameView | null {
   if (line.current.turn === game.you || !line.isLegal(ping.usi)) return null;
   const next = line.play(ping.usi);
   if (next.end()) return null;
-  return { ...game, moves: [...game.moves, ping.usi], sfen: makeSfen(next.current), ply: game.ply + 1, takebackBy: null, deadline: ping.deadline, now: ping.rev };
+  return { ...game, moves: [...game.moves, ping.usi], sfen: makeSfen(next.current), ply: game.ply + 1, takebackBy: null, deadline: ping.deadline, turnAt: ping.rev, now: ping.rev };
 }

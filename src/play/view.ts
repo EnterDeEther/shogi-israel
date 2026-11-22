@@ -51,6 +51,9 @@ const extraIcons: Record<string, string> = {
   'end-right': '<path d="M6 6l6 6-6 6M16 6v12"/>',
   crown: '<path d="M4 18h16M5 16l-1-9 5 4 3-6 3 6 5-4-1 9z"/>',
   kif: '<path d="M12 2.5l6 2.6 2.2 16.4H3.8L6 5.1z"/><path d="M12 9v7M9 13l3 3 3-3"/>',
+  more: '<circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>',
+  'chev-down': '<path d="M6 9l6 6 6-6"/>',
+  pieces: '<path d="M12 2.5L17.85 6.2L19.5 21H4.5L6.15 6.2Z"/><path d="M9.2 17.4l2.8-7.2 2.8 7.2M10.2 14.9h3.6"/>',
 };
 function picon(name: string): HTMLElement {
   if (!extraIcons[name]) return icon(name);
@@ -163,7 +166,7 @@ function seatRow(ctrl: PlayCtrl, color: Color, go: (fn: () => void) => (e: Event
   );
 }
 
-function playerRow(ctrl: PlayCtrl, color: Color): HTMLElement {
+function playerRow(ctrl: PlayCtrl, color: Color, phone = false): HTMLElement {
   const isAi = color === ctrl.aiColor;
   const level = ctrl.level;
   const running = ctrl.clock?.running === color;
@@ -172,7 +175,7 @@ function playerRow(ctrl: PlayCtrl, color: Color): HTMLElement {
     el('span', { class: 'mark', 'aria-hidden': 'true' }, MARK[color]),
     el('span', { class: 'who' },
       el('strong', {}, isAi ? `המחשב · רמה ${level.level}` : '⟦אתה|את⟧'),
-      el('span', { class: 'small muted' }, isAi ? `${SIDE[color]} · ${engineLabel[level.engine]}` : SIDE[color]),
+      el('span', { class: 'small muted' }, phone ? (isAi && ctrl.thinking ? 'חושב…' : SIDE[color]) : isAi ? `${SIDE[color]} · ${engineLabel[level.engine]}` : SIDE[color]),
     ),
     ctrl.clock
       ? el('span', {
@@ -218,15 +221,25 @@ function navButtons(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void):
   );
 }
 
-function controls(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void, openSettings: () => void): HTMLElement {
-  const tool = (name: string, label: string, fn: () => void, opts: { disabled?: boolean; cls?: string; iconName?: string } = {}) =>
-    el('button', { type: 'button', class: `tool${opts.cls ? ` ${opts.cls}` : ''}`, 'data-fid': `tool-${name}`, title: label, disabled: !!opts.disabled, onclick: go(fn) },
+function controls(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void, openSettings: () => void, phone: boolean): HTMLElement {
+  const tool = (name: string, label: string, fn: () => void, opts: { disabled?: boolean; cls?: string; iconName?: string; pressed?: boolean } = {}) =>
+    el('button', { type: 'button', class: `tool${opts.cls ? ` ${opts.cls}` : ''}`, 'data-fid': `tool-${name}`, title: label, disabled: !!opts.disabled, 'aria-pressed': opts.pressed === undefined ? undefined : String(opts.pressed), onclick: go(fn) },
       picon(opts.iconName ?? name), el('span', { class: 'label' }, label));
   if (ctrl.resignConfirm && !ctrl.local) {
     return el('div', { class: 'tools confirm', role: 'group', 'aria-label': 'אישור כניעה' },
       el('span', { class: 'q' }, 'להיכנע?'),
       tool('flag', 'כן, נכנעים', () => ctrl.resign(), { cls: 'danger' }),
       tool('close', 'לא, ממשיכים', () => ctrl.cancelResign()),
+    );
+  }
+  if (phone) {
+    const open = (m: NonNullable<Menu>) => () => { menu = menu === m ? null : m; ctrl.redraw(); };
+    return el('div', { class: 'tools', role: 'group', 'aria-label': 'פעולות במשחק', 'data-tour': ctrl.local ? undefined : 'play-tools-phone' },
+      tool('undo', 'החזרת מהלך', () => ctrl.takeback(), { disabled: !ctrl.takebackPlies }),
+      ctrl.local ? null : tool('flag', 'כניעה', () => ctrl.resign(), { disabled: !ctrl.playing }),
+      tool('plus', 'משחק חדש', () => ctrl.openSetup()),
+      tool('pieces', 'סימון הכלים', open('pieces'), { pressed: menu === 'pieces' }),
+      tool('more', 'עוד', open('more'), { pressed: menu === 'more' }),
     );
   }
   if (ctrl.local) {
@@ -253,6 +266,52 @@ function tipBox(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void): HTM
     el('p', {}, body),
     el('button', { type: 'button', class: 'btn', 'data-fid': 'tip-ok', onclick: go(() => ctrl.dismissTip()) }, 'הבנתי'),
   );
+}
+
+type Menu = 'pieces' | 'more' | null;
+let menu: Menu = null;
+let movesOpen = false;
+let shown = '';
+
+export const PHONE = '(max-width: 859.98px)';
+export const isPhone = (): boolean => window.matchMedia(PHONE).matches;
+
+export function reveal(target: HTMLElement | null): void {
+  if (!target) return;
+  const r = target.getBoundingClientRect();
+  const over = r.bottom - window.innerHeight + 10;
+  if (over > 0) window.scrollTo({ top: window.scrollY + over, behavior: 'smooth' });
+}
+
+function replay(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void, phone: boolean): HTMLElement {
+  const plies = ctrl.line.plies;
+  const last = plies[plies.length - 1];
+  const head = phone
+    ? el('div', { class: 'moves-head' },
+      el('button', { type: 'button', class: 'moves-toggle', 'data-fid': 'moves-toggle', 'aria-expanded': String(movesOpen), onclick: go(() => { movesOpen = !movesOpen; ctrl.redraw(); }) },
+        el('strong', {}, plies.length ? `מהלכים (${plies.length})` : 'מהלכים'),
+        last ? el('span', { class: 'small muted last' }, 'האחרון: ', el('bdi', { dir: 'ltr' }, localMove(last.western))) : null,
+        picon('chev-down')),
+      kifMenu(ctrl))
+    : el('div', { class: 'moves-head' }, el('strong', {}, 'מהלכים'), kifMenu(ctrl));
+  return el('div', { class: `replay${phone && movesOpen ? ' open' : ''}`, 'data-tour': phone ? undefined : 'play-moves' },
+    head, moveList(ctrl, go), navButtons(ctrl, go));
+}
+
+function menuBox(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void, openSettings: () => void): HTMLElement | null {
+  if (menu === 'pieces') {
+    return el('div', { class: 'game-menu game-pieces', role: 'group', 'aria-label': 'סימון הכלים' },
+      el('div', { class: 'pieces-switch' }, pieceSetSwitch(), tipEl('pieces')));
+  }
+  if (menu === 'more') {
+    const pick = (label: string, fid: string, fn: () => void) => el('button', { type: 'button', class: 'choice', 'data-fid': fid, onclick: go(fn) }, label);
+    return el('div', { class: 'game-menu game-more', role: 'group', 'aria-label': 'עוד' },
+      replay(ctrl, go, true),
+      el('div', { class: 'game-chips' },
+        ctrl.local ? null : pick('הפיכת הלוח', 'tool-flip', () => { menu = null; ctrl.flip(); }),
+        pick('הגדרות', 'tool-cog', () => { menu = null; ctrl.redraw(); openSettings(); })));
+  }
+  return null;
 }
 
 const kifText = (ctrl: PlayCtrl): string => recordKif(ctrl.record!);
@@ -364,6 +423,12 @@ function status(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void): HTM
     );
   }
   const pos = ctrl.line.current;
+  const acts = [
+    ctrl.canDeclareImpasse
+      ? el('button', { type: 'button', class: 'btn', 'data-fid': 'impasse', onclick: go(() => ctrl.declareImpasse()) }, picon('crown'), ' הכרזת ניצחון בנקודות')
+      : null,
+    !ctrl.live ? el('button', { type: 'button', class: 'link', onclick: go(() => ctrl.view(undefined)) }, 'חזרה לעמדה הנוכחית') : null,
+  ].filter((a) => !!a) as HTMLElement[];
   const text = ctrl.local
     ? ''
     : ctrl.thinking
@@ -371,12 +436,9 @@ function status(ctrl: PlayCtrl, go: (fn: () => void) => (e: Event) => void): HTM
     : pos.turn === ctrl.playerColor
       ? pos.isCheck() ? 'שח! תורך.' : 'תורך.'
       : '';
-  return el('div', { class: `status-line${ctrl.thinking ? ' thinking' : ''}`, 'aria-live': 'polite' },
-    text,
-    ctrl.canDeclareImpasse
-      ? el('button', { type: 'button', class: 'btn', 'data-fid': 'impasse', onclick: go(() => ctrl.declareImpasse()) }, picon('crown'), ' הכרזת ניצחון בנקודות')
-      : null,
-    !ctrl.live ? el('button', { type: 'button', class: 'link', onclick: go(() => ctrl.view(undefined)) }, 'חזרה לעמדה הנוכחית') : null,
+  return el('div', { class: `status-line${ctrl.thinking ? ' thinking' : ''}${acts.length ? ' has-action' : ''}`, 'aria-live': 'polite' },
+    text ? el('span', { class: 'status-text' }, text) : null,
+    ...acts,
   );
 }
 
@@ -522,6 +584,7 @@ export function render(ctrl: PlayCtrl, root: HTMLElement, openSettings: () => vo
 
   const overlay = q('[data-overlay]');
   const touch = touchDevice();
+  const phone = isPhone();
   ctrl.aiBlocked = support !== 'ok';
   if (ctrl.aiBlocked && touch && !ctrl.local) ctrl.setupOpen = true;
   if (support !== 'ok' && !touch) {
@@ -539,10 +602,11 @@ export function render(ctrl: PlayCtrl, root: HTMLElement, openSettings: () => vo
   }
   const wasSetup = root.classList.contains('setup-open');
   root.classList.toggle('setup-open', !overlay.hidden);
+  if (!wasSetup && !overlay.hidden && phone && window.scrollY > 0) requestAnimationFrame(() => window.scrollTo({ top: 0 }));
   if (wasSetup && overlay.hidden) {
     const frame = ctrl.local ? q('[data-seat="top"]') : q('.play__board');
     requestAnimationFrame(() => {
-      if (!touch && matchMedia('(min-width: 860px)').matches) { if (window.scrollY > 0) window.scrollTo({ top: 0 }); return; }
+      if (phone || (!touch && matchMedia('(min-width: 860px)').matches)) { if (window.scrollY > 0) window.scrollTo({ top: 0 }); return; }
       const head = document.querySelector('.site-header')?.clientHeight ?? 0;
       const top = frame.getBoundingClientRect().top;
       if (top < head) window.scrollTo({ top: Math.max(0, window.scrollY + top - head - 8) });
@@ -563,27 +627,32 @@ export function render(ctrl: PlayCtrl, root: HTMLElement, openSettings: () => vo
 
   const top = ctrl.orientation === 'sente' ? 'gote' : 'sente';
   const bottom = ctrl.orientation;
-  const seats = ctrl.local && !!ctrl.record && overlay.hidden;
-  root.classList.toggle('play--local', seats);
+  const seats = (ctrl.local || phone) && !!ctrl.record && overlay.hidden;
+  root.classList.toggle('play--local', seats && ctrl.local);
+  const turn = ctrl.playing && overlay.hidden ? ctrl.line.current.turn : null;
+  root.classList.toggle('turn-bottom', turn === bottom);
+  root.classList.toggle('turn-top', turn === top);
   const seatTop = q('[data-seat="top"]');
   const seatBottom = q('[data-seat="bottom"]');
   seatTop.hidden = seatBottom.hidden = !seats;
-  seatTop.replaceChildren(...(seats ? [seatRow(ctrl, 'gote', go)] : []));
-  seatBottom.replaceChildren(...(seats ? [seatRow(ctrl, 'sente', go)] : []));
+  seatTop.replaceChildren(...(seats ? [ctrl.local ? seatRow(ctrl, 'gote', go) : playerRow(ctrl, top, true)] : []));
+  seatBottom.replaceChildren(...(seats ? [ctrl.local ? seatRow(ctrl, 'sente', go) : playerRow(ctrl, bottom, true)] : []));
   const table = q('[data-table]');
   const movesScroll = table.querySelector('[data-moves]')?.scrollTop;
+  const tip = tipBox(ctrl, go);
+  const tools = controls(ctrl, go, openSettings, phone);
+  const extra = phone ? menuBox(ctrl, go, openSettings) : null;
   table.replaceChildren(
     el('div', { class: 'table-box' },
-      tipBox(ctrl, go),
-      ctrl.local ? null : playerRow(ctrl, top),
-      el('div', { class: 'replay', 'data-tour': 'play-moves' },
-        el('div', { class: 'moves-head' }, el('strong', {}, 'מהלכים'), kifMenu(ctrl)),
-        moveList(ctrl, go), navButtons(ctrl, go)),
+      tip,
+      ctrl.local || phone ? null : playerRow(ctrl, top),
+      phone ? null : replay(ctrl, go, false),
       status(ctrl, go),
-      controls(ctrl, go, openSettings),
-      ctrl.local ? null : playerRow(ctrl, bottom),
+      tools,
+      extra,
+      ctrl.local || phone ? null : playerRow(ctrl, bottom),
     ),
-    el('div', { class: 'pieces-switch', 'data-tour': 'play-pieces' }, pieceSetSwitch(), tipEl('pieces')),
+    ...(phone ? [] : [el('div', { class: 'pieces-switch', 'data-tour': 'play-pieces' }, pieceSetSwitch(), tipEl('pieces'))]),
   );
   const box = table.querySelector<HTMLElement>('[data-moves]');
   if (box) {
@@ -593,4 +662,9 @@ export function render(ctrl: PlayCtrl, root: HTMLElement, openSettings: () => vo
     if (active) scrollWithin(box, active);
   }
   if (focusedId) root.querySelector<HTMLElement>(`[data-fid="${focusedId}"]`)?.focus({ preventScroll: true });
+  const done = ctrl.ended ? table.querySelector<HTMLElement>('.result .buttons') : null;
+  const pop = table.querySelector<HTMLElement>('.kif-pop');
+  const key = `${menu ?? ''}|${movesOpen && menu === 'more'}|${!!pop}|${ctrl.ended ? 'end' : ''}|${ctrl.tip ?? ''}`;
+  if (phone && overlay.hidden && key !== shown && (extra || tip || done || pop)) requestAnimationFrame(() => reveal(pop ?? extra ?? done ?? tools));
+  shown = key;
 }

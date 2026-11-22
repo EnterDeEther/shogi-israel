@@ -1,13 +1,13 @@
 // AGPL-3.0-or-later, like the rest of this site.
 import { loadPrefs } from '../learn/prefs';
 import { preloadSounds } from '../learn/sound';
-import { mount } from '../play/view';
+import { mount, PHONE } from '../play/view';
 import { accountsEnabled } from '../lib/account-config';
 import { setBugContext } from './bug';
 import { gameUrl, offerSeat, signedIn } from './client';
 import type { Ping } from './core';
 import FriendCtrl from './ctrl';
-import { clockText, hoursText, render } from './view';
+import { clockText, hoursText, render, turnText } from './view';
 
 const GAP = { up: 60_000, down: 15_000, clockUp: 10_000, clockDown: 4_000 };
 const PING_GAP_MS = 1500;
@@ -179,5 +179,10 @@ export async function bootFriendGame(root: HTMLElement): Promise<void> {
     root.querySelectorAll<HTMLElement>('[data-deadline-left]').forEach((d) => {
       d.textContent = left === null ? '' : hoursText(Math.max(0, left));
     });
+    const spent = ctrl.turnTime();
+    root.querySelectorAll<HTMLElement>('[data-turn-time]').forEach((d) => {
+      d.textContent = spent === null ? '' : turnText(spent);
+    });
   }, 250);
+  window.matchMedia(PHONE).addEventListener('change', redraw);
 }

@@ -217,7 +217,8 @@
 }
 
 .play__seat[hidden] { display: none; }
-.play__seat--top { transform: rotate(180deg); margin-bottom: 4px; }
+.play__seat--top { margin-bottom: 4px; }
+.play--local .play__seat--top { transform: rotate(180deg); }
 .play__seat--bottom { margin-top: 4px; }
 .play .ruser.seat { min-height: 56px; padding: 6px 10px; gap: 8px; border: 1.5px solid var(--rule); border-radius: 10px; background: var(--washi); }
 .play .ruser.seat.turn { border-color: var(--seal); box-shadow: 0 0 0 1px var(--seal); }
@@ -245,3 +246,60 @@
 .play .play-tip .btn { min-height: 40px; }
 @media (max-width: 859.98px) { .play .table-box > .play-tip { order: 0; } }
 .learn__settings .tour-row { margin: 4px 0 12px; }
+.play .game-menu { padding: 12px 14px; border-top: 1px solid var(--rule); display: flex; flex-direction: column; gap: 10px; }
+.play .game-menu p { margin: 0; }
+.play .game-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.play .game-chips .choice {
+  appearance: none; border: 1.5px solid var(--rule); background: var(--surface); color: var(--ink);
+  border-radius: 999px; min-height: 40px; padding: 0 14px; font: 700 15px/1 var(--f-body); cursor: pointer;
+}
+.play .game-chips .choice:hover { border-color: var(--ink); }
+.play .game-pieces .pieces-switch { margin: 0; align-items: center; gap: 8px; }
+.play .moves-toggle { appearance: none; border: 0; background: none; color: inherit; font: inherit; padding: 0; display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; text-align: start; pointer-events: none; }
+.play .moves-toggle .last, .play .moves-toggle .icon { display: none; }
+.play .tool[aria-pressed="true"] { background: var(--washi-2); }
+.play-island .sg-hand-wrap::before {
+  content: ''; position: absolute; left: 0; right: 0; z-index: -1; pointer-events: none; border-radius: 8px;
+  opacity: 0; transition: opacity .35s ease;
+}
+.play-island .sg-hand-wrap.hand-bottom::before { top: -6px; bottom: -2px; background: linear-gradient(to top, color-mix(in srgb, var(--seal) 22%, transparent), color-mix(in srgb, var(--seal) 40%, transparent) 4px, color-mix(in srgb, var(--seal) 14%, transparent) 55%, transparent); }
+.play-island .sg-hand-wrap.hand-top::before { top: -2px; bottom: -6px; background: linear-gradient(to bottom, color-mix(in srgb, var(--seal) 22%, transparent), color-mix(in srgb, var(--seal) 40%, transparent) 4px, color-mix(in srgb, var(--seal) 14%, transparent) 55%, transparent); }
+.play-island.turn-bottom .sg-hand-wrap.hand-bottom::before, .play-island.turn-top .sg-hand-wrap.hand-top::before { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .play-island .sg-hand-wrap::before { transition: none; } }
+@media (max-width: 859.98px) {
+  .play-island { --fit-over: 324px; --fit-h: calc(100vh - var(--fit-over)); }
+  @supports (height: 100svh) { .play-island { --fit-h: calc(100svh - var(--fit-over)); } }
+  .play-island.play--local { --fit-over: 344px; }
+  .play-island.play { gap: 8px; margin-top: 4px; }
+  .play-island .play__bar { display: none; }
+  .play-island .play__seat--top { margin-bottom: 8px; }
+  .play-island .play__seat--bottom { margin-top: 8px; }
+  .play-island .play__seat .ruser, .play-island .play__seat .ruser.seat.turn { min-height: 34px; padding: 0 4px; gap: 8px; border: 0; border-radius: 0; background: none; box-shadow: none; }
+  .play-island .play__seat .ruser .mark { font-size: 18px; }
+  .play-island .play__seat .ruser .who { flex-direction: row; align-items: baseline; gap: 8px; min-width: 0; }
+  .play-island .play__seat .ruser .who strong { font-size: 16px; white-space: nowrap; }
+  .play-island .play__seat .ruser .who .small { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .play-island .play__seat .ruser .rclock { font-size: 20px; min-width: 72px; padding: 4px 8px; }
+  .play-island .play__board { padding-top: 60px; padding-bottom: 46px; max-width: min(600px, max(360px, calc(var(--fit-h) + 26px))); margin-inline: auto; }
+  .play-island.setup-open .play__board { width: auto; max-width: none; }
+  .play-island .table-box > .ruser { display: none; }
+  .play-island .table-box > .status-line:not(.has-action):not(.error), .play-island .status-line .status-text { display: none; }
+  .play-island .table-box > .tools { order: 2; border-bottom: 0; }
+  .play-island .table-box > .game-menu { order: 3; }
+  .play-island .tool { min-height: 50px; }
+  .play-island .tool .label { white-space: nowrap; font-size: clamp(11px, 3.1vw, 12px); }
+  .play-island .game-more .replay { border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+  .play-island .moves-head { padding: 0; border-bottom: 0; }
+  .play-island .moves-head:has(.kif-menu) { padding-inline-end: 6px; }
+  .play-island .replay.open .moves-head { border-bottom: 1px solid var(--rule); }
+  .play-island .moves-toggle { pointer-events: auto; cursor: pointer; min-height: 44px; padding: 0 12px; }
+  .play-island .moves-toggle .last { display: inline; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .play-island .moves-toggle .icon { display: inline-flex; transition: transform .15s ease; }
+  .play-island .replay.open .moves-toggle .icon { transform: rotate(180deg); }
+  .play-island .replay:not(.open) .moves-box, .play-island .replay:not(.open) .replay-nav { display: none; }
+}
+@media (max-width: 600px) {
+  .play-island { --fit-bw: clamp(297px, calc(var(--fit-h) + 17px), 100vw); }
+  .play-island .play__board { width: var(--fit-bw); max-width: none; margin-inline: calc((100% - var(--fit-bw)) / 2); }
+  .play-island .sg-hand-wrap::before { left: -2px; right: -15px; border-radius: 0; }
+}
