@@ -1,14 +1,12 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { createHash, randomBytes } from 'node:crypto';
 import {
-  claimPatch, endAnswer, endAsk, endCancel, type FriendRow, GUEST_NAME, gameView, impassePatch, inRest, inviteState, joinPatch, MAX_SLOTS, movePatch, type Names, newCode,
+  claimPatch, endAnswer, endAsk, endCancel, type FriendRow, gameView, impassePatch, inviteState, joinPatch, MAX_SLOTS, movePatch, type Names, newCode,
   newInvite, other, type Patch, rematchAsk, rematchRow, resignPatch, restPatch, rests, type Seat, settle, sideOf, type Signal, signalPatch, takebackAnswer, takebackAsk,
   takebackCancel, validInvite,
 } from '../src/friend/core.js';
-import { type AlertKind, ASK_ALERT_GAP_MS, gameEmail, gamePush, TURN_MAIL_GAP_MS } from '../src/friend/alerts.js';
-import { asGender } from '../src/lib/gender.js';
-import { FROM as MAIL_FROM, REPLY_TO, unsubscribeUrl } from '../src/lib/notify.js';
-import { pushConfigured, sendOne } from '../src/lib/push-send.js';
+import { type AlertKind, ASK_ALERT_GAP_MS } from '../src/friend/alerts.js';
+import { alertSide, namesOf, nicknames, unnamed } from '../src/friend/send.js';
 
 const ALLOWED_ORIGIN = /^https:\/\/((www\.)?shogi\.co\.il|shogi-israel-[a-z0-9-]+-enterdeether\.vercel\.app)$/;
 const REPORT_TO = 'contact@shogi.co.il';
@@ -49,20 +47,6 @@ async function userOf(client: SupabaseClient, request: Request): Promise<string 
   const { data } = await client.auth.getUser(token);
   return data.user && !data.user.is_anonymous ? data.user.id : null;
 }
-
-async function nicknames(client: SupabaseClient, ids: (string | null)[]): Promise<Map<string, string>> {
-  const want = [...new Set(ids.filter((x): x is string => !!x))];
-  if (!want.length) return new Map();
-  const { data } = await client.from('profiles').select('id, nickname').in('id', want);
-  return new Map((data ?? []).map((p: { id: string; nickname: string }) => [p.id, p.nickname]));
-}
-
-function namesOf(row: FriendRow, nick: Map<string, string>): Names {
-  const name = (kept: string | null | undefined, user: string | null) => kept || (user ? nick.get(user) ?? 'שחקן' : GUEST_NAME);
-  return { sente: name(row.sente_name, row.sente_user), gote: name(row.gote_name, row.gote_user) };
-}
-
-const unnamed = (row: FriendRow): (string | null)[] => [row.sente_name ? null : row.sente_user, row.gote_name ? null : row.gote_user];
 
 async function load(client: SupabaseClient, by: 'id' | 'code', value: string): Promise<FriendRow | null> {
   const { data } = await client.from('friend_games').select('*').eq(by, value).maybeSingle();
@@ -162,50 +146,6 @@ async function bug(client: SupabaseClient, request: Request, body: Body, seat: S
   await client.from('friend_bugs').delete().lt('created_at', new Date(now - BUG_KEEP_MS).toISOString());
   if ((all.count ?? 0) < BUG_DAY.mail) await sendBug(row, entry);
   return json({ ok: true });
-}
-
-async function pushTo(client: SupabaseClient, to: string, kind: AlertKind, opp: string, id: string): Promise<void> {
-  if (!pushConfigured()) return;
-  const { data } = await client.from('push_subscriptions').select('endpoint, p256dh, auth').eq('user_id', to).eq('push_turn', true).limit(5);
-  for (const sub of (data ?? []) as { endpoint: string; p256dh: string; auth: string }[]) {
-    if ((await sendOne(sub, gamePush(kind, opp, id))) === 'gone') await client.from('push_subscriptions').delete().eq('endpoint', sub.endpoint);
-  }
-}
-
-async function mailTo(client: SupabaseClient, to: string, kind: AlertKind, nickname: string, opp: string, row: FriendRow, now: number): Promise<void> {
-  const key = process.env.RESEND_API_KEY;
-  const secret = process.env.CRON_SECRET;
-  if (!key || !secret) return;
-  const { data: prefs } = await client.from('notification_prefs').select('email_turn, paused_reason').eq('user_id', to).maybeSingle();
-  if (!prefs?.email_turn || prefs.paused_reason) return;
-  const { data: recent } = await client.from('email_log').select('id').eq('user_id', to).eq('kind', 'turn').eq('game_id', row.id)
-    .gt('sent_at', new Date(now - TURN_MAIL_GAP_MS).toISOString()).limit(1);
-  if (recent?.length) return;
-  const { data: u } = await client.auth.admin.getUserById(to);
-  const address = u?.user?.email;
-  if (!address || !u.user?.email_confirmed_at) return;
-  const unsub = await unsubscribeUrl(secret, to, 'turn');
-  const mail = gameEmail(kind, { nickname, opp, id: row.id, deadline: row.move_deadline ? Date.parse(row.move_deadline) : null, gender: asGender(u.user.user_metadata?.gender), unsubscribeUrl: unsub });
-  const res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      from: MAIL_FROM, to: [address], reply_to: REPLY_TO, subject: mail.subject, html: mail.html, text: mail.text,
-      headers: { 'List-Unsubscribe': `<${unsub}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' },
-      tags: [{ name: 'kind', value: kind }],
-    }),
-  });
-  if (!res.ok) { console.error('friend: mail failed', kind, res.status); return; }
-  const { id } = (await res.json()) as { id?: string };
-  await client.from('email_log').insert({ user_id: to, kind: 'turn', game_id: row.id, resend_id: id ?? null });
-}
-
-async function alertSide(client: SupabaseClient, row: FriendRow, side: 'sente' | 'gote', kind: AlertKind, names: Names, now: number): Promise<void> {
-  const to = row[`${side}_user`];
-  if (row.speed !== 'corr' || !to || (rests(row, side) && inRest(now))) return;
-  const opp = names[other(side)];
-  const work = Promise.allSettled([pushTo(client, to, kind, opp, row.id), mailTo(client, to, kind, names[side], opp, row, now)]);
-  await Promise.race([work, new Promise((done) => setTimeout(done, 4000))]);
 }
 
 async function alertTurn(client: SupabaseClient, row: FriendRow, names: Names, now: number): Promise<void> {

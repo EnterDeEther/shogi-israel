@@ -8,7 +8,7 @@ export type EndReason = GameEnd['reason'] | 'abort';
 export type Signal = 'gl' | 'gg' | 'ty' | 'again' | 'wait';
 export type Reply = 'tb-yes' | 'tb-no' | 'end-no';
 export interface Said { c: Color; k: Reply; at: string; p: number }
-export interface Notes { c?: Color; m?: Signal; at?: string; end?: Color; re?: Said; ask?: string }
+export interface Notes { c?: Color; m?: Signal; at?: string; end?: Color; re?: Said; ask?: string; rem?: number }
 
 export const SIGNALS: Signal[] = ['gl', 'gg', 'ty', 'again', 'wait'];
 export const CORR_DAYS = [3] as const;
@@ -92,6 +92,23 @@ export function afterRest(at: number): number {
 
 export const corrDeadline = (now: number, days: number, rest = false): string => iso(rest ? afterRest(now + days * 864e5) : now + days * 864e5);
 export const rests = (row: FriendRow, side: Color): boolean => row[`${side}_rest`] === true;
+
+export const REMIND_LEAD_MS = 12 * 3600 * 1000;
+const remindKey = (row: FriendRow): number => Math.floor(ms(row.move_deadline) / 1000);
+
+export function remindSide(row: FriendRow, now: number): Color | null {
+  if (row.status !== 'active' || row.speed !== 'corr' || !row.move_deadline) return null;
+  const due = ms(row.move_deadline);
+  const side: Color = row.ply % 2 === 0 ? 'sente' : 'gote';
+  if (due <= now || !row[`${side}_user`] || row.signal?.rem === remindKey(row)) return null;
+  const rest = rests(row, side);
+  if (rest && inRest(now)) return null;
+  let next = now + 864e5;
+  if (rest) while (inRest(next)) next += 864e5;
+  return due - next < REMIND_LEAD_MS ? side : null;
+}
+
+export const remindedPatch = (row: FriendRow): Patch => ({ signal: { ...row.signal, rem: remindKey(row) } });
 
 export function newCode(rand: (n: number) => Uint8Array): string {
   const abc = 'abcdefghijkmnpqrstuvwxyz23456789';

@@ -320,10 +320,10 @@ function menuBox(ctrl: FriendCtrl, go: Go, signedIn: boolean): HTMLElement | nul
     const g = ctrl.game!;
     const opp = () => el('bdi', {}, g.names[ctrl.opp]);
     const option = (label: string, fid: string, fn: () => void, text: (HTMLElement | string)[], danger = false, disabled = false) =>
-      el('div', { class: 'friend-end__option' },
-        el('button', { type: 'button', class: `btn${danger ? ' danger' : ''}`, 'data-fid': fid, disabled: disabled || ctrl.pending, onclick: go(fn) }, label),
-        el('p', { class: 'small muted' }, ...text));
-    const keep = el('button', { type: 'button', class: 'link', 'data-fid': 'end-keep', onclick: go(() => { ctrl.menu = null; ctrl.redraw(); }) }, 'ממשיכים לשחק');
+      el('button', { type: 'button', class: `friend-end__option${danger ? ' danger' : ''}`, 'data-fid': fid, disabled: disabled || ctrl.pending, onclick: go(fn) },
+        el('strong', {}, label),
+        el('span', {}, ...text));
+    const keep = el('button', { type: 'button', class: 'friend-end__keep', 'data-fid': 'end-keep', onclick: go(() => { ctrl.menu = null; ctrl.redraw(); }) }, 'ממשיכים לשחק');
     if (g.ply < 2) {
       return el('div', { class: 'friend-menu friend-end', role: 'group', 'aria-label': 'סיום המשחק' },
         option('ביטול המשחק', 'end-abort', () => ctrl.resign(), ['עוד לא שיחקתם שניכם מהלך, אז המשחק פשוט מתבטל, בלי תוצאה.'], true),
@@ -428,7 +428,8 @@ export function render(ctrl: FriendCtrl, root: HTMLElement, opts: { signedIn: bo
   overlay.hidden = true;
   overlay.replaceChildren();
   const bar = q('[data-bar]');
-  const what = () => el('p', { class: 'play__what' }, el('strong', {}, 'משחק עם חבר'), ` · ${SPEED_TEXT(g.speed, g.days, g.clockSet).replace(/^משחק (בלי שעון|חי): /, '')}`);
+  const pace = SPEED_TEXT(g.speed, g.days, g.clockSet).replace(/^משחק (בלי שעון|חי): /, '');
+  const what = () => el('p', { class: 'play__what' }, el('strong', {}, 'משחק עם חבר'), ` · ${pace}`);
   bar.replaceChildren(
     topLine(ctrl),
     what(),
@@ -456,7 +457,7 @@ export function render(ctrl: FriendCtrl, root: HTMLElement, opts: { signedIn: bo
       menuBox(ctrl, go, opts.signedIn),
       playerRow(ctrl, ctrl.orientation),
     ),
-    el('div', { class: 'friend-foot' }, what(), el('a', { class: 'btn btn-ghost', href: '/friend/' }, 'הזמנה חדשה')),
+    el('div', { class: 'friend-foot' }, el('p', { class: 'friend-foot__what' }, el('strong', {}, 'משחק עם חבר'), el('span', {}, pace)), el('a', { class: 'btn btn-ghost', href: '/friend/' }, 'הזמנה חדשה')),
     el('div', { class: 'pieces-switch' }, pieceSetSwitch(), tipEl('pieces')),
   );
   for (const [where, color] of [['top', top], ['bottom', ctrl.orientation]] as const) {

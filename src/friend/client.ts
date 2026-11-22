@@ -54,6 +54,16 @@ export function markReply(id: string, at: string): void {
   } catch { }
 }
 
+const LAPSED = 'shogi-il.friend.lapsed';
+
+export function lapsedSeen(): string[] {
+  try { return JSON.parse(localStorage.getItem(LAPSED) || '[]') as string[]; } catch { return []; }
+}
+
+export function markLapsed(ids: string[]): void {
+  try { localStorage.setItem(LAPSED, JSON.stringify([...new Set([...lapsedSeen(), ...ids])].slice(-30))); } catch { }
+}
+
 const REST = 'shogi-il.friend.rest';
 export const REST_LABEL = 'לא לשחק בשבת';
 export const REST_HINT = 'הזמן שלך למהלך לא ייגמר בין שישי ב־14:00 לשבת ב־22:00, וגם לא נשלח לך התראות בשעות האלה. הבחירה נשמרת במכשיר הזה למשחקים הבאים.';

@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { gameEmail, gamePush, turnEmail, turnPush } from '../src/friend/alerts';
 import {
   afterRest, claimPatch, clockAt, endAnswer, endAsk, endCancel, type FriendRow, gameView, inRest, inviteState, joinPatch, movePatch, newCode, newInvite, pingIsOld, pingMove,
-  rematchAsk, rematchRow, resignPatch, restPatch, settle, signalPatch, takebackAnswer, takebackAsk, takebackCancel, validInvite,
+  rematchAsk, rematchRow, remindedPatch, remindSide, resignPatch, restPatch, settle, signalPatch, takebackAnswer, takebackAsk, takebackCancel, validInvite,
 } from '../src/friend/core';
 
 const T0 = Date.parse('2026-11-10T10:00:00Z');
@@ -383,5 +383,48 @@ describe('turn alerts', () => {
     expect(m.text).toContain('10:00');
     expect(m.html).toContain('k=turn');
     expect(m.text).not.toContain('⟦');
+  });
+});
+
+describe('reminder before the time for a move runs out', () => {
+  const H = 3600e3;
+  const RUN = Date.parse('2026-11-10T17:00:00Z');
+  const game = (due: number, over: Partial<FriendRow> = {}) => row({ status: 'active', sente_user: 'u1', gote_user: 'u2', ply: 0, move_deadline: new Date(due).toISOString(), ...over });
+  test('it goes to the player to move when the next daily run would be too late', () => {
+    expect(remindSide(game(RUN + 72 * H), RUN)).toBeNull();
+    expect(remindSide(game(RUN + 37 * H), RUN)).toBeNull();
+    expect(remindSide(game(RUN + 35 * H), RUN)).toBe('sente');
+    expect(remindSide(game(RUN + 2 * H, { ply: 1 }), RUN)).toBe('gote');
+    expect(remindSide(game(RUN - H), RUN)).toBeNull();
+  });
+  test('once for each deadline, and never to a guest or in a finished game', () => {
+    const g = game(RUN + 20 * H);
+    const marked = { ...g, ...remindedPatch(g) } as FriendRow;
+    expect(remindSide(marked, RUN)).toBeNull();
+    expect(remindSide({ ...marked, move_deadline: new Date(RUN + 30 * H).toISOString() }, RUN)).toBe('sente');
+    expect(remindSide(game(RUN + 20 * H, { sente_user: null, sente_guest: 'h'.repeat(64) }), RUN)).toBeNull();
+    expect(remindSide(game(RUN + 20 * H, { status: 'finished' }), RUN)).toBeNull();
+  });
+  test('the mark keeps the other notes on the game', () => {
+    const g = game(RUN + 20 * H, { signal: { end: 'gote', ask: 'x' } });
+    expect(remindedPatch(g).signal).toEqual({ end: 'gote', ask: 'x', rem: Math.floor((RUN + 20 * H) / 1000) });
+  });
+  test('a player who rests on Shabbat hears on Thursday, and nothing on Friday or Saturday', () => {
+    const thursday = Date.parse('2026-11-12T17:00:00Z');
+    const sunday = Date.parse('2026-11-15T08:00:00Z');
+    expect(remindSide(game(sunday), thursday)).toBeNull();
+    expect(remindSide(game(sunday, { sente_rest: true }), thursday)).toBe('sente');
+    expect(remindSide(game(sunday, { sente_rest: true }), thursday + 24 * H)).toBeNull();
+    expect(remindSide(game(sunday, { sente_rest: true }), thursday + 48 * H)).toBeNull();
+    expect(remindSide(game(sunday), thursday + 48 * H)).toBe('sente');
+  });
+  test('the words say until when', () => {
+    const due = Date.parse('2026-11-15T08:00:00Z');
+    const p = gamePush('soon', 'יעל', 'abc', due);
+    expect(p.title).toBe('הזמן למהלך שלך נגד יעל עומד להיגמר');
+    expect(p.body).toContain('10:00');
+    const m = gameEmail('soon', { nickname: 'דין', opp: 'יעל', id: 'abc', deadline: due, gender: 'm', unsubscribeUrl: 'https://shogi.co.il/api/unsubscribe?u=1&k=turn&t=x' });
+    expect(m.text).toContain('10:00');
+    expect(m.text).toContain('utm_campaign=game-soon#abc');
   });
 });

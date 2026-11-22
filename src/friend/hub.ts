@@ -4,13 +4,14 @@ import { accountsEnabled } from '../lib/account-config';
 import { isAndroid, isInApp } from '../lib/install';
 import { copyText } from '../lib/kif';
 import { openBug, setBugContext } from './bug';
-import { api, endUrl, gameUrl, type InviteInfo, inviteUrl, type ListedGame, readSeats, rememberedInvite, rememberInvite, REST_HINT, REST_LABEL, restPref, setRestPref, SHORT_SPEED, signedIn, SPEED_TEXT } from './client';
+import { api, endUrl, gameUrl, type InviteInfo, inviteUrl, lapsedSeen, type ListedGame, markLapsed, readSeats, rememberedInvite, rememberInvite, REST_HINT, REST_LABEL, restPref, setRestPref, SHORT_SPEED, signedIn, SPEED_TEXT } from './client';
 import { CORR_DAYS, MAX_SLOTS } from './core';
 
 const COLOR_TEXT: Record<Color | 'random', string> = { random: 'הגרלה', sente: 'פותח (☗)', gote: 'משיב (☖)' };
 
 const NO_CLOCK = 'משחק אחד, בלי שעון. לכל מהלך יש עד 3 ימים, וכל אחד משחק מתי שנוח לו.';
 const POLL_MS = 30_000;
+const LAPSED_SHOW_MS = 14 * 864e5;
 
 const codeFromHash = (): string | null => {
   const asked = new URLSearchParams(location.search).get('i');
@@ -191,6 +192,21 @@ function homeSignedIn(root: HTMLElement): void {
       el('a', { class: 'btn', href: gameUrl(g.id) }, 'למשחק'));
   };
 
+  let lapsedNote: HTMLElement | null = null;
+  const lapsed = () => {
+    const seen = lapsedSeen();
+    const ids = games.filter((g) => g.status === 'open' && Date.now() - Date.parse(g.expiresAt) >= 0 && Date.now() - Date.parse(g.expiresAt) < LAPSED_SHOW_MS && !seen.includes(g.id)).map((g) => g.id);
+    if (!ids.length || lapsedNote?.isConnected) return;
+    const note = el('div', { class: 'friend-note friend-lapsed' },
+      el('strong', {}, ids.length > 1 ? 'הזמנות ששלחת פגו' : 'הזמנה ששלחת פגה'),
+      el('p', {}, ids.length > 1
+        ? 'עבר שבוע ואף אחד לא הצטרף, אז הקישורים כבר לא פעילים. המקומות שלהן התפנו, ואפשר ליצור קישור חדש.'
+        : 'עבר שבוע ואף אחד לא הצטרף, אז הקישור כבר לא פעיל. המקום שלה התפנה, ואפשר ליצור קישור חדש.'),
+      el('button', { type: 'button', class: 'link', 'data-fid': 'lapsed-ok', onclick: () => { markLapsed(ids); note.remove(); } }, 'הבנתי'));
+    lapsedNote = note;
+    notes.append(note);
+  };
+
   const inviteCard = (g: ListedGame): HTMLElement => {
     const cancel = el('button', { type: 'button', class: 'link' }, 'ביטול ההזמנה') as HTMLButtonElement;
     cancel.addEventListener('click', async () => {
@@ -292,6 +308,7 @@ function homeSignedIn(root: HTMLElement): void {
     games = r.data.games;
     loaded = true;
     for (const g of games) if (before.has(g.id) && g.status === 'active') notes.prepend(started(g));
+    lapsed();
     draw();
     void watch();
   };
