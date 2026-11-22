@@ -122,7 +122,7 @@ a.friend-row__main:hover strong { text-decoration: underline; }
   .friend-game .ruser.seat .who { flex-direction: row; align-items: baseline; gap: 8px; }
   .friend-game .ruser.seat .who strong { font-size: 16px; }
   .friend-game .ruser.seat .rclock { font-size: 20px; min-width: 72px; padding: 4px 8px; }
-  .friend-game .play__board { padding-top: 54px; padding-bottom: 42px; }
+  .friend-game .play__board { padding-top: 64px; padding-bottom: 50px; }
   .friend-game .table-box > .ruser, .friend-game .table-box > .status-line { display: none; }
   .friend-game .table-box > .tools { order: 2; border-bottom: 0; }
   .friend-game .table-box > .friend-keepline { order: 3; }
