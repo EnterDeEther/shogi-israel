@@ -76,6 +76,7 @@ a.friend-row__main:hover strong { text-decoration: underline; }
 .friend-bug p { margin: 0; }
 :is(.friend-page, .friend-bug) .link { border: 0; background: none; color: var(--seal); font: 600 15px var(--f-body); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; padding: 0; min-height: 32px; }
 .friend-bug label { font-weight: 700; }
+.friend-bug .btn { min-height: 40px; padding: 0 18px; margin-top: 14px; border-radius: 10px; font-size: 15px; }
 .friend-bug textarea { width: 100%; box-sizing: border-box; padding: 10px 12px; font: 16px/1.5 var(--f-body); color: var(--ink); background: var(--washi); border: 1.5px solid var(--rule); border-radius: 6px; resize: vertical; }
 .friend-bug .choice[aria-pressed="true"] { background: var(--seal); border-color: var(--seal); color: var(--on-seal); }
 .friend-more { width: 100%; }
@@ -111,17 +112,19 @@ a.friend-row__main:hover strong { text-decoration: underline; }
   content: ''; position: absolute; left: 0; right: 0; z-index: -1; pointer-events: none; border-radius: 8px;
   opacity: 0; transition: opacity .35s ease;
 }
-.friend-game .sg-hand-wrap.hand-bottom::before { top: -6px; bottom: -10px; background: linear-gradient(to top, color-mix(in srgb, var(--seal) 42%, transparent), color-mix(in srgb, var(--seal) 14%, transparent) 55%, transparent); }
-.friend-game .sg-hand-wrap.hand-top::before { top: -10px; bottom: -6px; background: linear-gradient(to bottom, color-mix(in srgb, var(--seal) 42%, transparent), color-mix(in srgb, var(--seal) 14%, transparent) 55%, transparent); }
+.friend-game .sg-hand-wrap.hand-bottom::before { top: -6px; bottom: -2px; background: linear-gradient(to top, color-mix(in srgb, var(--seal) 22%, transparent), color-mix(in srgb, var(--seal) 40%, transparent) 4px, color-mix(in srgb, var(--seal) 14%, transparent) 55%, transparent); }
+.friend-game .sg-hand-wrap.hand-top::before { top: -2px; bottom: -6px; background: linear-gradient(to bottom, color-mix(in srgb, var(--seal) 22%, transparent), color-mix(in srgb, var(--seal) 40%, transparent) 4px, color-mix(in srgb, var(--seal) 14%, transparent) 55%, transparent); }
 .friend-game.turn-bottom .sg-hand-wrap.hand-bottom::before, .friend-game.turn-top .sg-hand-wrap.hand-top::before { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .friend-game .sg-hand-wrap::before { transition: none; } }
 @media (max-width: 859.98px) {
-  .friend-game { --fg-over: 308px; --fg-fit: calc(100vh - var(--fg-over)); }
+  .friend-game { --fg-over: 324px; --fg-fit: calc(100vh - var(--fg-over)); }
   @supports (height: 100svh) { .friend-game { --fg-fit: calc(100svh - var(--fg-over)); } }
-  .friend-game.is-guest { --fg-over: 352px; }
+  .friend-game.is-guest { --fg-over: 368px; }
   .friend-game.play { gap: 8px; margin-top: 4px; }
   .friend-game .play__bar { display: none; }
   .friend-game .play__seat { display: block; transform: none; margin: 0; }
+  .friend-game .play__seat--top { margin-bottom: 8px; }
+  .friend-game .play__seat--bottom { margin-top: 8px; }
   .friend-game .play__seat[hidden] { display: none; }
   .friend-game .ruser.seat, .friend-game .ruser.seat.turn { min-height: 34px; padding: 0 4px; gap: 8px; border: 0; border-radius: 0; background: none; box-shadow: none; }
   .friend-game .ruser.seat .mark { font-size: 18px; }
