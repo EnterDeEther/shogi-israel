@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -13,13 +13,21 @@ const css = (p) => pathToFileURL(join(root, 'node_modules', p)).href;
 
 const C = { washi: '#ECE4D4', seal: '#B8361F', white: '#FFFFFF' };
 
+const ISRAEL = {
+  d: readFileSync(new URL('./israel-kraza.svg', import.meta.url), 'utf8').match(/ d="([^"]+)"/)[1],
+  w: 334.7,
+  h: 67.9,
+};
+
 const PIECE = [[50, 3], [79.7, 21.8], [88.1, 97], [11.9, 97], [20.3, 21.8]];
 
 const path = (pts) => 'M' + pts.map((p) => p.map((v) => v.toFixed(2)).join(' ')).join('L') + 'Z';
 
 function logo(bg, scale = 0.8) {
-  const k = 0.46, kanji = 27, he = 12, gap = 3.5, grow = 1.3;
-  const height = 94 * k + gap + 0.758 * he;
+  const k = 0.46, kanji = 27, gap = 3.3, grow = 1.3;
+  const wordW = (88.1 - 11.9) * k;
+  const s = wordW / ISRAEL.w;
+  const height = 94 * k + gap + ISRAEL.h * s;
   const top = 50 - height / 2;
   const piece = PIECE.map(([x, y]) => [50 + (x - 50) * k, top + (y - 3) * k]);
   let area = 0, cy = 0;
@@ -31,6 +39,7 @@ function logo(bg, scale = 0.8) {
   });
   cy /= 6 * area;
   const kanjiBase = cy - (31.3 / 33) * kanji / 2 + (28.4 / 33) * kanji;
+  const wordX = 50 - wordW / 2, wordY = top + 94 * k + gap;
   return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     ${bg ? `<rect width="100" height="100" fill="${bg}"/>` : ''}
     <g ${bg ? `transform="translate(50 50) scale(${scale}) translate(-50 -50)"` : ''}>
@@ -38,7 +47,7 @@ function logo(bg, scale = 0.8) {
       <g transform="translate(50 50) scale(${grow}) translate(-50 -50)">
         <path d="${path(piece)}" fill="none" stroke="${C.white}" stroke-width="1.7" stroke-linejoin="round"/>
         <text x="50" y="${kanjiBase.toFixed(2)}" text-anchor="middle" font-family="Shippori Mincho" font-weight="800" font-size="${kanji}" fill="${C.white}">将</text>
-        <text x="50" y="${(top + height).toFixed(2)}" text-anchor="middle" direction="rtl" font-family="Heebo Variable" font-weight="800" font-size="${he}" fill="${C.white}">ישראל</text>
+        <path transform="translate(${wordX.toFixed(3)} ${wordY.toFixed(3)}) scale(${s.toFixed(5)})" d="${ISRAEL.d}" fill="${C.white}"/>
       </g>
     </g>
   </svg>`;
@@ -76,9 +85,8 @@ const dir = mkdtempSync(join(tmpdir(), 'logo-'));
 for (const [name, size, svg] of files) {
   writeFileSync(join(dir, 'p.html'), `<!doctype html><html><head>
     <link rel="stylesheet" href="${css('@fontsource/shippori-mincho/800.css')}">
-    <link rel="stylesheet" href="${css('@fontsource-variable/heebo/index.css')}">
     <style>body{margin:0;background:transparent} svg{display:block;width:${size}px;height:${size}px}</style>
-    </head><body><span style="font:800 1px 'Shippori Mincho'">将</span><span style="font:800 1px 'Heebo Variable'">ישראל</span>${svg}</body></html>`);
+    </head><body><span style="font:800 1px 'Shippori Mincho'">将</span>${svg}</body></html>`);
   await page.goto(pathToFileURL(join(dir, 'p.html')).href);
   await page.evaluate(() => document.fonts.ready);
   const shot = await page.locator('svg').screenshot({ omitBackground: true });
